@@ -38,39 +38,28 @@ class CompanyCrudController extends AbstractCrudController
         return [
             IdField::new('id')->onlyOnIndex(),
             TextField::new('name', 'Nom de l\'entreprise')
-                ->setRequired(true)
-                ->setHelp('Ex: ZeTilt'),
+                ->setRequired(true),
             TextField::new('ownerName', 'Nom du dirigeant')
-                ->setRequired(true)
-                ->setHelp('Ex: Fabrice DHUICQUE'),
+                ->setRequired(true),
             TextField::new('title', 'Titre/Fonction')
-                ->setRequired(true)
-                ->setHelp('Ex: Développeur Web Full-Stack'),
+                ->setRequired(true),
             TextareaField::new('address', 'Adresse')
                 ->setRequired(true)
-                ->setHelp('Ex: 1, impasse de la Forge')
                 ->setNumOfRows(2),
             TextField::new('postalCode', 'Code postal')
-                ->setRequired(true)
-                ->setHelp('Ex: 56400'),
+                ->setRequired(true),
             TextField::new('city', 'Ville')
-                ->setRequired(true)
-                ->setHelp('Ex: Sainte-Anne d\'Auray'),
+                ->setRequired(true),
             TelephoneField::new('phone', 'Téléphone')
-                ->setRequired(true)
-                ->setHelp('Ex: 06 95 78 69 84'),
+                ->setRequired(true),
             EmailField::new('email', 'Email')
-                ->setRequired(true)
-                ->setHelp('Ex: contact@zetilt.fr'),
+                ->setRequired(true),
             TextField::new('siret', 'SIRET')
-                ->setRequired(true)
-                ->setHelp('Ex: 90308676700014'),
+                ->setRequired(true),
             UrlField::new('website', 'Site web')
-                ->setRequired(false)
-                ->setHelp('Ex: https://zetilt.fr'),
+                ->setRequired(false),
             TextField::new('legalStatus', 'Statut juridique')
-                ->setRequired(false)
-                ->setHelp('Ex: Auto-entrepreneur'),
+                ->setRequired(false),
             TextareaField::new('legalMentions', 'Mentions légales')
                 ->setRequired(false)
                 ->setHelp('Mentions légales à afficher sur les documents')

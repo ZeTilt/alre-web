@@ -20,9 +20,15 @@ use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use App\Service\PdfGeneratorService;
+use App\Service\NumberingService;
 
 class FactureCrudController extends AbstractCrudController
 {
+    public function __construct(
+        private readonly NumberingService $numberingService
+    ) {
+    }
+
     public static function getEntityFqcn(): string
     {
         return Facture::class;
@@ -45,7 +51,9 @@ class FactureCrudController extends AbstractCrudController
     {
         return [
             IdField::new('id')->onlyOnIndex(),
-            TextField::new('number', 'Numéro'),
+            TextField::new('number', 'Numéro')
+                ->setHelp('Auto-généré si vide, mais vous pouvez le modifier')
+                ->hideOnIndex(),
             TextField::new('title', 'Titre'),
             AssociationField::new('client', 'Client'),
             AssociationField::new('devis', 'Devis')->onlyOnDetail(),
@@ -222,7 +230,13 @@ class FactureCrudController extends AbstractCrudController
         if ($entityInstance instanceof Facture) {
             // Set the current user as the creator
             $entityInstance->setCreatedBy($this->getUser());
-            
+
+            // Generate sequential number if not set
+            if (!$entityInstance->getNumber()) {
+                $number = $this->numberingService->generateFactureNumber();
+                $entityInstance->setNumber($number);
+            }
+
             // Set creation timestamp if not already set
             if (!$entityInstance->getCreatedAt()) {
                 $entityInstance->setCreatedAt(new \DateTimeImmutable());

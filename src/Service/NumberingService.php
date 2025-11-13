@@ -42,9 +42,36 @@ class NumberingService
         return sprintf('DEV-%s-%s-%02d', $year, $month, $nextNumber);
     }
 
-    public function generateFactureNumber(Devis $devis): string
+    public function generateFactureNumber(Devis $devis = null): string
     {
-        // Replace DEV with FAC in the devis number
-        return str_replace('DEV-', 'FAC-', $devis->getNumber());
+        // If devis is provided, replace DEV with FAC in the devis number
+        if ($devis) {
+            return str_replace('DEV-', 'FAC-', $devis->getNumber());
+        }
+
+        // Otherwise, generate a new facture number
+        $currentDate = new \DateTimeImmutable();
+        $year = $currentDate->format('Y');
+        $month = $currentDate->format('m');
+
+        // Get the last facture number for this year-month
+        $lastFacture = $this->entityManager->getRepository(Facture::class)
+            ->createQueryBuilder('f')
+            ->where('f.number LIKE :pattern')
+            ->setParameter('pattern', "FAC-{$year}-{$month}-%")
+            ->orderBy('f.number', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($lastFacture) {
+            // Extract the last number from the format FAC-YYYY-MM-XX
+            $lastNumber = (int) substr($lastFacture->getNumber(), -2);
+            $nextNumber = $lastNumber + 1;
+        } else {
+            $nextNumber = 1;
+        }
+
+        return sprintf('FAC-%s-%s-%02d', $year, $month, $nextNumber);
     }
 }

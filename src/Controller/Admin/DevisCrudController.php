@@ -53,7 +53,9 @@ class DevisCrudController extends AbstractCrudController
     {
         return [
             IdField::new('id')->onlyOnIndex(),
-            TextField::new('number', 'Numéro')->hideOnForm(),
+            TextField::new('number', 'Numéro')
+                ->setHelp('Auto-généré si vide, mais vous pouvez le modifier')
+                ->hideOnIndex(),
             TextField::new('title', 'Titre'),
             AssociationField::new('client', 'Client'),
             ChoiceField::new('status', 'Statut')

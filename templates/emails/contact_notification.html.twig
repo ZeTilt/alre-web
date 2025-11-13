@@ -76,7 +76,7 @@
         <p><strong>Un nouveau message de contact a été reçu sur Alré Web.</strong></p>
 
         <div class="info-box">
-            <p><span class="label">👤 Nom :</span> {{ contact.name }}</p>
+            <p><span class="label">👤 Nom :</span> {{ contact.firstName }} {{ contact.lastName }}</p>
             <p><span class="label">📧 Email :</span> <a href="mailto:{{ contact.email }}">{{ contact.email }}</a></p>
             <p><span class="label">📱 Téléphone :</span> {{ contact.phone ?? 'Non renseigné' }}</p>
             <p><span class="label">🏢 Entreprise :</span> {{ contact.company ?? 'Non renseignée' }}</p>

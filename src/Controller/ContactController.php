@@ -46,7 +46,7 @@ class ContactController extends AbstractController
                     ->from(new Address('contact@alreweb.fr', 'Alré Web'))
                     ->to('contact@alreweb.fr')
                     ->replyTo($contactMessage->getEmail())
-                    ->subject('Nouveau message de contact - ' . $contactMessage->getName())
+                    ->subject('Nouveau message de contact - ' . $contactMessage->getFirstName() . ' ' . $contactMessage->getLastName())
                     ->htmlTemplate('emails/contact_notification.html.twig')
                     ->context([
                         'contact' => $contactMessage,

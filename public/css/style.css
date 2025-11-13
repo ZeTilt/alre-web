@@ -602,12 +602,15 @@ textarea.form-control {
 
 .form-checkbox {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: var(--spacing-sm);
 }
 
 .form-checkbox input[type="checkbox"] {
-    margin-top: 4px;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-top: 0;
 }
 
 /* ============================================
@@ -948,18 +951,6 @@ textarea.form-control {
     /* Espacer les boutons verticalement */
     .btn {
         margin-bottom: var(--spacing-sm);
-    }
-
-    /* Fix checkbox contact form */
-    .form-checkbox {
-        align-items: center;
-    }
-
-    .form-checkbox input[type="checkbox"] {
-        width: 20px;
-        height: 20px;
-        flex-shrink: 0;
-        margin-top: 0;
     }
 }
 

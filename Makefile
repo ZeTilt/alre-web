@@ -1,4 +1,4 @@
-.PHONY: help install deploy cache migrate assets db-reset test optimize-images
+.PHONY: help install deploy cache migrate assets db-reset test optimize-images admin-user
 
 # Variables
 CONSOLE = php bin/console
@@ -67,6 +67,9 @@ deploy-force: ## Déploie en forçant le git pull (git reset --hard + pull)
 
 setup: install migrate ## Setup complet du projet (install + migrate)
 	@echo "✅ Projet configuré avec succès!"
+
+admin-user: ## Crée un utilisateur admin de manière interactive
+	$(CONSOLE) app:create-admin-user
 
 chocapics: ## 🥣 Des chocapics pour le dev!
 	@echo "🥣 Mmmh des chocapics..."

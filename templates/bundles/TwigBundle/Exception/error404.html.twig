@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Page non trouvée - Erreur 404{% endblock %}
+
+{% block body %}
+<section class="hero" style="min-height: 60vh; display: flex; align-items: center; justify-content: center;">
+    <div class="hero-content" style="text-align: center;">
+        <div style="font-size: 8rem; font-weight: 700; color: var(--accent-color); line-height: 1; margin-bottom: 1rem;">
+            404
+        </div>
+        <h1 class="fade-in" style="margin-bottom: 1rem;">
+            Oups ! Page non trouvée
+        </h1>
+        <p class="lead fade-in-delay-1" style="max-width: 600px; margin: 0 auto 2rem;">
+            La page que vous recherchez n'existe pas ou a été déplacée.
+            <br>
+            Pas de panique, je peux vous aider à retrouver votre chemin !
+        </p>
+        <div class="fade-in-delay-2" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ path('app_home') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-home"></i> Retour à l'accueil
+            </a>
+            <a href="{{ path('app_contact') }}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-paper-plane"></i> Me contacter
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Pages les plus visitées</h2>
+
+        <div class="grid grid-3">
+            <div class="card">
+                <h3 class="card-title">
+                    <i class="fas fa-folder-open" style="color: var(--primary-color);"></i>
+                    Portfolio
+                </h3>
+                <p class="card-text">
+                    Découvrez mes réalisations et projets web.
+                </p>
+                <a href="{{ path('app_portfolio') }}" class="card-link">
+                    Voir le portfolio <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">
+                    <i class="fas fa-cogs" style="color: var(--primary-color);"></i>
+                    Services
+                </h3>
+                <p class="card-text">
+                    Développement web, e-commerce, hébergement et plus.
+                </p>
+                <a href="{{ path('app_services') }}" class="card-link">
+                    Voir les services <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">
+                    <i class="fas fa-user" style="color: var(--primary-color);"></i>
+                    À propos
+                </h3>
+                <p class="card-text">
+                    En savoir plus sur mon parcours et mes compétences.
+                </p>
+                <a href="{{ path('app_about') }}" class="card-link">
+                    En savoir plus <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

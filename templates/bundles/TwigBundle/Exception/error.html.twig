@@ -1,0 +1,78 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Erreur {{ status_code|default('') }}{% endblock %}
+
+{% block body %}
+<section class="hero" style="min-height: 60vh; display: flex; align-items: center; justify-content: center;">
+    <div class="hero-content" style="text-align: center;">
+        {% if status_code is defined %}
+        <div style="font-size: 8rem; font-weight: 700; color: var(--accent-color); line-height: 1; margin-bottom: 1rem;">
+            {{ status_code }}
+        </div>
+        {% endif %}
+
+        <h1 class="fade-in" style="margin-bottom: 1rem;">
+            {% if status_code == 403 %}
+                Accès refusé
+            {% elseif status_code == 503 %}
+                Service temporairement indisponible
+            {% else %}
+                Une erreur s'est produite
+            {% endif %}
+        </h1>
+
+        <p class="lead fade-in-delay-1" style="max-width: 600px; margin: 0 auto 2rem;">
+            {% if status_code == 403 %}
+                Vous n'avez pas les autorisations nécessaires pour accéder à cette page.
+            {% elseif status_code == 503 %}
+                Le site est en cours de maintenance. Je reviens très vite !
+            {% else %}
+                Une erreur technique est survenue. Veuillez réessayer ultérieurement.
+            {% endif %}
+        </p>
+
+        <div class="fade-in-delay-2" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ path('app_home') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-home"></i> Retour à l'accueil
+            </a>
+            <a href="{{ path('app_contact') }}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-paper-plane"></i> Me contacter
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Besoin d'aide ?</h2>
+
+        <div class="grid grid-2" style="max-width: 800px; margin: 0 auto;">
+            <div class="card">
+                <h3 class="card-title">
+                    <i class="fas fa-phone" style="color: var(--accent-color);"></i>
+                    Appelez-moi
+                </h3>
+                <p class="card-text">
+                    Du lundi au vendredi, 9h-18h
+                </p>
+                <a href="tel:+33695786984" class="card-link">
+                    06 95 78 69 84 <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">
+                    <i class="fas fa-envelope" style="color: var(--accent-color);"></i>
+                    Envoyez un message
+                </h3>
+                <p class="card-text">
+                    Réponse sous 24h garantie
+                </p>
+                <a href="{{ path('app_contact') }}" class="card-link">
+                    Formulaire de contact <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

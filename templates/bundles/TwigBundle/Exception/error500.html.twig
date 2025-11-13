@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Erreur serveur - Erreur 500{% endblock %}
+
+{% block body %}
+<section class="hero" style="min-height: 60vh; display: flex; align-items: center; justify-content: center;">
+    <div class="hero-content" style="text-align: center;">
+        <div style="font-size: 8rem; font-weight: 700; color: var(--accent-color); line-height: 1; margin-bottom: 1rem;">
+            500
+        </div>
+        <h1 class="fade-in" style="margin-bottom: 1rem;">
+            Erreur serveur
+        </h1>
+        <p class="lead fade-in-delay-1" style="max-width: 600px; margin: 0 auto 2rem;">
+            Une erreur technique s'est produite sur le serveur.
+            <br>
+            Je suis déjà notifié et je vais résoudre ce problème rapidement.
+        </p>
+        <div class="fade-in-delay-2" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ path('app_home') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-home"></i> Retour à l'accueil
+            </a>
+            <a href="{{ path('app_contact') }}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-phone"></i> Me signaler le problème
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="section section-light">
+    <div class="container text-center">
+        <h2 class="mb-3">Que faire en attendant ?</h2>
+
+        <div class="grid grid-3" style="margin-top: 2rem;">
+            <div class="card">
+                <div style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;">
+                    <i class="fas fa-redo"></i>
+                </div>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Réessayez</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">
+                    Actualisez la page dans quelques instants
+                </p>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;">
+                    <i class="fas fa-phone"></i>
+                </div>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Contactez-moi</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">
+                    <a href="tel:+33695786984">06 95 78 69 84</a>
+                </p>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;">
+                    <i class="fab fa-linkedin"></i>
+                </div>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">LinkedIn</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">
+                    <a href="https://www.linkedin.com/in/fabrice-dhuicque/" target="_blank">Fabrice Dhuicque</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

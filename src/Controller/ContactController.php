@@ -31,7 +31,7 @@ class ContactController extends AbstractController
             try {
                 // 1. Email de confirmation au demandeur
                 $confirmationEmail = (new TemplatedEmail())
-                    ->from(new Address('contact@alreweb.fr', 'Alré Web'))
+                    ->from(new Address('no-reply@alre-web.bzh', 'Alré Web'))
                     ->to($contactMessage->getEmail())
                     ->subject('Confirmation de votre demande de contact')
                     ->htmlTemplate('emails/contact_confirmation.html.twig')
@@ -43,8 +43,8 @@ class ContactController extends AbstractController
 
                 // 2. Email de notification pour l'admin
                 $notificationEmail = (new TemplatedEmail())
-                    ->from(new Address('contact@alreweb.fr', 'Alré Web'))
-                    ->to('contact@alreweb.fr')
+                    ->from(new Address('no-reply@alre-web.bzh', 'Alré Web'))
+                    ->to('contact@alre-web.bzh')
                     ->replyTo($contactMessage->getEmail())
                     ->subject('Nouveau message de contact - ' . $contactMessage->getFirstName() . ' ' . $contactMessage->getLastName())
                     ->htmlTemplate('emails/contact_notification.html.twig')

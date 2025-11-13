@@ -1,0 +1,377 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tarifs | Développeur Web Freelance - Prix Transparents{% endblock %}
+
+{% block meta_description %}Tarifs transparents pour la création de sites internet. Site vitrine à partir de 1000€, e-commerce à partir de 2000€, hébergement 50€/mois. Devis gratuit et personnalisé.{% endblock %}
+
+{% block body %}
+
+{# Hero Section #}
+<section class="hero" style="padding: 4rem 0;">
+    <div class="hero-content">
+        <h1 class="fade-in">Tarifs</h1>
+        <p class="lead fade-in-delay-1">
+            Des prix transparents et adaptés à votre projet<br>
+            Devis personnalisé gratuit
+        </p>
+    </div>
+</section>
+
+{# Introduction #}
+<section class="section">
+    <div class="container text-center" style="max-width: 800px; margin: 0 auto;">
+        <p class="lead">
+            Chaque projet est unique, c'est pourquoi je propose des <strong>tarifs indicatifs "à partir de"</strong>.
+            Après avoir discuté de vos besoins, je vous fournis un <strong>devis détaillé et personnalisé</strong>.
+        </p>
+        <p style="color: var(--text-muted);">
+            En tant que freelance, mes tarifs sont <strong>plus attractifs qu'une agence</strong> tout en maintenant
+            un niveau de qualité professionnel. Pas de frais de structure, juste un service de qualité.
+        </p>
+    </div>
+</section>
+
+{# Offres principales #}
+<section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Offres Principales</h2>
+
+        <div class="grid grid-3">
+            {# Offre 1 : Site Vitrine #}
+            <div class="pricing-card card">
+                <div class="card-icon">
+                    <i class="fas fa-desktop"></i>
+                </div>
+                <h3 class="card-title">Site Vitrine</h3>
+                <div class="pricing-price">
+                    <span>à partir de</span>
+                    1 000 €
+                </div>
+                <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
+                    Pour un site de 5-7 pages
+                </p>
+                <ul class="pricing-features">
+                    <li>Design moderne et responsive</li>
+                    <li>5 à 7 pages personnalisées</li>
+                    <li>Formulaire de contact</li>
+                    <li>Optimisation SEO de base</li>
+                    <li>Intégration de vos contenus</li>
+                    <li>Formation à la gestion</li>
+                    <li>1 mois de support offert</li>
+                </ul>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <p style="font-weight: 600; color: var(--primary-color); margin-bottom: 1rem;">
+                        Idéal pour :
+                    </p>
+                    <p style="font-size: 0.9rem; color: var(--text-muted);">
+                        Artisans, associations, professions libérales, TPE
+                    </p>
+                </div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="{{ path('app_contact') }}" class="btn btn-outline">
+                        Demander un devis
+                    </a>
+                </div>
+            </div>
+
+            {# Offre 2 : Site E-commerce (Featured) #}
+            <div class="pricing-card card featured">
+                <div class="pricing-badge">Populaire</div>
+                <div class="card-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h3 class="card-title">Site E-commerce</h3>
+                <div class="pricing-price">
+                    <span>à partir de</span>
+                    2 000 €
+                </div>
+                <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
+                    Boutique jusqu'à 50 produits
+                </p>
+                <ul class="pricing-features">
+                    <li>Tous les avantages du site vitrine</li>
+                    <li>Catalogue jusqu'à 50 produits</li>
+                    <li>Panier et paiement sécurisé</li>
+                    <li>Gestion stocks et commandes</li>
+                    <li>Espace client</li>
+                    <li>Emails transactionnels</li>
+                    <li>Module de livraison</li>
+                    <li>Formation complète</li>
+                    <li>2 mois de support offert</li>
+                </ul>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <p style="font-weight: 600; color: var(--primary-color); margin-bottom: 1rem;">
+                        Idéal pour :
+                    </p>
+                    <p style="font-size: 0.9rem; color: var(--text-muted);">
+                        Boutiques, commerces locaux, artisans créateurs
+                    </p>
+                </div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="{{ path('app_contact') }}" class="btn btn-primary">
+                        Demander un devis
+                    </a>
+                </div>
+            </div>
+
+            {# Offre 3 : Sur Mesure #}
+            <div class="pricing-card card">
+                <div class="card-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <h3 class="card-title">Site Sur Mesure</h3>
+                <div class="pricing-price">
+                    Sur devis
+                </div>
+                <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
+                    Projet spécifique
+                </p>
+                <ul class="pricing-features">
+                    <li>Fonctionnalités complexes</li>
+                    <li>Intégrations avancées</li>
+                    <li>Application métier</li>
+                    <li>Portail / Extranet</li>
+                    <li>Module de réservation</li>
+                    <li>Espace membres</li>
+                    <li>API personnalisée</li>
+                    <li>Tout ce dont vous avez besoin !</li>
+                </ul>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <p style="font-weight: 600; color: var(--primary-color); margin-bottom: 1rem;">
+                        Idéal pour :
+                    </p>
+                    <p style="font-size: 0.9rem; color: var(--text-muted);">
+                        PME, plateformes, projets spécifiques
+                    </p>
+                </div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="{{ path('app_contact') }}" class="btn btn-outline">
+                        Discutons-en
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Services récurrents #}
+<section class="section">
+    <div class="container">
+        <h2 class="text-center mb-5">Services Récurrents</h2>
+
+        <div style="max-width: 900px; margin: 0 auto;">
+            <div class="card" style="margin-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <h3 class="card-title" style="display: flex; align-items: center; gap: 1rem;">
+                            <i class="fas fa-server" style="color: var(--accent-color);"></i>
+                            Hébergement + Maintenance
+                        </h3>
+                        <ul class="service-list" style="margin-top: 1rem;">
+                            <li>Serveur performant en France</li>
+                            <li>Certificat SSL (HTTPS)</li>
+                            <li>Sauvegardes quotidiennes</li>
+                            <li>Mises à jour de sécurité</li>
+                            <li>Surveillance 24/7</li>
+                            <li>Support technique</li>
+                        </ul>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="pricing-price" style="margin: 0;">
+                            80 €
+                            <span>/mois</span>
+                        </div>
+                        <a href="{{ path('app_contact') }}" class="btn btn-primary" style="margin-top: 1rem;">
+                            Souscrire
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <h3 class="card-title" style="display: flex; align-items: center; gap: 1rem;">
+                            <i class="fas fa-tools" style="color: var(--accent-color);"></i>
+                            Forfait Maintenance Seule
+                        </h3>
+                        <ul class="service-list" style="margin-top: 1rem;">
+                            <li>Si vous avez déjà un hébergement</li>
+                            <li>Mises à jour régulières</li>
+                            <li>Corrections de bugs</li>
+                            <li>Support utilisateur</li>
+                            <li>Petites modifications</li>
+                        </ul>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="pricing-price" style="margin: 0;">
+                            50 €
+                            <span>/mois</span>
+                        </div>
+                        <a href="{{ path('app_contact') }}" class="btn btn-outline" style="margin-top: 1rem;">
+                            Souscrire
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Options à la carte #}
+<section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Options à la Carte</h2>
+
+        <div class="grid grid-3">
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-search"></i></div>
+                <h3 class="card-title">Accompagnement SEO</h3>
+                <p class="card-text">
+                    Audit SEO approfondi, optimisation de contenu, suivi du ranking, rédaction d'articles.
+                </p>
+                <p style="text-align: center; font-weight: 600; color: var(--primary-color); margin-top: 1rem;">
+                    Sur devis
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-pen"></i></div>
+                <h3 class="card-title">Rédaction de Contenu</h3>
+                <p class="card-text">
+                    Rédaction SEO de vos pages, articles de blog, fiches produits optimisées.
+                </p>
+                <p style="text-align: center; font-weight: 600; color: var(--primary-color); margin-top: 1rem;">
+                    Sur devis
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-language"></i></div>
+                <h3 class="card-title">Site Multilingue</h3>
+                <p class="card-text">
+                    Ajout d'une ou plusieurs langues à votre site existant pour toucher une audience internationale.
+                </p>
+                <p style="text-align: center; font-weight: 600; color: var(--primary-color); margin-top: 1rem;">
+                    À partir de 100€/langue/page
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-palette"></i></div>
+                <h3 class="card-title">Logo & Charte Graphique</h3>
+                <p class="card-text">
+                    Création d'un logo professionnel et d'une charte graphique complète pour votre marque.
+                </p>
+                <p style="text-align: center; font-weight: 600; color: var(--primary-color); margin-top: 1rem;">
+                    Sur devis
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-camera"></i></div>
+                <h3 class="card-title">Photographies</h3>
+                <p class="card-text">
+                    Shooting photo professionnel de vos produits, locaux ou équipe (partenaire photographe).
+                </p>
+                <p style="text-align: center; font-weight: 600; color: var(--primary-color); margin-top: 1rem;">
+                    Sur devis
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-graduation-cap"></i></div>
+                <h3 class="card-title">Formation Avancée</h3>
+                <p class="card-text">
+                    Formation personnalisée pour votre équipe sur la gestion avancée de votre site.
+                </p>
+                <p style="text-align: center; font-weight: 600; color: var(--primary-color); margin-top: 1rem;">
+                    200€/demi-journée
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Pourquoi ces prix ? #}
+<section class="section">
+    <div class="container">
+        <div class="card" style="max-width: 800px; margin: 0 auto; padding: 3rem; background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); color: white;">
+            <h2 style="color: white; text-align: center; margin-bottom: 2rem;">
+                <i class="fas fa-question-circle"></i> Pourquoi ces prix ?
+            </h2>
+            <div style="text-align: left;">
+                <p style="font-size: 1.1rem; line-height: 1.8; color: white;">
+                    <strong>En tant que freelance</strong>, je n'ai pas les coûts de structure d'une agence
+                    (locaux, personnel, commerciaux...). Cela me permet de vous proposer des <strong>tarifs justes et compétitifs</strong>
+                    tout en maintenant un niveau de <strong>qualité professionnelle</strong>.
+                </p>
+                <p style="font-size: 1.1rem; line-height: 1.8; color: white; margin-top: 1rem;">
+                    Vous bénéficiez également d'une <strong>relation directe</strong> avec le développeur qui réalise votre projet,
+                    d'une grande <strong>flexibilité</strong> et d'une <strong>réactivité</strong> qu'une grande structure ne peut offrir.
+                </p>
+                <p style="font-size: 1.1rem; line-height: 1.8; color: white; margin-top: 1rem;">
+                    <strong>Investir dans un site web de qualité, c'est investir dans votre activité.</strong>
+                    Un bon site attire de nouveaux clients et se rentabilise rapidement.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Facilités de paiement #}
+<section class="section section-light">
+    <div class="container text-center" style="max-width: 700px; margin: 0 auto;">
+        <h2 class="mb-3"><i class="fas fa-credit-card"></i> Facilités de Paiement</h2>
+        <p class="lead">
+            Je comprends que la création d'un site représente un investissement.
+            C'est pourquoi je propose des facilités de paiement adaptées.
+        </p>
+        <ul style="text-align: left; max-width: 500px; margin: 2rem auto; list-style: none; padding: 0;">
+            <li style="padding: 0.5rem 0; display: flex; align-items: center;">
+                <i class="fas fa-check" style="color: var(--accent-color); margin-right: 1rem;"></i>
+                Acompte de 30% à la validation du devis
+            </li>
+            <li style="padding: 0.5rem 0; display: flex; align-items: center;">
+                <i class="fas fa-check" style="color: var(--accent-color); margin-right: 1rem;"></i>
+                Paiement échelonné possible selon le projet
+            </li>
+            <li style="padding: 0.5rem 0; display: flex; align-items: center;">
+                <i class="fas fa-check" style="color: var(--accent-color); margin-right: 1rem;"></i>
+                Solde à la livraison du site
+            </li>
+        </ul>
+    </div>
+</section>
+
+{# CTA Final #}
+<section class="section">
+    <div class="container text-center">
+        <h2 class="mb-3">Besoin d'un devis personnalisé ?</h2>
+        <p class="lead mb-4">
+            Décrivez-moi votre projet et je vous enverrai un devis détaillé<br>
+            <strong>gratuit et sans engagement</strong>
+        </p>
+        <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-paper-plane"></i> Demander mon devis gratuit
+        </a>
+        <p class="mt-4" style="color: var(--text-muted);">
+            <i class="fas fa-clock"></i> Réponse sous 24h garantie
+        </p>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+    @media (max-width: 992px) {
+        .grid-3 {
+            grid-template-columns: 1fr !important;
+        }
+        .pricing-card.featured {
+            transform: scale(1) !important;
+        }
+    }
+</style>
+{% endblock %}

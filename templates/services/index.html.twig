@@ -1,0 +1,421 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Services | Développeur Web Freelance Symfony{% endblock %}
+
+{% block meta_description %}Services complets de développement web : conception UI/UX, développement Symfony, e-commerce, hébergement, maintenance et référencement SEO. Accompagnement de A à Z pour votre projet web.{% endblock %}
+
+{% block body %}
+
+{# Hero Section #}
+<section class="hero" style="padding: 4rem 0;">
+    <div class="hero-content">
+        <h1 class="fade-in">Mes Services</h1>
+        <p class="lead fade-in-delay-1">
+            Une offre complète pour tous vos besoins web<br>
+            De la conception à la maintenance, je prends tout en charge
+        </p>
+    </div>
+</section>
+
+{# ============================================
+   SERVICE 1 - DÉVELOPPEMENT SYMFONY (cœur de métier)
+   ============================================ #}
+<section id="developpement" class="section">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
+            <div>
+                <h2 class="text-primary mb-3">Développement Web sur Mesure (Symfony)</h2>
+                <p class="lead">
+                    Code robuste, évolutif et sécurisé pour des projets qui durent.
+                </p>
+                <p>
+                    Spécialisé en Symfony et PHP, je développe des applications web professionnelles
+                    parfaitement adaptées à vos besoins spécifiques. Que ce soit un site vitrine complexe,
+                    une application métier ou un outil interne, tout est possible.
+                </p>
+
+                <h3 class="mt-4 mb-3">Ce qui est inclus :</h3>
+                <ul class="service-list">
+                    <li>Développement avec Symfony (framework PHP professionnel)</li>
+                    <li>Architecture évolutive et maintenable</li>
+                    <li>Fonctionnalités sur mesure selon vos besoins</li>
+                    <li>Intégrations API tierces (paiement, CRM, etc.)</li>
+                    <li>Backend et frontend complets</li>
+                    <li>Base de données optimisée (MySQL, PostgreSQL)</li>
+                    <li>Sécurité renforcée (protection XSS, CSRF, SQL injection)</li>
+                    <li>Code documenté et tests automatisés</li>
+                </ul>
+
+                <div class="service-highlight mt-4">
+                    <strong>Pourquoi Symfony ?</strong><br>
+                    C'est le framework PHP de référence pour les applications professionnelles.
+                    Robuste, flexible et évolutif, il garantit la pérennité de votre projet.
+                </div>
+
+                <div class="mt-4">
+                    <a href="{{ path('app_contact') }}" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Demander un devis
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 5rem; color: var(--accent-color);">
+                    <i class="fas fa-code"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ============================================
+   SERVICE 2 - SITES E-COMMERCE
+   ============================================ #}
+<section id="ecommerce" class="section section-light">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 3rem; align-items: start;">
+            <div style="text-align: center;">
+                <div style="font-size: 5rem; color: var(--accent-color);">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+            </div>
+            <div>
+                <h2 class="text-primary mb-3">Sites E-commerce</h2>
+                <p class="lead">
+                    Vendez en ligne facilement avec une boutique professionnelle et sécurisée.
+                </p>
+                <p>
+                    Je créé des boutiques en ligne complètes qui permettent à vos clients d'acheter
+                    vos produits 24h/24. Paiements sécurisés, gestion des stocks, suivi des commandes...
+                    tout est inclus pour faire décoller vos ventes en ligne.
+                </p>
+
+                <h3 class="mt-4 mb-3">Ce qui est inclus :</h3>
+                <ul class="service-list">
+                    <li>Catalogue produits complet (illimité)</li>
+                    <li>Panier d'achat intuitif</li>
+                    <li>Paiements sécurisés (Stripe, PayPal, CB...)</li>
+                    <li>Gestion des stocks en temps réel</li>
+                    <li>Gestion des commandes et factures</li>
+                    <li>Espace client personnalisé</li>
+                    <li>Système de promotions et codes promo</li>
+                    <li>Emails transactionnels automatiques</li>
+                    <li>Statistiques de ventes</li>
+                    <li>Module de livraison (Colissimo, Chronopost...)</li>
+                </ul>
+
+                <div class="service-highlight mt-4">
+                    <strong>Pourquoi vendre en ligne ?</strong><br>
+                    Élargissez votre clientèle au-delà de votre zone géographique et générez des ventes
+                    même quand vous dormez. L'e-commerce ouvre de nouvelles opportunités de croissance.
+                </div>
+
+                <div class="mt-4">
+                    <a href="{{ path('app_contact') }}" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Demander un devis
+                    </a>
+                    <a href="{{ path('app_pricing') }}" class="btn btn-outline">
+                        <i class="fas fa-euro-sign"></i> Voir les tarifs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ============================================
+   SERVICE 3 - GESTION DE PROJET
+   ============================================ #}
+<section id="gestion-projet" class="section">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
+            <div>
+                <h2 class="text-primary mb-3">Gestion de Projet Complète</h2>
+                <p class="lead">
+                    Un accompagnement de A à Z pour mener votre projet au succès.
+                </p>
+                <p>
+                    Je ne me contente pas de coder. Je vous accompagne à chaque étape : analyse de vos besoins,
+                    conseil stratégique, planning, développement, tests et mise en ligne. Vous avez un seul
+                    interlocuteur qui pilote tout le projet en toute transparence.
+                </p>
+
+                <h3 class="mt-4 mb-3">Ce qui est inclus :</h3>
+                <ul class="service-list">
+                    <li>Analyse et recueil de vos besoins</li>
+                    <li>Conseil en stratégie digitale</li>
+                    <li>Cahier des charges détaillé</li>
+                    <li>Planning et jalons de projet</li>
+                    <li>Méthodologie agile (sprints, livraisons itératives)</li>
+                    <li>Communication régulière (email, visio, téléphone)</li>
+                    <li>Respect des délais et du budget</li>
+                    <li>Tests et recette avant mise en ligne</li>
+                    <li>Formation à l'utilisation du site</li>
+                </ul>
+
+                <div class="service-highlight mt-4">
+                    <strong>Pourquoi c'est important ?</strong><br>
+                    Un projet web réussi nécessite une bonne organisation et une communication claire.
+                    Je prends tout en charge pour que vous puissiez vous concentrer sur votre activité.
+                </div>
+
+                <div class="mt-4">
+                    <a href="{{ path('app_contact') }}" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Discutons de votre projet
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 5rem; color: var(--accent-color);">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ============================================
+   SERVICE 4 - HÉBERGEMENT & MAINTENANCE
+   ============================================ #}
+<section id="hebergement" class="section section-light">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 3rem; align-items: start;">
+            <div style="text-align: center;">
+                <div style="font-size: 5rem; color: var(--accent-color);">
+                    <i class="fas fa-server"></i>
+                </div>
+            </div>
+            <div>
+                <h2 class="text-primary mb-3">Hébergement & Maintenance</h2>
+                <p class="lead">
+                    Votre site en ligne 24/7, sécurisé et performant. Tranquillité d'esprit garantie.
+                </p>
+                <p>
+                    Je propose un service d'hébergement clé en main sur des serveurs performants et sécurisés
+                    en France. Vous n'avez rien à gérer : nom de domaine, certificat SSL, sauvegardes,
+                    mises à jour... tout est pris en charge pour vous.
+                </p>
+
+                <h3 class="mt-4 mb-3">Ce qui est inclus :</h3>
+                <ul class="service-list">
+                    <li>Serveur performant et sécurisé en France</li>
+                    <li>Nom de domaine et gestion DNS</li>
+                    <li>Certificat SSL (HTTPS) inclus</li>
+                    <li>Sauvegardes quotidiennes automatiques</li>
+                    <li>Mises à jour de sécurité régulières</li>
+                    <li>Surveillance 24/7 de la disponibilité</li>
+                    <li>Support technique réactif</li>
+                    <li>Garantie de disponibilité 99.9%</li>
+                    <li>Optimisation des performances</li>
+                    <li>Corrections de bugs et petites modifications</li>
+                </ul>
+
+                <div class="service-highlight mt-4">
+                    <strong>Pourquoi choisir mon hébergement ?</strong><br>
+                    Vous avez l'assurance d'un service complet et personnalisé. En cas de problème,
+                    je suis là pour intervenir rapidement. Pas de tracas technique, vous vous concentrez sur votre activité.
+                </div>
+
+                <div class="mt-4">
+                    <a href="{{ path('app_pricing') }}" class="btn btn-primary">
+                        <i class="fas fa-euro-sign"></i> 50€/mois tout compris
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ============================================
+   SERVICE 5 - RÉFÉRENCEMENT SEO
+   ============================================ #}
+<section id="seo" class="section">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
+            <div>
+                <h2 class="text-primary mb-3">Référencement SEO</h2>
+                <p class="lead">
+                    Soyez visible sur Google et attirez plus de clients gratuitement.
+                </p>
+                <p>
+                    Un beau site ne sert à rien s'il n'est pas visible. J'optimise votre site pour les moteurs
+                    de recherche afin qu'il apparaisse dans les premiers résultats Google pour les mots-clés
+                    importants de votre activité. Plus de visibilité = plus de clients.
+                </p>
+
+                <h3 class="mt-4 mb-3">Ce qui est inclus :</h3>
+                <ul class="service-list">
+                    <li>Optimisation technique (code propre, site rapide)</li>
+                    <li>Stratégie de mots-clés ciblés</li>
+                    <li>Balises SEO optimisées (title, meta, Hn)</li>
+                    <li>URLs friendly et structure logique</li>
+                    <li>Sitemap XML et robots.txt</li>
+                    <li>Structured data (Rich Snippets)</li>
+                    <li>Optimisation des images (alt, compression)</li>
+                    <li>Amélioration de la vitesse de chargement</li>
+                    <li>Configuration Google Search Console et Analytics</li>
+                </ul>
+
+                <h3 class="mt-4 mb-3">Option : Accompagnement SEO continu</h3>
+                <p>
+                    Pour aller plus loin, je propose un suivi régulier : rédaction de contenus optimisés,
+                    netlinking, audits trimestriels, suivi des positions... Un investissement qui rapporte !
+                </p>
+
+                <div class="service-highlight mt-4">
+                    <strong>Pourquoi le SEO est essentiel ?</strong><br>
+                    75% des internautes ne vont jamais au-delà de la première page de résultats Google.
+                    Être bien référencé, c'est être trouvé par vos futurs clients au moment où ils cherchent vos services.
+                </div>
+
+                <div class="mt-4">
+                    <a href="{{ path('app_contact') }}" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Demander un audit SEO
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 5rem; color: var(--accent-color);">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ============================================
+   SERVICE 6 - CONCEPTION & DESIGN UI/UX (peut être sous-traité)
+   ============================================ #}
+<section id="conception" class="section section-light">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 3rem; align-items: start;">
+            <div style="text-align: center;">
+                <div style="font-size: 5rem; color: var(--accent-color);">
+                    <i class="fas fa-palette"></i>
+                </div>
+            </div>
+            <div>
+                <h2 class="text-primary mb-3">Conception & Design UI/UX</h2>
+                <p class="lead">
+                    Un site web réussi commence par un design soigné et une expérience utilisateur optimale.
+                </p>
+                <p>
+                    Je vous propose des interfaces modernes, intuitives et adaptées à votre identité de marque.
+                    Chaque élément est pensé pour offrir la meilleure expérience possible à vos visiteurs,
+                    quel que soit leur appareil (ordinateur, tablette, mobile).
+                </p>
+
+                <h3 class="mt-4 mb-3">Ce qui est inclus :</h3>
+                <ul class="service-list">
+                    <li>Design responsive adapté à tous les écrans</li>
+                    <li>Expérience utilisateur (UX) optimisée</li>
+                    <li>Charte graphique cohérente avec votre marque</li>
+                    <li>Maquettes et prototypes</li>
+                    <li>Accessibilité web (WCAG)</li>
+                </ul>
+
+                <div class="service-highlight mt-4">
+                    <strong>Pourquoi c'est important ?</strong><br>
+                    Un design professionnel inspire confiance et convertit mieux vos visiteurs en clients.
+                    C'est la première impression que vous donnez en ligne.
+                </div>
+
+                <div class="mt-4">
+                    <a href="{{ path('app_contact') }}" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Demander un devis
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ============================================
+   SERVICES ADDITIONNELS
+   ============================================ #}
+<section class="section">
+    <div class="container">
+        <h2 class="text-center mb-5">Autres Services sur Demande</h2>
+
+        <div class="grid grid-3">
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-language"></i></div>
+                <h3 class="card-title">Site Multilingue</h3>
+                <p class="card-text">
+                    Ajoutez des versions en plusieurs langues pour toucher une clientèle internationale.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-paper-plane"></i></div>
+                <h3 class="card-title">Newsletter & Emailing</h3>
+                <p class="card-text">
+                    Intégration d'un système de newsletter pour fidéliser vos clients et communiquer régulièrement.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-lock"></i></div>
+                <h3 class="card-title">Espace Membres</h3>
+                <p class="card-text">
+                    Création d'un espace privé sécurisé pour vos membres, clients ou collaborateurs.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-calendar-check"></i></div>
+                <h3 class="card-title">Module de Réservation</h3>
+                <p class="card-text">
+                    Système de prise de rendez-vous en ligne pour les prestataires de services.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-pen"></i></div>
+                <h3 class="card-title">Rédaction de Contenu</h3>
+                <p class="card-text">
+                    Besoin d'aide pour rédiger les textes de votre site ? Je peux vous accompagner ou recommander un rédacteur web.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-graduation-cap"></i></div>
+                <h3 class="card-title">Formation</h3>
+                <p class="card-text">
+                    Formation complète pour utiliser votre site en autonomie et gérer vos contenus.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ============================================
+   CTA FINAL
+   ============================================ #}
+<section class="section section-light">
+    <div class="container text-center">
+        <h2 class="mb-3">Prêt à démarrer votre projet ?</h2>
+        <p class="lead mb-4">
+            Discutons de vos besoins et je vous proposerai une solution sur mesure.
+        </p>
+        <div style="display: inline-flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+            <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-paper-plane"></i> Demander un devis gratuit
+            </a>
+            <a href="{{ path('app_pricing') }}" class="btn btn-outline btn-lg">
+                <i class="fas fa-euro-sign"></i> Voir les tarifs
+            </a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+    @media (max-width: 768px) {
+        section[class*="container"] > div[style*="grid-template-columns"] {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
+{% endblock %}

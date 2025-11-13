@@ -1,0 +1,204 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Portfolio | Mes Réalisations - Développeur Web Freelance{% endblock %}
+
+{% block meta_description %}Découvrez mes réalisations en développement web : sites vitrine, e-commerce et applications sur mesure. Projets Symfony pour associations, TPE et PME en Bretagne.{% endblock %}
+
+{% block body %}
+
+{# Hero Section #}
+<section class="hero" style="padding: 4rem 0;">
+    <div class="hero-content">
+        <h1 class="fade-in">Portfolio</h1>
+        <p class="lead fade-in-delay-1">
+            Découvrez quelques projets que j'ai réalisés<br>
+            pour mes clients satisfaits
+        </p>
+    </div>
+</section>
+
+{# Introduction #}
+<section class="section">
+    <div class="container text-center">
+        <p class="lead" style="max-width: 800px; margin: 0 auto;">
+            Chaque projet est unique et répond à des besoins spécifiques.
+            Voici quelques exemples de réalisations qui témoignent de mon savoir-faire
+            et de mon engagement pour la réussite de vos projets web.
+        </p>
+    </div>
+</section>
+
+{# Message temporaire si aucun projet #}
+{% if projects is empty %}
+<section class="section section-light">
+    <div class="container">
+        <div class="card" style="text-align: center; max-width: 800px; margin: 0 auto; padding: 3rem;">
+            <div class="card-icon">
+                <i class="fas fa-tools"></i>
+            </div>
+            <h2 class="card-title">Portfolio en construction</h2>
+            <p class="card-text">
+                Je suis en train de finaliser la présentation de mes projets.
+                <br>
+                En attendant, n'hésitez pas à me contacter pour discuter de vos besoins
+                et je vous partagerai des exemples concrets de mon travail.
+            </p>
+            <div class="mt-4">
+                <a href="{{ path('app_contact') }}" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Me contacter
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Exemples de types de projets que je réalise #}
+<section class="section">
+    <div class="container">
+        <h2 class="text-center mb-5">Types de Projets que je Réalise</h2>
+
+        <div class="grid grid-3">
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <h3 class="card-title">Sites Vitrine</h3>
+                <p class="card-text">
+                    Sites de présentation pour entreprises, associations, artisans et professions libérales.
+                    Design moderne et responsive.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <h3 class="card-title">E-commerce</h3>
+                <p class="card-text">
+                    Boutiques en ligne complètes pour commerces locaux souhaitant vendre sur internet.
+                    Paiements sécurisés et gestion facilitée.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="card-title">Applications Métier</h3>
+                <p class="card-text">
+                    Outils sur mesure pour optimiser la gestion interne : CRM, gestion de membres, plateformes collaboratives.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-sync-alt"></i>
+                </div>
+                <h3 class="card-title">Refonte de Sites</h3>
+                <p class="card-text">
+                    Modernisation de sites existants obsolètes ou non responsive. Nouvelle vie pour votre présence en ligne.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h3 class="card-title">Sites de Réservation</h3>
+                <p class="card-text">
+                    Plateformes de prise de rendez-vous en ligne pour prestataires de services (coiffeurs, thérapeutes, etc.).
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-newspaper"></i>
+                </div>
+                <h3 class="card-title">Blogs & Portails</h3>
+                <p class="card-text">
+                    Sites d'actualités, blogs professionnels ou portails thématiques avec gestion de contenu facilitée.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% else %}
+{# Quand il y aura des projets en base de données #}
+<section class="section section-light">
+    <div class="container">
+        <div class="grid grid-2">
+            {% for project in projects %}
+            <div class="card project-card" data-category="{{ project.category }}">
+                {% if project.imageFilename %}
+                <img src="{{ asset('uploads/projects/' ~ project.imageFilename) }}" alt="{{ project.title }}" class="project-image">
+                {% else %}
+                <div class="project-image" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-image" style="font-size: 3rem; color: rgba(255,255,255,0.5);"></i>
+                </div>
+                {% endif %}
+
+                <div class="project-tags">
+                    <span class="tag">{{ project.category|replace({'_': ' '})|title }}</span>
+                </div>
+
+                <h3 class="card-title">{{ project.title }}</h3>
+
+                {% if project.completionDate %}
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                    <i class="fas fa-calendar-alt"></i> {{ project.completionDate|date('Y') }}
+                </p>
+                {% endif %}
+
+                <p class="card-text">{{ project.shortDescription }}</p>
+
+                <h4 style="font-size: 1rem; margin-top: 1rem; color: var(--primary-color);">Technologies :</h4>
+                <div class="project-tags">
+                    {% for tech in project.technologies %}
+                    <span class="tag tag-accent" style="font-size: 0.85rem;">{{ tech }}</span>
+                    {% endfor %}
+                </div>
+
+                {% if project.partners is not empty %}
+                <h4 style="font-size: 1rem; margin-top: 1rem; color: var(--primary-color);">En collaboration avec :</h4>
+                <div style="margin-top: 0.5rem;">
+                    {% for partner in project.partners %}
+                        {% if partner.url is defined and partner.name is defined %}
+                        <a href="{{ partner.url }}" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-right: 0.5rem; margin-bottom: 0.5rem; color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">
+                            <i class="fas fa-handshake"></i> {{ partner.name }}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if project.projectUrl %}
+                <div style="margin-top: 1rem;">
+                    <a href="{{ project.projectUrl }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline">
+                        <i class="fas fa-external-link-alt"></i> Voir le site
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# CTA #}
+<section class="section">
+    <div class="container text-center">
+        <h2 class="mb-3">Votre projet sera le prochain ?</h2>
+        <p class="lead mb-4">
+            Chaque projet commence par une discussion.
+            <br>
+            Parlons de vos besoins et de vos objectifs.
+        </p>
+        <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-paper-plane"></i> Demander un devis gratuit
+        </a>
+    </div>
+</section>
+
+{% endblock %}

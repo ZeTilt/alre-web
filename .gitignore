@@ -1,0 +1,41 @@
+
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+.phpunit.result.cache
+###< phpunit/phpunit ###
+
+###> symfony/phpunit-bridge ###
+.phpunit.result.cache
+/phpunit.xml
+###< symfony/phpunit-bridge ###
+
+# Environment files (keep only .env)
+.env.dev
+.env.test
+
+# Documentation and dev files
+/AMELIORATIONS.md
+/AMELIORATIONS_SUIVI.csv
+/FEATURES.md
+/FORMULAIRE_CONTACT_GUIDE.md
+/PORTFOLIO_GUIDE.md
+/LINKEDIN.txt
+/LINKEDIN_OPTIMISE.txt
+/SECURITY.md
+/generate_csv.py
+/update_csv_status.py
+/debug_console.php
+/manual_db_setup.php
+/simple_test.php
+/test_*.php
+/response.html

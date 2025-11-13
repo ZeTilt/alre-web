@@ -1,0 +1,48 @@
+{# Navigation Bar - Site Vitrine #}
+<nav class="navbar">
+    <div class="navbar-container">
+        {# Logo / Brand #}
+        <a href="{{ path('app_home') }}" class="navbar-brand">
+            <img src="{{ asset('images/logo.png') }}" alt="Alré Web - Création Web" style="height: 50px;">
+        </a>
+
+        {# Toggle button pour mobile #}
+        <button class="navbar-toggle" aria-label="Toggle navigation" aria-expanded="false">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        {# Menu de navigation #}
+        <ul class="navbar-menu">
+            <li>
+                <a href="{{ path('app_home') }}" class="{{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}">
+                    Accueil
+                </a>
+            </li>
+            <li>
+                <a href="{{ path('app_services') }}" class="{{ app.request.attributes.get('_route') == 'app_services' ? 'active' : '' }}">
+                    Services
+                </a>
+            </li>
+            <li>
+                <a href="{{ path('app_portfolio') }}" class="{{ app.request.attributes.get('_route') == 'app_portfolio' ? 'active' : '' }}">
+                    Portfolio
+                </a>
+            </li>
+            <li>
+                <a href="{{ path('app_about') }}" class="{{ app.request.attributes.get('_route') == 'app_about' ? 'active' : '' }}">
+                    À propos
+                </a>
+            </li>
+            <li>
+                <a href="{{ path('app_pricing') }}" class="{{ app.request.attributes.get('_route') == 'app_pricing' ? 'active' : '' }}">
+                    Tarifs
+                </a>
+            </li>
+            <li>
+                <a href="{{ path('app_contact') }}" class="navbar-cta">
+                    <i class="fas fa-paper-plane"></i> Devis Gratuit
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>

@@ -1,0 +1,117 @@
+/* Custom styles for EasyAdmin */
+
+/* Fix icon sizes in menu */
+.ea-sidebar .menu-item-icon,
+.ea-sidebar .menu-item-icon i,
+.ea-sidebar .menu-item-icon .fa,
+.ea-sidebar .menu-item-icon .fas,
+.ea-sidebar .menu-item-icon .far,
+.ea-sidebar .menu-item-icon .fab {
+    font-size: 1rem !important;
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    line-height: 1.25rem !important;
+}
+
+/* Fix icon sizes in buttons */
+.btn .fa,
+.btn .fas,
+.btn .far,
+.btn .fab {
+    font-size: 0.875rem !important;
+}
+
+/* Fix icon sizes in table actions */
+.table .fa,
+.table .fas,
+.table .far,
+.table .fab {
+    font-size: 0.875rem !important;
+}
+
+/* ZETiLT branding colors */
+.ea-header-logo,
+.ea-header-logo a {
+    color: #2B5F75 !important;
+    font-weight: 600;
+}
+
+/* Primary button styling */
+.btn-primary {
+    background-color: #2B5F75;
+    border-color: #2B5F75;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: #1e4659;
+    border-color: #1e4659;
+}
+
+/* Link styling */
+a {
+    color: #2B5F75;
+}
+
+a:hover {
+    color: #1e4659;
+}
+
+/* Menu item styling */
+.ea-sidebar .menu-item {
+    padding: 0.5rem 1rem;
+}
+
+.ea-sidebar .menu-item-contents {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Card styling */
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* Table styling */
+.table {
+    font-size: 0.875rem;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #2B5F75;
+}
+
+/* Badge styling */
+.badge {
+    font-size: 0.75rem;
+}
+
+/* Form styling */
+.form-control:focus {
+    border-color: #2B5F75;
+    box-shadow: 0 0 0 0.2rem rgba(43, 95, 117, 0.25);
+}
+
+/* Pagination styling */
+.pagination .page-link {
+    color: #2B5F75;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #2B5F75;
+    border-color: #2B5F75;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .ea-sidebar .menu-item-icon {
+        font-size: 0.875rem !important;
+        width: 1rem !important;
+        height: 1rem !important;
+    }
+}

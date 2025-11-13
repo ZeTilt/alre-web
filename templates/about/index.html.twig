@@ -1,0 +1,234 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}À propos | Fabrice Dhuicque - Développeur Web Freelance Symfony{% endblock %}
+
+{% block meta_description %}Développeur web freelance passionné, spécialisé Symfony et basé en Bretagne. Découvrez mon parcours, ma philosophie et mes valeurs : proximité, qualité et accompagnement personnalisé.{% endblock %}
+
+{% block body %}
+
+{# Hero Section #}
+<section class="hero" style="padding: 4rem 0;">
+    <div class="hero-content">
+        <h1 class="fade-in">À propos</h1>
+        <p class="lead fade-in-delay-1">
+            Développeur Web Freelance passionné<br>
+            au service de votre réussite en ligne
+        </p>
+    </div>
+</section>
+
+{# Qui suis-je ? #}
+<section class="section">
+    <div class="container">
+        <div class="about-profile">
+            <div class="about-photo" style="width: 200px; height: 200px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-lg); border: 5px solid var(--bg-white);">
+                <i class="fas fa-user" style="font-size: 5rem; color: white;"></i>
+                {# TODO: Remplacer par votre vraie photo professionnelle #}
+                {# <img src="{{ asset('images/fabrice-photo.jpg') }}" alt="Fabrice Dhuicque" class="about-photo"> #}
+            </div>
+            <div>
+                <h2 class="text-primary mb-3">Fabrice Dhuicque</h2>
+                <p class="lead">
+                    Développeur Web Freelance spécialisé Symfony
+                </p>
+                <p>
+                    Passionné par le développement web depuis plus de 5 ans, j'accompagne les entreprises,
+                    associations et entrepreneurs dans la création de leur présence en ligne.
+                    Basé en Bretagne, j'interviens sur toute la France pour des projets web sur mesure.
+                </p>
+                <p>
+                    Mon objectif : vous offrir un site internet professionnel, performant et adapté à vos besoins,
+                    tout en vous accompagnant avec pédagogie et transparence tout au long du projet.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Ma philosophie #}
+<section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Ma Philosophie</h2>
+
+        <div class="grid grid-2">
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <h3 class="card-title">Proximité & Écoute</h3>
+                <p class="card-text">
+                    En tant que freelance, je suis votre unique interlocuteur. Je prends le temps d'écouter
+                    vos besoins, de comprendre votre activité et vos objectifs pour vous proposer la meilleure solution.
+                    Disponibilité et réactivité sont mes maîtres-mots.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h3 class="card-title">Passion & Qualité</h3>
+                <p class="card-text">
+                    Chaque projet est unique et mérite une attention particulière. Je m'investis pleinement
+                    pour vous livrer un travail de qualité dont vous serez fier. La satisfaction client
+                    est ma priorité absolue.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h3 class="card-title">Innovation & Veille Technologique</h3>
+                <p class="card-text">
+                    Le web évolue constamment. Je me forme régulièrement aux dernières technologies et bonnes pratiques
+                    pour vous proposer des solutions modernes, performantes et pérennes.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h3 class="card-title">Transparence & Pédagogie</h3>
+                <p class="card-text">
+                    Je vulgarise les aspects techniques pour que vous compreniez votre projet. Communication claire,
+                    tarifs transparents, pas de mauvaises surprises. Vous êtes impliqué et informé à chaque étape.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Ce qui me distingue #}
+<section class="section">
+    <div class="container">
+        <h2 class="text-center mb-5">Ce Qui Me Distingue</h2>
+
+        <div style="max-width: 800px; margin: 0 auto;">
+            <div style="padding: 2rem; background: var(--bg-light); border-radius: var(--radius-lg); margin-bottom: 2rem;">
+                <h3 style="display: flex; align-items: center; gap: 1rem; color: var(--primary-color);">
+                    <i class="fas fa-user-tie"></i>
+                    Freelance = Flexibilité + Prix Justes
+                </h3>
+                <p style="margin-top: 1rem;">
+                    Sans les coûts de structure d'une agence, je vous propose des tarifs compétitifs
+                    tout en maintenant un niveau de qualité professionnel. Vous bénéficiez aussi d'une grande
+                    flexibilité et d'une relation directe sans intermédiaires.
+                </p>
+            </div>
+
+            <div style="padding: 2rem; background: var(--bg-light); border-radius: var(--radius-lg); margin-bottom: 2rem;">
+                <h3 style="display: flex; align-items: center; gap: 1rem; color: var(--primary-color);">
+                    <i class="fas fa-cogs"></i>
+                    Solutions Sur Mesure vs "Prêt-à-Porter"
+                </h3>
+                <p style="margin-top: 1rem;">
+                    Je ne travaille pas avec des templates génériques. Chaque site est développé sur mesure
+                    avec Symfony, ce qui vous garantit des fonctionnalités parfaitement adaptées à vos besoins
+                    et une évolutivité sans limite.
+                </p>
+            </div>
+
+            <div style="padding: 2rem; background: var(--bg-light); border-radius: var(--radius-lg);">
+                <h3 style="display: flex; align-items: center; gap: 1rem; color: var(--primary-color);">
+                    <i class="fas fa-life-ring"></i>
+                    Accompagnement Complet & Durable
+                </h3>
+                <p style="margin-top: 1rem;">
+                    De la conception à la maintenance, je reste à vos côtés. Hébergement, mises à jour,
+                    support technique... vous n'êtes jamais seul. Je suis là pour faire évoluer votre site
+                    en fonction de vos besoins futurs.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Compétences techniques #}
+<section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Compétences Techniques</h2>
+
+        <div style="max-width: 1000px; margin: 0 auto;">
+            <h3 class="text-center mb-4">Backend & Frameworks</h3>
+            <div class="skills-grid">
+                <div class="skill-badge"><i class="fab fa-php"></i> PHP 8+</div>
+                <div class="skill-badge"><i class="fab fa-symfony"></i> Symfony</div>
+                <div class="skill-badge"><i class="fas fa-database"></i> Doctrine ORM</div>
+                <div class="skill-badge"><i class="fas fa-plug"></i> API REST</div>
+                <div class="skill-badge"><i class="fas fa-database"></i> MySQL</div>
+                <div class="skill-badge"><i class="fas fa-database"></i> PostgreSQL</div>
+            </div>
+
+            <h3 class="text-center mb-4 mt-5">Frontend</h3>
+            <div class="skills-grid">
+                <div class="skill-badge"><i class="fab fa-html5"></i> HTML5</div>
+                <div class="skill-badge"><i class="fab fa-css3-alt"></i> CSS3</div>
+                <div class="skill-badge"><i class="fab fa-js"></i> JavaScript</div>
+                <div class="skill-badge"><i class="fab fa-bootstrap"></i> Bootstrap</div>
+                <div class="skill-badge"><i class="fas fa-wind"></i> Tailwind CSS</div>
+                <div class="skill-badge"><i class="fab fa-sass"></i> Sass/SCSS</div>
+                <div class="skill-badge"><i class="fas fa-paint-brush"></i> Responsive Design</div>
+            </div>
+
+            <h3 class="text-center mb-4 mt-5">DevOps & Outils</h3>
+            <div class="skills-grid">
+                <div class="skill-badge"><i class="fab fa-git-alt"></i> Git</div>
+                <div class="skill-badge"><i class="fab fa-github"></i> GitHub</div>
+                <div class="skill-badge"><i class="fab fa-docker"></i> Docker</div>
+                <div class="skill-badge"><i class="fas fa-infinity"></i> CI/CD</div>
+                <div class="skill-badge"><i class="fab fa-linux"></i> Linux</div>
+                <div class="skill-badge"><i class="fas fa-server"></i> Nginx</div>
+                <div class="skill-badge"><i class="fas fa-database"></i> Redis</div>
+                <div class="skill-badge"><i class="fas fa-search"></i> SEO</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Localisation #}
+<section class="section">
+    <div class="container">
+        <div class="card" style="max-width: 800px; margin: 0 auto; text-align: center; padding: 3rem;">
+            <div class="card-icon">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <h3 class="card-title">Basé en Bretagne</h3>
+            <p class="card-text">
+                Je suis basé en Bretagne et interviens principalement dans la région (Finistère, Côtes-d'Armor, Morbihan, Ille-et-Vilaine).
+                <br><br>
+                <strong>Déplacements possibles pour des rendez-vous en présentiel.</strong>
+                <br>
+                <strong>Projets à distance acceptés sur toute la France.</strong>
+            </p>
+            <div class="mt-4" style="display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center;">
+                <a href="https://www.linkedin.com/in/fabrice-dhuicque/" target="_blank" rel="noopener noreferrer" class="btn btn-outline">
+                    <i class="fab fa-linkedin"></i> LinkedIn
+                </a>
+                <a href="https://www.malt.fr/profile/fabricedhuicque1" target="_blank" rel="noopener noreferrer" class="btn btn-outline">
+                    <i class="fas fa-briefcase"></i> Malt
+                </a>
+                <a href="{{ path('app_contact') }}" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Me contacter
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# CTA Final #}
+<section class="section section-light">
+    <div class="container text-center">
+        <h2 class="mb-3">Discutons de votre projet autour d'un café ☕</h2>
+        <p class="lead mb-4">
+            Que ce soit en visio, par téléphone ou autour d'un café en Bretagne,<br>
+            je serais ravi d'échanger avec vous sur vos besoins.
+        </p>
+        <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-paper-plane"></i> Prendre contact
+        </a>
+    </div>
+</section>
+
+{% endblock %}

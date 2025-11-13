@@ -1,0 +1,94 @@
+{# Footer - Site Vitrine #}
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            {# Section 1: À propos #}
+            <div class="footer-section">
+                <h4>
+                    <img src="{{ asset('images/logo.png') }}" alt="Alré Web - Création Web" style="height: 40px; vertical-align: middle; filter: brightness(0) invert(1);">
+                </h4>
+                <p>
+                    Développeur web freelance spécialisé Symfony.
+                    Je crée des sites internet et e-commerce sur mesure
+                    pour dynamiser votre activité.
+                </p>
+                <div class="social-links">
+                    <a href="https://www.linkedin.com/in/fabrice-dhuicque/" target="_blank" rel="noopener noreferrer" class="social-link" title="LinkedIn" aria-label="Suivez-moi sur LinkedIn">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="https://github.com/" target="_blank" rel="noopener noreferrer" class="social-link" title="GitHub" aria-label="Mon profil GitHub">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="https://www.malt.fr/profile/fabricedhuicque1" target="_blank" rel="noopener noreferrer" class="social-link" title="Malt" aria-label="Mon profil Malt">
+                        <i class="fas fa-briefcase"></i>
+                    </a>
+                </div>
+            </div>
+
+            {# Section 2: Navigation rapide #}
+            <div class="footer-section">
+                <h4>Navigation</h4>
+                <ul class="footer-links">
+                    <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                    <li><a href="{{ path('app_services') }}">Services</a></li>
+                    <li><a href="{{ path('app_portfolio') }}">Portfolio</a></li>
+                    <li><a href="{{ path('app_about') }}">À propos</a></li>
+                    <li><a href="{{ path('app_pricing') }}">Tarifs</a></li>
+                    <li><a href="{{ path('app_contact') }}">Contact</a></li>
+                </ul>
+            </div>
+
+            {# Section 3: Services #}
+            <div class="footer-section">
+                <h4>Services</h4>
+                <ul class="footer-links">
+                    <li><a href="{{ path('app_services') }}#conception">Conception & Design</a></li>
+                    <li><a href="{{ path('app_services') }}#developpement">Développement Symfony</a></li>
+                    <li><a href="{{ path('app_services') }}#ecommerce">Sites E-commerce</a></li>
+                    <li><a href="{{ path('app_services') }}#hebergement">Hébergement & Maintenance</a></li>
+                    <li><a href="{{ path('app_services') }}#seo">Référencement SEO</a></li>
+                </ul>
+            </div>
+
+            {# Section 4: Contact #}
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <ul class="footer-links">
+                    <li>
+                        <i class="fas fa-comments"></i>
+                        <a href="{{ path('app_contact') }}">Formulaire de contact</a>
+                    </li>
+                    <li>
+                        <i class="fas fa-phone"></i>
+                        <a href="tel:+33695786984">06 95 78 69 84</a>
+                    </li>
+                    <li>
+                        <i class="fas fa-map-marker-alt"></i>
+                        Bretagne, France
+                    </li>
+                    <li style="margin-top: 1rem;">
+                        <a href="{{ path('app_contact') }}" class="btn btn-primary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                            <i class="fas fa-paper-plane"></i> Demander un devis
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        {# Bottom footer #}
+        <div class="footer-bottom">
+            <p>
+                &copy; {{ "now"|date("Y") }} Alré Web - Développeur Web Freelance - Fabrice Dhuicque. Tous droits réservés.
+                <br>
+                <a href="#" style="color: rgba(255, 255, 255, 0.7); text-decoration: underline;">Mentions légales</a>
+                |
+                <a href="#" style="color: rgba(255, 255, 255, 0.7); text-decoration: underline;">Politique de confidentialité</a>
+                |
+                <a href="#" style="color: rgba(255, 255, 255, 0.7); text-decoration: underline;">CGV</a>
+            </p>
+            <p style="margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.6;">
+                Site développé avec <i class="fas fa-heart" style="color: #FF6B35;"></i> en Symfony
+            </p>
+        </div>
+    </div>
+</footer>

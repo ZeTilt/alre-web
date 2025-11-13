@@ -212,29 +212,41 @@ class PdfGeneratorService
             </div>';
         }
 
-        $html .= '<div class="totals-section">
-            <div class="total-ht">Total H.T&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . number_format((float)$devis->getTotalHt(), 2, ',', ' ') . ' €</div>
-        </div>
+        $vatRate = (float)$devis->getVatRate();
+        $totalHt = (float)$devis->getTotalHt();
+        $vatAmount = $totalHt * ($vatRate / 100);
+        $totalTtc = $totalHt + $vatAmount;
 
-        <div class="tva-notice">
-            <strong>TVA non applicable, art. 293 B du CGI</strong>
+        $html .= '<div class="totals-section">
+            <div class="total-ht">Total H.T&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . number_format($totalHt, 2, ',', ' ') . ' €</div>
         </div>';
+
+        if ($vatRate > 0) {
+            $html .= '<div class="totals-section" style="margin-top: 10px;">
+                <div style="font-size: 12px; margin-bottom: 10px;">TVA (' . number_format($vatRate, 2, ',', ' ') . '%)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . number_format($vatAmount, 2, ',', ' ') . ' €</div>
+            </div>';
+        } else {
+            $html .= '<div class="tva-notice">
+                <strong>TVA non applicable, art. 293 B du CGI</strong>
+            </div>';
+        }
+
+        $finalTotal = ($vatRate > 0) ? $totalTtc : $totalHt;
 
         if ($devis->getAcompte()) {
             $acompteAmount = (float)$devis->getAcompte();
-            $totalAmount = (float)$devis->getTotalHt();
-            $restant = $totalAmount - $acompteAmount;
-            
+            $restant = $finalTotal - $acompteAmount;
+
             $html .= '<div class="acompte-section">
                 -&nbsp;&nbsp;&nbsp;&nbsp;<strong>Acompte</strong>&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;&nbsp;' . number_format($acompteAmount, 2, ',', ' ') . ' €
             </div>
 
             <div class="total-final">
-                <strong>TOTAL RESTANT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . number_format($restant, 2, ',', ' ') . ' €</strong>
+                <strong>TOTAL RESTANT' . ($vatRate > 0 ? ' TTC' : '') . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . number_format($restant, 2, ',', ' ') . ' €</strong>
             </div>';
         } else {
             $html .= '<div class="total-final">
-                <strong>TOTAL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . number_format((float)$devis->getTotalHt(), 2, ',', ' ') . ' €</strong>
+                <strong>TOTAL' . ($vatRate > 0 ? ' TTC' : '') . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . number_format($finalTotal, 2, ',', ' ') . ' €</strong>
             </div>';
         }
 

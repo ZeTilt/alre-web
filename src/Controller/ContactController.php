@@ -57,7 +57,7 @@ class ContactController extends AbstractController
                 $this->addFlash('success', 'Votre message a bien été envoyé ! Vous allez recevoir un email de confirmation. Je vous répondrai dans les plus brefs délais (sous 24h maximum).');
             } catch (\Exception $e) {
                 // Si l'envoi d'email échoue, on informe quand même l'utilisateur que le message est sauvegardé
-                $this->addFlash('warning', 'Votre message a été enregistré mais l\'email de confirmation n\'a pas pu être envoyé. Erreur: ' . $e->getMessage());
+                $this->addFlash('warning', 'Votre message a été enregistré mais l\'email de confirmation n\'a pas pu être envoyé. Je vous répondrai quand même sous 24h.');
             }
 
             // Rediriger pour éviter la resoumission du formulaire

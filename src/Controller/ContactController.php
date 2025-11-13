@@ -5,15 +5,18 @@ namespace App\Controller;
 use App\Entity\ContactMessage;
 use App\Form\ContactType;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Annotation\Route;
 
 class ContactController extends AbstractController
 {
     #[Route('/contact', name: 'app_contact')]
-    public function index(Request $request, EntityManagerInterface $entityManager): Response
+    public function index(Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
         $contactMessage = new ContactMessage();
         $form = $this->createForm(ContactType::class, $contactMessage);
@@ -25,8 +28,37 @@ class ContactController extends AbstractController
             $entityManager->persist($contactMessage);
             $entityManager->flush();
 
-            // Message de succès
-            $this->addFlash('success', 'Votre message a bien été envoyé ! Je vous répondrai dans les plus brefs délais (sous 24h maximum).');
+            try {
+                // 1. Email de confirmation au demandeur
+                $confirmationEmail = (new TemplatedEmail())
+                    ->from(new Address('contact@alreweb.fr', 'Alré Web'))
+                    ->to($contactMessage->getEmail())
+                    ->subject('Confirmation de votre demande de contact')
+                    ->htmlTemplate('emails/contact_confirmation.html.twig')
+                    ->context([
+                        'contact' => $contactMessage,
+                    ]);
+
+                $mailer->send($confirmationEmail);
+
+                // 2. Email de notification pour l'admin
+                $notificationEmail = (new TemplatedEmail())
+                    ->from(new Address('contact@alreweb.fr', 'Alré Web'))
+                    ->to('contact@alreweb.fr')
+                    ->replyTo($contactMessage->getEmail())
+                    ->subject('Nouveau message de contact - ' . $contactMessage->getName())
+                    ->htmlTemplate('emails/contact_notification.html.twig')
+                    ->context([
+                        'contact' => $contactMessage,
+                    ]);
+
+                $mailer->send($notificationEmail);
+
+                $this->addFlash('success', 'Votre message a bien été envoyé ! Vous allez recevoir un email de confirmation. Je vous répondrai dans les plus brefs délais (sous 24h maximum).');
+            } catch (\Exception $e) {
+                // Si l'envoi d'email échoue, on informe quand même l'utilisateur que le message est sauvegardé
+                $this->addFlash('warning', 'Votre message a été enregistré mais l\'email de confirmation n\'a pas pu être envoyé. Je vous répondrai quand même sous 24h.');
+            }
 
             // Rediriger pour éviter la resoumission du formulaire
             return $this->redirectToRoute('app_contact');

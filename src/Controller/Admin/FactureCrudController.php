@@ -12,6 +12,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
@@ -84,6 +85,10 @@ class FactureCrudController extends AbstractCrudController
                 ->setEntryType(\App\Form\FactureItemType::class)
                 ->onlyOnForms()
                 ->setHelp('Ajoutez les lignes de votre facture'),
+            NumberField::new('vatRate', 'TVA (%)')
+                ->setNumDecimals(2)
+                ->setHelp('0 pour auto-entrepreneur (TVA non applicable), 20 pour TVA normale')
+                ->onlyOnForms(),
             MoneyField::new('totalHt', 'Total HT')->setCurrency('EUR')->setStoredAsCents(false)->hideOnForm(),
             MoneyField::new('totalTtc', 'Total TTC')->setCurrency('EUR')->setStoredAsCents(false)->hideOnForm(),
             TextareaField::new('description', 'Description')->onlyOnForms(),
@@ -264,10 +269,6 @@ class FactureCrudController extends AbstractCrudController
                     $item->setPosition($position);
                 }
                 $position++;
-                // Set default VAT rate if not set
-                if (!$item->getVatRate()) {
-                    $item->setVatRate('20.00');
-                }
             }
             
             // Recalculate totals based on items

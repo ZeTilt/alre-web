@@ -62,17 +62,6 @@ class FactureItemType extends AbstractType
                     'placeholder' => '0'
                 ]
             ])
-            ->add('vatRate', NumberType::class, [
-                'label' => 'TVA (%)',
-                'required' => false,
-                'scale' => 2,
-                'attr' => [
-                    'min' => 0,
-                    'max' => 100,
-                    'step' => 0.01,
-                    'placeholder' => '20'
-                ]
-            ])
             ->add('position', NumberType::class, [
                 'label' => 'Position',
                 'required' => false,

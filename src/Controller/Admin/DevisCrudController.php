@@ -83,6 +83,10 @@ class DevisCrudController extends AbstractCrudController
                 ->setEntryType(\App\Form\DevisItemType::class)
                 ->onlyOnForms()
                 ->setHelp('Ajoutez les lignes de votre devis'),
+            NumberField::new('vatRate', 'TVA (%)')
+                ->setNumDecimals(2)
+                ->setHelp('0 pour auto-entrepreneur (TVA non applicable), 20 pour TVA normale')
+                ->onlyOnForms(),
             MoneyField::new('totalHt', 'Total HT')->setCurrency('EUR')->setStoredAsCents(false)->hideOnForm(),
             MoneyField::new('totalTtc', 'Total TTC')->setCurrency('EUR')->setStoredAsCents(false)->hideOnForm(),
             MoneyField::new('acompte', 'Acompte (€)')
@@ -277,10 +281,6 @@ class DevisCrudController extends AbstractCrudController
                     $item->setPosition($position);
                 }
                 $position++;
-                // Set default VAT rate if not set
-                if (!$item->getVatRate()) {
-                    $item->setVatRate('20.00');
-                }
             }
             
             // Recalculate totals based on items

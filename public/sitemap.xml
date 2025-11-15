@@ -2,42 +2,42 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <!-- Page d'accueil -->
     <url>
-        <loc>https://alreweb.fr/</loc>
+        <loc>https://alre-web.bzh/</loc>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
     </url>
 
     <!-- Page Services -->
     <url>
-        <loc>https://alreweb.fr/services</loc>
+        <loc>https://alre-web.bzh/services</loc>
         <changefreq>monthly</changefreq>
         <priority>0.9</priority>
     </url>
 
     <!-- Page Portfolio -->
     <url>
-        <loc>https://alreweb.fr/portfolio</loc>
+        <loc>https://alre-web.bzh/portfolio</loc>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
 
     <!-- Page À propos -->
     <url>
-        <loc>https://alreweb.fr/a-propos</loc>
+        <loc>https://alre-web.bzh/a-propos</loc>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
     </url>
 
     <!-- Page Tarifs -->
     <url>
-        <loc>https://alreweb.fr/tarifs</loc>
+        <loc>https://alre-web.bzh/tarifs</loc>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
 
     <!-- Page Contact -->
     <url>
-        <loc>https://alreweb.fr/contact</loc>
+        <loc>https://alre-web.bzh/contact</loc>
         <changefreq>monthly</changefreq>
         <priority>0.9</priority>
     </url>

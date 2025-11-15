@@ -1,5 +1,4 @@
-# robots.txt for Alré Web - Développeur Web Freelance
-# Site: https://alre-web.bzh (à remplacer par votre domaine réel)
+# Site: https://alre-web.bzh
 
 User-agent: *
 Allow: /

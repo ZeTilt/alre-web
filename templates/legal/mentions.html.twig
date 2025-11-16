@@ -1,0 +1,147 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mentions Légales - Alré Web{% endblock %}
+
+{% block meta_description %}Mentions légales du site Alré Web - Développeur web freelance Fabrice Dhuicque, auto-entrepreneur en Bretagne.{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* Désactiver toutes les animations et transitions sur les pages légales */
+        * {
+            animation: none !important;
+            transition: none !important;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<section class="section section-light">
+    <div class="container">
+        <h1 class="text-center mb-4">Mentions Légales</h1>
+
+        <div class="card" style="max-width: 900px; margin: 0 auto;">
+            <h2>1. Éditeur du site</h2>
+            <p>
+                Le site <strong>alre-web.bzh</strong> est édité par :
+            </p>
+            <ul>
+                <li><strong>Nom :</strong> Fabrice Dhuicque</li>
+                <li><strong>Statut :</strong> Auto-entrepreneur</li>
+                <li><strong>Nom commercial :</strong> Alré Web</li>
+                <li><strong>Adresse :</strong> Bretagne, France</li>
+                <li><strong>Email :</strong> <a href="mailto:contact@alre-web.bzh">contact@alre-web.bzh</a></li>
+                <li><strong>Téléphone :</strong> <a href="tel:+33695786984">06 95 78 69 84</a></li>
+                <li><strong>SIRET :</strong>9 030 867 670 0022</li>
+            </ul>
+
+            <h2>2. Directeur de la publication</h2>
+            <p>
+                <strong>Fabrice Dhuicque</strong><br>
+                Email : <a href="mailto:contact@alre-web.bzh">contact@alre-web.bzh</a>
+            </p>
+
+            <h2>3. Hébergement</h2>
+            <p>
+                Le site est hébergé par :
+            </p>
+            <ul>
+                <li><strong>Hébergeur :</strong> o2switch</li>
+                <li><strong>Adresse :</strong> Chemin des Pardiaux, 63000 Clermont-Ferrand, France</li>
+                <li><strong>Site web :</strong> <a href="https://www.o2switch.fr" target="_blank" rel="noopener noreferrer">www.o2switch.fr</a></li>
+                <li><strong>Téléphone :</strong> 04 44 44 60 40</li>
+            </ul>
+
+            <h2>4. Propriété intellectuelle</h2>
+            <p>
+                L'ensemble du contenu de ce site (textes, images, logos, vidéos, mise en page, structure)
+                est la propriété exclusive de <strong>Fabrice Dhuicque</strong>, sauf mention contraire.
+            </p>
+            <p>
+                Toute reproduction, distribution, modification, adaptation, retransmission ou publication
+                de ces différents éléments est strictement interdite sans l'accord écrit préalable de l'éditeur.
+            </p>
+            <p>
+                Les marques et logos présents sur le site sont la propriété de leurs détenteurs respectifs.
+            </p>
+
+            <h2>5. Protection des données personnelles</h2>
+            <p>
+                Les informations recueillies sur ce site font l'objet d'un traitement informatique destiné à :
+            </p>
+            <ul>
+                <li>La gestion des demandes de contact</li>
+                <li>L'établissement de devis et factures</li>
+                <li>Le suivi de la relation client</li>
+            </ul>
+            <p>
+                Conformément à la loi « Informatique et Libertés » du 6 janvier 1978 modifiée et au
+                Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès,
+                de rectification, de suppression et d'opposition aux données vous concernant.
+            </p>
+            <p>
+                Pour exercer ces droits, contactez-nous à : <a href="mailto:contact@alre-web.bzh">contact@alre-web.bzh</a>
+            </p>
+            <p>
+                Pour plus de détails, consultez notre <a href="{{ path('app_legal_privacy') }}">Politique de confidentialité</a>.
+            </p>
+
+            <h2>6. Cookies et traceurs</h2>
+            <p>
+                Ce site utilise Matomo Analytics, un outil d'analyse de trafic respectueux de la vie privée,
+                hébergé sur nos propres serveurs. Les données collectées sont anonymisées et ne sont jamais
+                partagées avec des tiers.
+            </p>
+            <p>
+                Vous pouvez désactiver le suivi en configurant votre navigateur pour bloquer les cookies.
+            </p>
+
+            <h2>7. Responsabilité</h2>
+            <p>
+                L'éditeur s'efforce d'assurer l'exactitude et la mise à jour des informations diffusées
+                sur ce site, mais ne peut garantir l'exactitude, la précision ou l'exhaustivité de ces informations.
+            </p>
+            <p>
+                L'éditeur décline toute responsabilité :
+            </p>
+            <ul>
+                <li>Pour toute imprécision, inexactitude ou omission portant sur des informations disponibles sur le site</li>
+                <li>Pour tous dommages résultant d'une intrusion frauduleuse d'un tiers ayant entraîné une modification des informations</li>
+                <li>Pour tous dommages directs ou indirects résultant de l'utilisation du site</li>
+            </ul>
+
+            <h2>8. Liens hypertextes</h2>
+            <p>
+                Le site peut contenir des liens vers d'autres sites. L'éditeur n'exerce aucun contrôle sur
+                ces sites et décline toute responsabilité quant à leur contenu.
+            </p>
+
+            <h2>9. Droit applicable</h2>
+            <p>
+                Les présentes mentions légales sont régies par le droit français. En cas de litige et à défaut
+                d'accord amiable, le litige sera porté devant les tribunaux français compétents.
+            </p>
+
+            <h2>10. Crédits</h2>
+            <p>
+                <strong>Conception et développement :</strong> Fabrice Dhuicque - Alré Web<br>
+                <strong>Technologies utilisées :</strong> Symfony, PHP, MySQL, HTML5, CSS3, JavaScript<br>
+                <strong>Icônes :</strong> Font Awesome<br>
+                <strong>Hébergement :</strong> o2switch
+            </p>
+
+            <div style="margin-top: 2rem; padding: 1rem; background-color: #f8f9fa; border-left: 4px solid var(--primary-color);">
+                <p style="margin: 0; font-size: 0.9rem;">
+                    <strong>Dernière mise à jour :</strong> {{ "now"|date("d/m/Y") }}
+                </p>
+            </div>
+
+            <div class="text-center" style="margin-top: 2rem;">
+                <a href="{{ path('app_home') }}" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> Retour à l'accueil
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

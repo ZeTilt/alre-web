@@ -1,0 +1,219 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Politique de Confidentialité - Alré Web{% endblock %}
+
+{% block meta_description %}Politique de confidentialité et protection des données personnelles - Alré Web respecte votre vie privée et est conforme au RGPD.{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* Désactiver toutes les animations et transitions sur les pages légales */
+        * {
+            animation: none !important;
+            transition: none !important;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<section class="section section-light">
+    <div class="container">
+        <h1 class="text-center mb-4">Politique de Confidentialité</h1>
+
+        <div class="card" style="max-width: 900px; margin: 0 auto;">
+            <div style="padding: 1rem; background-color: #e8f4f8; border-radius: 8px; margin-bottom: 2rem;">
+                <p style="margin: 0; font-size: 0.95rem;">
+                    <i class="fas fa-shield-alt" style="color: var(--primary-color);"></i>
+                    <strong>Votre vie privée est importante pour nous.</strong> Cette politique de confidentialité
+                    explique comment nous collectons, utilisons et protégeons vos données personnelles conformément
+                    au Règlement Général sur la Protection des Données (RGPD).
+                </p>
+            </div>
+
+            <h2>1. Responsable du traitement</h2>
+            <p>
+                Le responsable du traitement des données personnelles est :
+            </p>
+            <ul>
+                <li><strong>Nom :</strong> Fabrice Dhuicque</li>
+                <li><strong>Activité :</strong> Alré Web - Développeur web freelance</li>
+                <li><strong>Email :</strong> <a href="mailto:contact@alre-web.bzh">contact@alre-web.bzh</a></li>
+                <li><strong>Téléphone :</strong> <a href="tel:+33695786984">06 95 78 69 84</a></li>
+            </ul>
+
+            <h2>2. Données collectées</h2>
+
+            <h3>2.1. Formulaire de contact</h3>
+            <p>Lorsque vous utilisez notre formulaire de contact, nous collectons :</p>
+            <ul>
+                <li>Nom et prénom</li>
+                <li>Adresse email</li>
+                <li>Numéro de téléphone (optionnel)</li>
+                <li>Entreprise (optionnel)</li>
+                <li>Message et contenu de votre demande</li>
+                <li>Date et heure de la demande</li>
+            </ul>
+
+            <h3>2.2. Gestion de la relation client</h3>
+            <p>Si vous devenez client, nous collectons et conservons :</p>
+            <ul>
+                <li>Informations d'identification (nom, prénom, entreprise)</li>
+                <li>Coordonnées (adresse, email, téléphone)</li>
+                <li>Informations de facturation (SIRET, TVA intracommunautaire)</li>
+                <li>Historique des devis et factures</li>
+                <li>Échanges et communications liés au projet</li>
+            </ul>
+
+            <h3>2.3. Données de navigation (Analytics)</h3>
+            <p>Nous utilisons Matomo Analytics pour comprendre l'utilisation du site :</p>
+            <ul>
+                <li>Pages consultées et temps passé</li>
+                <li>Provenance géographique (pays, région)</li>
+                <li>Type de navigateur et système d'exploitation</li>
+                <li>Adresse IP anonymisée (les 2 derniers octets sont masqués)</li>
+            </ul>
+            <p>
+                <strong>Important :</strong> Matomo est hébergé sur nos propres serveurs en France.
+                Vos données ne sont jamais partagées avec des tiers. Les adresses IP sont anonymisées
+                et nous respectons la configuration "Do Not Track" de votre navigateur.
+            </p>
+
+            <h2>3. Finalités du traitement</h2>
+            <p>Vos données personnelles sont collectées pour :</p>
+            <ul>
+                <li><strong>Répondre à vos demandes</strong> : traiter vos demandes de contact, devis ou renseignements</li>
+                <li><strong>Gestion de la relation client</strong> : suivi des projets, facturation, support</li>
+                <li><strong>Obligations légales</strong> : conservation des factures et documents comptables</li>
+                <li><strong>Amélioration du site</strong> : analyse du trafic et optimisation de l'expérience utilisateur</li>
+                <li><strong>Communication</strong> : envoi d'emails de confirmation et de réponses à vos demandes</li>
+            </ul>
+
+            <h2>4. Base légale du traitement</h2>
+            <p>Le traitement de vos données personnelles repose sur :</p>
+            <ul>
+                <li><strong>Votre consentement</strong> : en utilisant le formulaire de contact</li>
+                <li><strong>L'exécution d'un contrat</strong> : pour la gestion des devis, factures et projets</li>
+                <li><strong>Les obligations légales</strong> : conservation des documents comptables (10 ans)</li>
+                <li><strong>L'intérêt légitime</strong> : analyse du trafic pour améliorer le site</li>
+            </ul>
+
+            <h2>5. Destinataires des données</h2>
+            <p>Vos données personnelles sont destinées à :</p>
+            <ul>
+                <li><strong>Fabrice Dhuicque</strong> (développeur et gérant)</li>
+                <li><strong>Notre hébergeur</strong> : o2switch (France) - dans le cadre de l'hébergement technique</li>
+            </ul>
+            <p>
+                <strong>Aucune donnée n'est vendue, louée ou partagée avec des tiers à des fins commerciales.</strong>
+            </p>
+
+            <h2>6. Durée de conservation</h2>
+            <p>Nous conservons vos données pendant les durées suivantes :</p>
+            <ul>
+                <li><strong>Demandes de contact</strong> : 3 ans à compter de la demande</li>
+                <li><strong>Données clients</strong> : Durée de la relation commerciale + 3 ans</li>
+                <li><strong>Factures et documents comptables</strong> : 10 ans (obligation légale)</li>
+                <li><strong>Données Analytics</strong> : 13 mois maximum</li>
+            </ul>
+            <p>
+                Passé ces délais, vos données sont supprimées ou anonymisées de manière irréversible.
+            </p>
+
+            <h2>7. Vos droits RGPD</h2>
+            <p>Conformément au RGPD, vous disposez des droits suivants :</p>
+
+            <h3>7.1. Droit d'accès</h3>
+            <p>Vous pouvez demander une copie de toutes les données vous concernant.</p>
+
+            <h3>7.2. Droit de rectification</h3>
+            <p>Vous pouvez demander la correction de données inexactes ou incomplètes.</p>
+
+            <h3>7.3. Droit à l'effacement ("droit à l'oubli")</h3>
+            <p>Vous pouvez demander la suppression de vos données, sauf obligation légale de conservation.</p>
+
+            <h3>7.4. Droit à la limitation du traitement</h3>
+            <p>Vous pouvez demander de limiter l'utilisation de vos données dans certains cas.</p>
+
+            <h3>7.5. Droit à la portabilité</h3>
+            <p>Vous pouvez recevoir vos données dans un format structuré et lisible par machine.</p>
+
+            <h3>7.6. Droit d'opposition</h3>
+            <p>Vous pouvez vous opposer au traitement de vos données pour des raisons légitimes.</p>
+
+            <h3>Comment exercer vos droits ?</h3>
+            <div style="padding: 1rem; background-color: #f8f9fa; border-left: 4px solid var(--primary-color); margin: 1rem 0;">
+                <p style="margin: 0;">
+                    Pour exercer l'un de ces droits, contactez-nous par email à :
+                    <strong><a href="mailto:contact@alre-web.bzh">contact@alre-web.bzh</a></strong>
+                    <br><br>
+                    Nous vous répondrons dans un délai d'un mois maximum.
+                    Une pièce d'identité pourra vous être demandée pour vérifier votre identité.
+                </p>
+            </div>
+
+            <h2>8. Sécurité des données</h2>
+            <p>Nous mettons en œuvre des mesures techniques et organisationnelles pour protéger vos données :</p>
+            <ul>
+                <li><strong>Chiffrement HTTPS</strong> : toutes les communications sont sécurisées</li>
+                <li><strong>Hébergement sécurisé</strong> : serveurs en France avec sauvegardes régulières</li>
+                <li><strong>Accès restreint</strong> : seules les personnes autorisées ont accès aux données</li>
+                <li><strong>Mots de passe sécurisés</strong> : hashage et salage des mots de passe</li>
+                <li><strong>Mises à jour régulières</strong> : du site et des dépendances logicielles</li>
+            </ul>
+
+            <h2>9. Cookies</h2>
+            <p>Ce site utilise uniquement des cookies de mesure d'audience via Matomo :</p>
+            <ul>
+                <li><strong>Cookie Matomo</strong> : analyse du trafic (durée : 13 mois)</li>
+                <li><strong>Cookie de session Symfony</strong> : fonctionnement technique du site</li>
+            </ul>
+            <p>
+                Ces cookies sont exemptés de consentement selon la CNIL car ils sont utilisés uniquement
+                pour des fins statistiques et ne servent pas à tracer votre navigation sur d'autres sites.
+            </p>
+            <p>
+                Vous pouvez néanmoins désactiver les cookies dans les paramètres de votre navigateur.
+            </p>
+
+            <h2>10. Transferts de données hors UE</h2>
+            <p>
+                <strong>Aucune donnée personnelle n'est transférée en dehors de l'Union Européenne.</strong>
+                Toutes nos données sont hébergées en France (o2switch, Clermont-Ferrand).
+            </p>
+
+            <h2>11. Droit de réclamation</h2>
+            <p>
+                Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation
+                auprès de la Commission Nationale de l'Informatique et des Libertés (CNIL) :
+            </p>
+            <ul>
+                <li><strong>Adresse :</strong> 3 Place de Fontenoy, TSA 80715, 75334 Paris Cedex 07</li>
+                <li><strong>Téléphone :</strong> 01 53 73 22 22</li>
+                <li><strong>Site web :</strong> <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer">www.cnil.fr</a></li>
+            </ul>
+
+            <h2>12. Modifications de la politique</h2>
+            <p>
+                Nous nous réservons le droit de modifier cette politique de confidentialité à tout moment.
+                Les modifications entreront en vigueur dès leur publication sur cette page.
+                La date de dernière mise à jour est indiquée ci-dessous.
+            </p>
+
+            <div style="margin-top: 2rem; padding: 1rem; background-color: #f8f9fa; border-left: 4px solid var(--primary-color);">
+                <p style="margin: 0; font-size: 0.9rem;">
+                    <strong>Dernière mise à jour :</strong> {{ "now"|date("d/m/Y") }}
+                </p>
+            </div>
+
+            <div class="text-center" style="margin-top: 2rem;">
+                <a href="{{ path('app_home') }}" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> Retour à l'accueil
+                </a>
+                <a href="{{ path('app_contact') }}" class="btn btn-primary" style="margin-left: 1rem;">
+                    <i class="fas fa-envelope"></i> Nous contacter
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

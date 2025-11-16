@@ -1,0 +1,351 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Conditions Générales de Vente - Alré Web{% endblock %}
+
+{% block meta_description %}Conditions Générales de Vente des services de développement web proposés par Alré Web - Fabrice Dhuicque, développeur web freelance.{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* Désactiver toutes les animations et transitions sur les pages légales */
+        * {
+            animation: none !important;
+            transition: none !important;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<section class="section section-light">
+    <div class="container">
+        <h1 class="text-center mb-4">Conditions Générales de Vente</h1>
+
+        <div class="card" style="max-width: 900px; margin: 0 auto;">
+            <div style="padding: 1rem; background-color: #e8f4f8; border-radius: 8px; margin-bottom: 2rem;">
+                <p style="margin: 0; font-size: 0.95rem;">
+                    <i class="fas fa-file-contract" style="color: var(--primary-color);"></i>
+                    <strong>Conditions applicables aux prestations de développement web</strong> proposées par
+                    Alré Web - Fabrice Dhuicque, auto-entrepreneur.
+                </p>
+            </div>
+
+            <h2>Article 1 - Champ d'application</h2>
+            <p>
+                Les présentes Conditions Générales de Vente (CGV) s'appliquent à toutes les prestations
+                de services proposées par <strong>Fabrice Dhuicque</strong>, opérant sous le nom commercial
+                <strong>Alré Web</strong>, auto-entrepreneur.
+            </p>
+            <p>
+                Les prestations concernées comprennent notamment :
+            </p>
+            <ul>
+                <li>Création de sites internet (sites vitrines, e-commerce, applications web)</li>
+                <li>Développement sur mesure avec le framework Symfony</li>
+                <li>Refonte et modernisation de sites existants</li>
+                <li>Maintenance et support technique</li>
+                <li>Hébergement et gestion de nom de domaine</li>
+                <li>Référencement et optimisation SEO</li>
+            </ul>
+            <p>
+                Toute commande implique l'acceptation sans réserve des présentes CGV.
+            </p>
+
+            <h2>Article 2 - Devis et commande</h2>
+
+            <h3>2.1. Établissement du devis</h3>
+            <p>
+                Tout projet commence par l'établissement d'un devis gratuit et sans engagement,
+                détaillant la nature de la prestation, les délais, et le prix.
+            </p>
+
+            <h3>2.2. Acceptation du devis</h3>
+            <p>
+                Le devis est valable 30 jours à compter de sa date d'émission. L'acceptation du devis
+                se fait par signature (manuscrite ou électronique) et retour du devis signé accompagné
+                du règlement de l'acompte le cas échéant.
+            </p>
+
+            <h3>2.3. Acompte</h3>
+            <p>
+                Un acompte de <strong>30% à 50%</strong> du montant total peut être demandé à la commande
+                pour les projets supérieurs à 1000€. Cet acompte n'est pas remboursable en cas d'annulation
+                par le client après le début des travaux.
+            </p>
+
+            <h2>Article 3 - Prix et paiement</h2>
+
+            <h3>3.1. Prix</h3>
+            <p>
+                Les prix sont exprimés en euros et <strong>hors taxes</strong> (TVA non applicable selon
+                l'article 293 B du CGI - auto-entrepreneur).
+            </p>
+            <p>
+                Les tarifs en vigueur sont disponibles sur notre <a href="{{ path('app_pricing') }}">page Tarifs</a>.
+            </p>
+
+            <h3>3.2. Modalités de paiement</h3>
+            <p>Le paiement s'effectue selon les modalités suivantes :</p>
+            <ul>
+                <li><strong>Virement bancaire</strong> (RIB fourni sur la facture)</li>
+                <li><strong>Espèces</strong> (jusqu'à 1000€ conformément à la loi)</li>
+            </ul>
+
+            <h3>3.3. Délais de paiement</h3>
+            <p>
+                Sauf mention contraire sur la facture, le règlement est exigible à réception de la facture
+                avec un délai maximum de <strong>30 jours</strong>.
+            </p>
+            <p>
+                Pour les projets importants, un échéancier de paiement peut être convenu :
+            </p>
+            <ul>
+                <li>30-50% à la commande</li>
+                <li>20-30% à mi-parcours (livraison intermédiaire)</li>
+                <li>20-50% à la livraison finale</li>
+            </ul>
+
+            <h3>3.4. Retard de paiement</h3>
+            <p>
+                En cas de retard de paiement, des pénalités de retard sont applicables au taux de
+                <strong>3 fois le taux d'intérêt légal</strong>, ainsi qu'une indemnité forfaitaire
+                de recouvrement de <strong>40€</strong> conformément aux articles L441-6 et D441-5 du Code de commerce.
+            </p>
+            <p>
+                En cas de non-paiement total ou partiel, le prestataire se réserve le droit de :
+            </p>
+            <ul>
+                <li>Suspendre la prestation en cours</li>
+                <li>Suspendre l'accès au site web ou aux services hébergés</li>
+                <li>Engager une procédure de recouvrement</li>
+            </ul>
+
+            <h2>Article 4 - Déroulement de la prestation</h2>
+
+            <h3>4.1. Obligations du prestataire</h3>
+            <p>Le prestataire s'engage à :</p>
+            <ul>
+                <li>Réaliser la prestation conformément au devis accepté</li>
+                <li>Respecter les délais convenus (sauf cas de force majeure)</li>
+                <li>Informer le client de l'avancement du projet</li>
+                <li>Livrer un travail de qualité professionnelle</li>
+                <li>Assurer la confidentialité des informations transmises</li>
+            </ul>
+
+            <h3>4.2. Obligations du client</h3>
+            <p>Le client s'engage à :</p>
+            <ul>
+                <li>Fournir tous les éléments nécessaires à la réalisation (contenus, images, accès serveur, etc.)</li>
+                <li>Valider les étapes intermédiaires dans les délais convenus</li>
+                <li>Effectuer les règlements aux échéances prévues</li>
+                <li>Informer le prestataire de toute difficulté ou changement</li>
+            </ul>
+
+            <h3>4.3. Délais</h3>
+            <p>
+                Les délais de réalisation sont communiqués à titre indicatif et peuvent varier en fonction de :
+            </p>
+            <ul>
+                <li>La complexité du projet</li>
+                <li>La disponibilité du client pour fournir les éléments nécessaires</li>
+                <li>Les demandes de modifications ou ajouts en cours de projet</li>
+                <li>Les cas de force majeure</li>
+            </ul>
+
+            <h2>Article 5 - Modifications et demandes supplémentaires</h2>
+            <p>
+                Le devis initial prévoit un nombre de modifications incluses (généralement 2 à 3 allers-retours).
+            </p>
+            <p>
+                Toute demande de modification substantielle ou supplémentaire fera l'objet d'un devis complémentaire.
+            </p>
+            <p>
+                Les modifications demandées peuvent entraîner un allongement des délais de livraison.
+            </p>
+
+            <h2>Article 6 - Livraison et recette</h2>
+
+            <h3>6.1. Livraison</h3>
+            <p>
+                La livraison s'effectue par mise en ligne sur le serveur du client ou remise des fichiers sources
+                selon les modalités convenues.
+            </p>
+
+            <h3>6.2. Recette</h3>
+            <p>
+                Le client dispose d'un délai de <strong>15 jours</strong> à compter de la livraison pour effectuer
+                la recette et signaler d'éventuels dysfonctionnements ou non-conformités par rapport au devis.
+            </p>
+            <p>
+                Passé ce délai sans retour du client, la prestation sera considérée comme acceptée.
+            </p>
+
+            <h2>Article 7 - Propriété intellectuelle</h2>
+
+            <h3>7.1. Cession des droits</h3>
+            <p>
+                À compter du paiement intégral de la prestation, les droits d'exploitation du site internet
+                sont cédés au client pour une utilisation conforme à la destination du site.
+            </p>
+
+            <h3>7.2. Code source</h3>
+            <p>
+                Le code source développé spécifiquement pour le client lui est remis et il en devient propriétaire.
+                Le prestataire conserve le droit de réutiliser les composants génériques développés pour d'autres projets.
+            </p>
+
+            <h3>7.3. Éléments tiers</h3>
+            <p>
+                Les bibliothèques, frameworks et outils open-source utilisés (Symfony, Bootstrap, etc.) conservent
+                leur licence respective.
+            </p>
+
+            <h3>7.4. Référence</h3>
+            <p>
+                Sauf refus explicite du client, le prestataire se réserve le droit de mentionner la réalisation
+                dans son portfolio et d'apposer une mention "Site réalisé par Alré Web" dans le footer du site.
+            </p>
+
+            <h2>Article 8 - Garantie et maintenance</h2>
+
+            <h3>8.1. Garantie</h3>
+            <p>
+                Le prestataire garantit le bon fonctionnement du site livré pendant une période de
+                <strong>30 jours</strong> suivant la recette. Cette garantie couvre les bugs et dysfonctionnements,
+                mais pas les évolutions ou modifications demandées par le client.
+            </p>
+
+            <h3>8.2. Maintenance</h3>
+            <p>
+                Des contrats de maintenance peuvent être souscrits séparément pour assurer :
+            </p>
+            <ul>
+                <li>Les mises à jour de sécurité</li>
+                <li>Les sauvegardes régulières</li>
+                <li>Le support technique</li>
+                <li>Les évolutions du site</li>
+            </ul>
+
+            <h2>Article 9 - Hébergement et nom de domaine</h2>
+            <p>
+                Si le prestataire assure l'hébergement et/ou la gestion du nom de domaine :
+            </p>
+            <ul>
+                <li>Le client reste propriétaire du nom de domaine</li>
+                <li>L'hébergement fait l'objet d'une facturation séparée (annuelle ou mensuelle)</li>
+                <li>En cas de non-paiement, le prestataire peut suspendre le service après mise en demeure</li>
+                <li>Le client peut récupérer ses données à tout moment</li>
+            </ul>
+
+            <h2>Article 10 - Confidentialité</h2>
+            <p>
+                Le prestataire s'engage à respecter la confidentialité des informations qui lui sont confiées
+                dans le cadre de la prestation et à ne pas les divulguer à des tiers sans autorisation.
+            </p>
+            <p>
+                Cette obligation de confidentialité s'applique pendant et après la fin de la relation commerciale.
+            </p>
+
+            <h2>Article 11 - Résiliation et annulation</h2>
+
+            <h3>11.1. Par le client</h3>
+            <p>
+                En cas d'annulation par le client après acceptation du devis :
+            </p>
+            <ul>
+                <li>Si aucun travail n'a commencé : l'acompte est conservé à hauteur de 30%</li>
+                <li>Si le travail a commencé : facturation au prorata du travail effectué, minimum 50% du total</li>
+                <li>Si le projet est terminé à plus de 75% : facturation intégrale</li>
+            </ul>
+
+            <h3>11.2. Par le prestataire</h3>
+            <p>
+                Le prestataire peut résilier le contrat en cas de :
+            </p>
+            <ul>
+                <li>Non-paiement après mise en demeure</li>
+                <li>Non-fourniture des éléments nécessaires par le client malgré relances</li>
+                <li>Comportement abusif ou irrespectueux</li>
+            </ul>
+
+            <h2>Article 12 - Responsabilité et assurance</h2>
+
+            <h3>12.1. Limitation de responsabilité</h3>
+            <p>
+                La responsabilité du prestataire est limitée au montant de la prestation facturée.
+                Le prestataire ne peut être tenu responsable :
+            </p>
+            <ul>
+                <li>Des dommages indirects (perte de chiffre d'affaires, de clientèle, etc.)</li>
+                <li>Des contenus fournis par le client (textes, images)</li>
+                <li>Des dysfonctionnements dus à des modifications effectuées par le client ou un tiers</li>
+                <li>Des problèmes liés à l'hébergeur (hors contrat de maintenance)</li>
+            </ul>
+
+            <h3>12.2. Assurance</h3>
+            <p>
+                Le prestataire est couvert par une assurance Responsabilité Civile Professionnelle.
+            </p>
+
+            <h2>Article 13 - Force majeure</h2>
+            <p>
+                En cas de force majeure (catastrophe naturelle, grève, panne informatique majeure, etc.),
+                le prestataire est exonéré de sa responsabilité et les délais sont suspendus.
+            </p>
+
+            <h2>Article 14 - Droit applicable et litiges</h2>
+
+            <h3>14.1. Droit applicable</h3>
+            <p>
+                Les présentes CGV sont régies par le droit français.
+            </p>
+
+            <h3>14.2. Règlement des litiges</h3>
+            <p>
+                En cas de litige, les parties s'engagent à rechercher une solution amiable avant toute
+                action judiciaire.
+            </p>
+            <p>
+                À défaut d'accord amiable, le litige sera porté devant les tribunaux compétents.
+            </p>
+
+            <h3>14.3. Médiation</h3>
+            <p>
+                Conformément à l'article L. 612-1 du Code de la consommation, le client consommateur peut
+                recourir gratuitement à un médiateur de la consommation en cas de litige.
+            </p>
+
+            <h2>Article 15 - Données personnelles</h2>
+            <p>
+                Le traitement des données personnelles est régi par notre
+                <a href="{{ path('app_legal_privacy') }}">Politique de confidentialité</a>, conforme au RGPD.
+            </p>
+
+            <h2>Article 16 - Contact</h2>
+            <p>
+                Pour toute question concernant les présentes CGV :
+            </p>
+            <ul>
+                <li><strong>Email :</strong> <a href="mailto:contact@alre-web.bzh">contact@alre-web.bzh</a></li>
+                <li><strong>Téléphone :</strong> <a href="tel:+33695786984">06 95 78 69 84</a></li>
+                <li><strong>Formulaire :</strong> <a href="{{ path('app_contact') }}">Page contact</a></li>
+            </ul>
+
+            <div style="margin-top: 2rem; padding: 1rem; background-color: #f8f9fa; border-left: 4px solid var(--primary-color);">
+                <p style="margin: 0; font-size: 0.9rem;">
+                    <strong>Dernière mise à jour :</strong> {{ "now"|date("d/m/Y") }}<br>
+                    <strong>Version :</strong> 1.0
+                </p>
+            </div>
+
+            <div class="text-center" style="margin-top: 2rem;">
+                <a href="{{ path('app_home') }}" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> Retour à l'accueil
+                </a>
+                <a href="{{ path('app_contact') }}" class="btn btn-primary" style="margin-left: 1rem;">
+                    <i class="fas fa-paper-plane"></i> Demander un devis
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

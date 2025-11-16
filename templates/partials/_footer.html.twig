@@ -80,14 +80,14 @@
             <p>
                 &copy; {{ "now"|date("Y") }} Alré Web - Développeur Web Freelance - Fabrice Dhuicque. Tous droits réservés.
                 <br>
-                <a href="#" style="color: rgba(255, 255, 255, 0.7); text-decoration: underline;">Mentions légales</a>
+                <a href="{{ path('app_legal_mentions') }}" style="color: rgba(255, 255, 255, 0.7); text-decoration: underline;">Mentions légales</a>
                 |
-                <a href="#" style="color: rgba(255, 255, 255, 0.7); text-decoration: underline;">Politique de confidentialité</a>
+                <a href="{{ path('app_legal_privacy') }}" style="color: rgba(255, 255, 255, 0.7); text-decoration: underline;">Politique de confidentialité</a>
                 |
-                <a href="#" style="color: rgba(255, 255, 255, 0.7); text-decoration: underline;">CGV</a>
+                <a href="{{ path('app_legal_cgv') }}" style="color: rgba(255, 255, 255, 0.7); text-decoration: underline;">CGV</a>
             </p>
             <p style="margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.6;">
-                Site développé avec <i class="fas fa-heart" style="color: #FF6B35;"></i> en Symfony
+                Site développé en Symfony
             </p>
         </div>
     </div>

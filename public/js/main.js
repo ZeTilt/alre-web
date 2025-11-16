@@ -221,29 +221,36 @@ document.addEventListener('DOMContentLoaded', function() {
     // ============================================
     // 6. GESTION DES CARTES INTERACTIVES
     // ============================================
-    const cards = document.querySelectorAll('.card, .service-card, .project-card');
+    // Ne pas appliquer l'effet de tilt sur les pages légales
+    const isLegalPage = window.location.pathname.includes('/mentions-legales') ||
+                        window.location.pathname.includes('/politique-de-confidentialite') ||
+                        window.location.pathname.includes('/cgv');
 
-    cards.forEach(card => {
-        // Effet de parallax très subtil au survol
-        card.addEventListener('mousemove', function(e) {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+    if (!isLegalPage) {
+        const cards = document.querySelectorAll('.card, .service-card, .project-card');
 
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
+        cards.forEach(card => {
+            // Effet de parallax très subtil au survol
+            card.addEventListener('mousemove', function(e) {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
 
-            // Division par 150 au lieu de 20 pour un effet beaucoup plus léger
-            const rotateX = (y - centerY) / 150;
-            const rotateY = (centerX - x) / 150;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
 
-            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-2px)`;
+                // Division par 150 au lieu de 20 pour un effet beaucoup plus léger
+                const rotateX = (y - centerY) / 150;
+                const rotateY = (centerX - x) / 150;
+
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-2px)`;
+            });
+
+            card.addEventListener('mouseleave', function() {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+            });
         });
-
-        card.addEventListener('mouseleave', function() {
-            card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
-        });
-    });
+    }
 
     // ============================================
     // 7. COMPTEUR ANIMÉ (si présent sur la page)

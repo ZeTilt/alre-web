@@ -148,7 +148,7 @@ class Project
 
     public function getTechnologies(): array
     {
-        return $this->technologies;
+        return $this->technologies ?? [];
     }
 
     public function setTechnologies(?array $technologies): static
@@ -160,7 +160,7 @@ class Project
 
     public function getPartners(): array
     {
-        return $this->partners;
+        return $this->partners ?? [];
     }
 
     public function setPartners(?array $partners): static

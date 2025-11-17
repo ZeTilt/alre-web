@@ -28,8 +28,8 @@ class ProjectImage
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $caption = null;
 
-    #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
-    private int $position = 0;
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    private ?int $position = null;
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $isFeatured = false;
@@ -90,12 +90,12 @@ class ProjectImage
         return $this;
     }
 
-    public function getPosition(): int
+    public function getPosition(): ?int
     {
         return $this->position;
     }
 
-    public function setPosition(int $position): static
+    public function setPosition(?int $position): static
     {
         $this->position = $position;
 

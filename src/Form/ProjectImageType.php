@@ -54,12 +54,6 @@ class ProjectImageType extends AbstractType
                 'required' => false,
                 'attr' => ['rows' => 2],
             ])
-            ->add('position', IntegerType::class, [
-                'label' => 'Position',
-                'required' => false,
-                'help' => 'Ordre d\'affichage (0 = premier)',
-                'attr' => ['min' => 0],
-            ])
             ->add('isFeatured', CheckboxType::class, [
                 'label' => 'Image principale',
                 'required' => false,

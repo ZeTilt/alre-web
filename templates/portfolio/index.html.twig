@@ -145,9 +145,9 @@
 
                 <h3 class="card-title">{{ project.title }}</h3>
 
-                {% if project.completionDate %}
+                {% if project.completionYear %}
                 <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">
-                    <i class="fas fa-calendar-alt"></i> {{ project.completionDate|date('Y') }}
+                    <i class="fas fa-calendar-alt"></i> {{ project.completionYear }}
                 </p>
                 {% endif %}
 

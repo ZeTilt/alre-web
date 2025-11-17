@@ -10,7 +10,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
@@ -29,7 +29,9 @@ class ProjectCrudController extends AbstractCrudController
         return [
             IdField::new('id')->hideOnForm(),
             TextField::new('title', 'Titre du projet'),
-            TextField::new('slug', 'Slug (URL)')->setHelp('Généré automatiquement si laissé vide'),
+            TextField::new('slug', 'Slug (URL)')
+                ->setHelp('Généré automatiquement si laissé vide')
+                ->setRequired(false),
             AssociationField::new('client', 'Client')
                 ->setHelp('Le client pour lequel le projet a été réalisé')
                 ->setRequired(false),
@@ -56,7 +58,9 @@ class ProjectCrudController extends AbstractCrudController
             TextEditorField::new('solutions', 'Solutions apportées')->hideOnIndex(),
             TextEditorField::new('results', 'Résultats obtenus')->hideOnIndex(),
             UrlField::new('projectUrl', 'URL du projet')->hideOnIndex(),
-            DateField::new('completionDate', 'Date de réalisation'),
+            IntegerField::new('completionYear', 'Année de réalisation')
+                ->setHelp('Ex: 2024')
+                ->setRequired(false),
             BooleanField::new('featured', 'Projet mis en avant'),
             BooleanField::new('isPublished', 'Publié'),
         ];

@@ -17,7 +17,7 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find all published projects ordered by completion date
+     * Find all published projects ordered by completion year
      *
      * @return Project[]
      */
@@ -26,7 +26,7 @@ class ProjectRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('p')
             ->where('p.isPublished = :published')
             ->setParameter('published', true)
-            ->orderBy('p.completionDate', 'DESC')
+            ->orderBy('p.completionYear', 'DESC')
             ->addOrderBy('p.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
@@ -44,7 +44,7 @@ class ProjectRepository extends ServiceEntityRepository
             ->andWhere('p.featured = :featured')
             ->setParameter('published', true)
             ->setParameter('featured', true)
-            ->orderBy('p.completionDate', 'DESC')
+            ->orderBy('p.completionYear', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
@@ -62,7 +62,7 @@ class ProjectRepository extends ServiceEntityRepository
             ->andWhere('p.category = :category')
             ->setParameter('published', true)
             ->setParameter('category', $category)
-            ->orderBy('p.completionDate', 'DESC')
+            ->orderBy('p.completionYear', 'DESC')
             ->getQuery()
             ->getResult();
     }

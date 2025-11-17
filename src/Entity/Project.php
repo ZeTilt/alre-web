@@ -51,8 +51,8 @@ class Project
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $projectUrl = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $completionDate = null;
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    private ?int $completionYear = null;
 
     #[ORM\Column]
     private ?bool $featured = false;
@@ -216,14 +216,14 @@ class Project
         return $this;
     }
 
-    public function getCompletionDate(): ?\DateTimeInterface
+    public function getCompletionYear(): ?int
     {
-        return $this->completionDate;
+        return $this->completionYear;
     }
 
-    public function setCompletionDate(?\DateTimeInterface $completionDate): static
+    public function setCompletionYear(?int $completionYear): static
     {
-        $this->completionDate = $completionDate;
+        $this->completionYear = $completionYear;
 
         return $this;
     }

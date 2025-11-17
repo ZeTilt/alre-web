@@ -141,7 +141,14 @@
             {% for projectPartner in project.projectPartners %}
                 {% set partner = projectPartner.partner %}
                 {% if partner %}
-                <div class="card">
+                <div class="card" style="text-align: center;">
+                    {% if partner.logo %}
+                    <div style="margin-bottom: 1.5rem;">
+                        <img src="{{ asset('uploads/partners/' ~ partner.logo) }}"
+                             alt="Logo {{ partner.name }}"
+                             style="max-width: 200px; max-height: 100px; object-fit: contain;">
+                    </div>
+                    {% endif %}
                     <h3 class="card-title">
                         <i class="fas fa-handshake"></i> {{ partner.name }}
                     </h3>

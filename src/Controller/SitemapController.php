@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\ProjectRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -10,7 +11,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 class SitemapController extends AbstractController
 {
     #[Route('/sitemap.xml', name: 'sitemap', defaults: ['_format' => 'xml'])]
-    public function index(): Response
+    public function index(ProjectRepository $projectRepository): Response
     {
         // Liste des URLs statiques avec leurs priorités
         $urls = [];
@@ -75,6 +76,17 @@ class SitemapController extends AbstractController
             'changefreq' => 'yearly',
             'priority' => '0.3',
         ];
+
+        // Projets publiés
+        $projects = $projectRepository->findPublished();
+        foreach ($projects as $project) {
+            $urls[] = [
+                'loc' => $this->generateUrl('app_portfolio_show', ['slug' => $project->getSlug()], UrlGeneratorInterface::ABSOLUTE_URL),
+                'changefreq' => 'monthly',
+                'priority' => '0.7',
+                'lastmod' => $project->getUpdatedAt()?->format('Y-m-d'),
+            ];
+        }
 
         $response = new Response(
             $this->renderView('sitemap/index.xml.twig', [

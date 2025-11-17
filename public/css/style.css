@@ -366,6 +366,16 @@ a:hover {
     box-shadow: var(--shadow-lg);
 }
 
+a.card {
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+a.card:hover {
+    text-decoration: none;
+}
+
 .card-icon {
     font-size: 3rem;
     color: var(--accent-color);

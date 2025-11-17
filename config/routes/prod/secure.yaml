@@ -1,0 +1,5 @@
+# Force HTTPS pour toutes les routes en production
+controllers:
+    resource: ../../../src/Controller/
+    type: attribute
+    schemes: [https]

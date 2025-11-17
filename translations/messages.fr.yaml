@@ -1,0 +1,81 @@
+# Traductions personnalisées pour l'application
+# Ces traductions complètent celles d'EasyAdmin
+
+# Actions communes
+Add: 'Ajouter'
+Edit: 'Modifier'
+Delete: 'Supprimer'
+Save: 'Enregistrer'
+Cancel: 'Annuler'
+Search: 'Rechercher'
+Create: 'Créer'
+Update: 'Mettre à jour'
+
+# Pagination
+Previous: 'Précédent'
+Next: 'Suivant'
+First: 'Premier'
+Last: 'Dernier'
+
+# Filtres
+Filters: 'Filtres'
+Filter: 'Filtrer'
+Clear: 'Effacer'
+Apply: 'Appliquer'
+
+# Résultats
+Results: 'Résultats'
+'No results found': 'Aucun résultat trouvé'
+'1 result': '1 résultat'
+'%count% results': '%count% résultats'
+
+# Dates
+Today: 'Aujourd''hui'
+Yesterday: 'Hier'
+Tomorrow: 'Demain'
+This week: 'Cette semaine'
+Last week: 'La semaine dernière'
+This month: 'Ce mois-ci'
+Last month: 'Le mois dernier'
+This year: 'Cette année'
+Last year: 'L''année dernière'
+
+# Messages de confirmation
+'Are you sure?': 'Êtes-vous sûr ?'
+'This action cannot be undone': 'Cette action est irréversible'
+'Confirm deletion': 'Confirmer la suppression'
+
+# Messages de succès
+'Item created successfully': 'Élément créé avec succès'
+'Item updated successfully': 'Élément mis à jour avec succès'
+'Item deleted successfully': 'Élément supprimé avec succès'
+
+# Messages d'erreur
+'An error occurred': 'Une erreur s''est produite'
+'Please try again': 'Veuillez réessayer'
+'Invalid data': 'Données invalides'
+
+# Formulaires
+'Required field': 'Champ obligatoire'
+'Optional field': 'Champ facultatif'
+'Invalid format': 'Format invalide'
+'Field is required': 'Ce champ est requis'
+'Value is too short': 'La valeur est trop courte'
+'Value is too long': 'La valeur est trop longue'
+
+# Entités spécifiques
+'Add Devis': 'Ajouter un devis'
+'Add Facture': 'Ajouter une facture'
+'Add Client': 'Ajouter un client'
+'Add Project': 'Ajouter un projet'
+'Add Partner': 'Ajouter un partenaire'
+'Add Testimonial': 'Ajouter un témoignage'
+'Add User': 'Ajouter un utilisateur'
+
+# Autres
+Loading: 'Chargement...'
+'Please wait': 'Veuillez patienter'
+Close: 'Fermer'
+Back: 'Retour'
+Continue: 'Continuer'
+Finish: 'Terminer'

@@ -52,7 +52,6 @@ class DevisCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            IdField::new('id')->onlyOnIndex(),
             TextField::new('number', 'Numéro')
                 ->setHelp('Auto-généré si vide, mais vous pouvez le modifier')
                 ->hideOnIndex(),
@@ -64,6 +63,7 @@ class DevisCrudController extends AbstractCrudController
                     Devis::STATUS_BROUILLON => 'secondary',
                     Devis::STATUS_A_ENVOYER => 'warning',
                     Devis::STATUS_ENVOYE => 'info',
+                    Devis::STATUS_A_RELANCER => 'danger',
                     Devis::STATUS_RELANCE => 'warning',
                     Devis::STATUS_ACCEPTE => 'success',
                     Devis::STATUS_REFUSE => 'danger',
@@ -182,6 +182,7 @@ class DevisCrudController extends AbstractCrudController
             Devis::STATUS_BROUILLON => 'secondary',
             Devis::STATUS_A_ENVOYER => 'warning',
             Devis::STATUS_ENVOYE => 'info',
+            Devis::STATUS_A_RELANCER => 'danger',
             Devis::STATUS_RELANCE => 'warning',
             Devis::STATUS_ACCEPTE => 'success',
             Devis::STATUS_REFUSE => 'danger',
@@ -222,6 +223,7 @@ class DevisCrudController extends AbstractCrudController
             Devis::STATUS_BROUILLON => [Devis::STATUS_A_ENVOYER],
             Devis::STATUS_A_ENVOYER => [Devis::STATUS_ENVOYE, Devis::STATUS_ANNULE],
             Devis::STATUS_ENVOYE => [Devis::STATUS_RELANCE, Devis::STATUS_ACCEPTE, Devis::STATUS_REFUSE],
+            Devis::STATUS_A_RELANCER => [Devis::STATUS_RELANCE, Devis::STATUS_ACCEPTE, Devis::STATUS_REFUSE],
             Devis::STATUS_RELANCE => [Devis::STATUS_ACCEPTE, Devis::STATUS_REFUSE, Devis::STATUS_EXPIRE],
             Devis::STATUS_ACCEPTE => [Devis::STATUS_ANNULE],
             Devis::STATUS_REFUSE => [],
@@ -237,6 +239,7 @@ class DevisCrudController extends AbstractCrudController
         $actionMap = [
             Devis::STATUS_A_ENVOYER => 'markAsReady',
             Devis::STATUS_ENVOYE => 'markAsSent',
+            Devis::STATUS_A_RELANCER => 'markAsToRelaunch',
             Devis::STATUS_RELANCE => 'markAsRelance',
             Devis::STATUS_ACCEPTE => 'markAsAccepted',
             Devis::STATUS_REFUSE => 'markAsRejected',
@@ -307,6 +310,7 @@ class DevisCrudController extends AbstractCrudController
         $statusMap = [
             'markAsReady' => Devis::STATUS_A_ENVOYER,
             'markAsSent' => Devis::STATUS_ENVOYE,
+            'markAsToRelaunch' => Devis::STATUS_A_RELANCER,
             'markAsRelance' => Devis::STATUS_RELANCE,
             'markAsAccepted' => Devis::STATUS_ACCEPTE,
             'markAsRejected' => Devis::STATUS_REFUSE,
@@ -317,11 +321,18 @@ class DevisCrudController extends AbstractCrudController
         if (isset($statusMap[$actionName])) {
             $newStatus = $statusMap[$actionName];
             $devis->setStatus($newStatus);
+
+            // Set new validity date when marked as relance (30 days from now)
+            if ($newStatus === Devis::STATUS_RELANCE) {
+                $devis->setDateValidite(new \DateTimeImmutable('+30 days'));
+            }
+
             $entityManager->flush();
             
             $statusLabels = [
                 Devis::STATUS_A_ENVOYER => 'à envoyer',
                 Devis::STATUS_ENVOYE => 'envoyé',
+                Devis::STATUS_A_RELANCER => 'à relancer',
                 Devis::STATUS_RELANCE => 'relancé',
                 Devis::STATUS_ACCEPTE => 'accepté',
                 Devis::STATUS_REFUSE => 'refusé',

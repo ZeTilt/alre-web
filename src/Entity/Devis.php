@@ -14,6 +14,7 @@ class Devis
     public const STATUS_BROUILLON = 'brouillon';
     public const STATUS_A_ENVOYER = 'a_envoyer';
     public const STATUS_ENVOYE = 'envoye';
+    public const STATUS_A_RELANCER = 'a_relancer';
     public const STATUS_RELANCE = 'relance';
     public const STATUS_ACCEPTE = 'accepte';
     public const STATUS_REFUSE = 'refuse';
@@ -471,6 +472,7 @@ class Devis
             'Brouillon' => self::STATUS_BROUILLON,
             'À envoyer' => self::STATUS_A_ENVOYER,
             'Envoyé' => self::STATUS_ENVOYE,
+            'À relancer' => self::STATUS_A_RELANCER,
             'Relancé' => self::STATUS_RELANCE,
             'Accepté' => self::STATUS_ACCEPTE,
             'Refusé' => self::STATUS_REFUSE,
@@ -483,5 +485,29 @@ class Devis
     {
         $choices = self::getStatusChoices();
         return array_search($this->status, $choices) ?: $this->status;
+    }
+
+    /**
+     * Vérifie et met à jour automatiquement le statut en fonction de la date de validité
+     * Retourne true si le statut a été modifié
+     */
+    public function updateStatusBasedOnDeadline(): bool
+    {
+        // Ne rien faire si le devis est déjà accepté, refusé, annulé ou expiré
+        if (in_array($this->status, [self::STATUS_ACCEPTE, self::STATUS_REFUSE, self::STATUS_ANNULE, self::STATUS_EXPIRE])) {
+            return false;
+        }
+
+        $now = new \DateTimeImmutable();
+
+        // Si le devis est envoyé ou relancé et que la date de validité est dépassée
+        if (in_array($this->status, [self::STATUS_ENVOYE, self::STATUS_RELANCE])) {
+            if ($this->dateValidite && $this->dateValidite < $now) {
+                $this->status = self::STATUS_A_RELANCER;
+                return true;
+            }
+        }
+
+        return false;
     }
 }

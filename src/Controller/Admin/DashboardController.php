@@ -17,13 +17,15 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class DashboardController extends AbstractDashboardController
 {
     public function __construct(
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private ParameterBagInterface $params
     ) {
     }
 
@@ -48,9 +50,17 @@ class DashboardController extends AbstractDashboardController
 
     public function configureAssets(): Assets
     {
-        return Assets::new()
+        $assets = Assets::new()
             ->addCssFile('css/admin.css')
-            ->addJsFile('js/admin-project-partners.js');
+            ->addJsFile('js/admin-project-partners.js')
+            ->addJsFile('js/admin-toggles.js');
+
+        // Charger le CSS de floutage si le mode démo est activé
+        if ($this->params->get('app.demo_mode')) {
+            $assets->addCssFile('css/admin-blur.css');
+        }
+
+        return $assets;
     }
 
     public function configureMenuItems(): iterable
@@ -69,9 +79,6 @@ class DashboardController extends AbstractDashboardController
 
         yield MenuItem::section('Clients');
         yield MenuItem::linkToCrud('Clients', 'fas fa-users', Client::class);
-
-        yield MenuItem::section('Statistiques');
-        yield MenuItem::linkToDashboard('Tableau de bord', 'fas fa-chart-bar');
 
         yield MenuItem::section('Administration');
         yield MenuItem::linkToCrud('Mon Entreprise', 'fas fa-building', Company::class);

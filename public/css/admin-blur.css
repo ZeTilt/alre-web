@@ -1,0 +1,100 @@
+/* Floutage temporaire pour démo - NE PAS COMMITER */
+
+/* Classe générique pour flouter */
+.blur-sensitive {
+    filter: blur(4px);
+    transition: filter 0.2s;
+}
+
+.blur-sensitive:hover {
+    filter: blur(0px);
+}
+
+/* Flouter les montants */
+.field-money,
+.field-decimal,
+td[data-label*="Total"] .text-body,
+td[data-label*="total"] .text-body,
+td[data-label*="Montant"] .text-body,
+td[data-label*="montant"] .text-body,
+td[data-label*="HT"] .text-body,
+td[data-label*="TTC"] .text-body,
+td.field-money .text-body,
+td.field-number .text-body {
+    filter: blur(4px);
+    transition: filter 0.2s;
+}
+
+/* Flouter les emails */
+.field-email a,
+td[data-label*="Email"] a,
+td[data-label*="email"] a,
+td.field-email a {
+    filter: blur(4px);
+    transition: filter 0.2s;
+}
+
+/* Flouter les téléphones */
+.field-telephone,
+td[data-label*="Téléphone"] .text-body,
+td[data-label*="Phone"] .text-body,
+td[data-label*="phone"] .text-body,
+td.field-telephone .text-body {
+    filter: blur(4px);
+    transition: filter 0.2s;
+}
+
+/* Flouter les adresses */
+td[data-label*="Adresse"] .text-body,
+td[data-label*="Address"] .text-body,
+td.field-text[data-column*="address"] .text-body {
+    filter: blur(4px);
+    transition: filter 0.2s;
+}
+
+/* Flouter les SIRET */
+td[data-label*="SIRET"] .text-body,
+td[data-label*="Siret"] .text-body {
+    filter: blur(4px);
+    transition: filter 0.2s;
+}
+
+/* Flouter les noms de clients */
+td.field-association a,
+td[data-label*="Client"] a {
+    filter: blur(4px);
+    transition: filter 0.2s;
+}
+
+/* Dévoiler au survol de la cellule */
+td:hover .text-body,
+td:hover a,
+.field-money:hover,
+.field-decimal:hover,
+.field-email:hover a,
+.field-telephone:hover,
+.field-association:hover a {
+    filter: blur(0px) !important;
+}
+
+/* Message indicatif - discret en bas à droite */
+body::before {
+    content: "🔒 Mode démo";
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.5);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 6px 12px;
+    border-radius: 3px;
+    z-index: 9999;
+    font-size: 11px;
+    font-weight: normal;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    transition: all 0.2s;
+}
+
+body::before:hover {
+    background: rgba(0, 0, 0, 0.7);
+    color: rgba(255, 255, 255, 0.9);
+}

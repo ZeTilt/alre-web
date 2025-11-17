@@ -14,6 +14,7 @@ class Facture
     public const STATUS_BROUILLON = 'brouillon';
     public const STATUS_A_ENVOYER = 'a_envoyer';
     public const STATUS_ENVOYE = 'envoye';
+    public const STATUS_A_RELANCER = 'a_relancer';
     public const STATUS_RELANCE = 'relance';
     public const STATUS_PAYE = 'paye';
     public const STATUS_EN_RETARD = 'en_retard';
@@ -474,6 +475,7 @@ class Facture
             'Brouillon' => self::STATUS_BROUILLON,
             'À envoyer' => self::STATUS_A_ENVOYER,
             'Envoyé' => self::STATUS_ENVOYE,
+            'À relancer' => self::STATUS_A_RELANCER,
             'Relancé' => self::STATUS_RELANCE,
             'Payé' => self::STATUS_PAYE,
             'En retard' => self::STATUS_EN_RETARD,
@@ -497,5 +499,29 @@ class Facture
             'PayPal' => 'paypal',
             'Autre' => 'autre',
         ];
+    }
+
+    /**
+     * Vérifie et met à jour automatiquement le statut en fonction de la date d'échéance
+     * Retourne true si le statut a été modifié
+     */
+    public function updateStatusBasedOnDeadline(): bool
+    {
+        // Ne rien faire si la facture est déjà payée ou annulée
+        if (in_array($this->status, [self::STATUS_PAYE, self::STATUS_ANNULE])) {
+            return false;
+        }
+
+        $now = new \DateTimeImmutable();
+
+        // Si la facture est envoyée ou relancée et que la date d'échéance est dépassée
+        if (in_array($this->status, [self::STATUS_ENVOYE, self::STATUS_RELANCE])) {
+            if ($this->dateEcheance && $this->dateEcheance < $now) {
+                $this->status = self::STATUS_A_RELANCER;
+                return true;
+            }
+        }
+
+        return false;
     }
 }

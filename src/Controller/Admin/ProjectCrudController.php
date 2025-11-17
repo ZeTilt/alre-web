@@ -19,7 +19,11 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 
 class ProjectCrudController extends AbstractCrudController
 {
@@ -31,6 +35,21 @@ class ProjectCrudController extends AbstractCrudController
     public static function getEntityFqcn(): string
     {
         return Project::class;
+    }
+
+    public function configureActions(Actions $actions): Actions
+    {
+        return $actions
+            ->add(Crud::PAGE_INDEX, Action::DETAIL);
+    }
+
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setEntityLabelInSingular('Projet')
+            ->setEntityLabelInPlural('Projets')
+            ->setPageTitle('index', 'Liste des projets')
+            ->setDefaultSort(['createdAt' => 'DESC']);
     }
 
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
@@ -99,7 +118,6 @@ class ProjectCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            IdField::new('id')->hideOnForm(),
             TextField::new('title', 'Titre du projet'),
             TextField::new('slug', 'Slug (URL)')
                 ->setHelp('Généré automatiquement si laissé vide')
@@ -139,8 +157,43 @@ class ProjectCrudController extends AbstractCrudController
             IntegerField::new('completionYear', 'Année de réalisation')
                 ->setHelp('Ex: 2024')
                 ->setRequired(false),
-            BooleanField::new('featured', 'Projet mis en avant'),
-            BooleanField::new('isPublished', 'Publié'),
+            BooleanField::new('featured', 'Mis en avant')
+                ->renderAsSwitch(true),
+            BooleanField::new('isPublished', 'Publié')
+                ->renderAsSwitch(true),
         ];
+    }
+
+    public function toggleField(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $entityId = $request->query->get('entityId');
+        $field = $request->query->get('field');
+        $value = $request->query->get('value') === '1';
+
+        if (!$entityId || !$field) {
+            return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
+        }
+
+        // Vérifier que le champ est autorisé
+        $allowedFields = ['featured', 'isPublished'];
+        if (!in_array($field, $allowedFields)) {
+            return new JsonResponse(['success' => false, 'error' => 'Field not allowed'], 400);
+        }
+
+        $project = $entityManager->getRepository(Project::class)->find($entityId);
+        if (!$project) {
+            return new JsonResponse(['success' => false, 'error' => 'Entity not found'], 404);
+        }
+
+        // Mettre à jour le champ
+        $setter = 'set' . ucfirst($field);
+        if (!method_exists($project, $setter)) {
+            return new JsonResponse(['success' => false, 'error' => 'Invalid field'], 400);
+        }
+
+        $project->$setter($value);
+        $entityManager->flush();
+
+        return new JsonResponse(['success' => true]);
     }
 }

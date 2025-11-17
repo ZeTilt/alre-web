@@ -51,7 +51,6 @@ class FactureCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            IdField::new('id')->onlyOnIndex(),
             TextField::new('number', 'Numéro')
                 ->setHelp('Auto-généré si vide, mais vous pouvez le modifier')
                 ->hideOnIndex(),
@@ -64,6 +63,7 @@ class FactureCrudController extends AbstractCrudController
                     Facture::STATUS_BROUILLON => 'secondary',
                     Facture::STATUS_A_ENVOYER => 'warning',
                     Facture::STATUS_ENVOYE => 'info',
+                    Facture::STATUS_A_RELANCER => 'danger',
                     Facture::STATUS_RELANCE => 'warning',
                     Facture::STATUS_PAYE => 'success',
                     Facture::STATUS_EN_RETARD => 'danger',
@@ -168,6 +168,7 @@ class FactureCrudController extends AbstractCrudController
             Facture::STATUS_BROUILLON => 'secondary',
             Facture::STATUS_A_ENVOYER => 'warning',
             Facture::STATUS_ENVOYE => 'info',
+            Facture::STATUS_A_RELANCER => 'danger',
             Facture::STATUS_RELANCE => 'warning',
             Facture::STATUS_PAYE => 'success',
             Facture::STATUS_EN_RETARD => 'danger',
@@ -207,12 +208,13 @@ class FactureCrudController extends AbstractCrudController
             Facture::STATUS_BROUILLON => [Facture::STATUS_A_ENVOYER],
             Facture::STATUS_A_ENVOYER => [Facture::STATUS_ENVOYE, Facture::STATUS_ANNULE],
             Facture::STATUS_ENVOYE => [Facture::STATUS_RELANCE, Facture::STATUS_PAYE, Facture::STATUS_EN_RETARD],
+            Facture::STATUS_A_RELANCER => [Facture::STATUS_RELANCE, Facture::STATUS_PAYE],
             Facture::STATUS_RELANCE => [Facture::STATUS_PAYE, Facture::STATUS_EN_RETARD],
             Facture::STATUS_PAYE => [],
             Facture::STATUS_EN_RETARD => [Facture::STATUS_PAYE],
             Facture::STATUS_ANNULE => [],
         ];
-        
+
         return $transitions[$currentStatus] ?? [];
     }
 
@@ -221,12 +223,13 @@ class FactureCrudController extends AbstractCrudController
         $actionMap = [
             Facture::STATUS_A_ENVOYER => 'markAsReady',
             Facture::STATUS_ENVOYE => 'markAsSent',
+            Facture::STATUS_A_RELANCER => 'markAsToRelaunch',
             Facture::STATUS_RELANCE => 'markAsRelance',
             Facture::STATUS_PAYE => 'markAsPaid',
             Facture::STATUS_EN_RETARD => 'markAsOverdue',
             Facture::STATUS_ANNULE => 'markAsCancelled',
         ];
-        
+
         return $actionMap[$status] ?? 'changeStatus';
     }
 
@@ -295,6 +298,7 @@ class FactureCrudController extends AbstractCrudController
         $statusMap = [
             'markAsReady' => Facture::STATUS_A_ENVOYER,
             'markAsSent' => Facture::STATUS_ENVOYE,
+            'markAsToRelaunch' => Facture::STATUS_A_RELANCER,
             'markAsRelance' => Facture::STATUS_RELANCE,
             'markAsPaid' => Facture::STATUS_PAYE,
             'markAsOverdue' => Facture::STATUS_EN_RETARD,
@@ -304,17 +308,23 @@ class FactureCrudController extends AbstractCrudController
         if (isset($statusMap[$actionName])) {
             $newStatus = $statusMap[$actionName];
             $facture->setStatus($newStatus);
-            
+
             // Set payment date when marked as paid
             if ($newStatus === Facture::STATUS_PAYE) {
                 $facture->setDatePaiement(new \DateTimeImmutable());
             }
-            
+
+            // Set new deadline when marked as relance (30 days from now)
+            if ($newStatus === Facture::STATUS_RELANCE) {
+                $facture->setDateEcheance(new \DateTimeImmutable('+30 days'));
+            }
+
             $entityManager->flush();
             
             $statusLabels = [
                 Facture::STATUS_A_ENVOYER => 'à envoyer',
                 Facture::STATUS_ENVOYE => 'envoyée',
+                Facture::STATUS_A_RELANCER => 'à relancer',
                 Facture::STATUS_RELANCE => 'relancée',
                 Facture::STATUS_PAYE => 'payée',
                 Facture::STATUS_EN_RETARD => 'en retard',

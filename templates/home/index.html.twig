@@ -227,58 +227,85 @@
 </section>
 
 {# ============================================
-   TÉMOIGNAGES (si disponibles - peut être dynamique plus tard)
+   PROJETS MIS EN AVANT
    ============================================ #}
-<section class="section" style="display: none;">
+{% if featuredProjects is defined and featuredProjects|length > 0 %}
+<section class="section">
+    <div class="container">
+        <h2 class="text-center mb-3">Mes Réalisations</h2>
+        <p class="text-center text-muted mb-5">
+            Quelques projets dont je suis fier
+        </p>
+
+        <div class="grid grid-{{ featuredProjects|length == 1 ? '1' : (featuredProjects|length == 2 ? '2' : '3') }}">
+            {% for project in featuredProjects %}
+            <div class="card project-card">
+                {% if project.featuredImage %}
+                    <div class="card-image">
+                        <img src="{{ asset('uploads/projects/' ~ project.featuredImage.imageFilename) }}"
+                             alt="{{ project.title }}"
+                             loading="lazy">
+                    </div>
+                {% endif %}
+                <div class="card-body">
+                    <h3 class="card-title">{{ project.title }}</h3>
+                    <p class="card-text">{{ project.shortDescription }}</p>
+                    <div class="card-technologies">
+                        {% for tech in project.technologies|slice(0, 4) %}
+                            <span class="badge">{{ tech }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ path('app_portfolio_show', {'slug': project.slug}) }}" class="card-link">
+                        Voir le projet <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="{{ path('app_portfolio') }}" class="btn btn-outline btn-lg">
+                <i class="fas fa-folder-open"></i> Voir tous les projets
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# ============================================
+   TÉMOIGNAGES
+   ============================================ #}
+{% if testimonials is defined and testimonials|length > 0 %}
+<section class="section section-light">
     <div class="container">
         <h2 class="text-center mb-3">Ce que disent mes clients</h2>
         <p class="text-center text-muted mb-5">
             Leur satisfaction est ma priorité
         </p>
 
-        <div class="grid grid-2">
+        <div class="grid grid-{{ testimonials|length == 1 ? '1' : (testimonials|length == 2 ? '2' : '3') }}">
+            {% for testimonial in testimonials %}
             <div class="testimonial-card">
                 <div class="rating">
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
+                    {% for i in 1..testimonial.rating %}
+                        <i class="fas fa-star"></i>
+                    {% endfor %}
                 </div>
-                <p class="testimonial-text">
-                    "Professionnel, réactif et à l'écoute. Notre nouveau site a dépassé nos attentes.
-                    Les adhésions en ligne ont augmenté de 30% en quelques mois. Je recommande vivement !"
-                </p>
+                <p class="testimonial-text">{{ testimonial.content }}</p>
                 <div class="testimonial-author">
                     <div>
-                        <div class="testimonial-author-name">Marie L.</div>
-                        <div class="testimonial-author-company">Association locale, Bretagne</div>
+                        <div class="testimonial-author-name">{{ testimonial.clientName }}</div>
+                        <div class="testimonial-author-company">{{ testimonial.clientCompany }}</div>
                     </div>
                 </div>
             </div>
-
-            <div class="testimonial-card">
-                <div class="rating">
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                </div>
-                <p class="testimonial-text">
-                    "Un accompagnement personnalisé et un résultat impeccable. Notre boutique en ligne fonctionne parfaitement
-                    et nous avons élargi notre clientèle au niveau national. Merci pour ce travail de qualité !"
-                </p>
-                <div class="testimonial-author">
-                    <div>
-                        <div class="testimonial-author-name">Jean-Pierre M.</div>
-                        <div class="testimonial-author-company">Commerce artisanal, Finistère</div>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
 </section>
+{% endif %}
 
 {# ============================================
    CTA FINAL - Appel à l'action

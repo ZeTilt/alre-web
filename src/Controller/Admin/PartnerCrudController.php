@@ -10,6 +10,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
@@ -48,8 +49,11 @@ class PartnerCrudController extends AbstractCrudController
             ArrayField::new('domains', 'Domaines d\'activité')
                 ->setHelp('Listez les domaines d\'expertise du partenaire (ex: Design graphique, Photographie, Rédaction)')
                 ->hideOnIndex(),
-            TextField::new('logo', 'Logo')
-                ->setHelp('Nom du fichier logo (à gérer manuellement pour l\'instant)')
+            ImageField::new('logo', 'Logo')
+                ->setBasePath('uploads/partners')
+                ->setUploadDir('public/uploads/partners')
+                ->setUploadedFileNamePattern('[randomhash].[extension]')
+                ->setHelp('Logo du partenaire (formats acceptés: JPG, PNG, WebP)')
                 ->hideOnIndex(),
             BooleanField::new('isActive', 'Actif')
                 ->setHelp('Si décoché, le partenaire n\'apparaîtra pas dans les listes de sélection'),

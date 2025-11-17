@@ -451,7 +451,7 @@ class AppFixtures extends Fixture
             $clients[1],
             $devis1,
             'FACT-2024-001',
-            'payee'
+            'paye'
         );
 
         // Devis 2 - Accepté et facturé (Architect Studio)
@@ -479,7 +479,7 @@ class AppFixtures extends Fixture
             $clients[2],
             $devis2,
             'FACT-2023-005',
-            'payee'
+            'paye'
         );
 
         // Devis 3 - Accepté et facturé (Fitness Plus)
@@ -507,7 +507,7 @@ class AppFixtures extends Fixture
             $clients[4],
             $devis3,
             'FACT-2023-002',
-            'payee'
+            'paye'
         );
 
         // Devis 4 - Accepté et facturé (Prestige Immo)
@@ -535,7 +535,7 @@ class AppFixtures extends Fixture
             $clients[5],
             $devis4,
             'FACT-2024-003',
-            'en_attente'
+            'envoye'
         );
 
         // Devis 5 - Envoyé (TechStart)
@@ -634,7 +634,7 @@ class AppFixtures extends Fixture
         $facture->setCreatedBy($user);
         $facture->setConditions('TVA non applicable, article 293 B du CGI. Paiement à 30 jours.');
 
-        if ($status === 'payee') {
+        if ($status === 'paye') {
             $facture->setDatePaiement(new \DateTimeImmutable('-15 days'));
         }
 

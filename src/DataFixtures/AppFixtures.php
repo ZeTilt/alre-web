@@ -747,28 +747,6 @@ class AppFixtures extends Fixture
         $devis2024_9->setDateEnvoi(new \DateTimeImmutable('2024-08-05'));
         $devis2024_9->setDateValidite(new \DateTimeImmutable('2024-09-05'));
 
-        // Gros devis en cours
-        $devis2024_10 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[0],
-            'DEV-2024-010',
-            'Marketplace B2B',
-            'Développement plateforme marketplace',
-            Devis::STATUS_ENVOYE,
-            [
-                ['description' => 'Architecture et conception', 'quantity' => 1, 'unitPrice' => 3000],
-                ['description' => 'Développement backend API', 'quantity' => 40, 'unitPrice' => 450],
-                ['description' => 'Développement frontend React', 'quantity' => 35, 'unitPrice' => 450],
-                ['description' => 'Système de paiement', 'quantity' => 1, 'unitPrice' => 2000],
-                ['description' => 'Tests et sécurité', 'quantity' => 1, 'unitPrice' => 1500],
-                ['description' => 'Déploiement et formation', 'quantity' => 1, 'unitPrice' => 1200],
-            ],
-            new \DateTimeImmutable('2024-10-01')
-        );
-        $devis2024_10->setDateEnvoi(new \DateTimeImmutable('2024-10-10'));
-        $devis2024_10->setDateValidite(new \DateTimeImmutable('2024-12-10'));
-
         // Factures supplémentaires 2024
         $devis2024_11 = $this->createDevis(
             $manager,

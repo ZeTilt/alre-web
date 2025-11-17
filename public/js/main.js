@@ -221,13 +221,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // ============================================
     // 6. GESTION DES CARTES INTERACTIVES
     // ============================================
-    // Ne pas appliquer l'effet de tilt sur les pages légales
+    // Ne pas appliquer l'effet de tilt sur les pages légales et le portfolio
     const isLegalPage = window.location.pathname.includes('/mentions-legales') ||
                         window.location.pathname.includes('/politique-de-confidentialite') ||
                         window.location.pathname.includes('/cgv');
+    const isPortfolioPage = window.location.pathname.includes('/portfolio');
 
-    if (!isLegalPage) {
-        const cards = document.querySelectorAll('.card, .service-card, .project-card');
+    if (!isLegalPage && !isPortfolioPage) {
+        const cards = document.querySelectorAll('.card, .service-card');
 
         cards.forEach(card => {
             // Effet de parallax très subtil au survol

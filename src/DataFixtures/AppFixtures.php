@@ -52,14 +52,16 @@ class AppFixtures extends Fixture
 
         $manager->flush();
 
+        $stats = $this->getStats($manager);
+
         echo "\n✓ Fixtures loaded successfully!\n";
         echo "  - Company: 1\n";
         echo "  - Users: 1\n";
         echo "  - Clients: " . count($clients) . "\n";
         echo "  - Partners: " . count($partners) . "\n";
         echo "  - Projects: " . count($projects) . "\n";
-        echo "  - Devis: 6\n";
-        echo "  - Factures: 4\n";
+        echo "  - Devis: " . $stats['devis'] . "\n";
+        echo "  - Factures: " . $stats['factures'] . "\n";
         echo "  - Testimonials: 3\n";
     }
 
@@ -423,8 +425,21 @@ class AppFixtures extends Fixture
         }
     }
 
+    private function getStats(ObjectManager $manager): array
+    {
+        $devisCount = $manager->getRepository(Devis::class)->count([]);
+        $facturesCount = $manager->getRepository(Facture::class)->count([]);
+
+        return [
+            'devis' => $devisCount,
+            'factures' => $facturesCount,
+        ];
+    }
+
     private function createDevisAndFactures(ObjectManager $manager, User $user, array $clients): void
     {
+        // DEVIS 2024
+
         // Devis 1 - Accepté et facturé (BioBoutique - E-commerce)
         $devis1 = $this->createDevis(
             $manager,
@@ -558,7 +573,7 @@ class AppFixtures extends Fixture
         $devis5->setDateValidite(new \DateTimeImmutable('2025-02-10'));
 
         // Devis 6 - Brouillon (Restaurant)
-        $devis6 = $this->createDevis(
+        $this->createDevis(
             $manager,
             $user,
             $clients[3],
@@ -572,6 +587,247 @@ class AppFixtures extends Fixture
                 ['description' => 'Optimisation performances', 'quantity' => 1, 'unitPrice' => 600],
             ]
         );
+
+        // DEVIS 2023 - ARCHIVES
+
+        // Devis accepté et facturé - Site vitrine simple
+        $devis2023_1 = $this->createDevis(
+            $manager,
+            $user,
+            $clients[0],
+            'DEV-2023-001',
+            'Site Vitrine Corporate',
+            'Création site vitrine 5 pages',
+            Devis::STATUS_ACCEPTE,
+            [
+                ['description' => 'Maquette et design', 'quantity' => 1, 'unitPrice' => 800],
+                ['description' => 'Développement 5 pages', 'quantity' => 5, 'unitPrice' => 300],
+                ['description' => 'Formulaire de contact', 'quantity' => 1, 'unitPrice' => 200],
+                ['description' => 'Formation client', 'quantity' => 2, 'unitPrice' => 150],
+            ],
+            new \DateTimeImmutable('2023-01-10')
+        );
+        $devis2023_1->setDateEnvoi(new \DateTimeImmutable('2023-01-15'));
+        $devis2023_1->setDateReponse(new \DateTimeImmutable('2023-01-22'));
+
+        $this->createFacture(
+            $manager,
+            $user,
+            $clients[0],
+            $devis2023_1,
+            'FACT-2023-001',
+            'paye',
+            new \DateTimeImmutable('2023-03-15')
+        );
+
+        // Devis refusé
+        $devis2023_2 = $this->createDevis(
+            $manager,
+            $user,
+            $clients[3],
+            'DEV-2023-003',
+            'Refonte complète',
+            'Refonte totale du site existant',
+            Devis::STATUS_REFUSE,
+            [
+                ['description' => 'Audit et analyse', 'quantity' => 1, 'unitPrice' => 1200],
+                ['description' => 'Refonte design', 'quantity' => 1, 'unitPrice' => 2500],
+                ['description' => 'Développement', 'quantity' => 30, 'unitPrice' => 400],
+            ],
+            new \DateTimeImmutable('2023-03-05')
+        );
+        $devis2023_2->setDateEnvoi(new \DateTimeImmutable('2023-03-10'));
+        $devis2023_2->setDateReponse(new \DateTimeImmutable('2023-03-25'));
+
+        // Devis expiré
+        $devis2023_3 = $this->createDevis(
+            $manager,
+            $user,
+            $clients[1],
+            'DEV-2023-006',
+            'Module de réservation',
+            'Ajout système de réservation en ligne',
+            Devis::STATUS_EXPIRE,
+            [
+                ['description' => 'Développement module réservation', 'quantity' => 1, 'unitPrice' => 2800],
+                ['description' => 'Intégration au site existant', 'quantity' => 1, 'unitPrice' => 600],
+            ],
+            new \DateTimeImmutable('2023-06-01')
+        );
+        $devis2023_3->setDateEnvoi(new \DateTimeImmutable('2023-06-05'));
+        $devis2023_3->setDateValidite(new \DateTimeImmutable('2023-07-05'));
+
+        // DEVIS 2024 SUPPLÉMENTAIRES
+
+        // Devis en attente de réponse - Landing page
+        $devis2024_6 = $this->createDevis(
+            $manager,
+            $user,
+            $clients[2],
+            'DEV-2024-006',
+            'Landing Page Campagne',
+            'Page d\'atterrissage pour campagne marketing',
+            Devis::STATUS_ENVOYE,
+            [
+                ['description' => 'Design landing page', 'quantity' => 1, 'unitPrice' => 600],
+                ['description' => 'Développement responsive', 'quantity' => 1, 'unitPrice' => 800],
+                ['description' => 'Formulaire conversion', 'quantity' => 1, 'unitPrice' => 400],
+                ['description' => 'Analytics et tracking', 'quantity' => 1, 'unitPrice' => 300],
+            ],
+            new \DateTimeImmutable('2024-10-15')
+        );
+        $devis2024_6->setDateEnvoi(new \DateTimeImmutable('2024-10-20'));
+        $devis2024_6->setDateValidite(new \DateTimeImmutable('2024-11-20'));
+
+        // Devis accepté récent - pas encore facturé
+        $devis2024_7 = $this->createDevis(
+            $manager,
+            $user,
+            $clients[4],
+            'DEV-2024-007',
+            'Optimisation SEO',
+            'Audit SEO complet et optimisations',
+            Devis::STATUS_ACCEPTE,
+            [
+                ['description' => 'Audit SEO technique', 'quantity' => 1, 'unitPrice' => 800],
+                ['description' => 'Optimisation on-page', 'quantity' => 10, 'unitPrice' => 150],
+                ['description' => 'Stratégie contenu', 'quantity' => 1, 'unitPrice' => 600],
+                ['description' => 'Suivi 3 mois', 'quantity' => 3, 'unitPrice' => 200],
+            ],
+            new \DateTimeImmutable('2024-11-01')
+        );
+        $devis2024_7->setDateEnvoi(new \DateTimeImmutable('2024-11-05'));
+        $devis2024_7->setDateReponse(new \DateTimeImmutable('2024-11-12'));
+
+        // Petits devis - corrections et maintenance
+        $devis2024_8 = $this->createDevis(
+            $manager,
+            $user,
+            $clients[1],
+            'DEV-2024-008',
+            'Corrections bugs',
+            'Corrections diverses sur le site',
+            Devis::STATUS_ACCEPTE,
+            [
+                ['description' => 'Correction formulaire contact', 'quantity' => 1, 'unitPrice' => 200],
+                ['description' => 'Mise à jour images', 'quantity' => 1, 'unitPrice' => 150],
+                ['description' => 'Optimisation vitesse', 'quantity' => 1, 'unitPrice' => 300],
+            ],
+            new \DateTimeImmutable('2024-09-10')
+        );
+        $devis2024_8->setDateEnvoi(new \DateTimeImmutable('2024-09-12'));
+        $devis2024_8->setDateReponse(new \DateTimeImmutable('2024-09-13'));
+
+        $this->createFacture(
+            $manager,
+            $user,
+            $clients[1],
+            $devis2024_8,
+            'FACT-2024-004',
+            'paye',
+            new \DateTimeImmutable('2024-09-25')
+        );
+
+        // Devis relancé
+        $devis2024_9 = $this->createDevis(
+            $manager,
+            $user,
+            $clients[5],
+            'DEV-2024-009',
+            'Module de recherche avancée',
+            'Amélioration du moteur de recherche',
+            Devis::STATUS_RELANCE,
+            [
+                ['description' => 'Analyse besoins', 'quantity' => 1, 'unitPrice' => 400],
+                ['description' => 'Développement filtres avancés', 'quantity' => 1, 'unitPrice' => 1800],
+                ['description' => 'Tests utilisateurs', 'quantity' => 1, 'unitPrice' => 300],
+            ],
+            new \DateTimeImmutable('2024-08-01')
+        );
+        $devis2024_9->setDateEnvoi(new \DateTimeImmutable('2024-08-05'));
+        $devis2024_9->setDateValidite(new \DateTimeImmutable('2024-09-05'));
+
+        // Gros devis en cours
+        $devis2024_10 = $this->createDevis(
+            $manager,
+            $user,
+            $clients[0],
+            'DEV-2024-010',
+            'Marketplace B2B',
+            'Développement plateforme marketplace',
+            Devis::STATUS_ENVOYE,
+            [
+                ['description' => 'Architecture et conception', 'quantity' => 1, 'unitPrice' => 3000],
+                ['description' => 'Développement backend API', 'quantity' => 40, 'unitPrice' => 450],
+                ['description' => 'Développement frontend React', 'quantity' => 35, 'unitPrice' => 450],
+                ['description' => 'Système de paiement', 'quantity' => 1, 'unitPrice' => 2000],
+                ['description' => 'Tests et sécurité', 'quantity' => 1, 'unitPrice' => 1500],
+                ['description' => 'Déploiement et formation', 'quantity' => 1, 'unitPrice' => 1200],
+            ],
+            new \DateTimeImmutable('2024-10-01')
+        );
+        $devis2024_10->setDateEnvoi(new \DateTimeImmutable('2024-10-10'));
+        $devis2024_10->setDateValidite(new \DateTimeImmutable('2024-12-10'));
+
+        // Factures supplémentaires 2024
+        $devis2024_11 = $this->createDevis(
+            $manager,
+            $user,
+            $clients[3],
+            'DEV-2024-011',
+            'Site Menu Digital',
+            'Création menu digital QR code',
+            Devis::STATUS_ACCEPTE,
+            [
+                ['description' => 'Design menu digital', 'quantity' => 1, 'unitPrice' => 500],
+                ['description' => 'Développement responsive', 'quantity' => 1, 'unitPrice' => 800],
+                ['description' => 'QR codes personnalisés', 'quantity' => 1, 'unitPrice' => 200],
+            ],
+            new \DateTimeImmutable('2024-02-15')
+        );
+        $devis2024_11->setDateEnvoi(new \DateTimeImmutable('2024-02-20'));
+        $devis2024_11->setDateReponse(new \DateTimeImmutable('2024-02-25'));
+
+        $this->createFacture(
+            $manager,
+            $user,
+            $clients[3],
+            $devis2024_11,
+            'FACT-2024-002',
+            'paye',
+            new \DateTimeImmutable('2024-03-10')
+        );
+
+        // Brouillons
+        $this->createDevis(
+            $manager,
+            $user,
+            $clients[2],
+            null,
+            'Application mobile',
+            'Étude de faisabilité application mobile',
+            Devis::STATUS_BROUILLON,
+            [
+                ['description' => 'Audit et recommandations', 'quantity' => 1, 'unitPrice' => 1500],
+                ['description' => 'Maquettes UI/UX', 'quantity' => 1, 'unitPrice' => 2000],
+            ],
+            new \DateTimeImmutable('2024-11-10')
+        );
+
+        $this->createDevis(
+            $manager,
+            $user,
+            $clients[4],
+            null,
+            'Chatbot IA',
+            'Intégration chatbot intelligent',
+            Devis::STATUS_BROUILLON,
+            [
+                ['description' => 'Configuration chatbot', 'quantity' => 1, 'unitPrice' => 1200],
+                ['description' => 'Formation et personnalisation', 'quantity' => 1, 'unitPrice' => 800],
+            ],
+            new \DateTimeImmutable('2024-11-15')
+        );
     }
 
     private function createDevis(
@@ -582,7 +838,8 @@ class AppFixtures extends Fixture
         string $title,
         string $description,
         string $status,
-        array $items
+        array $items,
+        ?\DateTimeImmutable $dateCreation = null
     ): Devis {
         $devis = new Devis();
         if ($number) {
@@ -595,21 +852,22 @@ class AppFixtures extends Fixture
         $devis->setCreatedBy($user);
         $devis->setConditions('Devis valable 30 jours. Acompte de 30% à la commande. Paiement du solde à la livraison.');
 
-        $totalHt = 0;
+        if ($dateCreation) {
+            $devis->setDateCreation($dateCreation);
+            $devis->setCreatedAt($dateCreation);
+        }
+
         foreach ($items as $itemData) {
             $item = new DevisItem();
             $item->setDescription($itemData['description']);
             $item->setQuantity($itemData['quantity']);
             $item->setUnitPrice($itemData['unitPrice']);
             $item->setVatRate(20.00);
-            $item->setDevis($devis);
 
+            $devis->addItem($item);
             $manager->persist($item);
-
-            $totalHt += $itemData['quantity'] * $itemData['unitPrice'];
         }
 
-        $devis->setTotalHt((string) $totalHt);
         $devis->calculateTotals();
 
         $manager->persist($devis);
@@ -623,7 +881,8 @@ class AppFixtures extends Fixture
         Client $client,
         Devis $devis,
         string $number,
-        string $status
+        string $status,
+        ?\DateTimeImmutable $dateFacture = null
     ): Facture {
         $facture = new Facture();
         $facture->setNumber($number);
@@ -634,8 +893,17 @@ class AppFixtures extends Fixture
         $facture->setCreatedBy($user);
         $facture->setConditions('TVA non applicable, article 293 B du CGI. Paiement à 30 jours.');
 
+        if ($dateFacture) {
+            $facture->setDateFacture($dateFacture);
+            $facture->setCreatedAt($dateFacture);
+        }
+
         if ($status === 'paye') {
-            $facture->setDatePaiement(new \DateTimeImmutable('-15 days'));
+            if ($dateFacture) {
+                $facture->setDatePaiement((clone $dateFacture)->modify('+15 days'));
+            } else {
+                $facture->setDatePaiement(new \DateTimeImmutable('-15 days'));
+            }
         }
 
         // Copy items from devis
@@ -645,12 +913,11 @@ class AppFixtures extends Fixture
             $factureItem->setQuantity($devisItem->getQuantity());
             $factureItem->setUnitPrice($devisItem->getUnitPrice());
             $factureItem->setVatRate($devisItem->getVatRate());
-            $factureItem->setFacture($facture);
 
+            $facture->addItem($factureItem);
             $manager->persist($factureItem);
         }
 
-        $facture->setTotalHt($devis->getTotalHt());
         $facture->calculateTotals();
 
         $manager->persist($facture);

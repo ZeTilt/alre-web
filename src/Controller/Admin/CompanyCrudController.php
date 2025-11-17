@@ -36,7 +36,6 @@ class CompanyCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            IdField::new('id')->onlyOnIndex(),
             TextField::new('name', 'Nom de l\'entreprise')
                 ->setRequired(true),
             TextField::new('ownerName', 'Nom du dirigeant')

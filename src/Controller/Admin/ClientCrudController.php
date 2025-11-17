@@ -39,7 +39,6 @@ class ClientCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            IdField::new('id')->onlyOnIndex(),
             TextField::new('name', 'Nom'),
             ChoiceField::new('type', 'Type')
                 ->setChoices(Client::getTypeChoices())

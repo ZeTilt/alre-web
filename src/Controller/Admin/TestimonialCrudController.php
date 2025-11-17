@@ -22,7 +22,6 @@ class TestimonialCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            IdField::new('id')->hideOnForm(),
             TextField::new('clientName', 'Nom du client'),
             TextField::new('clientCompany', 'Entreprise/Association')->setHelp('Optionnel'),
             TextareaField::new('content', 'Témoignage')

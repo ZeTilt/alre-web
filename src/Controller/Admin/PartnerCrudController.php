@@ -39,7 +39,6 @@ class PartnerCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            IdField::new('id')->onlyOnIndex(),
             TextField::new('name', 'Nom')
                 ->setHelp('Nom du partenaire ou de l\'entreprise'),
             UrlField::new('url', 'Site web')

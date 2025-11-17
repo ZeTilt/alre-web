@@ -132,7 +132,7 @@
             <div class="card project-card" data-category="{{ project.category }}">
                 {% set featuredImage = project.featuredImage %}
                 {% if featuredImage %}
-                <img src="{{ asset('uploads/projects/' ~ featuredImage.imageFilename) }}" alt="{{ featuredImage.altText ?? project.title }}" class="project-image">
+                <img src="{{ asset('uploads/projects/' ~ featuredImage.imageFilename) }}" alt="{{ featuredImage.altText ?? featuredImage.caption ?? project.title }}" class="project-image">
                 {% else %}
                 <div class="project-image" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); display: flex; align-items: center; justify-content: center;">
                     <i class="fas fa-image" style="font-size: 3rem; color: rgba(255,255,255,0.5);"></i>

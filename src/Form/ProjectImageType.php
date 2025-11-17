@@ -47,7 +47,7 @@ class ProjectImageType extends AbstractType
             ->add('altText', TextType::class, [
                 'label' => 'Texte alternatif',
                 'required' => false,
-                'help' => 'Description de l\'image pour l\'accessibilité et le SEO',
+                'help' => 'Description de l\'image pour l\'accessibilité et le SEO. Si vide, la légende sera utilisée.',
             ])
             ->add('caption', TextareaType::class, [
                 'label' => 'Légende',

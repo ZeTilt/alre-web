@@ -46,6 +46,7 @@ class ClientCrudController extends AbstractCrudController
                 ->renderAsBadges([
                     Client::TYPE_PARTICULIER => 'info',
                     Client::TYPE_ENTREPRISE => 'primary',
+                    Client::TYPE_ASSOCIATION => 'warning',
                 ]),
             TextField::new('companyName', 'Raison sociale')->hideOnIndex(),
             TextField::new('siret', 'SIRET')->hideOnIndex(),

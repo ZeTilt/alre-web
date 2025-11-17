@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ProjectRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -21,8 +23,9 @@ class Project
     #[ORM\Column(length: 255, unique: true)]
     private ?string $slug = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $clientName = null;
+    #[ORM\ManyToOne(inversedBy: 'projects')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Client $client = null;
 
     #[ORM\Column(length: 50)]
     private ?string $category = null; // vitrine, ecommerce, sur-mesure
@@ -36,9 +39,6 @@ class Project
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private array $technologies = [];
 
-    #[ORM\Column(type: Types::JSON, nullable: true)]
-    private array $partners = [];
-
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $context = null;
 
@@ -47,9 +47,6 @@ class Project
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $results = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $imageFilename = null;
 
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $projectUrl = null;
@@ -68,6 +65,19 @@ class Project
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updatedAt = null;
+
+    #[ORM\OneToMany(targetEntity: ProjectImage::class, mappedBy: 'project', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC', 'createdAt' => 'ASC'])]
+    private Collection $images;
+
+    #[ORM\OneToMany(targetEntity: ProjectPartner::class, mappedBy: 'project', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $projectPartners;
+
+    public function __construct()
+    {
+        $this->images = new ArrayCollection();
+        $this->projectPartners = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -98,14 +108,14 @@ class Project
         return $this;
     }
 
-    public function getClientName(): ?string
+    public function getClient(): ?Client
     {
-        return $this->clientName;
+        return $this->client;
     }
 
-    public function setClientName(?string $clientName): static
+    public function setClient(?Client $client): static
     {
-        $this->clientName = $clientName;
+        $this->client = $client;
 
         return $this;
     }
@@ -158,18 +168,6 @@ class Project
         return $this;
     }
 
-    public function getPartners(): array
-    {
-        return $this->partners ?? [];
-    }
-
-    public function setPartners(?array $partners): static
-    {
-        $this->partners = $partners ?? [];
-
-        return $this;
-    }
-
     public function getContext(): ?string
     {
         return $this->context;
@@ -202,18 +200,6 @@ class Project
     public function setResults(?string $results): static
     {
         $this->results = $results;
-
-        return $this;
-    }
-
-    public function getImageFilename(): ?string
-    {
-        return $this->imageFilename;
-    }
-
-    public function setImageFilename(?string $imageFilename): static
-    {
-        $this->imageFilename = $imageFilename;
 
         return $this;
     }
@@ -328,6 +314,82 @@ class Project
         $string = trim($string, '-');
 
         return $string;
+    }
+
+    /**
+     * @return Collection<int, ProjectImage>
+     */
+    public function getImages(): Collection
+    {
+        return $this->images;
+    }
+
+    public function addImage(ProjectImage $image): static
+    {
+        if (!$this->images->contains($image)) {
+            $this->images->add($image);
+            $image->setProject($this);
+        }
+
+        return $this;
+    }
+
+    public function removeImage(ProjectImage $image): static
+    {
+        if ($this->images->removeElement($image)) {
+            // set the owning side to null (unless already changed)
+            if ($image->getProject() === $this) {
+                $image->setProject(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Retourne l'image mise en avant ou la première image de la galerie
+     */
+    public function getFeaturedImage(): ?ProjectImage
+    {
+        // Chercher une image marquée comme featured
+        foreach ($this->images as $image) {
+            if ($image->isFeatured()) {
+                return $image;
+            }
+        }
+
+        // Sinon retourner la première image
+        return $this->images->first() ?: null;
+    }
+
+    /**
+     * @return Collection<int, ProjectPartner>
+     */
+    public function getProjectPartners(): Collection
+    {
+        return $this->projectPartners;
+    }
+
+    public function addProjectPartner(ProjectPartner $projectPartner): static
+    {
+        if (!$this->projectPartners->contains($projectPartner)) {
+            $this->projectPartners->add($projectPartner);
+            $projectPartner->setProject($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProjectPartner(ProjectPartner $projectPartner): static
+    {
+        if ($this->projectPartners->removeElement($projectPartner)) {
+            // set the owning side to null (unless already changed)
+            if ($projectPartner->getProject() === $this) {
+                $projectPartner->setProject(null);
+            }
+        }
+
+        return $this;
     }
 
     public function __toString(): string

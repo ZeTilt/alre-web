@@ -9,6 +9,7 @@ use App\Entity\Devis;
 use App\Entity\Facture;
 use App\Entity\User;
 use App\Entity\Project;
+use App\Entity\Partner;
 use App\Entity\Testimonial;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
@@ -56,6 +57,7 @@ class DashboardController extends AbstractDashboardController
 
         yield MenuItem::section('Site Public');
         yield MenuItem::linkToCrud('Portfolio', 'fas fa-folder-open', Project::class);
+        yield MenuItem::linkToCrud('Partenaires', 'fas fa-handshake', Partner::class);
         yield MenuItem::linkToCrud('Témoignages', 'fas fa-star', Testimonial::class);
         yield MenuItem::linkToCrud('Messages de contact', 'fas fa-envelope', ContactMessage::class);
 

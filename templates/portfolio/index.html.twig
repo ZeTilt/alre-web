@@ -130,8 +130,9 @@
         <div class="grid grid-2">
             {% for project in projects %}
             <div class="card project-card" data-category="{{ project.category }}">
-                {% if project.imageFilename %}
-                <img src="{{ asset('uploads/projects/' ~ project.imageFilename) }}" alt="{{ project.title }}" class="project-image">
+                {% set featuredImage = project.featuredImage %}
+                {% if featuredImage %}
+                <img src="{{ asset('uploads/projects/' ~ featuredImage.imageFilename) }}" alt="{{ featuredImage.altText ?? project.title }}" class="project-image">
                 {% else %}
                 <div class="project-image" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); display: flex; align-items: center; justify-content: center;">
                     <i class="fas fa-image" style="font-size: 3rem; color: rgba(255,255,255,0.5);"></i>
@@ -159,13 +160,17 @@
                     {% endfor %}
                 </div>
 
-                {% if project.partners is not empty %}
+                {% if project.projectPartners is not empty %}
                 <h4 style="font-size: 1rem; margin-top: 1rem; color: var(--primary-color);">En collaboration avec :</h4>
                 <div style="margin-top: 0.5rem;">
-                    {% for partner in project.partners %}
-                        {% if partner.url is defined and partner.name is defined %}
+                    {% for projectPartner in project.projectPartners %}
+                        {% set partner = projectPartner.partner %}
+                        {% if partner %}
                         <a href="{{ partner.url }}" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-right: 0.5rem; margin-bottom: 0.5rem; color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">
                             <i class="fas fa-handshake"></i> {{ partner.name }}
+                            {% if projectPartner.selectedDomains is not empty %}
+                                <span style="opacity: 0.7;">({{ projectPartner.selectedDomains|join(', ') }})</span>
+                            {% endif %}
                         </a>
                         {% endif %}
                     {% endfor %}

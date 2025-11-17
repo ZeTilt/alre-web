@@ -11,8 +11,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: ClientRepository::class)]
 class Client
 {
-    public const TYPE_PARTICULIER = 'particulier';
-    public const TYPE_ENTREPRISE = 'entreprise';
+    public const string TYPE_PARTICULIER = 'particulier';
+    public const string TYPE_ENTREPRISE = 'entreprise';
+
+    public const string TYPE_ASSOCIATION = 'association';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -46,6 +48,9 @@ class Client
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $phone = null;
 
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $url = null;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $address = null;
 
@@ -76,11 +81,15 @@ class Client
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Facture::class, orphanRemoval: true)]
     private Collection $factures;
 
+    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'client')]
+    private Collection $projects;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->devis = new ArrayCollection();
         $this->factures = new ArrayCollection();
+        $this->projects = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -192,6 +201,18 @@ class Client
     public function setPhone(?string $phone): static
     {
         $this->phone = $phone;
+
+        return $this;
+    }
+
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
+
+    public function setUrl(?string $url): static
+    {
+        $this->url = $url;
 
         return $this;
     }
@@ -352,6 +373,36 @@ class Client
         return $this;
     }
 
+    /**
+     * @return Collection<int, Project>
+     */
+    public function getProjects(): Collection
+    {
+        return $this->projects;
+    }
+
+    public function addProject(Project $project): static
+    {
+        if (!$this->projects->contains($project)) {
+            $this->projects->add($project);
+            $project->setClient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProject(Project $project): static
+    {
+        if ($this->projects->removeElement($project)) {
+            // set the owning side to null (unless already changed)
+            if ($project->getClient() === $this) {
+                $project->setClient(null);
+            }
+        }
+
+        return $this;
+    }
+
     public function getDisplayName(): string
     {
         if ($this->type === self::TYPE_ENTREPRISE && $this->companyName) {
@@ -398,6 +449,7 @@ class Client
         return [
             'Particulier' => self::TYPE_PARTICULIER,
             'Entreprise' => self::TYPE_ENTREPRISE,
+            'Association' => self::TYPE_ASSOCIATION,
         ];
     }
 }

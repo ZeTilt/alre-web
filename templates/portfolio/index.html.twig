@@ -160,30 +160,11 @@
                     {% endfor %}
                 </div>
 
-                {% if project.projectPartners is not empty %}
-                <h4 style="font-size: 1rem; margin-top: 1rem; color: var(--primary-color);">En collaboration avec :</h4>
-                <div style="margin-top: 0.5rem;">
-                    {% for projectPartner in project.projectPartners %}
-                        {% set partner = projectPartner.partner %}
-                        {% if partner %}
-                        <a href="{{ partner.url }}" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-right: 0.5rem; margin-bottom: 0.5rem; color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">
-                            <i class="fas fa-handshake"></i> {{ partner.name }}
-                            {% if projectPartner.selectedDomains is not empty %}
-                                <span style="opacity: 0.7;">({{ projectPartner.selectedDomains|join(', ') }})</span>
-                            {% endif %}
-                        </a>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                {% if project.projectUrl %}
-                <div style="margin-top: 1rem;">
-                    <a href="{{ project.projectUrl }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline">
-                        <i class="fas fa-external-link-alt"></i> Voir le site
+                <div style="margin-top: 1.5rem;">
+                    <a href="{{ path('app_portfolio_show', {slug: project.slug}) }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> Voir le projet
                     </a>
                 </div>
-                {% endif %}
             </div>
             {% endfor %}
         </div>

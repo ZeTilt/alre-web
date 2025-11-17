@@ -49,3 +49,7 @@ services:
     App\Command\OptimizeProjectImagesCommand:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    App\Controller\Admin\ProjectCrudController:
+        arguments:
+            $projectDir: '%kernel.project_dir%'

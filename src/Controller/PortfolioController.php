@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Project;
 use App\Repository\ProjectRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,6 +18,19 @@ class PortfolioController extends AbstractController
 
         return $this->render('portfolio/index.html.twig', [
             'projects' => $projects,
+        ]);
+    }
+
+    #[Route('/portfolio/{slug}', name: 'app_portfolio_show')]
+    public function show(Project $project): Response
+    {
+        // Vérifier que le projet est publié
+        if (!$project->isPublished()) {
+            throw $this->createNotFoundException('Ce projet n\'est pas disponible.');
+        }
+
+        return $this->render('portfolio/show.html.twig', [
+            'project' => $project,
         ]);
     }
 }

@@ -1,0 +1,188 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ project.title }} | Portfolio - Développeur Web Freelance{% endblock %}
+
+{% block meta_description %}{{ project.shortDescription }}{% endblock %}
+
+{% block body %}
+
+{# Hero Section #}
+<section class="hero" style="padding: 4rem 0;">
+    <div class="hero-content">
+        <h1 class="fade-in">{{ project.title }}</h1>
+        {% if project.completionYear %}
+        <p class="lead fade-in-delay-1">
+            <i class="fas fa-calendar-alt"></i> Réalisé en {{ project.completionYear }}
+        </p>
+        {% endif %}
+    </div>
+</section>
+
+{# Image principale #}
+{% set featuredImage = project.featuredImage %}
+{% if featuredImage %}
+<section class="section section-light" style="padding: 2rem 0;">
+    <div class="container">
+        <img src="{{ asset('uploads/projects/' ~ featuredImage.imageFilename) }}"
+             alt="{{ featuredImage.altText ?? project.title }}"
+             style="width: 100%; max-height: 500px; object-fit: cover; border-radius: var(--border-radius);">
+        {% if featuredImage.caption %}
+        <p style="text-align: center; color: var(--text-muted); margin-top: 1rem;">
+            {{ featuredImage.caption }}
+        </p>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+{# Description #}
+<section class="section">
+    <div class="container" style="max-width: 900px;">
+        <div class="grid grid-3" style="margin-bottom: 3rem;">
+            <div class="card" style="text-align: center;">
+                <div class="card-icon">
+                    <i class="fas fa-tag"></i>
+                </div>
+                <h3 class="card-title" style="font-size: 1rem;">Catégorie</h3>
+                <p>{{ project.category|replace({'_': ' '})|title }}</p>
+            </div>
+
+            {% if project.client %}
+            <div class="card" style="text-align: center;">
+                <div class="card-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h3 class="card-title" style="font-size: 1rem;">Client</h3>
+                <p>{{ project.client.name }}</p>
+            </div>
+            {% endif %}
+
+            {% if project.technologies is not empty %}
+            <div class="card" style="text-align: center;">
+                <div class="card-icon">
+                    <i class="fas fa-code"></i>
+                </div>
+                <h3 class="card-title" style="font-size: 1rem;">Technologies</h3>
+                <p>{{ project.technologies|join(', ') }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if project.fullDescription %}
+        <div style="margin-bottom: 3rem;">
+            <h2>Description</h2>
+            <div class="text-content">
+                {{ project.fullDescription|raw }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if project.context %}
+        <div style="margin-bottom: 3rem;">
+            <h2>Contexte & Besoin</h2>
+            <div class="text-content">
+                {{ project.context|raw }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if project.solutions %}
+        <div style="margin-bottom: 3rem;">
+            <h2>Solutions apportées</h2>
+            <div class="text-content">
+                {{ project.solutions|raw }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if project.results %}
+        <div style="margin-bottom: 3rem;">
+            <h2>Résultats obtenus</h2>
+            <div class="text-content">
+                {{ project.results|raw }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{# Galerie d'images #}
+{% set galleryImages = project.images|filter(img => not img.isFeatured) %}
+{% if galleryImages is not empty %}
+<section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-4">Galerie</h2>
+        <div class="grid grid-2">
+            {% for image in galleryImages %}
+            <div>
+                <img src="{{ asset('uploads/projects/' ~ image.imageFilename) }}"
+                     alt="{{ image.altText ?? project.title }}"
+                     style="width: 100%; height: auto; border-radius: var(--border-radius);">
+                {% if image.caption %}
+                <p style="text-align: center; color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">
+                    {{ image.caption }}
+                </p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# Partenaires #}
+{% if project.projectPartners is not empty %}
+<section class="section">
+    <div class="container" style="max-width: 900px;">
+        <h2>Collaboration</h2>
+        <p class="lead">Ce projet a été réalisé en collaboration avec :</p>
+
+        <div class="grid grid-2" style="margin-top: 2rem;">
+            {% for projectPartner in project.projectPartners %}
+                {% set partner = projectPartner.partner %}
+                {% if partner %}
+                <div class="card">
+                    <h3 class="card-title">
+                        <i class="fas fa-handshake"></i> {{ partner.name }}
+                    </h3>
+                    {% if projectPartner.selectedDomains is not empty %}
+                    <p class="card-text">
+                        <strong>Domaines d'intervention :</strong><br>
+                        {{ projectPartner.selectedDomains|join(', ') }}
+                    </p>
+                    {% endif %}
+                    {% if partner.url %}
+                    <a href="{{ partner.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline">
+                        <i class="fas fa-external-link-alt"></i> Visiter le site
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# Lien vers le site si disponible #}
+{% if project.projectUrl %}
+<section class="section section-light">
+    <div class="container text-center">
+        <h2>Voir le projet en ligne</h2>
+        <a href="{{ project.projectUrl }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">
+            <i class="fas fa-external-link-alt"></i> Visiter le site
+        </a>
+    </div>
+</section>
+{% endif %}
+
+{# Retour au portfolio #}
+<section class="section">
+    <div class="container text-center">
+        <a href="{{ path('app_portfolio') }}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Retour au portfolio
+        </a>
+    </div>
+</section>
+
+{% endblock %}

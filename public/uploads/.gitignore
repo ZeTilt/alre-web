@@ -1,6 +1,16 @@
 # Ignore tous les fichiers uploadés
 *
 !.gitignore
+
+# Allow directories but ignore their contents except .gitkeep
+!projects/
+projects/*
 !projects/.gitkeep
+
+!testimonials/
+testimonials/*
 !testimonials/.gitkeep
+
+!partners/
+partners/*
 !partners/.gitkeep

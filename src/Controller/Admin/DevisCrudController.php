@@ -119,8 +119,10 @@ class DevisCrudController extends AbstractCrudController
         $generateInvoice = Action::new('generateInvoice', 'Générer facture')
             ->linkToCrudAction('generateInvoice')
             ->setIcon('fas fa-file-invoice')
+            ->addCssClass('btn btn-success')
             ->displayIf(function ($entity) {
-                return $entity->canBeConverted();
+                // Afficher pour tous les devis acceptés qui n'ont pas encore de facture
+                return $entity->getStatus() === Devis::STATUS_ACCEPTE && $entity->getFacture() === null;
             });
 
         $generatePdf = Action::new('generatePdf', 'Générer PDF')

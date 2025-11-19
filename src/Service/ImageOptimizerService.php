@@ -3,6 +3,8 @@
 namespace App\Service;
 
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class ImageOptimizerService
 {
@@ -118,7 +120,9 @@ class ImageOptimizerService
 
         // Strip EXIF metadata using ImageMagick if available
         if ($this->isImageMagickAvailable()) {
-            exec("convert \"$filePath\" -strip \"$filePath\" 2>&1", $output, $returnCode);
+            $process = new Process(['convert', $filePath, '-strip', $filePath]);
+            $process->run();
+            // Ignore errors, this is just metadata stripping
         }
     }
 
@@ -189,9 +193,10 @@ class ImageOptimizerService
         $avifPath = preg_replace('/\.(jpe?g|png|webp)$/i', '.avif', $sourcePath);
 
         // Convert using avifenc
-        exec("avifenc -q $quality \"$sourcePath\" \"$avifPath\" 2>&1", $output, $returnCode);
+        $process = new Process(['avifenc', '-q', (string) $quality, $sourcePath, $avifPath]);
+        $process->run();
 
-        return ($returnCode === 0 && file_exists($avifPath)) ? $avifPath : null;
+        return ($process->isSuccessful() && file_exists($avifPath)) ? $avifPath : null;
     }
 
     /**
@@ -318,8 +323,9 @@ class ImageOptimizerService
      */
     private function isCommandAvailable(string $command): bool
     {
-        $check = exec("which $command 2>&1", $output, $returnCode);
-        return $returnCode === 0 && !empty($check);
+        $process = new Process(['which', $command]);
+        $process->run();
+        return $process->isSuccessful();
     }
 
     /**

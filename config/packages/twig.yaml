@@ -1,5 +1,12 @@
 twig:
     default_path: '%kernel.project_dir%/templates'
+    # Explicitly enable autoescape for security (enabled by default, but explicit is better)
+    autoescape: 'html'
+
+when@prod:
+    twig:
+        # Strict variables in production helps catch errors early
+        strict_variables: true
 
 when@test:
     twig:

@@ -93,6 +93,20 @@ class ProjectCrudController extends AbstractCrudController
                 if (isset($imageFiles[$imageIndex]['imageFile']) && $imageFiles[$imageIndex]['imageFile'] instanceof UploadedFile) {
                     $uploadedFile = $imageFiles[$imageIndex]['imageFile'];
 
+                    // Validate MIME type (only allow images)
+                    $allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+                    if (!in_array($uploadedFile->getMimeType(), $allowedMimes)) {
+                        $this->addFlash('error', 'Type de fichier non autorisé. Formats acceptés : JPEG, PNG, WebP, GIF');
+                        continue;
+                    }
+
+                    // Validate file size (max 5MB)
+                    $maxSize = 5 * 1024 * 1024; // 5MB in bytes
+                    if ($uploadedFile->getSize() > $maxSize) {
+                        $this->addFlash('error', 'Fichier trop volumineux. Taille maximale : 5 MB');
+                        continue;
+                    }
+
                     // Supprimer l'ancien fichier si il existe
                     if ($image->getImageFilename()) {
                         $oldFile = $uploadDir . '/' . $image->getImageFilename();
@@ -101,8 +115,9 @@ class ProjectCrudController extends AbstractCrudController
                         }
                     }
 
-                    // Générer un nom de fichier unique
-                    $filename = uniqid() . '.' . $uploadedFile->guessExtension();
+                    // Générer un nom de fichier unique et sécurisé
+                    $extension = $uploadedFile->guessExtension();
+                    $filename = bin2hex(random_bytes(16)) . '.' . $extension;
 
                     // Déplacer le fichier
                     $uploadedFile->move($uploadDir, $filename);

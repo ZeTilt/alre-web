@@ -54,3 +54,7 @@ services:
     App\Controller\Admin\ProjectCrudController:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    App\EventSubscriber\SecurityHeadersSubscriber:
+        arguments:
+            $environment: '%kernel.environment%'

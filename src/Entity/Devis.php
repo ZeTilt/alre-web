@@ -78,7 +78,7 @@ class Devis
     #[ORM\OneToMany(mappedBy: 'devis', targetEntity: DevisItem::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
     private Collection $items;
 
-    #[ORM\OneToOne(mappedBy: 'devis', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(mappedBy: 'devis', cascade: ['persist'])]
     private ?Facture $facture = null;
 
     #[ORM\ManyToOne]

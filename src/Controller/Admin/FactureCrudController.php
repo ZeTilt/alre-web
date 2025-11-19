@@ -353,6 +353,21 @@ class FactureCrudController extends AbstractCrudController
         ]);
     }
 
+    public function deleteEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        if ($entityInstance instanceof Facture) {
+            // If this invoice is linked to a quote, remove the link before deletion
+            if ($entityInstance->getDevis()) {
+                $devis = $entityInstance->getDevis();
+                $devis->setFacture(null);
+                $entityInstance->setDevis(null);
+                $entityManager->flush();
+            }
+        }
+
+        parent::deleteEntity($entityManager, $entityInstance);
+    }
+
     public function generatePdf(PdfGeneratorService $pdfGenerator)
     {
         $facture = $this->getContext()->getEntity()->getInstance();

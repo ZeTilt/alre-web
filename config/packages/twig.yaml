@@ -1,7 +1,6 @@
 twig:
     default_path: '%kernel.project_dir%/templates'
-    # Explicitly enable autoescape for security (enabled by default, but explicit is better)
-    autoescape: 'html'
+    # Note: autoescape is enabled by default in Symfony (cannot be configured here)
 
 when@prod:
     twig:

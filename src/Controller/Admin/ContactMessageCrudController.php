@@ -44,8 +44,21 @@ class ContactMessageCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            TextField::new('firstName', 'Prénom'),
-            TextField::new('lastName', 'Nom'),
+            TextField::new('firstName', 'Prénom')
+                ->formatValue(function ($value, $entity) {
+                    if ($this->getContext()->getCrud()->getCurrentPage() === Crud::PAGE_INDEX) {
+                        $url = $this->generateUrl('admin', [
+                            'crudAction' => 'detail',
+                            'crudControllerFqcn' => self::class,
+                            'entityId' => $entity->getId()
+                        ]);
+                        $fullName = $entity->getFirstName() . ' ' . $entity->getLastName();
+                        return sprintf('<a href="%s">%s</a>', $url, htmlspecialchars($fullName));
+                    }
+                    return $value;
+                })
+                ->renderAsHtml(),
+            TextField::new('lastName', 'Nom')->hideOnIndex(),
             EmailField::new('email', 'Email'),
             TelephoneField::new('phone', 'Téléphone')->hideOnIndex(),
             TextField::new('company', 'Entreprise')->hideOnIndex(),

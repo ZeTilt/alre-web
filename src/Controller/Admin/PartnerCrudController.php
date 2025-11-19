@@ -40,7 +40,19 @@ class PartnerCrudController extends AbstractCrudController
     {
         return [
             TextField::new('name', 'Nom')
-                ->setHelp('Nom du partenaire ou de l\'entreprise'),
+                ->setHelp('Nom du partenaire ou de l\'entreprise')
+                ->formatValue(function ($value, $entity) {
+                    if ($this->getContext()->getCrud()->getCurrentPage() === Crud::PAGE_INDEX) {
+                        $url = $this->generateUrl('admin', [
+                            'crudAction' => 'detail',
+                            'crudControllerFqcn' => self::class,
+                            'entityId' => $entity->getId()
+                        ]);
+                        return sprintf('<a href="%s">%s</a>', $url, htmlspecialchars($value));
+                    }
+                    return $value;
+                })
+                ->renderAsHtml(),
             UrlField::new('url', 'Site web')
                 ->setHelp('URL du site web du partenaire'),
             EmailField::new('email', 'Email')->hideOnIndex(),

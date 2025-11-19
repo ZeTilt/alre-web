@@ -57,7 +57,19 @@ class DevisCrudController extends AbstractCrudController
             TextField::new('number', 'Numéro')
                 ->setHelp('Auto-généré si vide, mais vous pouvez le modifier')
                 ->hideOnIndex(),
-            TextField::new('title', 'Titre'),
+            TextField::new('title', 'Titre')
+                ->formatValue(function ($value, $entity) {
+                    if ($this->getContext()->getCrud()->getCurrentPage() === Crud::PAGE_INDEX) {
+                        $url = $this->generateUrl('admin', [
+                            'crudAction' => 'detail',
+                            'crudControllerFqcn' => self::class,
+                            'entityId' => $entity->getId()
+                        ]);
+                        return sprintf('<a href="%s">%s</a>', $url, htmlspecialchars($value));
+                    }
+                    return $value;
+                })
+                ->renderAsHtml(),
             AssociationField::new('client', 'Client'),
             ChoiceField::new('status', 'Statut')
                 ->setChoices(Devis::getStatusChoices())

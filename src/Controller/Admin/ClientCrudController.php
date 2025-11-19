@@ -39,7 +39,19 @@ class ClientCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            TextField::new('name', 'Nom'),
+            TextField::new('name', 'Nom')
+                ->formatValue(function ($value, $entity) {
+                    if ($this->getContext()->getCrud()->getCurrentPage() === Crud::PAGE_INDEX) {
+                        $url = $this->generateUrl('admin', [
+                            'crudAction' => 'detail',
+                            'crudControllerFqcn' => self::class,
+                            'entityId' => $entity->getId()
+                        ]);
+                        return sprintf('<a href="%s">%s</a>', $url, htmlspecialchars($value));
+                    }
+                    return $value;
+                })
+                ->renderAsHtml(),
             ChoiceField::new('type', 'Type')
                 ->setChoices(Client::getTypeChoices())
                 ->renderAsBadges([

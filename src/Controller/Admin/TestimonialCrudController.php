@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Testimonial;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
@@ -22,7 +23,19 @@ class TestimonialCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            TextField::new('clientName', 'Nom du client'),
+            TextField::new('clientName', 'Nom du client')
+                ->formatValue(function ($value, $entity) {
+                    if ($this->getContext()->getCrud()->getCurrentPage() === Crud::PAGE_INDEX) {
+                        $url = $this->generateUrl('admin', [
+                            'crudAction' => 'detail',
+                            'crudControllerFqcn' => self::class,
+                            'entityId' => $entity->getId()
+                        ]);
+                        return sprintf('<a href="%s">%s</a>', $url, htmlspecialchars($value));
+                    }
+                    return $value;
+                })
+                ->renderAsHtml(),
             TextField::new('clientCompany', 'Entreprise/Association')->setHelp('Optionnel'),
             TextareaField::new('content', 'Témoignage')
                 ->setHelp('Le contenu du témoignage'),

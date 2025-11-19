@@ -133,7 +133,19 @@ class ProjectCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            TextField::new('title', 'Titre du projet'),
+            TextField::new('title', 'Titre du projet')
+                ->formatValue(function ($value, $entity) {
+                    if ($this->getContext()->getCrud()->getCurrentPage() === Crud::PAGE_INDEX) {
+                        $url = $this->generateUrl('admin', [
+                            'crudAction' => 'detail',
+                            'crudControllerFqcn' => self::class,
+                            'entityId' => $entity->getId()
+                        ]);
+                        return sprintf('<a href="%s">%s</a>', $url, htmlspecialchars($value));
+                    }
+                    return $value;
+                })
+                ->renderAsHtml(),
             TextField::new('slug', 'Slug (URL)')
                 ->setHelp('Généré automatiquement si laissé vide')
                 ->setRequired(false),

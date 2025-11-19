@@ -80,7 +80,10 @@ class FactureCrudController extends AbstractCrudController
                 }),
             DateField::new('dateFacture', 'Date facture'),
             DateField::new('dateEcheance', 'Échéance'),
-            DateField::new('datePaiement', 'Date paiement')->onlyOnDetail(),
+            DateField::new('datePaiement', 'Date paiement')
+                ->setHelp('Date effective du paiement (utilisée pour le calcul du CA)')
+                ->hideOnIndex()
+                ->setFormTypeOption('required', false),
             ChoiceField::new('modePaiement', 'Mode paiement')
                 ->setChoices(Facture::getModePaiementChoices())
                 ->onlyOnForms(),
@@ -107,7 +110,8 @@ class FactureCrudController extends AbstractCrudController
             ->add(ChoiceFilter::new('status')->setChoices(Facture::getStatusChoices()))
             ->add('client')
             ->add(DateTimeFilter::new('dateFacture'))
-            ->add(DateTimeFilter::new('dateEcheance'));
+            ->add(DateTimeFilter::new('dateEcheance'))
+            ->add(DateTimeFilter::new('datePaiement'));
     }
 
     public function configureActions(Actions $actions): Actions

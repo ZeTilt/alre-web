@@ -22,6 +22,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use App\Service\PdfGeneratorService;
 use App\Service\NumberingService;
+use App\Service\CompanyService;
+use Symfony\Component\HttpFoundation\Response;
 
 class FactureCrudController extends AbstractCrudController
 {
@@ -116,6 +118,14 @@ class FactureCrudController extends AbstractCrudController
                 return $entity->getStatus() !== Facture::STATUS_BROUILLON;
             });
 
+        $printHtml = Action::new('printHtml', 'Imprimer')
+            ->linkToCrudAction('printHtml')
+            ->setIcon('fas fa-print')
+            ->setHtmlAttributes(['target' => '_blank'])
+            ->displayIf(function ($entity) {
+                return $entity->getStatus() !== Facture::STATUS_BROUILLON;
+            });
+
         // Quick status change actions
         $markAsReady = Action::new('markAsReady', 'À envoyer')
             ->linkToCrudAction('changeStatus')
@@ -151,11 +161,13 @@ class FactureCrudController extends AbstractCrudController
 
         return $actions
             ->add(Crud::PAGE_INDEX, $generatePdf)
+            ->add(Crud::PAGE_INDEX, $printHtml)
             ->add(Crud::PAGE_INDEX, $markAsReady)
             ->add(Crud::PAGE_INDEX, $markAsSent)
             ->add(Crud::PAGE_INDEX, $markAsPaid)
             ->add(Crud::PAGE_INDEX, $markAsOverdue)
-            ->add(Crud::PAGE_DETAIL, $generatePdf);
+            ->add(Crud::PAGE_DETAIL, $generatePdf)
+            ->add(Crud::PAGE_DETAIL, $printHtml);
     }
 
     private function renderStatusWithActions($entity): string
@@ -345,21 +357,33 @@ class FactureCrudController extends AbstractCrudController
     public function generatePdf(PdfGeneratorService $pdfGenerator)
     {
         $facture = $this->getContext()->getEntity()->getInstance();
-        
+
         try {
-            $filepath = $pdfGenerator->generateFacturePdf($facture);
-            
+            // Use HTML-based PDF generation instead of TCPDF
+            $filepath = $pdfGenerator->generateFacturePdfFromHtml($facture);
+
             // Return PDF as download
             return $this->file($filepath, basename($filepath));
-            
+
         } catch (\Exception $e) {
             $this->addFlash('error', 'Erreur lors de la génération du PDF: ' . $e->getMessage());
-            
+
             return $this->redirectToRoute('admin', [
-                'crudAction' => 'detail', 
-                'crudControllerFqcn' => self::class, 
+                'crudAction' => 'detail',
+                'crudControllerFqcn' => self::class,
                 'entityId' => $facture->getId()
             ]);
         }
+    }
+
+    public function printHtml(CompanyService $companyService): Response
+    {
+        $facture = $this->getContext()->getEntity()->getInstance();
+        $company = $companyService->getCompanyOrDefault();
+
+        return $this->render('pdf/facture.html.twig', [
+            'facture' => $facture,
+            'company' => $company,
+        ]);
     }
 }

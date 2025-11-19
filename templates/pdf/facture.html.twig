@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facture {{ facture.number }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        body {
+            font-family: "Helvetica", Arial, sans-serif;
+            font-size: 10px;
+            color: #333333;
+            line-height: 1.5;
+            padding: 20px;
+            margin-right: 10px;
+        }
+
+        /* En-tête */
+        .header-wrapper { margin-bottom: 15px; border-bottom: 2px solid #27A3B4; padding-bottom: 10px; display: flex; justify-content: space-between; }
+        .logo-cell { width: 30%; }
+        .logo { max-width: 140px; height: auto; }
+        .company-info { font-size: 9px; line-height: 1.4; color: #666; text-align: left; margin-top: 1rem; }
+
+        /* Bloc document à droite */
+        .doc-cell { width: 30%; text-align: right; }
+        .doc-title { background: #3A4556; color: white; padding: 8px 15px; font-size: 18px; font-weight: bold; letter-spacing: 3px; border-radius: 4px; margin-bottom: 8px; }
+        .doc-info-table { width: 100%; border-collapse: collapse; border: 1px solid #E0E0E0; }
+        .doc-info-table td { padding: 6px 8px; font-size: 9px; text-align: left; }
+        .doc-label { background-color: #F8F9FA; font-weight: bold; color: #3A4556; width: 40%; border-right: 1px solid #E0E0E0; }
+        .doc-value { background-color: white; }
+
+        /* Client */
+        .client-wrapper { margin: 12px 0; padding: 10px; background-color: #F8F9FA; border: 1px solid #E0E0E0; border-radius: 4px; }
+        .client-label { font-size: 9px; font-weight: bold; color: #27A3B4; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
+        .client-info { font-size: 10px; line-height: 1.5; }
+        .client-name { font-size: 12px; font-weight: bold; color: #3A4556; margin-bottom: 3px; }
+
+        /* Objet */
+        .object-wrapper { margin: 12px 0; }
+        .object-label { font-size: 9px; font-weight: bold; color: #3A4556; text-transform: uppercase; margin-bottom: 4px; }
+        .object-text { font-size: 11px; padding: 8px; background-color: white; border: 1px solid #E0E0E0; border-radius: 4px; }
+
+        /* Tableau des lignes */
+        .items-table { width: 100%; border-collapse: collapse; margin: 12px 0; border: 1px solid #E0E0E0; }
+        .items-table thead th { background: #3A4556; color: white; padding: 8px 10px; text-align: center; font-size: 9px; font-weight: bold; border-right: 1px solid rgba(255,255,255,0.2); border-bottom: 2px solid #27A3B4; }
+        .items-table thead th:last-child { border-right: none; text-align: right; }
+        .items-table thead th:first-child { text-align: left; }
+        .items-table tbody td { padding: 8px 10px; border-bottom: 1px solid #E0E0E0; border-right: 1px solid #E0E0E0; font-size: 9px; vertical-align: top; }
+        .items-table tbody td:last-child { border-right: none; }
+        .items-table tbody tr:nth-child(even) { background-color: #F8F9FA; }
+        .items-table tbody td:first-child { text-align: left; font-size: 10px; }
+        .items-table tbody td:not(:first-child) { text-align: center; }
+        .items-table tbody td:last-child { text-align: right; font-weight: bold; }
+
+        /* Totaux */
+        .totals-wrapper { margin: 12px 0 8px auto; width: 35%; min-width: 250px; }
+        .totals-table { width: 100%; border-collapse: collapse; }
+        .totals-table td { padding: 6px 10px; font-size: 10px; }
+        .totals-table .label { text-align: right; color: #666; }
+        .totals-table .value { text-align: right; font-weight: bold; width: 35%; }
+        .total-ht-row { border-top: 1px solid #E0E0E0; }
+        .total-ht-row td { padding-top: 8px; font-size: 11px; }
+        .tva-row td { color: #666; font-size: 9px; padding: 4px 10px; }
+        .total-final-row { background: #3A4556; color: white; }
+        .total-final-row td { padding: 10px; font-size: 13px; font-weight: bold; letter-spacing: 1px; }
+
+        /* Conditions paiement */
+        .payment-wrapper { margin: 15px 0; padding: 10px; background-color: #FFF3CD; border-left: 4px solid #FFC107; border-radius: 0 4px 4px 0; }
+        .payment-title { font-size: 10px; font-weight: bold; color: #856404; margin-bottom: 6px; text-transform: uppercase; }
+        .payment-text { font-size: 9px; line-height: 1.5; color: #856404; }
+
+        /* Footer */
+        .footer { margin-top: 20px; padding-top: 10px; border-top: 1px solid #E0E0E0; text-align: center; font-size: 8px; color: #999; line-height: 1.4; }
+
+        /* Print button */
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #27A3B4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .print-button:hover { background: #3A4556; }
+
+        /* Media print */
+        @media print {
+            body { padding: 0; }
+            .print-button { display: none; }
+            @page {
+                margin: 15mm;
+                size: A4;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<button class="print-button" onclick="window.print()">🖨️ Imprimer / Enregistrer PDF</button>
+
+<!-- En-tête -->
+<div class="header-wrapper">
+    <span class="logo-cell">
+        <img src="{{ absolute_url(asset('images/logo.png')) }}" class="logo" alt="Alré Web">
+        <div class="company-info">
+            <strong>{{ company.ownerName }}</strong><br>
+            {{ company.address }}<br>
+            {{ company.postalCode }} {{ company.city }}<br>
+            <strong>Email:</strong> {{ company.email }}<br>
+            <strong>Tél:</strong> {{ company.phone }}<br>
+            <strong>SIRET:</strong> {{ company.siret }}
+        </div>
+    </span>
+    <span class="doc-cell">
+        <div class="doc-title">FACTURE</div>
+        <table class="doc-info-table">
+            <tbody>
+                <tr>
+                    <td class="doc-label">Numéro</td>
+                    <td class="doc-value"><strong>{{ facture.number }}</strong></td>
+                </tr>
+                <tr>
+                    <td class="doc-label">Date</td>
+                    <td class="doc-value">{{ facture.dateFacture|date('d/m/Y') }}</td>
+                </tr>
+                <tr>
+                    <td class="doc-label">Échéance</td>
+                    <td class="doc-value">{{ facture.dateEcheance|date('d/m/Y') }}</td>
+                </tr>
+                {% if facture.devis %}
+                <tr>
+                    <td class="doc-label">Devis</td>
+                    <td class="doc-value">{{ facture.devis.number }}</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </span>
+</div>
+
+<!-- Client -->
+<div class="client-wrapper">
+    <div class="client-label">Client</div>
+    <div class="client-info">
+        {% if facture.client.companyName %}
+            <div class="client-name">{{ facture.client.companyName }}</div>
+        {% endif %}
+        <div class="client-name">{{ facture.client.name }}</div>
+        {{ facture.client.address }}<br>
+        {{ facture.client.postalCode }} {{ facture.client.city }}
+        {% if facture.client.email %}<br><strong>Email:</strong> {{ facture.client.email }}{% endif %}
+        {% if facture.client.phone %}<br><strong>Tél:</strong> {{ facture.client.phone }}{% endif %}
+    </div>
+</div>
+
+<!-- Objet -->
+{% if facture.title %}
+<div class="object-wrapper">
+    <div class="object-label">Objet</div>
+    <div class="object-text">{{ facture.title }}</div>
+</div>
+{% endif %}
+
+<!-- Vérifier s'il y a des remises -->
+{% set hasDiscount = false %}
+{% for item in facture.items %}
+    {% if item.discount and item.discount > 0 %}
+        {% set hasDiscount = true %}
+    {% endif %}
+{% endfor %}
+
+<!-- Lignes -->
+<table class="items-table">
+    <thead>
+        <tr>
+            <th style="width: 5%;">N°</th>
+            <th style="width: {{ hasDiscount ? '43%' : '47%' }};">Désignation</th>
+            <th style="width: 10%;">Qté</th>
+            <th style="width: 10%;">Unité</th>
+            <th style="width: {{ hasDiscount ? '12%' : '14%' }};">Prix unit. HT</th>
+            {% if hasDiscount %}<th style="width: 8%;">Remise</th>{% endif %}
+            <th style="width: {{ hasDiscount ? '12%' : '14%' }};">Total HT</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in facture.items %}
+        <tr>
+            <td>{{ item.position }}</td>
+            <td>{{ item.description|nl2br }}</td>
+            <td>{{ item.quantity|number_format(2, ',', ' ') }}</td>
+            <td>{{ item.unit ?: '-' }}</td>
+            <td>{{ item.unitPrice|number_format(2, ',', ' ') }} €</td>
+            {% if hasDiscount %}
+                <td>{{ item.discount and item.discount > 0 ? item.discount|number_format(0) ~ '%' : '-' }}</td>
+            {% endif %}
+            <td>{{ item.totalAfterDiscount|number_format(2, ',', ' ') }} €</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Totaux -->
+{% set vatRate = facture.vatRate %}
+{% set totalHt = facture.totalHt %}
+{% set vatAmount = totalHt * (vatRate / 100) %}
+{% set totalTtc = totalHt + vatAmount %}
+
+<div class="totals-wrapper">
+    <table class="totals-table">
+        <tbody>
+            <tr class="total-ht-row">
+                <td class="label">Total HT</td>
+                <td class="value">{{ totalHt|number_format(2, ',', ' ') }} €</td>
+            </tr>
+            {% if vatRate > 0 %}
+                <tr class="tva-row">
+                    <td class="label">TVA ({{ vatRate|number_format(0) }}%)</td>
+                    <td class="value">{{ vatAmount|number_format(2, ',', ' ') }} €</td>
+                </tr>
+                <tr class="total-ht-row">
+                    <td class="label">Total TTC</td>
+                    <td class="value">{{ totalTtc|number_format(2, ',', ' ') }} €</td>
+                </tr>
+            {% endif %}
+            <tr class="total-final-row">
+                <td class="label">TOTAL</td>
+                <td class="value">{{ (vatRate > 0 ? totalTtc : totalHt)|number_format(2, ',', ' ') }} €</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Conditions de paiement -->
+<div class="payment-wrapper">
+    <div class="payment-title">Conditions de règlement</div>
+    <div class="payment-text">
+        <strong>Mode de paiement:</strong> {{ facture.modePaiement ?: 'Virement bancaire' }}<br>
+        <strong>Date d'échéance:</strong> {{ facture.dateEcheance|date('d/m/Y') }}<br>
+        <strong>Pénalités de retard:</strong> 3 fois le taux d'intérêt légal<br>
+        <strong>Indemnité forfaitaire pour frais de recouvrement:</strong> 40 € (art. L441-10 du Code de commerce)
+        {% if facture.conditions %}<br><br>{{ facture.conditions|nl2br }}{% endif %}
+    </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    {{ company.name }} - {{ company.ownerName }}<br>
+    SIRET: {{ company.siret }} - {{ company.legalStatus ?: 'Auto-entrepreneur' }}<br>
+    {{ company.email }} - {{ company.phone }}<br>
+    {% if vatRate == 0 %}TVA non applicable, art. 293 B du CGI - {% endif %}Dispensé d'immatriculation au registre du commerce et des sociétés (RCS) et au répertoire des métiers (RM)
+</div>
+
+</body>
+</html>

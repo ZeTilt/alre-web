@@ -22,6 +22,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\PdfGeneratorService;
 use App\Service\NumberingService;
+use App\Service\CompanyService;
 use Symfony\Component\HttpFoundation\Response;
 
 class DevisCrudController extends AbstractCrudController
@@ -128,6 +129,14 @@ class DevisCrudController extends AbstractCrudController
                 return $entity->getStatus() !== Devis::STATUS_BROUILLON;
             });
 
+        $printHtml = Action::new('printHtml', 'Imprimer')
+            ->linkToCrudAction('printHtml')
+            ->setIcon('fas fa-print')
+            ->setHtmlAttributes(['target' => '_blank'])
+            ->displayIf(function ($entity) {
+                return $entity->getStatus() !== Devis::STATUS_BROUILLON;
+            });
+
         // Quick status change actions
         $markAsReady = Action::new('markAsReady', 'À envoyer')
             ->linkToCrudAction('changeStatus')
@@ -164,12 +173,14 @@ class DevisCrudController extends AbstractCrudController
         return $actions
             ->add(Crud::PAGE_INDEX, $generateInvoice)
             ->add(Crud::PAGE_INDEX, $generatePdf)
+            ->add(Crud::PAGE_INDEX, $printHtml)
             ->add(Crud::PAGE_INDEX, $markAsReady)
             ->add(Crud::PAGE_INDEX, $markAsSent)
             ->add(Crud::PAGE_INDEX, $markAsAccepted)
             ->add(Crud::PAGE_INDEX, $markAsRejected)
             ->add(Crud::PAGE_DETAIL, $generateInvoice)
-            ->add(Crud::PAGE_DETAIL, $generatePdf);
+            ->add(Crud::PAGE_DETAIL, $generatePdf)
+            ->add(Crud::PAGE_DETAIL, $printHtml);
     }
 
     private function renderStatusWithActions($entity): string
@@ -407,21 +418,33 @@ class DevisCrudController extends AbstractCrudController
     public function generatePdf(PdfGeneratorService $pdfGenerator)
     {
         $devis = $this->getContext()->getEntity()->getInstance();
-        
+
         try {
-            $filepath = $pdfGenerator->generateDevisPdf($devis);
-            
+            // Use HTML-based PDF generation instead of TCPDF
+            $filepath = $pdfGenerator->generateDevisPdfFromHtml($devis);
+
             // Return PDF as download
             return $this->file($filepath, basename($filepath));
-            
+
         } catch (\Exception $e) {
             $this->addFlash('error', 'Erreur lors de la génération du PDF: ' . $e->getMessage());
-            
+
             return $this->redirectToRoute('admin', [
-                'crudAction' => 'detail', 
-                'crudControllerFqcn' => self::class, 
+                'crudAction' => 'detail',
+                'crudControllerFqcn' => self::class,
                 'entityId' => $devis->getId()
             ]);
         }
+    }
+
+    public function printHtml(CompanyService $companyService): Response
+    {
+        $devis = $this->getContext()->getEntity()->getInstance();
+        $company = $companyService->getCompanyOrDefault();
+
+        return $this->render('pdf/devis.html.twig', [
+            'devis' => $devis,
+            'company' => $company,
+        ]);
     }
 }

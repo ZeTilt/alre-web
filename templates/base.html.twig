@@ -7,8 +7,8 @@
 
         {# SEO Meta Tags #}
         <title>{% block title %}Développeur Web Freelance Symfony | Sites Web sur Mesure{% endblock %}</title>
-        <meta name="description" content="{% block meta_description %}Développeur web freelance spécialisé Symfony. Création de sites vitrine et e-commerce sur mesure. Accompagnement complet : design, développement, hébergement, SEO et maintenance.{% endblock %}">
-        <meta name="keywords" content="développeur web freelance, Symfony, création site internet, e-commerce, développement web, PHP, site sur mesure">
+        <meta name="description" content="{% block meta_description %}Développeur web freelance spécialisé Symfony à Auray (Morbihan), entre Vannes et Lorient. Création de sites vitrine et e-commerce sur mesure en Bretagne. Accompagnement complet : design, développement, hébergement, SEO et maintenance.{% endblock %}">
+        <meta name="keywords" content="développeur web freelance, Symfony, création site internet, e-commerce, développement web, PHP, site sur mesure, Auray, Vannes, Lorient, Morbihan, Bretagne">
         <meta name="author" content="Fabrice Dhuicque - Alré Web">
         <meta name="robots" content="index, follow">
 
@@ -34,11 +34,11 @@
         {% endblock %}
 
         {# Favicons - Multi-size et multi-device #}
+        <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
         <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/favicon-16x16.png') }}">
         <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon-32x32.png') }}">
         <link rel="icon" type="image/png" sizes="48x48" href="{{ asset('images/favicon-48x48.png') }}">
         <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}">
-        <link rel="icon" type="image/x-icon" href="{{ asset('images/favicon.ico') }}">
         <link rel="manifest" href="{{ asset('manifest.json') }}">
         <meta name="theme-color" content="#3A4556">
 

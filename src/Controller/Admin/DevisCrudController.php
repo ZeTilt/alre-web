@@ -28,7 +28,8 @@ use Symfony\Component\HttpFoundation\Response;
 class DevisCrudController extends AbstractCrudController
 {
     public function __construct(
-        private readonly NumberingService $numberingService
+        private readonly NumberingService $numberingService,
+        private readonly CompanyService $companyService
     ) {
     }
 
@@ -129,14 +130,6 @@ class DevisCrudController extends AbstractCrudController
                 return $entity->getStatus() !== Devis::STATUS_BROUILLON;
             });
 
-        $printHtml = Action::new('printHtml', 'Imprimer')
-            ->linkToCrudAction('printHtml')
-            ->setIcon('fas fa-print')
-            ->setHtmlAttributes(['target' => '_blank'])
-            ->displayIf(function ($entity) {
-                return $entity->getStatus() !== Devis::STATUS_BROUILLON;
-            });
-
         // Quick status change actions
         $markAsReady = Action::new('markAsReady', 'À envoyer')
             ->linkToCrudAction('changeStatus')
@@ -173,14 +166,12 @@ class DevisCrudController extends AbstractCrudController
         return $actions
             ->add(Crud::PAGE_INDEX, $generateInvoice)
             ->add(Crud::PAGE_INDEX, $generatePdf)
-            ->add(Crud::PAGE_INDEX, $printHtml)
             ->add(Crud::PAGE_INDEX, $markAsReady)
             ->add(Crud::PAGE_INDEX, $markAsSent)
             ->add(Crud::PAGE_INDEX, $markAsAccepted)
             ->add(Crud::PAGE_INDEX, $markAsRejected)
             ->add(Crud::PAGE_DETAIL, $generateInvoice)
-            ->add(Crud::PAGE_DETAIL, $generatePdf)
-            ->add(Crud::PAGE_DETAIL, $printHtml);
+            ->add(Crud::PAGE_DETAIL, $generatePdf);
     }
 
     private function renderStatusWithActions($entity): string
@@ -287,7 +278,15 @@ class DevisCrudController extends AbstractCrudController
             if (!$entityInstance->getDateValidite()) {
                 $entityInstance->setDateValidite(new \DateTimeImmutable('+30 days'));
             }
-            
+
+            // Set default conditions from company if not set
+            if (!$entityInstance->getConditions()) {
+                $company = $this->companyService->getCompanyOrDefault();
+                if ($company->getDevisConditions()) {
+                    $entityInstance->setConditions($company->getDevisConditions());
+                }
+            }
+
             // Set position for items in natural order if not set
             $position = 1;
             foreach ($entityInstance->getItems() as $item) {
@@ -435,16 +434,5 @@ class DevisCrudController extends AbstractCrudController
                 'entityId' => $devis->getId()
             ]);
         }
-    }
-
-    public function printHtml(CompanyService $companyService): Response
-    {
-        $devis = $this->getContext()->getEntity()->getInstance();
-        $company = $companyService->getCompanyOrDefault();
-
-        return $this->render('pdf/devis.html.twig', [
-            'devis' => $devis,
-            'company' => $company,
-        ]);
     }
 }

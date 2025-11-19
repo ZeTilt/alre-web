@@ -63,6 +63,14 @@ class CompanyCrudController extends AbstractCrudController
                 ->setRequired(false)
                 ->setHelp('Mentions légales à afficher sur les documents')
                 ->setNumOfRows(3),
+            TextareaField::new('devisConditions', 'Conditions des devis')
+                ->setRequired(false)
+                ->setHelp('Conditions générales par défaut pour les devis (validité, acceptation, etc.)')
+                ->setNumOfRows(4),
+            TextareaField::new('factureConditions', 'Conditions des factures')
+                ->setRequired(false)
+                ->setHelp('Conditions de paiement par défaut pour les factures (délais, modes de paiement, pénalités, etc.)')
+                ->setNumOfRows(4),
         ];
     }
 

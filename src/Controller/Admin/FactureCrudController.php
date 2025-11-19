@@ -28,7 +28,8 @@ use Symfony\Component\HttpFoundation\Response;
 class FactureCrudController extends AbstractCrudController
 {
     public function __construct(
-        private readonly NumberingService $numberingService
+        private readonly NumberingService $numberingService,
+        private readonly CompanyService $companyService
     ) {
     }
 
@@ -118,14 +119,6 @@ class FactureCrudController extends AbstractCrudController
                 return $entity->getStatus() !== Facture::STATUS_BROUILLON;
             });
 
-        $printHtml = Action::new('printHtml', 'Imprimer')
-            ->linkToCrudAction('printHtml')
-            ->setIcon('fas fa-print')
-            ->setHtmlAttributes(['target' => '_blank'])
-            ->displayIf(function ($entity) {
-                return $entity->getStatus() !== Facture::STATUS_BROUILLON;
-            });
-
         // Quick status change actions
         $markAsReady = Action::new('markAsReady', 'À envoyer')
             ->linkToCrudAction('changeStatus')
@@ -161,13 +154,11 @@ class FactureCrudController extends AbstractCrudController
 
         return $actions
             ->add(Crud::PAGE_INDEX, $generatePdf)
-            ->add(Crud::PAGE_INDEX, $printHtml)
             ->add(Crud::PAGE_INDEX, $markAsReady)
             ->add(Crud::PAGE_INDEX, $markAsSent)
             ->add(Crud::PAGE_INDEX, $markAsPaid)
             ->add(Crud::PAGE_INDEX, $markAsOverdue)
-            ->add(Crud::PAGE_DETAIL, $generatePdf)
-            ->add(Crud::PAGE_DETAIL, $printHtml);
+            ->add(Crud::PAGE_DETAIL, $generatePdf);
     }
 
     private function renderStatusWithActions($entity): string
@@ -276,7 +267,15 @@ class FactureCrudController extends AbstractCrudController
             if (!$entityInstance->getDateEcheance()) {
                 $entityInstance->setDateEcheance(new \DateTimeImmutable('+30 days'));
             }
-            
+
+            // Set default conditions from company if not set
+            if (!$entityInstance->getConditions()) {
+                $company = $this->companyService->getCompanyOrDefault();
+                if ($company->getFactureConditions()) {
+                    $entityInstance->setConditions($company->getFactureConditions());
+                }
+            }
+
             // Set position for items in natural order if not set
             $position = 1;
             foreach ($entityInstance->getItems() as $item) {
@@ -374,16 +373,5 @@ class FactureCrudController extends AbstractCrudController
                 'entityId' => $facture->getId()
             ]);
         }
-    }
-
-    public function printHtml(CompanyService $companyService): Response
-    {
-        $facture = $this->getContext()->getEntity()->getInstance();
-        $company = $companyService->getCompanyOrDefault();
-
-        return $this->render('pdf/facture.html.twig', [
-            'facture' => $facture,
-            'company' => $company,
-        ]);
     }
 }

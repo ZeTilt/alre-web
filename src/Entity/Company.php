@@ -50,6 +50,12 @@ class Company
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $legalMentions = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $devisConditions = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $factureConditions = null;
+
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -218,6 +224,32 @@ class Company
     public function setLegalMentions(?string $legalMentions): static
     {
         $this->legalMentions = $legalMentions;
+        $this->updatedAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function getDevisConditions(): ?string
+    {
+        return $this->devisConditions;
+    }
+
+    public function setDevisConditions(?string $devisConditions): static
+    {
+        $this->devisConditions = $devisConditions;
+        $this->updatedAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function getFactureConditions(): ?string
+    {
+        return $this->factureConditions;
+    }
+
+    public function setFactureConditions(?string $factureConditions): static
+    {
+        $this->factureConditions = $factureConditions;
         $this->updatedAt = new \DateTimeImmutable();
 
         return $this;

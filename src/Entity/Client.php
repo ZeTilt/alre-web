@@ -11,9 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: ClientRepository::class)]
 class Client
 {
-    public const string TYPE_PARTICULIER = 'particulier';
     public const string TYPE_ENTREPRISE = 'entreprise';
-
     public const string TYPE_ASSOCIATION = 'association';
 
     #[ORM\Id]
@@ -25,7 +23,7 @@ class Client
     private ?string $name = null;
 
     #[ORM\Column(length: 50)]
-    private string $type = self::TYPE_PARTICULIER;
+    private string $type = self::TYPE_ENTREPRISE;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $companyName = null;
@@ -447,7 +445,6 @@ class Client
     public static function getTypeChoices(): array
     {
         return [
-            'Particulier' => self::TYPE_PARTICULIER,
             'Entreprise' => self::TYPE_ENTREPRISE,
             'Association' => self::TYPE_ASSOCIATION,
         ];

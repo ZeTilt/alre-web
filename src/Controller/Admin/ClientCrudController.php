@@ -43,7 +43,6 @@ class ClientCrudController extends AbstractCrudController
             ChoiceField::new('type', 'Type')
                 ->setChoices(Client::getTypeChoices())
                 ->renderAsBadges([
-                    Client::TYPE_PARTICULIER => 'info',
                     Client::TYPE_ENTREPRISE => 'primary',
                     Client::TYPE_ASSOCIATION => 'warning',
                 ]),

@@ -4,12 +4,12 @@
         <div class="footer-content">
             {# Section 1: À propos #}
             <div class="footer-section">
-                <h4>
+                <div class="footer-heading">
                     <picture>
                         <source srcset="{{ asset('images/logo-footer.webp') }} 1x, {{ asset('images/logo-footer@2x.webp') }} 2x" type="image/webp">
                         <img src="{{ asset('images/logo-footer.png') }}" srcset="{{ asset('images/logo-footer@2x.png') }} 2x" alt="Alré Web - Création Web" style="height: 40px; vertical-align: middle; filter: brightness(0) invert(1);" width="96" height="40">
                     </picture>
-                </h4>
+                </div>
                 <p>
                     Développeur web freelance spécialisé Symfony.
                     Je crée des sites internet et e-commerce sur mesure
@@ -19,7 +19,7 @@
                     <a href="https://www.linkedin.com/in/fabrice-dhuicque/" target="_blank" rel="noopener noreferrer" class="social-link" title="LinkedIn" aria-label="Suivez-moi sur LinkedIn">
                         <i class="fab fa-linkedin-in"></i>
                     </a>
-                    <a href="https://www.facebook.com/alreweb.bzh/" target="_blank" rel="noopener noreferrer" class="social-link" title="Facebook" aria-label="Ma page Facebook">
+                    <a href="https://www.facebook.com/alre-web.bzh/" target="_blank" rel="noopener noreferrer" class="social-link" title="Facebook" aria-label="Ma page Facebook">
                         <i class="fab fa-facebook-f"></i>
                     </a>
                     <a href="https://www.malt.fr/profile/fabricedhuicque1" target="_blank" rel="noopener noreferrer" class="social-link" title="Malt" aria-label="Mon profil Malt">
@@ -30,7 +30,7 @@
 
             {# Section 2: Navigation rapide #}
             <div class="footer-section">
-                <h4>Navigation</h4>
+                <div class="footer-heading">Navigation</div>
                 <ul class="footer-links">
                     <li><a href="{{ path('app_home') }}">Accueil</a></li>
                     <li><a href="{{ path('app_services') }}">Services</a></li>
@@ -43,7 +43,7 @@
 
             {# Section 3: Services #}
             <div class="footer-section">
-                <h4>Services</h4>
+                <div class="footer-heading">Services</div>
                 <ul class="footer-links">
                     <li><a href="{{ path('app_services') }}#conception">Conception & Design</a></li>
                     <li><a href="{{ path('app_services') }}#developpement">Développement Symfony</a></li>
@@ -55,7 +55,7 @@
 
             {# Section 4: Contact #}
             <div class="footer-section">
-                <h4>Contact</h4>
+                <div class="footer-heading">Contact</div>
                 <ul class="footer-links">
                     <li>
                         <i class="fas fa-comments"></i>

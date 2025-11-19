@@ -3,7 +3,10 @@
     <div class="navbar-container">
         {# Logo / Brand #}
         <a href="{{ path('app_home') }}" class="navbar-brand">
-            <img src="{{ asset('images/logo.png') }}" alt="Alré Web - Création Web" style="height: 50px;">
+            <picture>
+                <source srcset="{{ asset('images/logo-navbar.webp') }} 1x, {{ asset('images/logo-navbar@2x.webp') }} 2x" type="image/webp">
+                <img src="{{ asset('images/logo-navbar.png') }}" srcset="{{ asset('images/logo-navbar@2x.png') }} 2x" alt="Alré Web - Création Web" style="height: 50px;" width="120" height="50">
+            </picture>
         </a>
 
         {# Toggle button pour mobile #}

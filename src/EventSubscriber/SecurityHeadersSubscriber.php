@@ -30,7 +30,15 @@ class SecurityHeadersSubscriber implements EventSubscriberInterface
         }
 
         $response = $event->getResponse();
+        $request = $event->getRequest();
         $headers = $response->headers;
+
+        // Add cache headers for static assets
+        $path = $request->getPathInfo();
+        if ($this->isStaticAsset($path)) {
+            // Cache static assets for 1 year (immutable assets should have versioned filenames)
+            $headers->set('Cache-Control', 'public, max-age=31536000, immutable');
+        }
 
         // Only apply strict headers in production
         if ($this->environment === 'prod') {
@@ -54,5 +62,10 @@ class SecurityHeadersSubscriber implements EventSubscriberInterface
         // Remove server version information
         $headers->remove('X-Powered-By');
         $headers->set('X-Frame-Options', 'SAMEORIGIN');
+    }
+
+    private function isStaticAsset(string $path): bool
+    {
+        return (bool) preg_match('/\.(css|js|jpg|jpeg|png|gif|webp|avif|svg|woff|woff2|ttf|eot|ico)$/i', $path);
     }
 }

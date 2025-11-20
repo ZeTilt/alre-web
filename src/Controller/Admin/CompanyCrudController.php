@@ -37,7 +37,19 @@ class CompanyCrudController extends AbstractCrudController
     {
         return [
             TextField::new('name', 'Nom de l\'entreprise')
-                ->setRequired(true),
+                ->setRequired(true)
+                ->formatValue(function ($value, $entity) {
+                    if ($this->getContext()->getCrud()->getCurrentPage() === Crud::PAGE_INDEX) {
+                        $url = $this->generateUrl('admin', [
+                            'crudAction' => 'detail',
+                            'crudControllerFqcn' => self::class,
+                            'entityId' => $entity->getId()
+                        ]);
+                        return sprintf('<a href="%s">%s</a>', $url, htmlspecialchars($value));
+                    }
+                    return $value;
+                })
+                ->renderAsHtml(),
             TextField::new('ownerName', 'Nom du dirigeant')
                 ->setRequired(true),
             TextField::new('title', 'Titre/Fonction')

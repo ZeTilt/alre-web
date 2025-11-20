@@ -2,7 +2,7 @@
 
 {% block title %}À propos | Fabrice Dhuicque - Développeur Web Freelance Symfony{% endblock %}
 
-{% block meta_description %}Développeur web freelance passionné, spécialisé Symfony et basé à Auray (Morbihan), entre Vannes et Lorient en Bretagne. Découvrez mon parcours, ma philosophie et mes valeurs : proximité, qualité et accompagnement personnalisé.{% endblock %}
+{% block meta_description %}Développeur web freelance spécialisé Symfony, ancien Marine Nationale. Rigueur, fiabilité, approche problem-solving. Basé en Bretagne, j'accompagne entreprises et entrepreneurs partout en France pour créer des outils web sur mesure.{% endblock %}
 
 {% block body %}
 
@@ -11,8 +11,7 @@
     <div class="hero-content">
         <h1 class="fade-in">À propos</h1>
         <p class="lead fade-in-delay-1">
-            Développeur Web Freelance passionné<br>
-            au service de votre réussite en ligne
+            Développeur Web Freelance — spécialisé Symfony
         </p>
     </div>
 </section>
@@ -21,132 +20,123 @@
 <section class="section">
     <div class="container">
         <div class="about-profile">
-            <div class="about-photo" style="width: 200px; height: 200px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-lg); border: 5px solid var(--bg-white);">
-                <i class="fas fa-user" style="font-size: 5rem; color: white;"></i>
-                {# TODO: Remplacer par votre vraie photo professionnelle #}
-                {# <img src="{{ asset('images/fabrice-photo.jpg') }}" alt="Fabrice Dhuicque" class="about-photo"> #}
+            <div class="about-photo" style="width: 200px; height: 200px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-lg); border: 5px solid var(--bg-white); overflow: hidden;">
+                {% if company and company.profilePhoto %}
+                    <img src="{{ asset('uploads/profile/' ~ company.profilePhoto) }}" alt="Fabrice Dhuicque" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                    <i class="fas fa-user" style="font-size: 5rem; color: white;"></i>
+                {% endif %}
             </div>
             <div>
                 <h2 class="text-primary mb-3">Fabrice Dhuicque</h2>
-                <p class="lead">
-                    Développeur Web Freelance spécialisé Symfony
+                <p class="lead" style="font-weight: 600; color: var(--primary-color);">
+                    Développeur Web Freelance — spécialisé Symfony
                 </p>
-                <p>
-                    Passionné par le développement web depuis plus de 5 ans, j'accompagne les entreprises,
-                    associations et entrepreneurs dans la création de leur présence en ligne.
-                    Basé en Bretagne, j'interviens sur toute la France pour des projets web sur mesure.
-                </p>
-                <p>
-                    Mon objectif : vous offrir un site internet professionnel, performant et adapté à vos besoins,
-                    tout en vous accompagnant avec pédagogie et transparence tout au long du projet.
-                </p>
+
+                <div style="margin-top: 2rem; line-height: 1.8;">
+                    <p>
+                        Avant d'être développeur, j'ai servi plusieurs années dans la Marine Nationale, à bord de bâtiments de surface et au sein de l'aéronautique navale, sur avions de patrouille maritime. Cette période m'a marqué : rigueur, sens des responsabilités, travail d'équipe, adaptation… c'est un environnement où on n'a pas le droit d'être approximatif.
+                        Je garde encore aujourd'hui cette façon de travailler : carré, fiable, impliqué.
+                    </p>
+
+                    <p>
+                        Après ma reconversion, j'ai construit mon expérience dans le développement web jusqu'à devenir Lead Developer sur une marketplace B2B d'envergure. Architecture complexe, multi-entités, automatisations, performance, sécurité… un terrain idéal pour me spécialiser en Symfony et gagner en maîtrise.
+                    </p>
+
+                    <p>
+                        Aujourd'hui, installé en Bretagne, j'accompagne entreprises, associations et entrepreneurs partout en France.
+                        Je conçois des sites, des applications métiers, des outils internes et des systèmes sur mesure, avec une approche résolument orientée problem-solving : comprendre comment vous travaillez, ce qui vous ralentit, et créer un outil qui vous simplifie vraiment la vie.
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-{# Ma philosophie #}
+{# Ma manière de bosser #}
 <section class="section section-light">
     <div class="container">
-        <h2 class="text-center mb-5">Ma Philosophie</h2>
+        <h2 class="text-center mb-5">Ma Manière de Bosser</h2>
 
         <div class="grid grid-2">
             <div class="card">
                 <div class="card-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3 class="card-title">Compréhension fine du besoin</h3>
+                <p class="card-text">
+                    Pas du "copier-coller de fonctionnalités". Je prends le temps de comprendre comment vous travaillez,
+                    ce qui vous ralentit, pour créer un outil qui répond vraiment à vos besoins.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-sitemap"></i>
+                </div>
+                <h3 class="card-title">Architecture propre, maintenable, sécurisée</h3>
+                <p class="card-text">
+                    Code structuré, respectant les standards professionnels. Un projet qui pourra évoluer facilement
+                    et que d'autres développeurs pourront reprendre si nécessaire.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-anchor"></i>
+                </div>
+                <h3 class="card-title">Démarche structurée héritée de la Marine</h3>
+                <p class="card-text">
+                    Anticipation, fiabilité, clarté. Une rigueur acquise dans un environnement où l'approximation
+                    n'est pas une option. Je reste carré et fiable.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <h3 class="card-title">Pédagogie simple</h3>
+                <p class="card-text">
+                    Je vous explique ce que je fais et ce que ça change pour vous. Pas de jargon incompréhensible,
+                    juste de la communication claire et transparente.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <h3 class="card-title">Autonomie totale</h3>
+                <p class="card-text">
+                    Vous avancez sur votre activité, je m'occupe du reste. Vous n'avez pas besoin de comprendre
+                    le fonctionnement technique, juste de valider que ça répond à vos attentes.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
                     <i class="fas fa-handshake"></i>
                 </div>
-                <h3 class="card-title">Proximité & Écoute</h3>
+                <h3 class="card-title">Collaboration équilibrée</h3>
                 <p class="card-text">
-                    En tant que freelance, je suis votre unique interlocuteur. Je prends le temps d'écouter
-                    vos besoins, de comprendre votre activité et vos objectifs pour vous proposer la meilleure solution.
-                    Disponibilité et réactivité sont mes maîtres-mots.
-                </p>
-            </div>
-
-            <div class="card">
-                <div class="card-icon">
-                    <i class="fas fa-heart"></i>
-                </div>
-                <h3 class="card-title">Passion & Qualité</h3>
-                <p class="card-text">
-                    Chaque projet est unique et mérite une attention particulière. Je m'investis pleinement
-                    pour vous livrer un travail de qualité dont vous serez fier. La satisfaction client
-                    est ma priorité absolue.
-                </p>
-            </div>
-
-            <div class="card">
-                <div class="card-icon">
-                    <i class="fas fa-lightbulb"></i>
-                </div>
-                <h3 class="card-title">Innovation & Veille Technologique</h3>
-                <p class="card-text">
-                    Le web évolue constamment. Je me forme régulièrement aux dernières technologies et bonnes pratiques
-                    pour vous proposer des solutions modernes, performantes et pérennes.
-                </p>
-            </div>
-
-            <div class="card">
-                <div class="card-icon">
-                    <i class="fas fa-comments"></i>
-                </div>
-                <h3 class="card-title">Transparence & Pédagogie</h3>
-                <p class="card-text">
-                    Je vulgarise les aspects techniques pour que vous compreniez votre projet. Communication claire,
-                    tarifs transparents, pas de mauvaises surprises. Vous êtes impliqué et informé à chaque étape.
+                    On analyse ensemble vos besoins. J'apporte mes recommandations techniques.
+                    Vous décidez, je construis. Un vrai travail d'équipe.
                 </p>
             </div>
         </div>
-    </div>
-</section>
 
-{# Ce qui me distingue #}
-<section class="section">
-    <div class="container">
-        <h2 class="text-center mb-5">Ce Qui Me Distingue</h2>
-
-        <div style="max-width: 800px; margin: 0 auto;">
-            <div style="padding: 2rem; background: var(--bg-light); border-radius: var(--radius-lg); margin-bottom: 2rem;">
-                <h3 style="display: flex; align-items: center; gap: 1rem; color: var(--primary-color);">
-                    <i class="fas fa-user-tie"></i>
-                    Freelance = Flexibilité + Prix Justes
-                </h3>
-                <p style="margin-top: 1rem;">
-                    Sans les coûts de structure d'une agence, je vous propose des tarifs compétitifs
-                    tout en maintenant un niveau de qualité professionnel. Vous bénéficiez aussi d'une grande
-                    flexibilité et d'une relation directe sans intermédiaires.
-                </p>
-            </div>
-
-            <div style="padding: 2rem; background: var(--bg-light); border-radius: var(--radius-lg); margin-bottom: 2rem;">
-                <h3 style="display: flex; align-items: center; gap: 1rem; color: var(--primary-color);">
-                    <i class="fas fa-cogs"></i>
-                    Solutions Sur Mesure vs "Prêt-à-Porter"
-                </h3>
-                <p style="margin-top: 1rem;">
-                    Je ne travaille pas avec des templates génériques. Chaque site est développé sur mesure
-                    avec Symfony, ce qui vous garantit des fonctionnalités parfaitement adaptées à vos besoins
-                    et une évolutivité sans limite.
-                </p>
-            </div>
-
-            <div style="padding: 2rem; background: var(--bg-light); border-radius: var(--radius-lg);">
-                <h3 style="display: flex; align-items: center; gap: 1rem; color: var(--primary-color);">
-                    <i class="fas fa-life-ring"></i>
-                    Accompagnement Complet & Durable
-                </h3>
-                <p style="margin-top: 1rem;">
-                    De la conception à la maintenance, je reste à vos côtés. Hébergement, mises à jour,
-                    support technique... vous n'êtes jamais seul. Je suis là pour faire évoluer votre site
-                    en fonction de vos besoins futurs.
-                </p>
-            </div>
+        <div style="text-align: center; margin-top: 3rem; padding: 2rem; background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+            <h3 style="color: var(--primary-color); margin-bottom: 1rem;">Mon Objectif</h3>
+            <p style="font-size: 1.1rem; line-height: 1.8; max-width: 800px; margin: 0 auto;">
+                Vous livrer un outil professionnel, performant et durable, sans dépendances inutiles et sans complexité pour vous.
+            </p>
         </div>
     </div>
 </section>
 
 {# Compétences techniques #}
-<section class="section section-light">
+<section class="section">
     <div class="container">
         <h2 class="text-center mb-5">Compétences Techniques</h2>
 
@@ -188,7 +178,7 @@
 </section>
 
 {# Localisation #}
-<section class="section">
+<section class="section section-light">
     <div class="container">
         <div class="card" style="max-width: 800px; margin: 0 auto; text-align: center; padding: 3rem;">
             <div class="card-icon">
@@ -196,7 +186,7 @@
             </div>
             <h3 class="card-title">Basé en Bretagne</h3>
             <p class="card-text">
-                Je suis basé en Bretagne et interviens principalement dans la région (Finistère, Côtes-d'Armor, Morbihan, Ille-et-Vilaine).
+                Installé en Bretagne, j'interviens dans toute la région (Finistère, Côtes-d'Armor, Morbihan, Ille-et-Vilaine).
                 <br><br>
                 <strong>Déplacements possibles pour des rendez-vous en présentiel.</strong>
                 <br>
@@ -218,9 +208,9 @@
 </section>
 
 {# CTA Final #}
-<section class="section section-light">
+<section class="section">
     <div class="container text-center">
-        <h2 class="mb-3">Discutons de votre projet autour d'un café ☕</h2>
+        <h2 class="mb-3">Discutons de votre projet</h2>
         <p class="lead mb-4">
             Que ce soit en visio, par téléphone ou autour d'un café en Bretagne,<br>
             je serais ravi d'échanger avec vous sur vos besoins.

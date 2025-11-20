@@ -7,6 +7,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
@@ -54,6 +58,12 @@ class CompanyCrudController extends AbstractCrudController
                 ->setRequired(true),
             TextField::new('title', 'Titre/Fonction')
                 ->setRequired(true),
+            ImageField::new('profilePhoto', 'Photo de profil')
+                ->setBasePath('/uploads/profile')
+                ->setUploadDir('public/uploads/profile')
+                ->setUploadedFileNamePattern('[slug]-[timestamp].[extension]')
+                ->setRequired(false)
+                ->setHelp('Photo de profil pour la page "À propos"'),
             TextareaField::new('address', 'Adresse')
                 ->setRequired(true)
                 ->setNumOfRows(2),
@@ -83,6 +93,27 @@ class CompanyCrudController extends AbstractCrudController
                 ->setRequired(false)
                 ->setHelp('Conditions de paiement par défaut pour les factures (délais, modes de paiement, pénalités, etc.)')
                 ->setNumOfRows(4),
+
+            // Paramètres auto-entrepreneur pour dashboard
+            MoneyField::new('plafondCaAnnuel', 'Plafond CA annuel')
+                ->setRequired(false)
+                ->setCurrency('EUR')
+                ->setHelp('Plafond CA auto-entrepreneur (ex: 77 700 € pour prestations de services)'),
+            NumberField::new('tauxCotisationsUrssaf', 'Taux cotisations URSSAF (%)')
+                ->setRequired(false)
+                ->setNumDecimals(2)
+                ->setHelp('Taux de cotisations sociales (ex: 21.2% pour prestations de services)'),
+            MoneyField::new('objectifCaMensuel', 'Objectif CA mensuel')
+                ->setRequired(false)
+                ->setCurrency('EUR')
+                ->setHelp('Objectif de chiffre d\'affaires mensuel'),
+            MoneyField::new('objectifCaAnnuel', 'Objectif CA annuel')
+                ->setRequired(false)
+                ->setCurrency('EUR')
+                ->setHelp('Objectif de chiffre d\'affaires annuel'),
+            IntegerField::new('anneeFiscaleEnCours', 'Année fiscale en cours')
+                ->setRequired(false)
+                ->setHelp('Année fiscale pour le calcul du CA (défaut: année en cours)'),
         ];
     }
 

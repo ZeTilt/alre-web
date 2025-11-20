@@ -62,10 +62,30 @@ class Company
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    // Paramètres auto-entrepreneur pour dashboard
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $plafondCaAnnuel = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    private ?string $tauxCotisationsUrssaf = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $objectifCaMensuel = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $objectifCaAnnuel = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $anneeFiscaleEnCours = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $profilePhoto = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
+        $this->anneeFiscaleEnCours = (int) date('Y');
     }
 
     public function getId(): ?int
@@ -282,6 +302,84 @@ class Company
     public function getFullAddress(): string
     {
         return $this->address . "\n" . $this->postalCode . ' ' . $this->city;
+    }
+
+    public function getPlafondCaAnnuel(): ?string
+    {
+        return $this->plafondCaAnnuel;
+    }
+
+    public function setPlafondCaAnnuel(?string $plafondCaAnnuel): static
+    {
+        $this->plafondCaAnnuel = $plafondCaAnnuel;
+        $this->updatedAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function getTauxCotisationsUrssaf(): ?string
+    {
+        return $this->tauxCotisationsUrssaf;
+    }
+
+    public function setTauxCotisationsUrssaf(?string $tauxCotisationsUrssaf): static
+    {
+        $this->tauxCotisationsUrssaf = $tauxCotisationsUrssaf;
+        $this->updatedAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function getObjectifCaMensuel(): ?string
+    {
+        return $this->objectifCaMensuel;
+    }
+
+    public function setObjectifCaMensuel(?string $objectifCaMensuel): static
+    {
+        $this->objectifCaMensuel = $objectifCaMensuel;
+        $this->updatedAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function getObjectifCaAnnuel(): ?string
+    {
+        return $this->objectifCaAnnuel;
+    }
+
+    public function setObjectifCaAnnuel(?string $objectifCaAnnuel): static
+    {
+        $this->objectifCaAnnuel = $objectifCaAnnuel;
+        $this->updatedAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function getAnneeFiscaleEnCours(): ?int
+    {
+        return $this->anneeFiscaleEnCours;
+    }
+
+    public function setAnneeFiscaleEnCours(?int $anneeFiscaleEnCours): static
+    {
+        $this->anneeFiscaleEnCours = $anneeFiscaleEnCours;
+        $this->updatedAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function getProfilePhoto(): ?string
+    {
+        return $this->profilePhoto;
+    }
+
+    public function setProfilePhoto(?string $profilePhoto): static
+    {
+        $this->profilePhoto = $profilePhoto;
+        $this->updatedAt = new \DateTimeImmutable();
+
+        return $this;
     }
 
     public function __toString(): string

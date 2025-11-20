@@ -412,10 +412,4 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-
-    // ============================================
-    // Console message
-    // ============================================
-    console.log('%c🚀 Alré Web - Site Vitrine Freelance', 'color: #1E3A5F; font-size: 16px; font-weight: bold;');
-    console.log('%cDéveloppé avec Symfony & ❤️', 'color: #00B8D9; font-size: 12px;');
 });

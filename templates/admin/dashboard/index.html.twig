@@ -1,0 +1,472 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}
+    <i class="fa fa-chart-line"></i> Tableau de Bord {{ year }}
+{% endblock %}
+
+{% block content_header_wrapper %}
+    {{ parent() }}
+    <div style="margin-top: -40px; text-align: right;">
+        <a href="{{ path('admin_dashboard_export_csv') }}" class="btn btn-sm btn-success">
+            <i class="fas fa-file-csv"></i> Exporter CSV
+        </a>
+    </div>
+{% endblock %}
+
+{% block page_content %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --info: #06b6d4;
+        --purple: #8b5cf6;
+    }
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.25rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border-left: 4px solid var(--primary);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .stat-card.success { border-left-color: var(--success); }
+    .stat-card.warning { border-left-color: var(--warning); }
+    .stat-card.danger { border-left-color: var(--danger); }
+    .stat-card.info { border-left-color: var(--info); }
+    .stat-card.purple { border-left-color: var(--purple); }
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+    .stat-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    .stat-icon.primary { background: #eff6ff; color: var(--primary); }
+    .stat-icon.success { background: #f0fdf4; color: var(--success); }
+    .stat-icon.warning { background: #fffbeb; color: var(--warning); }
+    .stat-icon.danger { background: #fef2f2; color: var(--danger); }
+    .stat-icon.info { background: #f0fdfa; color: var(--info); }
+    .stat-icon.purple { background: #faf5ff; color: var(--purple); }
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0.5rem 0;
+    }
+    .stat-subtitle {
+        font-size: 0.875rem;
+        color: #9ca3af;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    .stat-subtitle.positive { color: var(--success); }
+    .stat-subtitle.negative { color: var(--danger); }
+    .chart-container {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+        height: 350px;
+    }
+    .chart-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .chart-canvas {
+        max-height: 280px;
+    }
+    .progress-ring {
+        width: 80px;
+        height: 80px;
+        position: relative;
+    }
+    .progress-ring svg {
+        transform: rotate(-90deg);
+    }
+    .progress-ring circle {
+        fill: none;
+        stroke-width: 8;
+    }
+    .alert-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    .alert-badge.danger { background: #fef2f2; color: var(--danger); }
+    .alert-badge.warning { background: #fffbeb; color: var(--warning); }
+    .alert-badge.success { background: #f0fdf4; color: var(--success); }
+    .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+    @media (max-width: 768px) {
+        .grid-2 { grid-template-columns: 1fr; }
+    }
+</style>
+
+<!-- KPIs Principaux -->
+<div class="dashboard-grid">
+    <div class="stat-card primary">
+        <div class="stat-header">
+            <span class="stat-label">CA Ce Mois</span>
+            <div class="stat-icon primary"><i class="fas fa-euro-sign"></i></div>
+        </div>
+        <div class="stat-value">{{ (caMoisEncaisse / 1000)|number_format(1) }}k€</div>
+        {% if variationMoisPourcent != 0 %}
+            <div class="stat-subtitle {% if variationMoisPourcent > 0 %}positive{% else %}negative{% endif %}">
+                <i class="fas fa-arrow-{% if variationMoisPourcent > 0 %}up{% else %}down{% endif %}"></i>
+                {{ variationMoisPourcent|abs }}% vs mois dernier
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="stat-card success">
+        <div class="stat-header">
+            <span class="stat-label">CA Année {{ year }}</span>
+            <div class="stat-icon success"><i class="fas fa-chart-line"></i></div>
+        </div>
+        <div class="stat-value">{{ (caAnneeEncaisse / 1000)|number_format(1) }}k€</div>
+        {% if objectifAnnuel > 0 %}
+            <div class="stat-subtitle">{{ progressionObjectifAnnuel }}% de l'objectif</div>
+        {% endif %}
+    </div>
+
+    <div class="stat-card {% if progressionPlafond >= 90 %}danger{% elseif progressionPlafond >= 75 %}warning{% else %}info{% endif %}">
+        <div class="stat-header">
+            <span class="stat-label">Plafond AE</span>
+            <div class="stat-icon {% if progressionPlafond >= 90 %}danger{% elseif progressionPlafond >= 75 %}warning{% else %}info{% endif %}">
+                <i class="fas fa-gauge-high"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ progressionPlafond }}%</div>
+        <div class="stat-subtitle">{{ (caAnneeEncaisse / 1000)|number_format(0) }}k€ / {{ (plafondCa / 1000)|number_format(0) }}k€</div>
+    </div>
+
+    <div class="stat-card warning">
+        <div class="stat-header">
+            <span class="stat-label">En Attente</span>
+            <div class="stat-icon warning"><i class="fas fa-clock"></i></div>
+        </div>
+        <div class="stat-value">{{ (caEnAttente / 1000)|number_format(1) }}k€</div>
+        <div class="stat-subtitle">{{ nbFacturesEnRetard + nbDevisPending }} factures/devis</div>
+    </div>
+
+    {% if tauxCotisations > 0 %}
+    <div class="stat-card purple">
+        <div class="stat-header">
+            <span class="stat-label">Cotisations URSSAF</span>
+            <div class="stat-icon purple"><i class="fas fa-landmark"></i></div>
+        </div>
+        <div class="stat-value">{{ (cotisationsEstimees / 1000)|number_format(1) }}k€</div>
+        <div class="stat-subtitle">{{ tauxCotisations }}% du CA</div>
+    </div>
+    {% endif %}
+
+    <div class="stat-card info">
+        <div class="stat-header">
+            <span class="stat-label">Taux Conversion</span>
+            <div class="stat-icon info"><i class="fas fa-percent"></i></div>
+        </div>
+        <div class="stat-value">{{ tauxConversion }}%</div>
+        <div class="stat-subtitle">Devis → Factures</div>
+    </div>
+
+    <div class="stat-card danger">
+        <div class="stat-header">
+            <span class="stat-label">Dépenses {{ year }}</span>
+            <div class="stat-icon danger"><i class="fas fa-money-bill-wave"></i></div>
+        </div>
+        <div class="stat-value">{{ (depensesAnnee / 1000)|number_format(1) }}k€</div>
+        <div class="stat-subtitle">Dépenses professionnelles</div>
+    </div>
+
+    <div class="stat-card {% if margeNetAnnee >= 30 %}success{% elseif margeNetAnnee >= 15 %}warning{% else %}danger{% endif %}">
+        <div class="stat-header">
+            <span class="stat-label">Bénéfice Net {{ year }}</span>
+            <div class="stat-icon {% if margeNetAnnee >= 30 %}success{% elseif margeNetAnnee >= 15 %}warning{% else %}danger{% endif %}">
+                <i class="fas fa-chart-line"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ (beneficeNetAnnee / 1000)|number_format(1) }}k€</div>
+        <div class="stat-subtitle">Après dépenses & URSSAF : {{ margeNetAnnee }}%</div>
+    </div>
+</div>
+
+<!-- Alertes -->
+{% if nbFacturesEnRetard > 0 or nbDevisARelancer > 0 %}
+<div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+    {% if nbFacturesEnRetard > 0 %}
+        <div class="alert-badge danger">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ nbFacturesEnRetard }} facture(s) en retard ({{ (montantEnRetard / 1000)|number_format(1) }}k€)
+        </div>
+    {% endif %}
+    {% if nbDevisARelancer > 0 %}
+        <div class="alert-badge warning">
+            <i class="fas fa-bell"></i>
+            {{ nbDevisARelancer }} devis à relancer
+        </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Prévisions -->
+{% if projections is not empty %}
+<div class="chart-container" style="padding: 1rem 1.5rem;">
+    <div class="chart-title" style="margin-bottom: 0.5rem;">
+        <i class="fas fa-crystal-ball" style="color: var(--purple);"></i>
+        Prévisions CA (moyenne 3 derniers mois)
+    </div>
+    <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+        {% for proj in projections %}
+            <div style="flex: 1; min-width: 150px;">
+                <div style="font-size: 0.875rem; color: #6b7280; font-weight: 600;">{{ proj.month }}</div>
+                <div style="font-size: 1.25rem; font-weight: 700; color: #3b82f6;">{{ (proj.amount / 1000)|number_format(1) }}k€</div>
+            </div>
+        {% endfor %}
+        {% if tendance != 0 %}
+            <div style="flex: 1; min-width: 150px; padding: 0.75rem; background: {% if tendance > 0 %}#f0fdf4{% else %}#fef2f2{% endif %}; border-radius: 8px;">
+                <div style="font-size: 0.875rem; color: #6b7280; font-weight: 600;">Tendance</div>
+                <div style="font-size: 1.25rem; font-weight: 700; color: {% if tendance > 0 %}#10b981{% else %}#ef4444{% endif %};">
+                    <i class="fas fa-arrow-{% if tendance > 0 %}up{% else %}down{% endif %}"></i> {{ tendance|abs }}%
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Graphiques -->
+<div class="grid-2">
+    <!-- Évolution CA Mensuel -->
+    <div class="chart-container">
+        <div class="chart-title">
+            <i class="fas fa-chart-area" style="color: var(--primary);"></i>
+            Évolution CA {{ year }}
+        </div>
+        <canvas id="chartCAMensuel" class="chart-canvas"></canvas>
+    </div>
+
+    <!-- Top Clients -->
+    <div class="chart-container">
+        <div class="chart-title">
+            <i class="fas fa-chart-pie" style="color: var(--success);"></i>
+            Top 5 Clients
+        </div>
+        <canvas id="chartClients" class="chart-canvas"></canvas>
+    </div>
+</div>
+
+<!-- CA, Dépenses, Cotisations et Bénéfice -->
+<div class="chart-container">
+    <div class="chart-title">
+        <i class="fas fa-chart-bar" style="color: var(--info);"></i>
+        CA, Dépenses, Cotisations URSSAF et Bénéfice Net par Mois
+    </div>
+    <canvas id="chartComparaison" class="chart-canvas"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Configuration commune
+Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+Chart.defaults.plugins.legend.display = true;
+Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(17, 24, 39, 0.95)';
+Chart.defaults.plugins.tooltip.padding = 12;
+Chart.defaults.plugins.tooltip.cornerRadius = 8;
+
+// Données PHP → JS
+const caParMois = {{ caParMois|json_encode|raw }};
+const caFactureParMois = {{ caFactureParMois|json_encode|raw }};
+const depensesParMois = {{ depensesParMois|json_encode|raw }};
+const cotisationsParMois = {{ cotisationsParMois|json_encode|raw }};
+const topClients = {{ topClients|json_encode|raw }};
+
+const mois = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+
+// 1. Graphique Évolution CA Mensuel (Ligne)
+new Chart(document.getElementById('chartCAMensuel'), {
+    type: 'line',
+    data: {
+        labels: mois,
+        datasets: [{
+            label: 'CA Encaissé',
+            data: Object.values(caParMois),
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            pointRadius: 4,
+            pointHoverRadius: 6
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: (ctx) => 'CA: ' + ctx.parsed.y.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: (value) => (value / 1000) + 'k€'
+                },
+                grid: { color: 'rgba(0,0,0,0.05)' }
+            },
+            x: {
+                grid: { display: false }
+            }
+        }
+    }
+});
+
+// 2. Graphique Top Clients (Camembert)
+const clientColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+new Chart(document.getElementById('chartClients'), {
+    type: 'doughnut',
+    data: {
+        labels: topClients.map(c => c.clientName),
+        datasets: [{
+            data: topClients.map(c => parseFloat(c.total)),
+            backgroundColor: clientColors,
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { padding: 15, font: { size: 11 } }
+            },
+            tooltip: {
+                callbacks: {
+                    label: (ctx) => {
+                        const total = topClients.reduce((sum, c) => sum + parseFloat(c.total), 0);
+                        const percent = Math.round((ctx.parsed / total) * 100);
+                        return ctx.label + ': ' + ctx.parsed.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }) + ' (' + percent + '%)';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// 3. Graphique CA vs Dépenses vs Cotisations (Barres)
+new Chart(document.getElementById('chartComparaison'), {
+    type: 'bar',
+    data: {
+        labels: mois,
+        datasets: [
+            {
+                label: 'CA Encaissé',
+                data: Object.values(caParMois),
+                backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                borderColor: '#10b981',
+                borderWidth: 1
+            },
+            {
+                label: 'Dépenses',
+                data: Object.values(depensesParMois),
+                backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                borderColor: '#ef4444',
+                borderWidth: 1
+            },
+            {
+                label: 'Cotisations URSSAF',
+                data: Object.values(cotisationsParMois),
+                backgroundColor: 'rgba(245, 158, 11, 0.7)',
+                borderColor: '#f59e0b',
+                borderWidth: 1
+            },
+            {
+                label: 'Bénéfice Net',
+                data: Object.values(caParMois).map((ca, index) => {
+                    const depenses = Object.values(depensesParMois)[index];
+                    const cotisations = Object.values(cotisationsParMois)[index];
+                    return ca - depenses - cotisations;
+                }),
+                backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                borderColor: '#3b82f6',
+                borderWidth: 1
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: { padding: 15, usePointStyle: true }
+            },
+            tooltip: {
+                callbacks: {
+                    label: (ctx) => ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: (value) => (value / 1000) + 'k€'
+                },
+                grid: { color: 'rgba(0,0,0,0.05)' }
+            },
+            x: {
+                grid: { display: false }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

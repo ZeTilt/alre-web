@@ -138,7 +138,7 @@ class DevisRepository extends ServiceEntityRepository
     {
         $year = date('Y');
         $prefix = 'DEV-' . $year . '-';
-        
+
         $lastDevis = $this->createQueryBuilder('d')
             ->andWhere('d.number LIKE :prefix')
             ->setParameter('prefix', $prefix . '%')
@@ -153,5 +153,113 @@ class DevisRepository extends ServiceEntityRepository
 
         $lastNumber = (int) substr($lastDevis->getNumber(), -4);
         return $prefix . str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+    }
+
+    // ====================================================
+    // Méthodes pour le Dashboard
+    // ====================================================
+
+    /**
+     * Calcule le taux de conversion des devis (acceptés / envoyés)
+     * @return float Taux de conversion en pourcentage
+     */
+    public function getConversionRate(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate): float
+    {
+        // Devis envoyés (qui ont été soumis au client)
+        $sent = $this->createQueryBuilder('d')
+            ->select('COUNT(d.id)')
+            ->andWhere('d.dateCreation BETWEEN :startDate AND :endDate')
+            ->andWhere('d.status IN (:sentStatuses)')
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->setParameter('sentStatuses', [
+                Devis::STATUS_ENVOYE,
+                Devis::STATUS_RELANCE,
+                Devis::STATUS_ACCEPTE,
+                Devis::STATUS_REFUSE
+            ])
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        if ($sent == 0) {
+            return 0.0;
+        }
+
+        // Devis acceptés
+        $accepted = $this->createQueryBuilder('d')
+            ->select('COUNT(d.id)')
+            ->andWhere('d.dateCreation BETWEEN :startDate AND :endDate')
+            ->andWhere('d.status = :status')
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->setParameter('status', Devis::STATUS_ACCEPTE)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return round(($accepted / $sent) * 100, 2);
+    }
+
+    /**
+     * Retourne les statistiques par statut pour une année
+     */
+    public function getQuotesByStatus(int $year): array
+    {
+        $startDate = new \DateTimeImmutable($year . '-01-01');
+        $endDate = new \DateTimeImmutable($year . '-12-31');
+
+        $result = $this->createQueryBuilder('d')
+            ->select('d.status', 'COUNT(d.id) as count', 'SUM(d.totalTtc) as total')
+            ->andWhere('d.dateCreation BETWEEN :startDate AND :endDate')
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->groupBy('d.status')
+            ->getQuery()
+            ->getResult();
+
+        $stats = [];
+        foreach ($result as $row) {
+            $stats[$row['status']] = [
+                'count' => (int) $row['count'],
+                'total' => (float) ($row['total'] ?: 0)
+            ];
+        }
+
+        return $stats;
+    }
+
+    /**
+     * Retourne le montant total des devis en attente
+     */
+    public function getPendingQuotesTotal(): float
+    {
+        $result = $this->createQueryBuilder('d')
+            ->select('COALESCE(SUM(d.totalTtc), 0)')
+            ->andWhere('d.status IN (:statuses)')
+            ->setParameter('statuses', [
+                Devis::STATUS_A_ENVOYER,
+                Devis::STATUS_ENVOYE,
+                Devis::STATUS_RELANCE
+            ])
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (float) $result;
+    }
+
+    /**
+     * Retourne les devis à relancer (envoyés il y a plus de X jours)
+     */
+    public function getQuotesToFollowUp(int $daysOld = 7): array
+    {
+        $dateLimit = (new \DateTimeImmutable())->modify("-{$daysOld} days");
+
+        return $this->createQueryBuilder('d')
+            ->andWhere('d.dateEnvoi < :dateLimit')
+            ->andWhere('d.status IN (:statuses)')
+            ->setParameter('dateLimit', $dateLimit)
+            ->setParameter('statuses', [Devis::STATUS_ENVOYE, Devis::STATUS_RELANCE])
+            ->orderBy('d.dateEnvoi', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }

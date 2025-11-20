@@ -59,21 +59,13 @@ td[data-label*="Siret"] .text-body {
     transition: filter 0.2s;
 }
 
-/* Flouter les noms de clients */
-td.field-association a,
-td[data-label*="Client"] a {
-    filter: blur(4px);
-    transition: filter 0.2s;
-}
-
 /* Dévoiler au survol de la cellule */
 td:hover .text-body,
 td:hover a,
 .field-money:hover,
 .field-decimal:hover,
 .field-email:hover a,
-.field-telephone:hover,
-.field-association:hover a {
+.field-telephone:hover {
     filter: blur(0px) !important;
 }
 

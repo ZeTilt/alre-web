@@ -12,6 +12,9 @@
         <meta name="author" content="Fabrice Dhuicque - Alré Web">
         <meta name="robots" content="index, follow">
 
+        {# Canonical URL - Force HTTPS version #}
+        <link rel="canonical" href="https://alre-web.bzh{{ app.request.pathinfo }}">
+
         {# Open Graph Meta Tags (Facebook, LinkedIn) #}
         <meta property="og:type" content="website">
         <meta property="og:title" content="{% block og_title %}{{ block('title') }}{% endblock %}">

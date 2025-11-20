@@ -141,17 +141,21 @@ class FactureRepository extends ServiceEntityRepository
         $startDate = new \DateTimeImmutable($year . '-01-01');
         $endDate = new \DateTimeImmutable($year . '-12-31');
 
-        $result = $this->createQueryBuilder('f')
-            ->select('MONTH(f.dateFacture) as month', 'SUM(f.totalTtc) as total')
-            ->andWhere('f.dateFacture BETWEEN :startDate AND :endDate')
-            ->andWhere('f.status = :status')
-            ->setParameter('startDate', $startDate)
-            ->setParameter('endDate', $endDate)
-            ->setParameter('status', Facture::STATUS_PAYE)
-            ->groupBy('month')
-            ->orderBy('month', 'ASC')
-            ->getQuery()
-            ->getResult();
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = "
+            SELECT MONTH(date_facture) as month, SUM(total_ttc) as total
+            FROM facture
+            WHERE date_facture BETWEEN :startDate AND :endDate
+            AND status = :status
+            GROUP BY MONTH(date_facture)
+            ORDER BY MONTH(date_facture)
+        ";
+
+        $result = $conn->executeQuery($sql, [
+            'startDate' => $startDate->format('Y-m-d'),
+            'endDate' => $endDate->format('Y-m-d'),
+            'status' => Facture::STATUS_PAYE
+        ])->fetchAllAssociative();
 
         // Fill missing months with 0
         $monthlyRevenue = [];
@@ -186,7 +190,7 @@ class FactureRepository extends ServiceEntityRepository
     {
         $year = date('Y');
         $prefix = 'FAC-' . $year . '-';
-        
+
         $lastFacture = $this->createQueryBuilder('f')
             ->andWhere('f.number LIKE :prefix')
             ->setParameter('prefix', $prefix . '%')
@@ -201,5 +205,160 @@ class FactureRepository extends ServiceEntityRepository
 
         $lastNumber = (int) substr($lastFacture->getNumber(), -4);
         return $prefix . str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+    }
+
+    // ====================================================
+    // Méthodes pour le Dashboard
+    // ====================================================
+
+    /**
+     * Retourne le CA encaissé (basé sur datePaiement) sur une période donnée
+     */
+    public function getRevenueByPeriod(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate, bool $paid = true): float
+    {
+        $qb = $this->createQueryBuilder('f')
+            ->select('COALESCE(SUM(f.totalTtc), 0)');
+
+        if ($paid) {
+            // CA encaissé = factures avec date de paiement renseignée
+            $qb->andWhere('f.datePaiement BETWEEN :startDate AND :endDate')
+               ->andWhere('f.status = :status')
+               ->setParameter('status', Facture::STATUS_PAYE);
+        } else {
+            // CA facturé = factures émises sur la période
+            $qb->andWhere('f.dateFacture BETWEEN :startDate AND :endDate');
+        }
+
+        $qb->setParameter('startDate', $startDate)
+           ->setParameter('endDate', $endDate);
+
+        return (float) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * Retourne le CA par client pour une année donnée
+     */
+    public function getRevenueByClient(int $year): array
+    {
+        $startDate = new \DateTimeImmutable($year . '-01-01');
+        $endDate = new \DateTimeImmutable($year . '-12-31');
+
+        return $this->createQueryBuilder('f')
+            ->select('c.name as clientName', 'c.id as clientId', 'SUM(f.totalTtc) as total', 'COUNT(f.id) as count')
+            ->leftJoin('f.client', 'c')
+            ->andWhere('f.dateFacture BETWEEN :startDate AND :endDate')
+            ->andWhere('f.status = :status')
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->setParameter('status', Facture::STATUS_PAYE)
+            ->groupBy('c.id', 'c.name')
+            ->orderBy('total', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Retourne le délai moyen de paiement en jours
+     */
+    public function getAveragePaymentDelay(): int
+    {
+        $factures = $this->createQueryBuilder('f')
+            ->andWhere('f.status = :status')
+            ->andWhere('f.datePaiement IS NOT NULL')
+            ->andWhere('f.dateFacture IS NOT NULL')
+            ->setParameter('status', Facture::STATUS_PAYE)
+            ->getQuery()
+            ->getResult();
+
+        if (empty($factures)) {
+            return 0;
+        }
+
+        $totalDelay = 0;
+        foreach ($factures as $facture) {
+            $dateFacture = $facture->getDateFacture();
+            $datePaiement = $facture->getDatePaiement();
+            if ($dateFacture && $datePaiement) {
+                $totalDelay += $dateFacture->diff($datePaiement)->days;
+            }
+        }
+
+        return (int) round($totalDelay / count($factures));
+    }
+
+    /**
+     * Retourne le total des factures en attente de paiement (pending revenue)
+     */
+    public function getPendingRevenue(): float
+    {
+        $result = $this->createQueryBuilder('f')
+            ->select('COALESCE(SUM(f.totalTtc), 0)')
+            ->andWhere('f.status IN (:statuses)')
+            ->setParameter('statuses', [
+                Facture::STATUS_A_ENVOYER,
+                Facture::STATUS_ENVOYE,
+                Facture::STATUS_RELANCE,
+                Facture::STATUS_EN_RETARD
+            ])
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (float) $result;
+    }
+
+    /**
+     * Retourne les factures dont l'échéance arrive dans les X prochains jours
+     */
+    public function getUpcomingPayments(int $days = 30): array
+    {
+        $today = new \DateTimeImmutable();
+        $futureDate = $today->modify("+{$days} days");
+
+        return $this->createQueryBuilder('f')
+            ->andWhere('f.dateEcheance BETWEEN :today AND :futureDate')
+            ->andWhere('f.status NOT IN (:paidStatuses)')
+            ->setParameter('today', $today)
+            ->setParameter('futureDate', $futureDate)
+            ->setParameter('paidStatuses', [Facture::STATUS_PAYE, Facture::STATUS_ANNULE])
+            ->orderBy('f.dateEcheance', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Retourne le CA par mois avec date d'encaissement (pour graphiques dashboard)
+     */
+    public function getMonthlyPaidRevenueForYear(int $year): array
+    {
+        $startDate = new \DateTimeImmutable($year . '-01-01');
+        $endDate = new \DateTimeImmutable($year . '-12-31');
+
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = "
+            SELECT MONTH(date_paiement) as month, SUM(total_ttc) as total
+            FROM facture
+            WHERE date_paiement BETWEEN :startDate AND :endDate
+            AND status = :status
+            GROUP BY MONTH(date_paiement)
+            ORDER BY MONTH(date_paiement)
+        ";
+
+        $result = $conn->executeQuery($sql, [
+            'startDate' => $startDate->format('Y-m-d'),
+            'endDate' => $endDate->format('Y-m-d'),
+            'status' => Facture::STATUS_PAYE
+        ])->fetchAllAssociative();
+
+        // Fill missing months with 0
+        $monthlyRevenue = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $monthlyRevenue[$i] = 0.0;
+        }
+
+        foreach ($result as $row) {
+            $monthlyRevenue[(int) $row['month']] = (float) ($row['total'] ?: 0);
+        }
+
+        return $monthlyRevenue;
     }
 }

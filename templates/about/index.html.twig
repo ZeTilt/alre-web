@@ -20,7 +20,7 @@
 <section class="section">
     <div class="container">
         <div class="about-profile">
-            <div class="about-photo" style="width: 200px; height: 200px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-lg); border: 5px solid var(--bg-white); overflow: hidden;">
+            <div class="about-photo" style="flex-shrink: 0; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); display: flex; align-items: center; justify-content: center; overflow: hidden;">
                 {% if company and company.profilePhoto %}
                     <img src="{{ asset('uploads/profile/' ~ company.profilePhoto) }}" alt="Fabrice Dhuicque" style="width: 100%; height: 100%; object-fit: cover;">
                 {% else %}

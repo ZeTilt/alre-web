@@ -141,6 +141,21 @@
     @media (max-width: 768px) {
         .grid-2 { grid-template-columns: 1fr; }
     }
+
+    {% if demoMode %}
+    /* Mode démo : flouter les données sensibles */
+    .stat-value,
+    .stat-subtitle,
+    .alert-badge {
+        filter: blur(4px);
+        transition: filter 0.2s;
+    }
+    .stat-card:hover .stat-value,
+    .stat-card:hover .stat-subtitle,
+    .stat-card:hover .alert-badge {
+        filter: blur(0px);
+    }
+    {% endif %}
 </style>
 
 <!-- KPIs Principaux -->

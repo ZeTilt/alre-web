@@ -244,6 +244,9 @@ class DashboardController extends AbstractDashboardController
             // Prévisions
             'projections' => $projections,
             'tendance' => $tendance,
+
+            // Mode démo
+            'demoMode' => ($_ENV['APP_DEMO_MODE'] ?? '0') === '1',
         ]);
     }
 

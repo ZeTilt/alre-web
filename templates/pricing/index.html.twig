@@ -76,7 +76,6 @@
 
             {# Offre 2 : Site E-commerce (Featured) #}
             <div class="pricing-card card featured">
-                <div class="pricing-badge">Populaire</div>
                 <div class="card-icon">
                     <i class="fas fa-shopping-cart"></i>
                 </div>
@@ -188,12 +187,39 @@
                 </div>
             </div>
 
+            <div class="card" style="margin-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <h3 class="card-title" style="display: flex; align-items: center; gap: 1rem;">
+                            <i class="fas fa-database" style="color: var(--accent-color);"></i>
+                            Hébergement Seul
+                        </h3>
+                        <ul class="service-list" style="margin-top: 1rem;">
+                            <li>Serveur performant en France</li>
+                            <li>Certificat SSL (HTTPS)</li>
+                            <li>Sauvegardes quotidiennes</li>
+                            <li>Surveillance 24/7</li>
+                            <li>Sans maintenance technique</li>
+                        </ul>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="pricing-price" style="margin: 0;">
+                            50 €
+                            <span>/mois</span>
+                        </div>
+                        <a href="{{ path('app_contact') }}" class="btn btn-outline" style="margin-top: 1rem;">
+                            Souscrire
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
                     <div style="flex: 1; min-width: 250px;">
                         <h3 class="card-title" style="display: flex; align-items: center; gap: 1rem;">
                             <i class="fas fa-tools" style="color: var(--accent-color);"></i>
-                            Forfait Maintenance Seule
+                            Maintenance Seule
                         </h3>
                         <ul class="service-list" style="margin-top: 1rem;">
                             <li>Si vous avez déjà un hébergement</li>

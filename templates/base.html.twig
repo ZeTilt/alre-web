@@ -160,10 +160,14 @@
         <!-- Matomo -->
         <script>
           var _paq = window._paq = window._paq || [];
+          /* Configuration cookies */
+          _paq.push(['setCookieDomain', '*.alre-web.bzh']);
+          _paq.push(['setDomains', '*.alre-web.bzh']);
+          /* Tracking */
           _paq.push(['trackPageView']);
           _paq.push(['enableLinkTracking']);
           (function() {
-            var u="//matomo.alre-web.bzh/";
+            var u="https://matomo.alre-web.bzh/";
             _paq.push(['setTrackerUrl', u+'matomo.php']);
             _paq.push(['setSiteId', '1']);
             var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];

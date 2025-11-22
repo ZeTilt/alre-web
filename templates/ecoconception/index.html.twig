@@ -158,10 +158,12 @@
         font-size: 2rem;
         font-weight: 700;
         margin: 0;
+        color: white;
     }
     .eco-stat-text {
         margin: 0;
         opacity: 0.9;
+        color: white;
     }
 </style>
 
@@ -265,6 +267,9 @@
         color: white;
         font-weight: 600;
     }
+    .comparison-header .comparison-cell {
+        color: white;
+    }
     .comparison-cell {
         padding: 1rem;
         text-align: center;
@@ -274,10 +279,10 @@
         text-align: left;
         font-weight: 500;
     }
-    .comparison-symfony {
-        color: var(--primary-color);
+    .comparison-row:not(.comparison-header) .comparison-symfony {
+        color: var(--accent-color);
     }
-    .comparison-wordpress {
+    .comparison-row:not(.comparison-header) .comparison-wordpress {
         color: #21759b;
     }
     .comparison-good {

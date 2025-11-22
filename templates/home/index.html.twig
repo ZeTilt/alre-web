@@ -395,7 +395,7 @@
                     Ce site est conçu selon les principes de l'écoconception numérique :
                     léger, rapide, économe en ressources. <strong>Plus propre que 94% des sites web.</strong>
                 </p>
-                <a href="{{ path('app_ecoconception') }}" class="btn btn-outline" style="border-color: #27ae60; color: #27ae60;">
+                <a href="{{ path('app_ecoconception') }}" class="btn btn-outline">
                     <i class="fas fa-leaf"></i> Découvrir mon engagement
                 </a>
             </div>
@@ -404,7 +404,7 @@
 </section>
 <style>
     .eco-section {
-        background: linear-gradient(135deg, #f0fff4 0%, #e8f5e9 100%);
+        background: var(--bg-light);
     }
     .eco-banner {
         display: flex;
@@ -424,7 +424,7 @@
     .eco-badge-large {
         width: 80px;
         height: 80px;
-        background: linear-gradient(135deg, #2ecc71, #27ae60);
+        background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -437,7 +437,7 @@
         display: block;
         margin-top: 0.5rem;
         font-size: 0.85rem;
-        color: #27ae60;
+        color: var(--accent-color);
         font-weight: 600;
     }
     .eco-banner-content h2 {

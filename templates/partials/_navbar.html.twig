@@ -37,6 +37,11 @@
                 </a>
             </li>
             <li>
+                <a href="{{ path('app_ecoconception') }}" class="{{ app.request.attributes.get('_route') == 'app_ecoconception' ? 'active' : '' }}" style="color: #27ae60;">
+                    <i class="fas fa-leaf"></i> Écoconception
+                </a>
+            </li>
+            <li>
                 <a href="{{ path('app_pricing') }}" class="{{ app.request.attributes.get('_route') == 'app_pricing' ? 'active' : '' }}">
                     Tarifs
                 </a>

@@ -1,0 +1,498 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Écoconception Web | Sites Internet Sobres et Performants - Fabrice Dhuicque{% endblock %}
+
+{% block meta_description %}Développeur web engagé dans l'écoconception numérique. Sites internet sobres, rapides et économes en ressources. Score EcoIndex A. Réduisez l'empreinte carbone de votre présence en ligne avec Symfony.{% endblock %}
+
+{% block body %}
+
+{# Hero Section #}
+<section class="hero" style="padding: 4rem 0;">
+    <div class="hero-content">
+        <h1 class="fade-in">Écoconception Web</h1>
+        <p class="lead fade-in-delay-1">
+            Des sites internet sobres, performants et respectueux de l'environnement
+        </p>
+    </div>
+</section>
+
+{# Scores Section #}
+<section class="section">
+    <div class="container">
+        <div class="eco-scores">
+            <div class="eco-score-card">
+                <div class="eco-score-badge eco-score-a">A</div>
+                <h3>EcoIndex</h3>
+                <p>Score d'écoconception de ce site</p>
+                <a href="https://www.ecoindex.fr/resultat/?id=d2082636-8476-48fb-9ac0-4b90c2a85819" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm">
+                    Voir le rapport
+                </a>
+            </div>
+            <div class="eco-score-card">
+                <div class="eco-score-badge eco-score-green">
+                    <span style="font-size: 1.2rem;">0.07g</span>
+                </div>
+                <h3>CO2 par visite</h3>
+                <p>Plus propre que 94% des sites testés</p>
+                <a href="https://www.websitecarbon.com/website/alre-web-bzh/" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm">
+                    Voir le rapport
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+<style>
+    .eco-scores {
+        display: flex;
+        gap: 2rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .eco-score-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        text-align: center;
+        box-shadow: var(--shadow-md);
+        min-width: 250px;
+    }
+    .eco-score-badge {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: white;
+        margin: 0 auto 1rem;
+    }
+    .eco-score-a {
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
+    }
+    .eco-score-green {
+        background: linear-gradient(135deg, #27ae60, #1e8449);
+    }
+    .eco-score-card h3 {
+        margin-bottom: 0.5rem;
+        color: var(--primary-color);
+    }
+    .eco-score-card p {
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+    }
+</style>
+
+{# Pourquoi c'est important #}
+<section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-3">Pourquoi l'écoconception est cruciale</h2>
+        <p class="text-center text-muted mb-5">Le numérique a un impact environnemental réel et croissant</p>
+
+        <div class="grid grid-3">
+            <div class="card">
+                <div class="card-icon" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                    <i class="fas fa-globe-europe"></i>
+                </div>
+                <h3 class="card-title">4% des émissions mondiales</h3>
+                <p class="card-text">
+                    Le numérique émet autant de CO2 que l'aviation civile mondiale.
+                    Et ce chiffre double tous les 4 ans.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3 class="card-title">L'IA explose la consommation</h3>
+                <p class="card-text">
+                    Une requête ChatGPT consomme <strong>10 fois plus</strong> qu'une recherche Google.
+                    Les data centers IA engloutissent l'énergie.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon" style="background: linear-gradient(135deg, #e67e22, #d35400);">
+                    <i class="fas fa-weight-hanging"></i>
+                </div>
+                <h3 class="card-title">Sites web obèses</h3>
+                <p class="card-text">
+                    Le poids moyen d'une page web a été multiplié par 6 en 10 ans.
+                    Plus lourd = plus d'énergie = plus de CO2.
+                </p>
+            </div>
+        </div>
+
+        <div class="eco-stat-highlight">
+            <div class="eco-stat-icon">
+                <i class="fas fa-leaf"></i>
+            </div>
+            <div class="eco-stat-content">
+                <p class="eco-stat-number">2,5 milliards</p>
+                <p class="eco-stat-text">de tonnes de CO2 par an générées par le numérique mondial</p>
+            </div>
+        </div>
+    </div>
+</section>
+<style>
+    .eco-stat-highlight {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        color: white;
+        padding: 2rem;
+        border-radius: var(--radius-lg);
+        margin-top: 3rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .eco-stat-icon {
+        font-size: 3rem;
+        opacity: 0.9;
+    }
+    .eco-stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    .eco-stat-text {
+        margin: 0;
+        opacity: 0.9;
+    }
+</style>
+
+{# Symfony vs WordPress #}
+<section class="section">
+    <div class="container">
+        <h2 class="text-center mb-3">Symfony vs WordPress : le match écologique</h2>
+        <p class="text-center text-muted mb-5">Pourquoi le sur-mesure est plus écologique que les CMS généralistes</p>
+
+        <div class="comparison-table">
+            <div class="comparison-row comparison-header">
+                <div class="comparison-cell"></div>
+                <div class="comparison-cell comparison-symfony">
+                    <i class="fab fa-symfony"></i> Symfony
+                </div>
+                <div class="comparison-cell comparison-wordpress">
+                    <i class="fab fa-wordpress"></i> WordPress
+                </div>
+            </div>
+
+            <div class="comparison-row">
+                <div class="comparison-cell comparison-label">Poids moyen d'une page</div>
+                <div class="comparison-cell comparison-symfony">
+                    <span class="comparison-good">~200 Ko</span>
+                </div>
+                <div class="comparison-cell comparison-wordpress">
+                    <span class="comparison-bad">2-5 Mo</span>
+                </div>
+            </div>
+
+            <div class="comparison-row">
+                <div class="comparison-cell comparison-label">Requêtes HTTP</div>
+                <div class="comparison-cell comparison-symfony">
+                    <span class="comparison-good">10-20</span>
+                </div>
+                <div class="comparison-cell comparison-wordpress">
+                    <span class="comparison-bad">50-150+</span>
+                </div>
+            </div>
+
+            <div class="comparison-row">
+                <div class="comparison-cell comparison-label">Plugins/Extensions</div>
+                <div class="comparison-cell comparison-symfony">
+                    <span class="comparison-good">Code sur mesure</span>
+                </div>
+                <div class="comparison-cell comparison-wordpress">
+                    <span class="comparison-bad">10-30 plugins</span>
+                </div>
+            </div>
+
+            <div class="comparison-row">
+                <div class="comparison-cell comparison-label">Requêtes base de données</div>
+                <div class="comparison-cell comparison-symfony">
+                    <span class="comparison-good">Optimisées</span>
+                </div>
+                <div class="comparison-cell comparison-wordpress">
+                    <span class="comparison-bad">Souvent redondantes</span>
+                </div>
+            </div>
+
+            <div class="comparison-row">
+                <div class="comparison-cell comparison-label">JavaScript chargé</div>
+                <div class="comparison-cell comparison-symfony">
+                    <span class="comparison-good">Le strict nécessaire</span>
+                </div>
+                <div class="comparison-cell comparison-wordpress">
+                    <span class="comparison-bad">jQuery + plugins</span>
+                </div>
+            </div>
+
+            <div class="comparison-row">
+                <div class="comparison-cell comparison-label">Score EcoIndex typique</div>
+                <div class="comparison-cell comparison-symfony">
+                    <span class="comparison-good">A - B</span>
+                </div>
+                <div class="comparison-cell comparison-wordpress">
+                    <span class="comparison-bad">D - F</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<style>
+    .comparison-table {
+        max-width: 800px;
+        margin: 0 auto;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+    }
+    .comparison-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        background: white;
+    }
+    .comparison-row:nth-child(even) {
+        background: var(--bg-light);
+    }
+    .comparison-header {
+        background: var(--primary-color) !important;
+        color: white;
+        font-weight: 600;
+    }
+    .comparison-cell {
+        padding: 1rem;
+        text-align: center;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .comparison-label {
+        text-align: left;
+        font-weight: 500;
+    }
+    .comparison-symfony {
+        color: var(--primary-color);
+    }
+    .comparison-wordpress {
+        color: #21759b;
+    }
+    .comparison-good {
+        color: #27ae60;
+        font-weight: 600;
+    }
+    .comparison-bad {
+        color: #e74c3c;
+        font-weight: 600;
+    }
+    @media (max-width: 768px) {
+        .comparison-row {
+            grid-template-columns: 1fr;
+        }
+        .comparison-cell {
+            text-align: left;
+            padding: 0.75rem 1rem;
+        }
+        .comparison-header .comparison-cell:first-child {
+            display: none;
+        }
+    }
+</style>
+
+{# Mes engagements #}
+<section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-3">Mes engagements écoconception</h2>
+        <p class="text-center text-muted mb-5">Des pratiques concrètes pour des sites web sobres</p>
+
+        <div class="grid grid-2">
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-feather-alt"></i>
+                </div>
+                <h3 class="card-title">Code léger et optimisé</h3>
+                <p class="card-text">
+                    Pas de framework CSS lourd, pas de JavaScript inutile.
+                    Chaque ligne de code a une raison d'être.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-image"></i>
+                </div>
+                <h3 class="card-title">Images optimisées</h3>
+                <p class="card-text">
+                    Compression automatique, formats modernes (WebP),
+                    lazy loading. Qualité préservée, poids réduit.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-server"></i>
+                </div>
+                <h3 class="card-title">Hébergement vert</h3>
+                <p class="card-text">
+                    Serveurs en France, infrastructure optimisée,
+                    mise en cache agressive pour réduire les calculs.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h3 class="card-title">Mobile-first</h3>
+                <p class="card-text">
+                    Sites pensés pour les connexions mobiles.
+                    Rapides même en 3G, économes en data.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-tachometer-alt"></i>
+                </div>
+                <h3 class="card-title">Performance maximale</h3>
+                <p class="card-text">
+                    Un site rapide = moins de temps serveur = moins d'énergie.
+                    Temps de chargement < 1 seconde.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-recycle"></i>
+                </div>
+                <h3 class="card-title">Durabilité</h3>
+                <p class="card-text">
+                    Code maintenable sur le long terme.
+                    Pas de dette technique, pas de refonte tous les 2 ans.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Bénéfices client #}
+<section class="section">
+    <div class="container">
+        <h2 class="text-center mb-3">L'écoconception, c'est aussi bon pour vous</h2>
+        <p class="text-center text-muted mb-5">Des avantages concrets au-delà de l'écologie</p>
+
+        <div class="benefits-grid">
+            <div class="benefit-item">
+                <div class="benefit-icon"><i class="fas fa-rocket"></i></div>
+                <div class="benefit-content">
+                    <h4>SEO amélioré</h4>
+                    <p>Google favorise les sites rapides. Un site léger = meilleur référencement.</p>
+                </div>
+            </div>
+
+            <div class="benefit-item">
+                <div class="benefit-icon"><i class="fas fa-users"></i></div>
+                <div class="benefit-content">
+                    <h4>Expérience utilisateur</h4>
+                    <p>53% des visiteurs quittent un site qui met plus de 3 secondes à charger.</p>
+                </div>
+            </div>
+
+            <div class="benefit-item">
+                <div class="benefit-icon"><i class="fas fa-euro-sign"></i></div>
+                <div class="benefit-content">
+                    <h4>Coûts d'hébergement réduits</h4>
+                    <p>Moins de ressources serveur = factures moins élevées.</p>
+                </div>
+            </div>
+
+            <div class="benefit-item">
+                <div class="benefit-icon"><i class="fas fa-universal-access"></i></div>
+                <div class="benefit-content">
+                    <h4>Accessibilité</h4>
+                    <p>Sites légers = accessibles même avec une mauvaise connexion ou un vieux téléphone.</p>
+                </div>
+            </div>
+
+            <div class="benefit-item">
+                <div class="benefit-icon"><i class="fas fa-shield-alt"></i></div>
+                <div class="benefit-content">
+                    <h4>Image de marque</h4>
+                    <p>Affichez votre engagement RSE avec un site éco-responsable certifié.</p>
+                </div>
+            </div>
+
+            <div class="benefit-item">
+                <div class="benefit-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="benefit-content">
+                    <h4>Conversion optimisée</h4>
+                    <p>+1 seconde de chargement = -7% de conversions. La vitesse, c'est du chiffre d'affaires.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<style>
+    .benefits-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    .benefit-item {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+        padding: 1.5rem;
+        background: white;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+    }
+    .benefit-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+    .benefit-content h4 {
+        margin: 0 0 0.5rem;
+        color: var(--primary-color);
+    }
+    .benefit-content p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+    }
+</style>
+
+{# CTA #}
+<section class="section section-light">
+    <div class="container text-center">
+        <h2 class="mb-3">Prêt pour un site web éco-responsable ?</h2>
+        <p class="lead mb-4">
+            Faites le choix d'un web plus sobre et plus performant.
+            <br>
+            Discutons de votre projet.
+        </p>
+        <div style="display: inline-flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+            <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-paper-plane"></i> Demander un devis
+            </a>
+            <a href="{{ path('app_portfolio') }}" class="btn btn-outline btn-lg">
+                <i class="fas fa-folder-open"></i> Voir mes réalisations
+            </a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

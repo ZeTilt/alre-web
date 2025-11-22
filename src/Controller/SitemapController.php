@@ -44,6 +44,13 @@ class SitemapController extends AbstractController
             'priority' => '0.7',
         ];
 
+        // Page Écoconception
+        $urls[] = [
+            'loc' => $this->generateUrl('app_ecoconception', [], UrlGeneratorInterface::ABSOLUTE_URL),
+            'changefreq' => 'monthly',
+            'priority' => '0.8',
+        ];
+
         // Page Tarifs
         $urls[] = [
             'loc' => $this->generateUrl('app_pricing', [], UrlGeneratorInterface::ABSOLUTE_URL),

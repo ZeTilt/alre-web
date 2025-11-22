@@ -160,11 +160,13 @@
         <!-- Matomo -->
         <script>
           var _paq = window._paq = window._paq || [];
-          /* Configuration cookies - site principal uniquement */
-          _paq.push(['setCookieDomain', '.alre-web.bzh']);
-          _paq.push(['setDomains', ['alre-web.bzh', 'www.alre-web.bzh']]);
+          /* Configuration cookies first-party */
+          _paq.push(['setCookieDomain', '*.alre-web.bzh']);
+          _paq.push(['setCookiePath', '/']);
+          _paq.push(['setDomains', ['*.alre-web.bzh']]);
           _paq.push(['setSecureCookie', true]);
           _paq.push(['setCookieSameSite', 'Lax']);
+          _paq.push(['enableCrossDomainLinking']);
           /* Tracking */
           _paq.push(['trackPageView']);
           _paq.push(['enableLinkTracking']);

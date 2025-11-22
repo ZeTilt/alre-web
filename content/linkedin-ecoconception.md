@@ -15,7 +15,7 @@ J'ai décidé d'en faire un argument différenciant :
 → Hébergement en France
 
 Résultat : 0.07g de CO2 par visite
-Plus propre que 94% des sites testés.
+Plus propre que 95% des sites testés.
 
 L'écoconception, ce n'est pas que de l'écologie.
 C'est aussi :
@@ -86,7 +86,7 @@ Parce qu'un site léger c'est :
 - Meilleur pour la planète
 
 Score de mon site : EcoIndex A
-Plus propre que 94% du web.
+Plus propre que 95% du web.
 
 L'écoconception, c'est du bon sens.
 

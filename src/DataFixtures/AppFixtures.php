@@ -329,7 +329,6 @@ class AppFixtures extends Fixture
                 'projectUrl' => 'https://bioboutique.com',
                 'completionYear' => 2024,
                 'isPublished' => true,
-                'featured' => true,
                 'client' => $clients[1], // BioBoutique
                 'partner' => $partners[0], // Design
                 'partnerDomains' => ['Design graphique', 'UX/UI Design'],
@@ -381,7 +380,6 @@ class AppFixtures extends Fixture
                 'projectUrl' => 'https://fitnessplus.com',
                 'completionYear' => 2023,
                 'isPublished' => true,
-                'featured' => true,
                 'client' => $clients[4], // Fitness Plus
                 'partner' => $partners[1], // Copywriting
                 'partnerDomains' => ['Rédaction web', 'Content marketing'],
@@ -417,7 +415,6 @@ class AppFixtures extends Fixture
                 'projectUrl' => 'https://alre-web.bzh',
                 'completionYear' => 2025,
                 'isPublished' => true,
-                'featured' => true,
                 'client' => null,
                 'partner' => null,
                 'partnerDomains' => [],
@@ -439,7 +436,6 @@ class AppFixtures extends Fixture
             $project->setProjectUrl($data['projectUrl']);
             $project->setCompletionYear($data['completionYear']);
             $project->setIsPublished($data['isPublished']);
-            $project->setFeatured($data['featured'] ?? false);
             $project->setClient($data['client']);
 
             $manager->persist($project);
@@ -515,7 +511,7 @@ class AppFixtures extends Fixture
     private function createDevisAndFactures(ObjectManager $manager, User $user, array $clients): void
     {
         // ============================================
-        // ANNÉE 2026 - Archives
+        // ANNÉE 2023 - Archives
         // ============================================
 
         // Jan 2023 : Site vitrine TechStart - Accepté et facturé payé
@@ -523,7 +519,7 @@ class AppFixtures extends Fixture
             $manager,
             $user,
             $clients[0], // TechStart
-            'DEV-2024-001',
+            'DEV-2023-001',
             'Site Vitrine Corporate',
             'Création site vitrine 5 pages',
             Devis::STATUS_ACCEPTE,
@@ -533,21 +529,21 @@ class AppFixtures extends Fixture
                 ['description' => 'Formulaire de contact', 'quantity' => 1, 'unitPrice' => 200],
                 ['description' => 'Formation client', 'quantity' => 2, 'unitPrice' => 150],
             ],
-            new \DateTimeImmutable('2024-01-10')
+            new \DateTimeImmutable('2023-01-10')
         );
-        $devis2023_01->setDateEnvoi(new \DateTimeImmutable('2024-01-12'));
-        $devis2023_01->setDateValidite(new \DateTimeImmutable('2024-02-11')); // 30 jours
-        $devis2023_01->setDateReponse(new \DateTimeImmutable('2024-01-20'));
+        $devis2023_01->setDateEnvoi(new \DateTimeImmutable('2023-01-12'));
+        $devis2023_01->setDateValidite(new \DateTimeImmutable('2023-02-11')); // 30 jours
+        $devis2023_01->setDateReponse(new \DateTimeImmutable('2023-01-20'));
 
         $this->createFacture(
             $manager,
             $user,
             $clients[0],
             $devis2023_01,
-            'FACT-2024-001',
+            'FACT-2023-001',
             'paye',
-            new \DateTimeImmutable('2024-02-15'),
-            new \DateTimeImmutable('2024-03-10')
+            new \DateTimeImmutable('2023-02-15'),
+            new \DateTimeImmutable('2023-03-10')
         );
 
         // Mars 2023 : Refonte Restaurant - Refusé (trop cher)
@@ -555,7 +551,7 @@ class AppFixtures extends Fixture
             $manager,
             $user,
             $clients[3], // Restaurant
-            'DEV-2024-002',
+            'DEV-2023-002',
             'Refonte complète site restaurant',
             'Refonte totale avec réservation en ligne',
             Devis::STATUS_REFUSE,
@@ -564,18 +560,18 @@ class AppFixtures extends Fixture
                 ['description' => 'Refonte design', 'quantity' => 1, 'unitPrice' => 2500],
                 ['description' => 'Développement', 'quantity' => 30, 'unitPrice' => 400],
             ],
-            new \DateTimeImmutable('2024-03-05')
+            new \DateTimeImmutable('2023-03-05')
         );
-        $devis2023_02->setDateEnvoi(new \DateTimeImmutable('2024-03-08'));
-        $devis2023_02->setDateValidite(new \DateTimeImmutable('2024-04-07')); // 30 jours
-        $devis2023_02->setDateReponse(new \DateTimeImmutable('2024-03-22'));
+        $devis2023_02->setDateEnvoi(new \DateTimeImmutable('2023-03-08'));
+        $devis2023_02->setDateValidite(new \DateTimeImmutable('2023-04-07')); // 30 jours
+        $devis2023_02->setDateReponse(new \DateTimeImmutable('2023-03-22'));
 
         // Mai 2023 : Plateforme Fitness - Accepté et facturé payé
         $devis2023_03 = $this->createDevis(
             $manager,
             $user,
             $clients[4], // Fitness Plus
-            'DEV-2024-003',
+            'DEV-2023-003',
             'Plateforme Cours en Ligne',
             'Développement plateforme streaming + abonnements',
             Devis::STATUS_ACCEPTE,
@@ -585,51 +581,48 @@ class AppFixtures extends Fixture
                 ['description' => 'Intégration vidéo et Stripe', 'quantity' => 1, 'unitPrice' => 1200],
                 ['description' => 'Tests et optimisations', 'quantity' => 1, 'unitPrice' => 800],
             ],
-            new \DateTimeImmutable('2024-05-02')
+            new \DateTimeImmutable('2023-05-02')
         );
-        $devis2023_03->setDateEnvoi(new \DateTimeImmutable('2024-05-05'));
-        $devis2023_03->setDateValidite(new \DateTimeImmutable('2024-06-04')); // 30 jours
-        $devis2023_03->setDateReponse(new \DateTimeImmutable('2024-05-15'));
+        $devis2023_03->setDateEnvoi(new \DateTimeImmutable('2023-05-05'));
+        $devis2023_03->setDateValidite(new \DateTimeImmutable('2023-06-04')); // 30 jours
+        $devis2023_03->setDateReponse(new \DateTimeImmutable('2023-05-15'));
 
         $this->createFacture(
             $manager,
             $user,
             $clients[4],
             $devis2023_03,
-            'FACT-2024-002',
+            'FACT-2023-002',
             'paye',
-            new \DateTimeImmutable('2024-08-20'),
-            new \DateTimeImmutable('2024-09-15')
+            new \DateTimeImmutable('2023-08-20'),
+            new \DateTimeImmutable('2023-09-15')
         );
 
-        // Juillet 2024 : Application Mobile Fitness - Refusé (trop cher)
-        $devis2024_04 = $this->createDevis(
+        // Juillet 2023 : Logo École de Musique - Expiré (pas répondu)
+        $devis2023_04 = $this->createDevis(
             $manager,
             $user,
-            $clients[4], // Fitness Plus
-            'DEV-2024-004',
-            'Application Mobile Fitness',
-            'Développement application mobile iOS/Android',
-            Devis::STATUS_REFUSE,
+            $clients[8], // École Harmony
+            'DEV-2023-004',
+            'Logo et Identité Visuelle',
+            'Création logo et charte graphique',
+            Devis::STATUS_EXPIRE,
             [
-                ['description' => 'Conception UX/UI mobile', 'quantity' => 1, 'unitPrice' => 2500],
-                ['description' => 'Développement app iOS', 'quantity' => 40, 'unitPrice' => 500],
-                ['description' => 'Développement app Android', 'quantity' => 40, 'unitPrice' => 500],
-                ['description' => 'API Backend', 'quantity' => 15, 'unitPrice' => 400],
-                ['description' => 'Tests et déploiement', 'quantity' => 1, 'unitPrice' => 1500],
+                ['description' => 'Recherches et croquis', 'quantity' => 1, 'unitPrice' => 400],
+                ['description' => 'Créations finales (3 propositions)', 'quantity' => 1, 'unitPrice' => 800],
+                ['description' => 'Déclinaisons et charte', 'quantity' => 1, 'unitPrice' => 500],
             ],
-            new \DateTimeImmutable('2024-07-03')
+            new \DateTimeImmutable('2023-07-03')
         );
-        $devis2024_04->setDateEnvoi(new \DateTimeImmutable('2024-07-06'));
-        $devis2024_04->setDateValidite(new \DateTimeImmutable('2024-08-05')); // 30 jours
-        $devis2024_04->setDateReponse(new \DateTimeImmutable('2024-07-18'));
+        $devis2023_04->setDateEnvoi(new \DateTimeImmutable('2023-07-06'));
+        $devis2023_04->setDateValidite(new \DateTimeImmutable('2023-08-05')); // 30 jours
 
         // Octobre 2023 : Site Architect Studio - Accepté et facturé payé
         $devis2023_05 = $this->createDevis(
             $manager,
             $user,
             $clients[2], // Architect Studio
-            'DEV-2024-005',
+            'DEV-2023-005',
             'Site Vitrine Architecture',
             'Création d\'un site vitrine avec portfolio',
             Devis::STATUS_ACCEPTE,
@@ -639,25 +632,25 @@ class AppFixtures extends Fixture
                 ['description' => 'Galerie photos interactive', 'quantity' => 1, 'unitPrice' => 800],
                 ['description' => 'Formation client', 'quantity' => 1, 'unitPrice' => 400],
             ],
-            new \DateTimeImmutable('2024-09-25')
+            new \DateTimeImmutable('2023-09-25')
         );
-        $devis2023_05->setDateEnvoi(new \DateTimeImmutable('2024-09-28'));
-        $devis2023_05->setDateValidite(new \DateTimeImmutable('2024-10-28')); // 30 jours
-        $devis2023_05->setDateReponse(new \DateTimeImmutable('2024-10-05'));
+        $devis2023_05->setDateEnvoi(new \DateTimeImmutable('2023-09-28'));
+        $devis2023_05->setDateValidite(new \DateTimeImmutable('2023-10-28')); // 30 jours
+        $devis2023_05->setDateReponse(new \DateTimeImmutable('2023-10-05'));
 
         $this->createFacture(
             $manager,
             $user,
             $clients[2],
             $devis2023_05,
-            'FACT-2024-003',
+            'FACT-2023-003',
             'paye',
-            new \DateTimeImmutable('2024-12-10'),
-            new \DateTimeImmutable('2025-01-08')
+            new \DateTimeImmutable('2023-12-10'),
+            new \DateTimeImmutable('2024-01-08')
         );
 
         // ============================================
-        // ANNÉE 2026
+        // ANNÉE 2024
         // ============================================
 
         // Janvier 2024 : E-commerce BioBoutique - Accepté et facturé payé
@@ -665,7 +658,7 @@ class AppFixtures extends Fixture
             $manager,
             $user,
             $clients[1], // BioBoutique
-            'DEV-2025-001',
+            'DEV-2024-001',
             'Site E-commerce Bio',
             'Développement complet d\'une boutique en ligne',
             Devis::STATUS_ACCEPTE,
@@ -675,21 +668,21 @@ class AppFixtures extends Fixture
                 ['description' => 'Intégration Stripe', 'quantity' => 1, 'unitPrice' => 600],
                 ['description' => 'Tests et mise en ligne', 'quantity' => 1, 'unitPrice' => 500],
             ],
-            new \DateTimeImmutable('2025-01-08')
+            new \DateTimeImmutable('2024-01-08')
         );
-        $devis2024_01->setDateEnvoi(new \DateTimeImmutable('2025-01-10'));
-        $devis2024_01->setDateValidite(new \DateTimeImmutable('2025-02-09')); // 30 jours
-        $devis2024_01->setDateReponse(new \DateTimeImmutable('2025-01-18'));
+        $devis2024_01->setDateEnvoi(new \DateTimeImmutable('2024-01-10'));
+        $devis2024_01->setDateValidite(new \DateTimeImmutable('2024-02-09')); // 30 jours
+        $devis2024_01->setDateReponse(new \DateTimeImmutable('2024-01-18'));
 
         $this->createFacture(
             $manager,
             $user,
             $clients[1],
             $devis2024_01,
-            'FACT-2025-001',
+            'FACT-2024-001',
             'paye',
-            new \DateTimeImmutable('2025-04-22'),
-            new \DateTimeImmutable('2025-05-15')
+            new \DateTimeImmutable('2024-04-22'),
+            new \DateTimeImmutable('2024-05-15')
         );
 
         // Février 2024 : Menu Digital Restaurant - Accepté et facturé payé
@@ -697,7 +690,7 @@ class AppFixtures extends Fixture
             $manager,
             $user,
             $clients[3], // Restaurant
-            'DEV-2025-002',
+            'DEV-2024-002',
             'Site Menu Digital',
             'Création menu digital QR code',
             Devis::STATUS_ACCEPTE,
@@ -706,21 +699,21 @@ class AppFixtures extends Fixture
                 ['description' => 'Développement responsive', 'quantity' => 1, 'unitPrice' => 800],
                 ['description' => 'QR codes personnalisés', 'quantity' => 1, 'unitPrice' => 200],
             ],
-            new \DateTimeImmutable('2025-02-12')
+            new \DateTimeImmutable('2024-02-12')
         );
-        $devis2024_02->setDateEnvoi(new \DateTimeImmutable('2025-02-14'));
-        $devis2024_02->setDateValidite(new \DateTimeImmutable('2025-03-15')); // 30 jours
-        $devis2024_02->setDateReponse(new \DateTimeImmutable('2025-02-20'));
+        $devis2024_02->setDateEnvoi(new \DateTimeImmutable('2024-02-14'));
+        $devis2024_02->setDateValidite(new \DateTimeImmutable('2024-03-15')); // 30 jours
+        $devis2024_02->setDateReponse(new \DateTimeImmutable('2024-02-20'));
 
         $this->createFacture(
             $manager,
             $user,
             $clients[3],
             $devis2024_02,
-            'FACT-2025-002',
+            'FACT-2024-002',
             'paye',
-            new \DateTimeImmutable('2025-03-05'),
-            new \DateTimeImmutable('2025-03-28')
+            new \DateTimeImmutable('2024-03-05'),
+            new \DateTimeImmutable('2024-03-28')
         );
 
         // Mars 2024 : Portail Immobilier - Accepté et facturé en attente paiement
@@ -728,7 +721,7 @@ class AppFixtures extends Fixture
             $manager,
             $user,
             $clients[5], // Prestige Immo
-            'DEV-2025-003',
+            'DEV-2024-003',
             'Portail Immobilier',
             'Site d\'annonces avec recherche avancée',
             Devis::STATUS_ACCEPTE,
@@ -738,51 +731,51 @@ class AppFixtures extends Fixture
                 ['description' => 'Intégration Elasticsearch et Maps', 'quantity' => 1, 'unitPrice' => 1500],
                 ['description' => 'Tests et déploiement', 'quantity' => 1, 'unitPrice' => 600],
             ],
-            new \DateTimeImmutable('2025-02-26')
+            new \DateTimeImmutable('2024-02-26')
         );
-        $devis2024_03->setDateEnvoi(new \DateTimeImmutable('2025-02-28'));
-        $devis2024_03->setDateValidite(new \DateTimeImmutable('2025-03-29')); // 30 jours
-        $devis2024_03->setDateReponse(new \DateTimeImmutable('2025-03-08'));
+        $devis2024_03->setDateEnvoi(new \DateTimeImmutable('2024-02-28'));
+        $devis2024_03->setDateValidite(new \DateTimeImmutable('2024-03-29')); // 30 jours
+        $devis2024_03->setDateReponse(new \DateTimeImmutable('2024-03-08'));
 
         $this->createFacture(
             $manager,
             $user,
             $clients[5],
             $devis2024_03,
-            'FACT-2025-003',
+            'FACT-2024-003',
             'envoye',
-            new \DateTimeImmutable('2025-06-12')
+            new \DateTimeImmutable('2024-06-12')
         );
 
-        // Avril 2025 : Site Boutique Mode - Accepté et facturé payé
-        $devis2025_04 = $this->createDevis(
+        // Avril 2024 : Site Boutique Mode - Accepté et facturé payé
+        $devis2024_04 = $this->createDevis(
             $manager,
             $user,
             $clients[6], // Boutique Élégance
-            'DEV-2025-004',
+            'DEV-2024-004',
             'Site Vitrine Boutique Mode',
             'Site élégant avec catalogue produits',
             Devis::STATUS_ACCEPTE,
             [
-                ['description' => 'Maquette et design sur mesure', 'quantity' => 1, 'unitPrice' => 1500],
+                ['description' => 'Design haut de gamme', 'quantity' => 1, 'unitPrice' => 1500],
                 ['description' => 'Développement site + catalogue', 'quantity' => 12, 'unitPrice' => 400],
                 ['description' => 'Optimisation images et SEO', 'quantity' => 1, 'unitPrice' => 600],
             ],
-            new \DateTimeImmutable('2025-03-18')
+            new \DateTimeImmutable('2024-03-18')
         );
-        $devis2025_04->setDateEnvoi(new \DateTimeImmutable('2025-03-20'));
-        $devis2025_04->setDateValidite(new \DateTimeImmutable('2025-04-19')); // 30 jours
-        $devis2025_04->setDateReponse(new \DateTimeImmutable('2025-03-28'));
+        $devis2024_04->setDateEnvoi(new \DateTimeImmutable('2024-03-20'));
+        $devis2024_04->setDateValidite(new \DateTimeImmutable('2024-04-19')); // 30 jours
+        $devis2024_04->setDateReponse(new \DateTimeImmutable('2024-03-28'));
 
         $this->createFacture(
             $manager,
             $user,
             $clients[6],
-            $devis2025_04,
-            'FACT-2025-004',
+            $devis2024_04,
+            'FACT-2024-004',
             'paye',
-            new \DateTimeImmutable('2025-05-25'),
-            new \DateTimeImmutable('2025-06-12')
+            new \DateTimeImmutable('2024-05-25'),
+            new \DateTimeImmutable('2024-06-12')
         );
 
         // Juin 2024 : Site Cabinet Avocat - Accepté et facturé payé
@@ -790,7 +783,7 @@ class AppFixtures extends Fixture
             $manager,
             $user,
             $clients[7], // Cabinet Juridis
-            'DEV-2025-005',
+            'DEV-2024-005',
             'Site Cabinet d\'Avocat',
             'Site professionnel avec présentation des services',
             Devis::STATUS_ACCEPTE,
@@ -800,21 +793,21 @@ class AppFixtures extends Fixture
                 ['description' => 'Formulaire prise de contact', 'quantity' => 1, 'unitPrice' => 400],
                 ['description' => 'Mentions légales conformes', 'quantity' => 1, 'unitPrice' => 200],
             ],
-            new \DateTimeImmutable('2025-05-27')
+            new \DateTimeImmutable('2024-05-27')
         );
-        $devis2024_05->setDateEnvoi(new \DateTimeImmutable('2025-05-29'));
-        $devis2024_05->setDateValidite(new \DateTimeImmutable('2025-06-28')); // 30 jours
-        $devis2024_05->setDateReponse(new \DateTimeImmutable('2025-06-05'));
+        $devis2024_05->setDateEnvoi(new \DateTimeImmutable('2024-05-29'));
+        $devis2024_05->setDateValidite(new \DateTimeImmutable('2024-06-28')); // 30 jours
+        $devis2024_05->setDateReponse(new \DateTimeImmutable('2024-06-05'));
 
         $this->createFacture(
             $manager,
             $user,
             $clients[7],
             $devis2024_05,
-            'FACT-2025-005',
+            'FACT-2024-005',
             'paye',
-            new \DateTimeImmutable('2025-07-20'),
-            new \DateTimeImmutable('2025-08-10')
+            new \DateTimeImmutable('2024-07-20'),
+            new \DateTimeImmutable('2024-08-10')
         );
 
         // Août 2024 : Site Garage - Accepté et facturé payé
@@ -822,7 +815,7 @@ class AppFixtures extends Fixture
             $manager,
             $user,
             $clients[9], // Garage Auto+
-            'DEV-2025-006',
+            'DEV-2024-006',
             'Site Vitrine Garage Auto',
             'Site avec prise de RDV en ligne',
             Devis::STATUS_ACCEPTE,
@@ -831,21 +824,21 @@ class AppFixtures extends Fixture
                 ['description' => 'Développement site vitrine', 'quantity' => 10, 'unitPrice' => 350],
                 ['description' => 'Module prise de RDV', 'quantity' => 1, 'unitPrice' => 1200],
             ],
-            new \DateTimeImmutable('2025-07-15')
+            new \DateTimeImmutable('2024-07-15')
         );
-        $devis2024_06->setDateEnvoi(new \DateTimeImmutable('2025-07-17'));
-        $devis2024_06->setDateValidite(new \DateTimeImmutable('2025-08-16')); // 30 jours
-        $devis2024_06->setDateReponse(new \DateTimeImmutable('2025-07-25'));
+        $devis2024_06->setDateEnvoi(new \DateTimeImmutable('2024-07-17'));
+        $devis2024_06->setDateValidite(new \DateTimeImmutable('2024-08-16')); // 30 jours
+        $devis2024_06->setDateReponse(new \DateTimeImmutable('2024-07-25'));
 
         $this->createFacture(
             $manager,
             $user,
             $clients[9],
             $devis2024_06,
-            'FACT-2025-006',
+            'FACT-2024-006',
             'paye',
-            new \DateTimeImmutable('2025-09-10'),
-            new \DateTimeImmutable('2025-10-02')
+            new \DateTimeImmutable('2024-09-10'),
+            new \DateTimeImmutable('2024-10-02')
         );
 
         // Septembre 2024 : Corrections BioBoutique - Accepté et facturé payé
@@ -853,7 +846,7 @@ class AppFixtures extends Fixture
             $manager,
             $user,
             $clients[1], // BioBoutique
-            'DEV-2025-007',
+            'DEV-2024-007',
             'Corrections et améliorations',
             'Corrections diverses et optimisations',
             Devis::STATUS_ACCEPTE,
@@ -863,49 +856,48 @@ class AppFixtures extends Fixture
                 ['description' => 'Optimisation vitesse', 'quantity' => 1, 'unitPrice' => 300],
                 ['description' => 'Ajout filtres produits', 'quantity' => 1, 'unitPrice' => 500],
             ],
-            new \DateTimeImmutable('2025-09-02')
+            new \DateTimeImmutable('2024-09-02')
         );
-        $devis2024_07->setDateEnvoi(new \DateTimeImmutable('2025-09-04'));
-        $devis2024_07->setDateValidite(new \DateTimeImmutable('2025-10-04')); // 30 jours
-        $devis2024_07->setDateReponse(new \DateTimeImmutable('2025-09-06'));
+        $devis2024_07->setDateEnvoi(new \DateTimeImmutable('2024-09-04'));
+        $devis2024_07->setDateValidite(new \DateTimeImmutable('2024-10-04')); // 30 jours
+        $devis2024_07->setDateReponse(new \DateTimeImmutable('2024-09-06'));
 
         $this->createFacture(
             $manager,
             $user,
             $clients[1],
             $devis2024_07,
-            'FACT-2025-007',
+            'FACT-2024-007',
             'paye',
-            new \DateTimeImmutable('2025-09-18'),
-            new \DateTimeImmutable('2025-10-05')
+            new \DateTimeImmutable('2024-09-18'),
+            new \DateTimeImmutable('2024-10-05')
         );
 
-        // Septembre 2025 : Site Fleuriste - Refusé (préfère solution clé en main)
-        $devis2025_08 = $this->createDevis(
+        // Octobre 2024 : Site Fleuriste - Envoyé en attente
+        $devis2024_08 = $this->createDevis(
             $manager,
             $user,
             $clients[10], // Fleuriste
-            'DEV-2025-008',
+            'DEV-2024-008',
             'Site Vitrine Fleuriste',
             'Site avec galerie et commande en ligne',
-            Devis::STATUS_REFUSE,
+            Devis::STATUS_ENVOYE,
             [
-                ['description' => 'Conception et maquette', 'quantity' => 1, 'unitPrice' => 800],
+                ['description' => 'Design fleuri et élégant', 'quantity' => 1, 'unitPrice' => 800],
                 ['description' => 'Développement site + galerie', 'quantity' => 8, 'unitPrice' => 350],
                 ['description' => 'Formulaire commande personnalisée', 'quantity' => 1, 'unitPrice' => 600],
             ],
-            new \DateTimeImmutable('2025-09-18')
+            new \DateTimeImmutable('2024-10-07')
         );
-        $devis2025_08->setDateEnvoi(new \DateTimeImmutable('2025-09-20'));
-        $devis2025_08->setDateValidite(new \DateTimeImmutable('2025-10-20')); // 30 jours
-        $devis2025_08->setDateReponse(new \DateTimeImmutable('2025-10-02'));
+        $devis2024_08->setDateEnvoi(new \DateTimeImmutable('2024-10-09'));
+        $devis2024_08->setDateValidite(new \DateTimeImmutable('2024-11-08')); // 30 jours
 
         // Septembre 2024 : Site École de Musique - Accepté et facturé RELANCE
         $devis2024_09 = $this->createDevis(
             $manager,
             $user,
             $clients[8], // École Harmony
-            'DEV-2025-009',
+            'DEV-2024-009',
             'Site Vitrine École de Musique',
             'Site avec présentation des cours et inscriptions',
             Devis::STATUS_ACCEPTE,
@@ -915,21 +907,20 @@ class AppFixtures extends Fixture
                 ['description' => 'Formulaire inscription en ligne', 'quantity' => 1, 'unitPrice' => 600],
                 ['description' => 'Présentation professeurs et cours', 'quantity' => 1, 'unitPrice' => 400],
             ],
-            new \DateTimeImmutable('2025-09-16')
+            new \DateTimeImmutable('2024-09-16')
         );
-        $devis2024_09->setDateEnvoi(new \DateTimeImmutable('2025-09-18'));
-        $devis2024_09->setDateValidite(new \DateTimeImmutable('2025-10-18')); // 30 jours
-        $devis2024_09->setDateReponse(new \DateTimeImmutable('2025-09-25'));
+        $devis2024_09->setDateEnvoi(new \DateTimeImmutable('2024-09-18'));
+        $devis2024_09->setDateValidite(new \DateTimeImmutable('2024-10-18')); // 30 jours
+        $devis2024_09->setDateReponse(new \DateTimeImmutable('2024-09-25'));
 
-        // Facture envoyée avec échéance dépassée → devrait passer auto à "a_relancer"
         $this->createFacture(
             $manager,
             $user,
             $clients[8],
             $devis2024_09,
-            'FACT-2025-008',
-            'envoye',
-            new \DateTimeImmutable('2025-10-05')
+            'FACT-2024-008',
+            'relance',
+            new \DateTimeImmutable('2024-10-05')
         );
 
         // Octobre 2024 : Maintenance Cabinet Avocat - Accepté et facturé EN RETARD
@@ -937,7 +928,7 @@ class AppFixtures extends Fixture
             $manager,
             $user,
             $clients[7], // Cabinet Juridis
-            'DEV-2025-010',
+            'DEV-2024-010',
             'Maintenance Annuelle Cabinet',
             'Contrat de maintenance pour 12 mois',
             Devis::STATUS_ACCEPTE,
@@ -946,21 +937,20 @@ class AppFixtures extends Fixture
                 ['description' => 'Mises à jour de sécurité', 'quantity' => 1, 'unitPrice' => 400],
                 ['description' => 'Support technique prioritaire', 'quantity' => 1, 'unitPrice' => 300],
             ],
-            new \DateTimeImmutable('2025-10-01')
+            new \DateTimeImmutable('2024-10-01')
         );
-        $devis2024_10->setDateEnvoi(new \DateTimeImmutable('2025-10-03'));
-        $devis2024_10->setDateValidite(new \DateTimeImmutable('2025-11-02')); // 30 jours
-        $devis2024_10->setDateReponse(new \DateTimeImmutable('2025-10-08'));
+        $devis2024_10->setDateEnvoi(new \DateTimeImmutable('2024-10-03'));
+        $devis2024_10->setDateValidite(new \DateTimeImmutable('2024-11-02')); // 30 jours
+        $devis2024_10->setDateReponse(new \DateTimeImmutable('2024-10-08'));
 
-        // Facture envoyée avec échéance dépassée → devrait passer auto à "a_relancer"
         $this->createFacture(
             $manager,
             $user,
             $clients[7],
             $devis2024_10,
-            'FACT-2025-009',
-            'envoye',
-            new \DateTimeImmutable('2025-10-15') // Échéance 14/11 - dépassée il y a 3 jours
+            'FACT-2024-009',
+            'en_retard',
+            new \DateTimeImmutable('2024-10-15') // Échéance 14/11 - dépassée il y a 3 jours
         );
 
         // Novembre 2024 : Évolutions Boutique Mode - Accepté et facturé ENVOYE (récent)
@@ -968,7 +958,7 @@ class AppFixtures extends Fixture
             $manager,
             $user,
             $clients[6], // Boutique Élégance
-            'DEV-2025-011',
+            'DEV-2024-011',
             'Évolutions Site Boutique',
             'Ajout fonctionnalités et améliorations',
             Devis::STATUS_ACCEPTE,
@@ -977,72 +967,80 @@ class AppFixtures extends Fixture
                 ['description' => 'Filtres avancés produits', 'quantity' => 1, 'unitPrice' => 800],
                 ['description' => 'Intégration Instagram', 'quantity' => 1, 'unitPrice' => 400],
             ],
-            new \DateTimeImmutable('2025-10-28')
+            new \DateTimeImmutable('2024-10-28')
         );
-        $devis2024_11->setDateEnvoi(new \DateTimeImmutable('2025-10-30'));
-        $devis2024_11->setDateValidite(new \DateTimeImmutable('2025-11-29')); // 30 jours
-        $devis2024_11->setDateReponse(new \DateTimeImmutable('2025-11-05'));
+        $devis2024_11->setDateEnvoi(new \DateTimeImmutable('2024-10-30'));
+        $devis2024_11->setDateValidite(new \DateTimeImmutable('2024-11-29')); // 30 jours
+        $devis2024_11->setDateReponse(new \DateTimeImmutable('2024-11-05'));
 
         $this->createFacture(
             $manager,
             $user,
             $clients[6],
             $devis2024_11,
-            'FACT-2025-010',
+            'FACT-2024-010',
             'envoye',
-            new \DateTimeImmutable('2025-11-06')
+            new \DateTimeImmutable('2024-11-06')
         );
 
-        // Octobre 2025 : Marketplace TechStart - Annulé (projet abandonné)
-        $devis2025_12 = $this->createDevis(
+        // Novembre 2024 : Logo Fleuriste - Accepté et facturé ENVOYE (très récent)
+        $devis2024_12 = $this->createDevis(
             $manager,
             $user,
-            $clients[0], // TechStart
-            'DEV-2025-012',
-            'Marketplace Multi-Vendeurs',
-            'Plateforme marketplace avec paiement et gestion vendeurs',
-            Devis::STATUS_ANNULE,
+            $clients[10], // Fleuriste
+            'DEV-2024-012',
+            'Logo et Carte de Visite',
+            'Création identité visuelle fleuriste',
+            Devis::STATUS_ACCEPTE,
             [
-                ['description' => 'Architecture et conception', 'quantity' => 1, 'unitPrice' => 3000],
-                ['description' => 'Développement marketplace', 'quantity' => 60, 'unitPrice' => 450],
-                ['description' => 'Système paiement multi-vendeurs', 'quantity' => 1, 'unitPrice' => 2500],
-                ['description' => 'Interface gestion vendeurs', 'quantity' => 1, 'unitPrice' => 2000],
+                ['description' => 'Création logo', 'quantity' => 1, 'unitPrice' => 600],
+                ['description' => 'Déclinaisons (carte visite, en-tête)', 'quantity' => 1, 'unitPrice' => 300],
             ],
-            new \DateTimeImmutable('2025-10-22')
+            new \DateTimeImmutable('2024-11-04')
         );
-        $devis2025_12->setDateEnvoi(new \DateTimeImmutable('2025-10-25'));
-        $devis2025_12->setDateValidite(new \DateTimeImmutable('2025-11-24')); // 30 jours
-        $devis2025_12->setDateReponse(new \DateTimeImmutable('2025-11-10'));
+        $devis2024_12->setDateEnvoi(new \DateTimeImmutable('2024-11-06'));
+        $devis2024_12->setDateValidite(new \DateTimeImmutable('2024-12-06')); // 30 jours
+        $devis2024_12->setDateReponse(new \DateTimeImmutable('2024-11-08'));
+
+        $this->createFacture(
+            $manager,
+            $user,
+            $clients[10],
+            $devis2024_12,
+            'FACT-2024-011',
+            'envoye',
+            new \DateTimeImmutable('2024-11-12')
+        );
 
         // ============================================
-        // EN COURS (Nov 2025)
+        // ANNÉE 2025 - En cours
         // ============================================
 
-        // Devis envoyé avec validité dépassée → devrait passer auto à "a_relancer"
+        // Relance récente (il y a 2 semaines)
         $devis2025_01 = $this->createDevis(
             $manager,
             $user,
             $clients[11], // Association
-            'DEV-2025-013',
+            'DEV-2025-001',
             'Site Associatif',
             'Site pour association avec espace membres',
-            Devis::STATUS_ENVOYE,
+            Devis::STATUS_RELANCE,
             [
                 ['description' => 'Design et ergonomie', 'quantity' => 1, 'unitPrice' => 700],
                 ['description' => 'Développement site + espace membre', 'quantity' => 15, 'unitPrice' => 350],
                 ['description' => 'Système d\'adhésion en ligne', 'quantity' => 1, 'unitPrice' => 800],
             ],
-            new \DateTimeImmutable('2025-10-05')
+            new \DateTimeImmutable('2024-10-28')
         );
-        $devis2025_01->setDateEnvoi(new \DateTimeImmutable('2025-10-08'));
-        $devis2025_01->setDateValidite(new \DateTimeImmutable('2025-11-07')); // 30 jours - dépassée il y a 10 jours
+        $devis2025_01->setDateEnvoi(new \DateTimeImmutable('2024-10-30'));
+        $devis2025_01->setDateValidite(new \DateTimeImmutable('2024-11-29')); // 30 jours
 
         // Envoyé récemment (il y a 1 semaine)
         $devis2025_02 = $this->createDevis(
             $manager,
             $user,
             $clients[0], // TechStart
-            'DEV-2025-014',
+            'DEV-2025-002',
             'Refonte Site Corporate',
             'Modernisation du site web institutionnel',
             Devis::STATUS_ENVOYE,
@@ -1052,10 +1050,10 @@ class AppFixtures extends Fixture
                 ['description' => 'Développement responsive', 'quantity' => 18, 'unitPrice' => 400],
                 ['description' => 'Migration contenu et SEO', 'quantity' => 1, 'unitPrice' => 800],
             ],
-            new \DateTimeImmutable('2025-11-04')
+            new \DateTimeImmutable('2024-11-04')
         );
-        $devis2025_02->setDateEnvoi(new \DateTimeImmutable('2025-11-06'));
-        $devis2025_02->setDateValidite(new \DateTimeImmutable('2025-12-06')); // 30 jours
+        $devis2025_02->setDateEnvoi(new \DateTimeImmutable('2024-11-06'));
+        $devis2025_02->setDateValidite(new \DateTimeImmutable('2024-12-06')); // 30 jours
 
         // Brouillons en préparation
         $this->createDevis(
@@ -1071,7 +1069,7 @@ class AppFixtures extends Fixture
                 ['description' => 'Maquettes UI/UX', 'quantity' => 1, 'unitPrice' => 2000],
                 ['description' => 'Prototype interactif', 'quantity' => 1, 'unitPrice' => 1200],
             ],
-            new \DateTimeImmutable('2025-11-11')
+            new \DateTimeImmutable('2024-11-11')
         );
 
         $this->createDevis(
@@ -1087,7 +1085,7 @@ class AppFixtures extends Fixture
                 ['description' => 'Module avis clients', 'quantity' => 1, 'unitPrice' => 800],
                 ['description' => 'Optimisation performances', 'quantity' => 1, 'unitPrice' => 600],
             ],
-            new \DateTimeImmutable('2025-11-13')
+            new \DateTimeImmutable('2024-11-13')
         );
     }
 

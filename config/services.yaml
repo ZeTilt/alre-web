@@ -58,3 +58,7 @@ services:
     App\EventSubscriber\SecurityHeadersSubscriber:
         arguments:
             $environment: '%kernel.environment%'
+
+    App\Service\ImageResizerService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'

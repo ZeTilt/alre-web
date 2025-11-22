@@ -19,21 +19,19 @@
 {# Qui suis-je ? #}
 <section class="section">
     <div class="container">
-        <div class="about-profile">
-            <div class="about-photo" style="flex-shrink: 0; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                {% if company and company.profilePhoto %}
-                    <img src="{{ asset('uploads/profile/' ~ company.profilePhoto) }}" alt="Fabrice Dhuicque" style="width: 100%; height: 100%; object-fit: cover;">
-                {% else %}
-                    <i class="fas fa-user" style="font-size: 5rem; color: white;"></i>
-                {% endif %}
+        <div class="about-layout">
+            {% if company and company.aboutWidePhoto %}
+            <div class="about-photo-left fade-in">
+                <img src="{{ asset('uploads/profile/' ~ company.aboutWidePhoto) }}" alt="Fabrice Dhuicque">
             </div>
-            <div>
+            {% endif %}
+            <div class="about-text">
                 <h2 class="text-primary mb-3">Fabrice Dhuicque</h2>
                 <p class="lead" style="font-weight: 600; color: var(--primary-color);">
                     Développeur Web Freelance — spécialisé Symfony
                 </p>
 
-                <div style="margin-top: 2rem; line-height: 1.8;">
+                <div style="margin-top: 1.5rem; line-height: 1.8;">
                     <p>
                         Avant d'être développeur, j'ai servi plusieurs années dans la Marine Nationale, à bord de bâtiments de surface et au sein de l'aéronautique navale, sur avions de patrouille maritime. Cette période m'a marqué : rigueur, sens des responsabilités, travail d'équipe, adaptation… c'est un environnement où on n'a pas le droit d'être approximatif.
                         Je garde encore aujourd'hui cette façon de travailler : carré, fiable, impliqué.
@@ -52,6 +50,41 @@
         </div>
     </div>
 </section>
+<style>
+    .about-layout {
+        display: flex;
+        align-items: flex-start;
+        gap: 3rem;
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+    .about-photo-left {
+        flex-shrink: 0;
+        width: 420px;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+    }
+    .about-photo-left img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    .about-text {
+        flex: 1;
+    }
+    @media (max-width: 992px) {
+        .about-layout {
+            flex-direction: column;
+            text-align: center;
+        }
+        .about-photo-left {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+    }
+</style>
 
 {# Ma manière de bosser #}
 <section class="section section-light">

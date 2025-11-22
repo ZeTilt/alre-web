@@ -81,6 +81,12 @@ class Company
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $profilePhoto = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $homePortraitPhoto = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $aboutWidePhoto = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -377,6 +383,32 @@ class Company
     public function setProfilePhoto(?string $profilePhoto): static
     {
         $this->profilePhoto = $profilePhoto;
+        $this->updatedAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function getHomePortraitPhoto(): ?string
+    {
+        return $this->homePortraitPhoto;
+    }
+
+    public function setHomePortraitPhoto(?string $homePortraitPhoto): static
+    {
+        $this->homePortraitPhoto = $homePortraitPhoto;
+        $this->updatedAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function getAboutWidePhoto(): ?string
+    {
+        return $this->aboutWidePhoto;
+    }
+
+    public function setAboutWidePhoto(?string $aboutWidePhoto): static
+    {
+        $this->aboutWidePhoto = $aboutWidePhoto;
         $this->updatedAt = new \DateTimeImmutable();
 
         return $this;

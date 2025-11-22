@@ -17,10 +17,12 @@ class ExpenseGenerationService
 
     /**
      * Génère automatiquement toutes les dépenses récurrentes manquantes jusqu'à maintenant
+     *
+     * @param \DateTimeImmutable|null $now Date de référence (null = maintenant, injectable pour tests)
      */
-    public function generateRecurringExpenses(): array
+    public function generateRecurringExpenses(?\DateTimeImmutable $now = null): array
     {
-        $now = new \DateTimeImmutable();
+        $now = $now ?? new \DateTimeImmutable();
         $stats = [
             'generated' => 0,
             'skipped' => 0,
@@ -40,13 +42,6 @@ class ExpenseGenerationService
         $stats['templates'] = count($recurringExpenses);
 
         foreach ($recurringExpenses as $template) {
-            // Vérifier si la date de fin est dépassée
-            if ($template->getEndDate() && $template->getEndDate() < $now) {
-                $template->setIsActive(false);
-                $this->logger->info(sprintf('Dépense récurrente "%s" désactivée (date de fin dépassée)', $template->getTitle()));
-                continue;
-            }
-
             $startDate = $template->getStartDate() ?: $template->getDateExpense();
             $datesToGenerate = [];
 
@@ -109,9 +104,15 @@ class ExpenseGenerationService
                     $targetDate->format('d/m/Y')
                 ));
             }
+
+            // Désactiver le template si la date de fin est dépassée
+            if ($template->getEndDate() && $template->getEndDate() < $now && $template->isActive()) {
+                $template->setIsActive(false);
+                $this->logger->info(sprintf('Dépense récurrente "%s" désactivée (date de fin dépassée)', $template->getTitle()));
+            }
         }
 
-        if ($stats['generated'] > 0) {
+        if ($stats['generated'] > 0 || $this->entityManager->getUnitOfWork()->size() > 0) {
             $this->entityManager->flush();
         }
 

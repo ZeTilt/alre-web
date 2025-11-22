@@ -7,18 +7,21 @@
    ============================================ */
 :root {
     /* Couleurs de marque Alré Web - Basées sur le logo */
-    --primary-color: #3A4556;
-    --primary-dark: #2a3440;
-    --primary-light: #4a5566;
-    --accent-color: #27A3B4;
-    --accent-dark: #1f8a98;
-    --accent-light: #3fb9c8;
+    --primary-color: #354252;
+    --primary-dark: #24303E;
+    --primary-light: #4F5D70;
+
+    --accent-color: #D5B18A;
+    --accent-dark: #B89468;
+    --accent-light: #E9CBA9;
+
+    --bg-light: #F6F1EA;
+
 
     /* Couleurs utilitaires */
     --text-dark: #333333;
     --text-light: #666666;
     --text-muted: #999999;
-    --bg-light: #f8f9fa;
     --bg-white: #ffffff;
     --border-color: #e0e0e0;
     --success-color: #28a745;
@@ -242,7 +245,7 @@ a:hover {
    5. HERO SECTION
    ============================================ */
 .hero {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+    background: linear-gradient(160deg, var(--primary-light) 0%, var(--primary-color) 70%, #3D4A5C 100%);
     color: var(--bg-white);
     padding: var(--spacing-xl) 0;
     text-align: center;

@@ -1,4 +1,4 @@
-.PHONY: help install deploy cache migrate assets db-reset test tests optimize-images admin-user dirs
+.PHONY: help install deploy cache migrate assets db-reset test tests coverage coverage-html optimize-images admin-user dirs
 
 # Variables
 CONSOLE = php bin/console
@@ -43,6 +43,13 @@ test: ## Lance les tests PHPUnit
 	php bin/phpunit
 
 tests: test ## Alias pour 'make test'
+
+coverage: ## Lance les tests avec coverage (texte)
+	XDEBUG_MODE=coverage php -d zend_extension=xdebug bin/phpunit --coverage-text
+
+coverage-html: ## Lance les tests avec coverage (HTML dans var/coverage/)
+	XDEBUG_MODE=coverage php -d zend_extension=xdebug bin/phpunit --coverage-html var/coverage
+	@echo "📊 Rapport disponible dans var/coverage/index.html"
 
 dirs: ## Crée les dossiers nécessaires (uploads, etc.)
 	@mkdir -p public/uploads/profile

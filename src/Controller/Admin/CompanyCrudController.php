@@ -58,12 +58,6 @@ class CompanyCrudController extends AbstractCrudController
                 ->setRequired(true),
             TextField::new('title', 'Titre/Fonction')
                 ->setRequired(true),
-            ImageField::new('profilePhoto', 'Photo de profil')
-                ->setBasePath('/uploads/profile')
-                ->setUploadDir('public/uploads/profile')
-                ->setUploadedFileNamePattern('[slug]-[timestamp].[extension]')
-                ->setRequired(false)
-                ->setHelp('Photo de profil pour la page "À propos"'),
             ImageField::new('homePortraitPhoto', 'Photo portrait (Accueil)')
                 ->setBasePath('/uploads/profile')
                 ->setUploadDir('public/uploads/profile')

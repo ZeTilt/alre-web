@@ -36,11 +36,6 @@ class ImageUploadSubscriber implements EventSubscriberInterface
 
     private function resizeCompanyImages(Company $company): void
     {
-        // Photo de profil - format standard
-        if ($company->getProfilePhoto()) {
-            $this->imageResizer->resize('uploads/profile/' . $company->getProfilePhoto());
-        }
-
         // Photo portrait pour l'accueil - format portrait
         if ($company->getHomePortraitPhoto()) {
             $this->imageResizer->resizePortrait('uploads/profile/' . $company->getHomePortraitPhoto());

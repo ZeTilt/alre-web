@@ -79,9 +79,6 @@ class Company
     private ?int $anneeFiscaleEnCours = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $profilePhoto = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
     private ?string $homePortraitPhoto = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -370,19 +367,6 @@ class Company
     public function setAnneeFiscaleEnCours(?int $anneeFiscaleEnCours): static
     {
         $this->anneeFiscaleEnCours = $anneeFiscaleEnCours;
-        $this->updatedAt = new \DateTimeImmutable();
-
-        return $this;
-    }
-
-    public function getProfilePhoto(): ?string
-    {
-        return $this->profilePhoto;
-    }
-
-    public function setProfilePhoto(?string $profilePhoto): static
-    {
-        $this->profilePhoto = $profilePhoto;
         $this->updatedAt = new \DateTimeImmutable();
 
         return $this;

@@ -64,12 +64,24 @@ class CompanyCrudController extends AbstractCrudController
                 ->setUploadedFileNamePattern('[slug]-[timestamp].[extension]')
                 ->setRequired(false)
                 ->setHelp('Photo au format portrait pour la page d\'accueil'),
+            TextField::new('homePortraitPhotoCredit', 'Crédit photo (Accueil)')
+                ->setRequired(false)
+                ->setHelp('Nom du photographe à afficher'),
+            UrlField::new('homePortraitPhotoCreditUrl', 'Lien crédit photo (Accueil)')
+                ->setRequired(false)
+                ->setHelp('URL vers le site du photographe'),
             ImageField::new('aboutWidePhoto', 'Photo plan large (À propos)')
                 ->setBasePath('/uploads/profile')
                 ->setUploadDir('public/uploads/profile')
                 ->setUploadedFileNamePattern('[slug]-[timestamp].[extension]')
                 ->setRequired(false)
                 ->setHelp('Photo en plan large pour la page "À propos"'),
+            TextField::new('aboutWidePhotoCredit', 'Crédit photo (À propos)')
+                ->setRequired(false)
+                ->setHelp('Nom du photographe à afficher'),
+            UrlField::new('aboutWidePhotoCreditUrl', 'Lien crédit photo (À propos)')
+                ->setRequired(false)
+                ->setHelp('URL vers le site du photographe'),
             TextareaField::new('address', 'Adresse')
                 ->setRequired(true)
                 ->setNumOfRows(2),

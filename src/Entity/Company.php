@@ -82,7 +82,19 @@ class Company
     private ?string $homePortraitPhoto = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    private ?string $homePortraitPhotoCredit = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $homePortraitPhotoCreditUrl = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $aboutWidePhoto = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $aboutWidePhotoCredit = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $aboutWidePhotoCreditUrl = null;
 
     public function __construct()
     {
@@ -385,6 +397,32 @@ class Company
         return $this;
     }
 
+    public function getHomePortraitPhotoCredit(): ?string
+    {
+        return $this->homePortraitPhotoCredit;
+    }
+
+    public function setHomePortraitPhotoCredit(?string $homePortraitPhotoCredit): static
+    {
+        $this->homePortraitPhotoCredit = $homePortraitPhotoCredit;
+        $this->updatedAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function getHomePortraitPhotoCreditUrl(): ?string
+    {
+        return $this->homePortraitPhotoCreditUrl;
+    }
+
+    public function setHomePortraitPhotoCreditUrl(?string $homePortraitPhotoCreditUrl): static
+    {
+        $this->homePortraitPhotoCreditUrl = $homePortraitPhotoCreditUrl;
+        $this->updatedAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
     public function getAboutWidePhoto(): ?string
     {
         return $this->aboutWidePhoto;
@@ -393,6 +431,32 @@ class Company
     public function setAboutWidePhoto(?string $aboutWidePhoto): static
     {
         $this->aboutWidePhoto = $aboutWidePhoto;
+        $this->updatedAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function getAboutWidePhotoCredit(): ?string
+    {
+        return $this->aboutWidePhotoCredit;
+    }
+
+    public function setAboutWidePhotoCredit(?string $aboutWidePhotoCredit): static
+    {
+        $this->aboutWidePhotoCredit = $aboutWidePhotoCredit;
+        $this->updatedAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function getAboutWidePhotoCreditUrl(): ?string
+    {
+        return $this->aboutWidePhotoCreditUrl;
+    }
+
+    public function setAboutWidePhotoCreditUrl(?string $aboutWidePhotoCreditUrl): static
+    {
+        $this->aboutWidePhotoCreditUrl = $aboutWidePhotoCreditUrl;
         $this->updatedAt = new \DateTimeImmutable();
 
         return $this;

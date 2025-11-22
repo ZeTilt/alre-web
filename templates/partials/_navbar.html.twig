@@ -17,11 +17,6 @@
         {# Menu de navigation #}
         <ul class="navbar-menu">
             <li>
-                <a href="{{ path('app_home') }}" class="{{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}">
-                    Accueil
-                </a>
-            </li>
-            <li>
                 <a href="{{ path('app_services') }}" class="{{ app.request.attributes.get('_route') == 'app_services' ? 'active' : '' }}">
                     Services
                 </a>

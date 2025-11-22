@@ -1,4 +1,4 @@
-.PHONY: help install deploy cache migrate assets db-reset test optimize-images admin-user
+.PHONY: help install deploy cache migrate assets db-reset test tests optimize-images admin-user dirs
 
 # Variables
 CONSOLE = php bin/console
@@ -42,9 +42,21 @@ generate-favicons: ## Génère tous les favicons
 test: ## Lance les tests PHPUnit
 	php bin/phpunit
 
+tests: test ## Alias pour 'make test'
+
+dirs: ## Crée les dossiers nécessaires (uploads, etc.)
+	@mkdir -p public/uploads/profile
+	@mkdir -p public/uploads/projects
+	@mkdir -p var/log
+	@chmod -R 755 public/uploads
+	@echo "✅ Dossiers créés"
+
 deploy: ## Déploie sur le serveur de production (git pull + composer + cache + migrate)
 	@echo "🚀 Déploiement en cours..."
 	@git pull origin main
+	@echo "📁 Création des dossiers..."
+	@mkdir -p public/uploads/profile public/uploads/projects var/log
+	@chmod -R 755 public/uploads
 	@echo "📦 Installation des dépendances..."
 	@$(COMPOSER) install --no-dev --optimize-autoloader
 	@echo "🗄️  Exécution des migrations..."
@@ -57,6 +69,9 @@ deploy-force: ## Déploie en forçant le git pull (git reset --hard + pull)
 	@echo "⚠️  Déploiement forcé en cours..."
 	@git fetch origin
 	@git reset --hard origin/main
+	@echo "📁 Création des dossiers..."
+	@mkdir -p public/uploads/profile public/uploads/projects var/log
+	@chmod -R 755 public/uploads
 	@echo "📦 Installation des dépendances..."
 	@$(COMPOSER) install --no-dev --optimize-autoloader
 	@echo "🗄️  Exécution des migrations..."

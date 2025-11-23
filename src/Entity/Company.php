@@ -96,6 +96,9 @@ class Company
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $aboutWidePhotoCreditUrl = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $cvFile = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -465,5 +468,18 @@ class Company
     public function __toString(): string
     {
         return $this->name ?: 'Company';
+    }
+
+    public function getCvFile(): ?string
+    {
+        return $this->cvFile;
+    }
+
+    public function setCvFile(?string $cvFile): static
+    {
+        $this->cvFile = $cvFile;
+        $this->updatedAt = new \DateTimeImmutable();
+
+        return $this;
     }
 }

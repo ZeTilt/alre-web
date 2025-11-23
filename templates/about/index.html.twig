@@ -268,9 +268,16 @@
             Que ce soit en visio, par téléphone ou autour d'un café en Bretagne,<br>
             je serais ravi d'échanger avec vous sur vos besoins.
         </p>
-        <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
-            <i class="fas fa-paper-plane"></i> Prendre contact
-        </a>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-paper-plane"></i> Prendre contact
+            </a>
+            {% if company and company.cvFile %}
+            <a href="{{ asset('uploads/cv/' ~ company.cvFile) }}" class="btn btn-outline btn-lg" target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-file-pdf"></i> Télécharger mon CV
+            </a>
+            {% endif %}
+        </div>
     </div>
 </section>
 

@@ -1,0 +1,7 @@
+{% if field.value %}
+    <a href="{{ asset('uploads/cv/' ~ field.value) }}" target="_blank" class="btn btn-secondary">
+        <i class="fa fa-file-pdf"></i> {{ field.value }}
+    </a>
+{% else %}
+    <span class="text-muted">Aucun CV</span>
+{% endif %}

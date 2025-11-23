@@ -15,7 +15,11 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Validator\Constraints\File;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class CompanyCrudController extends AbstractCrudController
 {
@@ -82,6 +86,25 @@ class CompanyCrudController extends AbstractCrudController
             UrlField::new('aboutWidePhotoCreditUrl', 'Lien crédit photo (À propos)')
                 ->setRequired(false)
                 ->setHelp('URL vers le site du photographe'),
+            TextField::new('cvFile', 'CV (PDF)')
+                ->setFormType(FileType::class)
+                ->setFormTypeOptions([
+                    'mapped' => false,
+                    'required' => false,
+                    'attr' => ['accept' => 'application/pdf'],
+                    'constraints' => [
+                        new File([
+                            'maxSize' => '5M',
+                            'mimeTypes' => ['application/pdf'],
+                            'mimeTypesMessage' => 'Veuillez télécharger un fichier PDF valide',
+                        ])
+                    ],
+                ])
+                ->setHelp('Téléchargez votre CV au format PDF')
+                ->onlyOnForms(),
+            TextField::new('cvFile', 'CV')
+                ->setTemplatePath('admin/field/cv_link.html.twig')
+                ->onlyOnDetail(),
             TextareaField::new('address', 'Adresse')
                 ->setRequired(true)
                 ->setNumOfRows(2),
@@ -146,6 +169,34 @@ class CompanyCrudController extends AbstractCrudController
             }
         }
 
+        $this->handleCvUpload($entityInstance);
         parent::persistEntity($entityManager, $entityInstance);
+    }
+
+    public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        $this->handleCvUpload($entityInstance);
+        parent::updateEntity($entityManager, $entityInstance);
+    }
+
+    private function handleCvUpload($entityInstance): void
+    {
+        $request = $this->getContext()->getRequest();
+        $cvFile = $request->files->get('Company')['cvFile'] ?? null;
+
+        if ($cvFile instanceof UploadedFile) {
+            $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/cv';
+
+            // Delete old file if exists
+            $oldFile = $entityInstance->getCvFile();
+            if ($oldFile && file_exists($uploadDir . '/' . $oldFile)) {
+                unlink($uploadDir . '/' . $oldFile);
+            }
+
+            // Upload new file
+            $newFilename = 'cv-' . time() . '.' . $cvFile->guessExtension();
+            $cvFile->move($uploadDir, $newFilename);
+            $entityInstance->setCvFile($newFilename);
+        }
     }
 }

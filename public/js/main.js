@@ -267,10 +267,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const updateCounter = () => {
             current += increment;
             if (current < target) {
-                counter.textContent = Math.floor(current);
+                counter.textContent = String(Math.floor(current));
                 requestAnimationFrame(updateCounter);
             } else {
-                counter.textContent = target;
+                counter.textContent = String(target);
             }
         };
 
@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 item.querySelector('.accordion-content').style.maxHeight = null;
             });
 
-            // Ouvrir l'accordéon cliqué si il était fermé
+            // Ouvrir l'accordéon cliqué s'il était fermé
             if (!isActive) {
                 accordionItem.classList.add('active');
                 accordionContent.style.maxHeight = accordionContent.scrollHeight + 'px';

@@ -9,64 +9,6 @@
 {# ============================================
    HERO SECTION - Accroche principale
    ============================================ #}
-<style>
-    .hero-layout {
-        display: flex;
-        align-items: center;
-        gap: 3rem;
-        max-width: 1100px;
-        margin: 0 auto;
-    }
-    .hero-portrait-left {
-        flex-shrink: 0;
-        width: 260px;
-        height: 350px;
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        box-shadow: var(--shadow-lg);
-        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    }
-    .hero-portrait-left img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    .hero-portrait-wrapper {
-        flex-shrink: 0;
-    }
-    .photo-credit {
-        font-size: 0.75rem;
-        color: rgba(255, 255, 255, 0.7);
-        text-align: center;
-        margin-top: 0.5rem;
-        position: relative;
-        z-index: 10;
-    }
-    .photo-credit a {
-        color: rgba(255, 255, 255, 0.7);
-        text-decoration: none;
-    }
-    .photo-credit a:hover {
-        color: #fff;
-        text-decoration: underline;
-    }
-    .hero-text {
-        flex: 1;
-    }
-    @media (max-width: 992px) {
-        .hero-layout {
-            flex-direction: column;
-            text-align: center;
-        }
-        .hero-portrait-left {
-            width: 200px;
-            height: 280px;
-        }
-        .hero-text .hero-cta {
-            justify-content: center;
-        }
-    }
-</style>
 <section class="hero">
     <div class="hero-layout">
         {% if company and company.homePortraitPhoto %}
@@ -402,60 +344,6 @@
         </div>
     </div>
 </section>
-<style>
-    .eco-section {
-        background: var(--bg-light);
-    }
-    .eco-banner {
-        display: flex;
-        align-items: center;
-        gap: 2rem;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 2rem;
-        background: white;
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-md);
-    }
-    .eco-badge-container {
-        text-align: center;
-        flex-shrink: 0;
-    }
-    .eco-badge-large {
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: white;
-    }
-    .eco-badge-label {
-        display: block;
-        margin-top: 0.5rem;
-        font-size: 0.85rem;
-        color: var(--accent-color);
-        font-weight: 600;
-    }
-    .eco-banner-content h2 {
-        color: var(--primary-color);
-        margin-bottom: 0.75rem;
-        font-size: 1.5rem;
-    }
-    .eco-banner-content p {
-        color: var(--text-muted);
-        margin-bottom: 1rem;
-    }
-    @media (max-width: 768px) {
-        .eco-banner {
-            flex-direction: column;
-            text-align: center;
-        }
-    }
-</style>
 
 {# ============================================
    CTA FINAL - Appel à l'action

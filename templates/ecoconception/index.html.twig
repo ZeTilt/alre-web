@@ -41,48 +41,6 @@
         </div>
     </div>
 </section>
-<style>
-    .eco-scores {
-        display: flex;
-        gap: 2rem;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-    .eco-score-card {
-        background: white;
-        border-radius: var(--radius-lg);
-        padding: 2rem;
-        text-align: center;
-        box-shadow: var(--shadow-md);
-        min-width: 250px;
-    }
-    .eco-score-badge {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: white;
-        margin: 0 auto 1rem;
-    }
-    .eco-score-a {
-        background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
-    }
-    .eco-score-green {
-        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    }
-    .eco-score-card h3 {
-        margin-bottom: 0.5rem;
-        color: var(--primary-color);
-    }
-    .eco-score-card p {
-        color: var(--text-muted);
-        margin-bottom: 1rem;
-    }
-</style>
 
 {# Pourquoi c'est important #}
 <section class="section section-light">
@@ -136,36 +94,6 @@
         </div>
     </div>
 </section>
-<style>
-    .eco-stat-highlight {
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-        color: white;
-        padding: 2rem;
-        border-radius: var(--radius-lg);
-        margin-top: 3rem;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    .eco-stat-icon {
-        font-size: 3rem;
-        opacity: 0.9;
-    }
-    .eco-stat-number {
-        font-size: 2rem;
-        font-weight: 700;
-        margin: 0;
-        color: white;
-    }
-    .eco-stat-text {
-        margin: 0;
-        opacity: 0.9;
-        color: white;
-    }
-</style>
 
 {# Symfony vs WordPress #}
 <section class="section">
@@ -246,66 +174,6 @@
         </div>
     </div>
 </section>
-<style>
-    .comparison-table {
-        max-width: 800px;
-        margin: 0 auto;
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        box-shadow: var(--shadow-md);
-    }
-    .comparison-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        background: white;
-    }
-    .comparison-row:nth-child(even) {
-        background: var(--bg-light);
-    }
-    .comparison-header {
-        background: var(--primary-color) !important;
-        color: white;
-        font-weight: 600;
-    }
-    .comparison-header .comparison-cell {
-        color: white;
-    }
-    .comparison-cell {
-        padding: 1rem;
-        text-align: center;
-        border-bottom: 1px solid var(--border-color);
-    }
-    .comparison-label {
-        text-align: left;
-        font-weight: 500;
-    }
-    .comparison-row:not(.comparison-header) .comparison-symfony {
-        color: var(--accent-color);
-    }
-    .comparison-row:not(.comparison-header) .comparison-wordpress {
-        color: #21759b;
-    }
-    .comparison-good {
-        color: #27ae60;
-        font-weight: 600;
-    }
-    .comparison-bad {
-        color: #e74c3c;
-        font-weight: 600;
-    }
-    @media (max-width: 768px) {
-        .comparison-row {
-            grid-template-columns: 1fr;
-        }
-        .comparison-cell {
-            text-align: left;
-            padding: 0.75rem 1rem;
-        }
-        .comparison-header .comparison-cell:first-child {
-            display: none;
-        }
-    }
-</style>
 
 {# Mes engagements #}
 <section class="section section-light">
@@ -440,45 +308,6 @@
         </div>
     </div>
 </section>
-<style>
-    .benefits-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 1.5rem;
-        max-width: 900px;
-        margin: 0 auto;
-    }
-    .benefit-item {
-        display: flex;
-        gap: 1rem;
-        align-items: flex-start;
-        padding: 1.5rem;
-        background: white;
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-sm);
-    }
-    .benefit-icon {
-        width: 50px;
-        height: 50px;
-        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-        border-radius: var(--radius-md);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.25rem;
-        flex-shrink: 0;
-    }
-    .benefit-content h4 {
-        margin: 0 0 0.5rem;
-        color: var(--primary-color);
-    }
-    .benefit-content p {
-        margin: 0;
-        color: var(--text-muted);
-        font-size: 0.95rem;
-    }
-</style>
 
 {# CTA #}
 <section class="section section-light">

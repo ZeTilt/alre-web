@@ -57,7 +57,7 @@
         <link rel="stylesheet" href="{{ asset('css/font-display-fix.css') }}">
 
         {# Custom CSS - Critical, load synchronously #}
-        <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/style' ~ (app.environment == 'prod' ? '.min' : '') ~ '.css') }}">
 
         {% block stylesheets %}
         {# Page-specific styles #}
@@ -149,7 +149,7 @@
         {% endblock %}
 
         {# Custom JavaScript #}
-        <script src="{{ asset('js/main.js') }}"></script>
+        <script src="{{ asset('js/main' ~ (app.environment == 'prod' ? '.min' : '') ~ '.js') }}"></script>
 
         {% block javascripts %}
         {# Page-specific scripts #}

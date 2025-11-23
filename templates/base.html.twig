@@ -60,7 +60,7 @@
         <link rel="stylesheet" href="{{ asset('css/style' ~ (app.environment == 'prod' ? '.min' : '') ~ '.css') }}">
 
         {# Print Styles #}
-        <link rel="stylesheet" href="{{ asset('css/print.css') }}" media="print">
+        <link rel="stylesheet" href="{{ asset('css/print' ~ (app.environment == 'prod' ? '.min' : '') ~ '.css') }}" media="print">
 
         {% block stylesheets %}
         {# Page-specific styles #}

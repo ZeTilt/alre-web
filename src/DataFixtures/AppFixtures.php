@@ -10,7 +10,6 @@ use App\Entity\Facture;
 use App\Entity\FactureItem;
 use App\Entity\Partner;
 use App\Entity\Project;
-use App\Entity\ProjectImage;
 use App\Entity\ProjectPartner;
 use App\Entity\Testimonial;
 use App\Entity\User;

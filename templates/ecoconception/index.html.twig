@@ -20,23 +20,15 @@
 <section class="section">
     <div class="container">
         <div class="eco-scores">
+            {# Badge EcoIndex officiel #}
             <div class="eco-score-card">
-                <div class="eco-score-badge eco-score-a">A</div>
-                <h3>EcoIndex</h3>
-                <p>Score d'écoconception de ce site</p>
-                <a href="https://www.ecoindex.fr/resultat/?id=d2082636-8476-48fb-9ac0-4b90c2a85819" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm">
-                    Voir le rapport
-                </a>
+                <div id="ecoindex-badge"></div>
+                <script src="https://cdn.jsdelivr.net/gh/cnumr/ecoindex_badge@3/assets/js/ecoindex-badge.js" defer></script>
             </div>
+            {# Badge Website Carbon officiel #}
             <div class="eco-score-card">
-                <div class="eco-score-badge eco-score-green">
-                    <span style="font-size: 1.2rem;">0.07g</span>
-                </div>
-                <h3>CO2 par visite</h3>
-                <p>Plus propre que 95% des sites testés</p>
-                <a href="https://www.websitecarbon.com/website/alre-web-bzh/" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm">
-                    Voir le rapport
-                </a>
+                <div id="wcb" class="carbonbadge"></div>
+                <script src="https://unpkg.com/website-carbon-badges@1.1.3/b.min.js" defer></script>
             </div>
         </div>
     </div>

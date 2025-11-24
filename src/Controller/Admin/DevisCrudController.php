@@ -12,7 +12,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
@@ -23,7 +22,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Service\PdfGeneratorService;
 use App\Service\NumberingService;
 use App\Service\CompanyService;
-use Symfony\Component\HttpFoundation\Response;
 
 class DevisCrudController extends AbstractCrudController
 {
@@ -317,7 +315,7 @@ class DevisCrudController extends AbstractCrudController
         parent::persistEntity($entityManager, $entityInstance);
     }
 
-    public function changeStatus(EntityManagerInterface $entityManager)
+    public function changeStatus(EntityManagerInterface $entityManager): \Symfony\Component\HttpFoundation\RedirectResponse
     {
         $devis = $this->getContext()->getEntity()->getInstance();
         $actionName = $this->getContext()->getRequest()->get('action');
@@ -375,7 +373,7 @@ class DevisCrudController extends AbstractCrudController
         ]);
     }
 
-    public function generateInvoice(EntityManagerInterface $entityManager)
+    public function generateInvoice(EntityManagerInterface $entityManager): \Symfony\Component\HttpFoundation\RedirectResponse
     {
         $devis = $this->getContext()->getEntity()->getInstance();
         
@@ -428,7 +426,7 @@ class DevisCrudController extends AbstractCrudController
         ]);
     }
 
-    public function generatePdf(PdfGeneratorService $pdfGenerator)
+    public function generatePdf(PdfGeneratorService $pdfGenerator): \Symfony\Component\HttpFoundation\BinaryFileResponse|\Symfony\Component\HttpFoundation\RedirectResponse
     {
         $devis = $this->getContext()->getEntity()->getInstance();
 

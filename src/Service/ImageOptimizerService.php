@@ -4,7 +4,6 @@ namespace App\Service;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class ImageOptimizerService
 {

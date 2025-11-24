@@ -26,7 +26,6 @@ class ExpenseGenerationService
         $stats = [
             'generated' => 0,
             'skipped' => 0,
-            'templates' => 0
         ];
 
         // Récupérer toutes les dépenses récurrentes actives

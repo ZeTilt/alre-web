@@ -1452,6 +1452,44 @@ textarea.form-control {
     margin-bottom: 1rem;
 }
 
+/* Custom Website Carbon Badge */
+.carbon-badge-custom {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #1e3d2f 0%, #0d503a 100%);
+    color: white;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.carbon-badge-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.carbon-badge-header {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    margin-bottom: 0.5rem;
+}
+
+.carbon-badge-header i {
+    margin-right: 0.3rem;
+}
+
+.carbon-badge-score {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.carbon-badge-text {
+    font-size: 0.8rem;
+    opacity: 0.85;
+}
+
 .eco-stat-highlight {
     display: flex;
     align-items: center;

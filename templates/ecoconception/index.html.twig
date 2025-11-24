@@ -20,17 +20,26 @@
 <section class="section">
     <div class="container">
         <div class="eco-scores">
-            {# Badge EcoIndex officiel #}
+            {# Badge EcoIndex officiel (version statique pour la homepage) #}
             <div class="eco-score-card">
-                <div id="ecoindex-badge"></div>
-                <script src="https://cdn.jsdelivr.net/gh/cnumr/ecoindex_badge@3/assets/js/ecoindex-badge.js" defer></script>
+                <a href="https://bff.ecoindex.fr/redirect/?url=https://alre-web.bzh/" target="_blank" rel="noopener">
+                    <img src="https://bff.ecoindex.fr/badge/?theme=light&url=https://alre-web.bzh/" alt="Badge EcoIndex alre-web.bzh" loading="lazy">
+                </a>
             </div>
-            {# Badge Website Carbon officiel #}
+            {# Badge Website Carbon personnalisé #}
             <div class="eco-score-card">
-                <div id="wcb" class="carbonbadge"></div>
-                <script src="https://unpkg.com/website-carbon-badges@1.1.3/b.min.js" defer></script>
+                <a href="https://www.websitecarbon.com/website/alre-web-bzh/" target="_blank" rel="noopener" class="carbon-badge-custom">
+                    <div class="carbon-badge-header">
+                        <i class="fas fa-leaf"></i> Website Carbon
+                    </div>
+                    <div class="carbon-badge-score">0.07g CO₂</div>
+                    <div class="carbon-badge-text">Plus propre que 94% des sites testés</div>
+                </a>
             </div>
         </div>
+        <p class="text-center text-muted" style="margin-top: 1rem; font-size: 0.9rem;">
+            Scores mesurés sur la page d'accueil.
+        </p>
     </div>
 </section>
 

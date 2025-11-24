@@ -20,19 +20,20 @@
 <section class="section">
     <div class="container">
         <div class="eco-scores">
-            {# Badge EcoIndex officiel (version statique pour la homepage) #}
+            {# Badge EcoIndex #}
             <div class="eco-score-card">
-                <a href="https://bff.ecoindex.fr/redirect/?url=https://alre-web.bzh/" target="_blank" rel="noopener">
+                <h3>EcoIndex</h3>
+                <p class="eco-score-desc">Mesure l'impact environnemental basé sur le poids, la complexité DOM et les requêtes HTTP.</p>
+                <a href="https://bff.ecoindex.fr/redirect/?url=https://alre-web.bzh/" target="_blank" rel="noopener" class="eco-badge-link">
                     <img src="https://bff.ecoindex.fr/badge/?theme=light&url=https://alre-web.bzh/" alt="Badge EcoIndex alre-web.bzh" loading="lazy">
                 </a>
             </div>
-            {# Badge Website Carbon personnalisé #}
+            {# Badge Website Carbon #}
             <div class="eco-score-card">
+                <h3>Website Carbon</h3>
+                <p class="eco-score-desc">Calcule les émissions CO₂ par visite en tenant compte de l'énergie du datacenter.</p>
                 <a href="https://www.websitecarbon.com/website/alre-web-bzh/" target="_blank" rel="noopener" class="carbon-badge-custom">
-                    <div class="carbon-badge-header">
-                        <i class="fas fa-leaf"></i> Website Carbon
-                    </div>
-                    <div class="carbon-badge-score">0.07g CO₂</div>
+                    <div class="carbon-badge-score">0.07g <span>CO₂/visite</span></div>
                     <div class="carbon-badge-text">Plus propre que 94% des sites testés</div>
                 </a>
             </div>

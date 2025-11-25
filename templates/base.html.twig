@@ -163,8 +163,12 @@
         <!-- Matomo -->
         <script>
           var _paq = window._paq = window._paq || [];
-          /* Configuration */
-          _paq.push(['setCookieDomain', '.alre-web.bzh']);
+          /* Configuration - Fixe les cookies cross-domain */
+          _paq.push(['setCookieDomain', '*.alre-web.bzh']);
+          _paq.push(['setDomains', ['*.alre-web.bzh']]);
+          _paq.push(['setCookieSameSite', 'None']);
+          _paq.push(['setSecureCookie', true]);
+          _paq.push(['enableCrossDomainLinking']);
           _paq.push(['enableHeartBeatTimer']);
           /* Tracking */
           _paq.push(['trackPageView']);

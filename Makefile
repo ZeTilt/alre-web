@@ -1,4 +1,4 @@
-.PHONY: help install deploy cache migrate assets db-reset test tests coverage coverage-html optimize-images admin-user dirs
+.PHONY: help dev dev-stop install deploy cache migrate assets db-reset test tests coverage coverage-html optimize-images admin-user dirs
 
 # Variables
 CONSOLE = php bin/console
@@ -6,6 +6,14 @@ COMPOSER = composer
 
 help: ## Affiche cette aide
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+dev: ## Démarre le serveur Symfony en arrière-plan (port 8000)
+	@symfony server:start -d --port=8000
+	@echo "🚀 Serveur démarré sur http://127.0.0.1:8000"
+
+dev-stop: ## Arrête le serveur Symfony
+	@symfony server:stop
+	@echo "🛑 Serveur arrêté"
 
 install: ## Installe les dépendances (composer install)
 	$(COMPOSER) install

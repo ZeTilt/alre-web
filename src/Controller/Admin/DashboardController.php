@@ -303,7 +303,8 @@ class DashboardController extends AbstractDashboardController
         $event->setTitle($data['title'] ?? 'Sans titre');
         $event->setType($data['type'] ?? Event::TYPE_PRO);
 
-        $startAt = new \DateTime($data['date'] . ' ' . ($data['time'] ?? '09:00'));
+        $tz = new \DateTimeZone('Europe/Paris');
+        $startAt = new \DateTime($data['date'] . ' ' . ($data['time'] ?? '09:00'), $tz);
         $event->setStartAt($startAt);
 
         if (!empty($data['time'])) {

@@ -25,7 +25,7 @@ class Event
     public const TYPE_COLORS = [
         self::TYPE_PRO => '#2B5F75',      // Bleu pro
         self::TYPE_PERSO => '#28a745',    // Vert
-        self::TYPE_MEDICAL => '#dc3545',  // Rouge
+        self::TYPE_MEDICAL => '#e83e8c',  // Rose/Magenta (plus distinct du bleu)
         self::TYPE_OTHER => '#6c757d',    // Gris
     ];
 

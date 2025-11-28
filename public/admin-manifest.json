@@ -1,0 +1,26 @@
+{
+    "name": "Alré Web - Administration",
+    "short_name": "Alré Admin",
+    "description": "Back-office Alré Web - Gestion commerciale",
+    "icons": [
+        {
+            "src": "/images/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/images/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "theme_color": "#2B5F75",
+    "background_color": "#f8f9fa",
+    "display": "standalone",
+    "start_url": "/saeiblauhjc",
+    "scope": "/saeiblauhjc",
+    "orientation": "any",
+    "categories": ["business", "productivity"]
+}

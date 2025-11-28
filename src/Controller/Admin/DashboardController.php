@@ -6,6 +6,7 @@ use App\Entity\Client;
 use App\Entity\Company;
 use App\Entity\ContactMessage;
 use App\Entity\Devis;
+use App\Entity\Event;
 use App\Entity\Expense;
 use App\Entity\Facture;
 use App\Entity\User;
@@ -14,6 +15,7 @@ use App\Entity\Partner;
 use App\Entity\Testimonial;
 use App\Repository\CompanyRepository;
 use App\Repository\DevisRepository;
+use App\Repository\EventRepository;
 use App\Repository\ExpenseRepository;
 use App\Repository\FactureRepository;
 use App\Service\ExpenseGenerationService;
@@ -23,6 +25,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -249,6 +253,47 @@ class DashboardController extends AbstractDashboardController
         ]);
     }
 
+    #[Route('/saeiblauhjc/calendar', name: 'admin_calendar')]
+    public function calendar(EventRepository $eventRepository): Response
+    {
+        $upcomingEvents = $eventRepository->findUpcoming(7);
+
+        return $this->render('admin/calendar/index.html.twig', [
+            'upcomingEvents' => $upcomingEvents,
+        ]);
+    }
+
+    #[Route('/saeiblauhjc/calendar/events', name: 'admin_calendar_events', methods: ['GET'])]
+    public function calendarEvents(Request $request, EventRepository $eventRepository): JsonResponse
+    {
+        $start = new \DateTimeImmutable($request->query->get('start', 'first day of this month'));
+        $end = new \DateTimeImmutable($request->query->get('end', 'last day of this month'));
+
+        $events = $eventRepository->findByDateRange($start, $end);
+
+        $data = [];
+        foreach ($events as $event) {
+            $data[] = [
+                'id' => $event->getId(),
+                'title' => $event->getTitle(),
+                'start' => $event->getStartAt()->format('c'),
+                'end' => $event->getEndAt()?->format('c'),
+                'allDay' => $event->isAllDay(),
+                'color' => $event->getColor(),
+                'extendedProps' => [
+                    'type' => $event->getType(),
+                    'typeLabel' => $event->getTypeLabel(),
+                    'description' => $event->getDescription(),
+                    'location' => $event->getLocation(),
+                    'clientId' => $event->getClient()?->getId(),
+                    'clientName' => $event->getClient()?->getName(),
+                ],
+            ];
+        }
+
+        return new JsonResponse($data);
+    }
+
     #[Route('/saeiblauhjc/dashboard/export-csv', name: 'admin_dashboard_export_csv')]
     public function exportCsv(
         CompanyRepository $companyRepository,
@@ -352,6 +397,7 @@ class DashboardController extends AbstractDashboardController
     public function configureMenuItems(): iterable
     {
         yield MenuItem::linkToRoute('Tableau de bord', 'fa fa-home', 'admin_business_dashboard');
+        yield MenuItem::linkToRoute('Calendrier', 'fa fa-calendar-alt', 'admin_calendar');
 
         yield MenuItem::section('Site Public');
         yield MenuItem::linkToCrud('Portfolio', 'fas fa-folder-open', Project::class);
@@ -363,6 +409,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Devis', 'fas fa-file-invoice', Devis::class);
         yield MenuItem::linkToCrud('Factures', 'fas fa-file-invoice-dollar', Facture::class);
         yield MenuItem::linkToCrud('Dépenses', 'fas fa-receipt', Expense::class);
+        yield MenuItem::linkToCrud('Événements', 'fas fa-calendar-check', Event::class);
 
         yield MenuItem::section('Clients');
         yield MenuItem::linkToCrud('Clients', 'fas fa-users', Client::class);

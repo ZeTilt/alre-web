@@ -1,0 +1,105 @@
+<?php
+
+namespace App\Controller\Admin;
+
+use App\Entity\Event;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ColorField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
+
+class EventCrudController extends AbstractCrudController
+{
+    public static function getEntityFqcn(): string
+    {
+        return Event::class;
+    }
+
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setEntityLabelInSingular('Événement')
+            ->setEntityLabelInPlural('Événements')
+            ->setPageTitle('index', 'Calendrier - Liste des événements')
+            ->setPageTitle('new', 'Nouvel événement')
+            ->setPageTitle('edit', 'Modifier l\'événement')
+            ->setDefaultSort(['startAt' => 'ASC'])
+            ->setPaginatorPageSize(20)
+            ->setDateTimeFormat('dd/MM/yyyy HH:mm');
+    }
+
+    public function configureActions(Actions $actions): Actions
+    {
+        return $actions
+            ->add(Crud::PAGE_INDEX, Action::DETAIL)
+            ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
+                return $action->setLabel('Nouvel événement')->setIcon('fa fa-plus');
+            });
+    }
+
+    public function configureFilters(Filters $filters): Filters
+    {
+        return $filters
+            ->add(ChoiceFilter::new('type')->setChoices(Event::TYPES))
+            ->add(DateTimeFilter::new('startAt')->setLabel('Date'));
+    }
+
+    public function configureFields(string $pageName): iterable
+    {
+        yield IdField::new('id')->hideOnForm();
+
+        yield TextField::new('title', 'Titre')
+            ->setRequired(true)
+            ->setColumns(12);
+
+        yield ChoiceField::new('type', 'Type')
+            ->setChoices(Event::TYPES)
+            ->renderAsBadges([
+                Event::TYPE_PRO => 'primary',
+                Event::TYPE_PERSO => 'success',
+                Event::TYPE_MEDICAL => 'danger',
+                Event::TYPE_OTHER => 'secondary',
+            ])
+            ->setColumns(6);
+
+        yield BooleanField::new('allDay', 'Journée entière')
+            ->setColumns(6)
+            ->hideOnIndex();
+
+        yield DateTimeField::new('startAt', 'Début')
+            ->setRequired(true)
+            ->setColumns(6);
+
+        yield DateTimeField::new('endAt', 'Fin')
+            ->setColumns(6)
+            ->hideOnIndex();
+
+        yield TextField::new('location', 'Lieu')
+            ->setColumns(6)
+            ->hideOnIndex();
+
+        yield AssociationField::new('client', 'Client lié')
+            ->setColumns(6)
+            ->hideOnIndex();
+
+        yield TextareaField::new('description', 'Description')
+            ->setColumns(12)
+            ->hideOnIndex();
+
+        yield ColorField::new('color', 'Couleur personnalisée')
+            ->setColumns(6)
+            ->hideOnIndex()
+            ->setHelp('Laisser vide pour utiliser la couleur du type');
+    }
+}

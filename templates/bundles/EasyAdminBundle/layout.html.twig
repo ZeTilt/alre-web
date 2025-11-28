@@ -1,5 +1,15 @@
 {% extends '@!EasyAdmin/layout.html.twig' %}
 
+{% block head_metas %}
+    {{ parent() }}
+    <link rel="manifest" href="{{ asset('admin-manifest.json') }}">
+    <meta name="theme-color" content="#2B5F75">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Alré Admin">
+    <link rel="apple-touch-icon" href="{{ asset('images/android-chrome-192x192.png') }}">
+{% endblock %}
+
 {% block head_stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
@@ -115,5 +125,12 @@
                 return new bootstrap.Dropdown(dropdownToggleEl)
             })
         });
+
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/admin-sw.js', { scope: '/saeiblauhjc' })
+                .then(reg => console.log('Admin SW registered'))
+                .catch(err => console.log('Admin SW failed:', err));
+        }
     </script>
 {% endblock %}

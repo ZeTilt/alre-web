@@ -1,0 +1,532 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block page_title %}Calendrier{% endblock %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+    <style>
+        .calendar-container {
+            display: flex;
+            gap: 2rem;
+            padding: 1rem;
+        }
+
+        .calendar-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .calendar-sidebar {
+            width: 320px;
+            flex-shrink: 0;
+        }
+
+        #calendar {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .fc .fc-toolbar-title {
+            font-size: 1.25rem !important;
+            color: #2B5F75;
+        }
+
+        .fc .fc-button-primary {
+            background-color: #2B5F75 !important;
+            border-color: #2B5F75 !important;
+        }
+
+        .fc .fc-button-primary:hover {
+            background-color: #1e4659 !important;
+            border-color: #1e4659 !important;
+        }
+
+        .fc .fc-button-primary:disabled {
+            background-color: #2B5F75 !important;
+            border-color: #2B5F75 !important;
+        }
+
+        .fc .fc-daygrid-day.fc-day-today {
+            background-color: rgba(43, 95, 117, 0.1) !important;
+        }
+
+        .fc-event {
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            padding: 2px 4px;
+        }
+
+        .sidebar-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-card h3 {
+            font-size: 1rem;
+            color: #2B5F75;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .quick-add-form .form-group {
+            margin-bottom: 0.75rem;
+        }
+
+        .quick-add-form label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+
+        .quick-add-form input,
+        .quick-add-form select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .quick-add-form input:focus,
+        .quick-add-form select:focus {
+            outline: none;
+            border-color: #2B5F75;
+            box-shadow: 0 0 0 2px rgba(43, 95, 117, 0.2);
+        }
+
+        .quick-add-form button {
+            width: 100%;
+            padding: 0.6rem;
+            background: #2B5F75;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+
+        .quick-add-form button:hover {
+            background: #1e4659;
+        }
+
+        .upcoming-event {
+            padding: 0.75rem;
+            border-left: 3px solid;
+            background: #f8f9fa;
+            border-radius: 0 4px 4px 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .upcoming-event.type-pro { border-color: #2B5F75; }
+        .upcoming-event.type-perso { border-color: #28a745; }
+        .upcoming-event.type-medical { border-color: #dc3545; }
+        .upcoming-event.type-other { border-color: #6c757d; }
+
+        .upcoming-event-title {
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .upcoming-event-date {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        /* Modal event detail */
+        .event-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .event-modal.show {
+            display: flex;
+        }
+
+        .event-modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 450px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .event-modal-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .event-modal-header h4 {
+            margin: 0;
+            color: #2B5F75;
+        }
+
+        .event-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .event-modal-body {
+            padding: 1.25rem;
+        }
+
+        .event-detail {
+            margin-bottom: 0.75rem;
+        }
+
+        .event-detail-label {
+            font-size: 0.75rem;
+            color: #999;
+            text-transform: uppercase;
+        }
+
+        .event-detail-value {
+            font-size: 0.95rem;
+        }
+
+        .event-modal-actions {
+            padding: 1rem 1.25rem;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-edit {
+            flex: 1;
+            padding: 0.5rem;
+            background: #2B5F75;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-delete {
+            padding: 0.5rem 1rem;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .calendar-container {
+                flex-direction: column;
+            }
+            .calendar-sidebar {
+                width: 100%;
+                order: -1;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block main %}
+<div class="calendar-container">
+    <div class="calendar-main">
+        <div id="calendar"></div>
+    </div>
+
+    <div class="calendar-sidebar">
+        {# Quick add form #}
+        <div class="sidebar-card">
+            <h3><i class="fas fa-plus-circle"></i> Nouvel événement</h3>
+            <form class="quick-add-form" id="quickAddForm">
+                <div class="form-group">
+                    <label for="quickTitle">Titre</label>
+                    <input type="text" id="quickTitle" name="title" required placeholder="Ex: RDV Client">
+                </div>
+                <div class="form-group">
+                    <label for="quickType">Type</label>
+                    <select id="quickType" name="type">
+                        <option value="pro">Professionnel</option>
+                        <option value="perso">Personnel</option>
+                        <option value="medical">Médical</option>
+                        <option value="other">Autre</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="quickDate">Date</label>
+                    <input type="date" id="quickDate" name="date" required>
+                </div>
+                <div class="form-group">
+                    <label for="quickTime">Heure</label>
+                    <input type="time" id="quickTime" name="time">
+                </div>
+                <button type="submit"><i class="fas fa-calendar-plus"></i> Ajouter</button>
+            </form>
+        </div>
+
+        {# Upcoming events #}
+        <div class="sidebar-card">
+            <h3><i class="fas fa-clock"></i> À venir (7 jours)</h3>
+            {% if upcomingEvents is empty %}
+                <p style="color: #999; font-size: 0.9rem;">Aucun événement à venir</p>
+            {% else %}
+                {% for event in upcomingEvents %}
+                <div class="upcoming-event type-{{ event.type }}">
+                    <div class="upcoming-event-title">{{ event.title }}</div>
+                    <div class="upcoming-event-date">
+                        <i class="far fa-calendar"></i>
+                        {{ event.startAt|date('d/m/Y') }}
+                        {% if not event.allDay %}
+                            à {{ event.startAt|date('H:i') }}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        {# Legend #}
+        <div class="sidebar-card">
+            <h3><i class="fas fa-palette"></i> Légende</h3>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #2B5F75;"></span>
+                Professionnel
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #28a745;"></span>
+                Personnel
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #dc3545;"></span>
+                Médical
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #6c757d;"></span>
+                Autre
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Event detail modal #}
+<div class="event-modal" id="eventModal">
+    <div class="event-modal-content">
+        <div class="event-modal-header">
+            <h4 id="modalTitle">Détail de l'événement</h4>
+            <button class="event-modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="event-modal-body">
+            <div class="event-detail">
+                <div class="event-detail-label">Type</div>
+                <div class="event-detail-value" id="modalType"></div>
+            </div>
+            <div class="event-detail">
+                <div class="event-detail-label">Date et heure</div>
+                <div class="event-detail-value" id="modalDate"></div>
+            </div>
+            <div class="event-detail" id="modalLocationWrapper" style="display:none;">
+                <div class="event-detail-label">Lieu</div>
+                <div class="event-detail-value" id="modalLocation"></div>
+            </div>
+            <div class="event-detail" id="modalClientWrapper" style="display:none;">
+                <div class="event-detail-label">Client</div>
+                <div class="event-detail-value" id="modalClient"></div>
+            </div>
+            <div class="event-detail" id="modalDescWrapper" style="display:none;">
+                <div class="event-detail-label">Description</div>
+                <div class="event-detail-value" id="modalDescription"></div>
+            </div>
+        </div>
+        <div class="event-modal-actions">
+            <a href="#" class="btn-edit" id="modalEditBtn"><i class="fas fa-edit"></i> Modifier</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_javascript %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'fr',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
+                },
+                buttonText: {
+                    today: "Aujourd'hui",
+                    month: 'Mois',
+                    week: 'Semaine',
+                    list: 'Liste'
+                },
+                events: '{{ path('admin_calendar_events') }}',
+                eventClick: function(info) {
+                    showEventModal(info.event);
+                },
+                dateClick: function(info) {
+                    document.getElementById('quickDate').value = info.dateStr;
+                    document.getElementById('quickTitle').focus();
+                },
+                eventDidMount: function(info) {
+                    info.el.title = info.event.title;
+                }
+            });
+
+            calendar.render();
+
+            // Set default date to today
+            document.getElementById('quickDate').value = new Date().toISOString().split('T')[0];
+
+            // Quick add form
+            document.getElementById('quickAddForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const title = formData.get('title');
+                const type = formData.get('type');
+                const date = formData.get('date');
+                const time = formData.get('time') || '09:00';
+
+                // Build URL for EasyAdmin new event
+                const params = new URLSearchParams({
+                    'crudAction': 'new',
+                    'crudControllerFqcn': 'App\\Controller\\Admin\\EventCrudController',
+                    'Event[title]': title,
+                    'Event[type]': type,
+                    'Event[startAt][date]': date,
+                    'Event[startAt][time]': time
+                });
+
+                window.location.href = '{{ path('admin') }}?' + params.toString();
+            });
+        });
+
+        function showEventModal(event) {
+            document.getElementById('modalTitle').textContent = event.title;
+            document.getElementById('modalType').innerHTML = '<span class="badge bg-' + getTypeBadgeClass(event.extendedProps.type) + '">' + event.extendedProps.typeLabel + '</span>';
+
+            let dateStr = formatDate(event.start);
+            if (event.end && !event.allDay) {
+                dateStr += ' - ' + formatTime(event.end);
+            }
+            document.getElementById('modalDate').textContent = dateStr;
+
+            // Location
+            if (event.extendedProps.location) {
+                document.getElementById('modalLocation').textContent = event.extendedProps.location;
+                document.getElementById('modalLocationWrapper').style.display = 'block';
+            } else {
+                document.getElementById('modalLocationWrapper').style.display = 'none';
+            }
+
+            // Client
+            if (event.extendedProps.clientName) {
+                document.getElementById('modalClient').textContent = event.extendedProps.clientName;
+                document.getElementById('modalClientWrapper').style.display = 'block';
+            } else {
+                document.getElementById('modalClientWrapper').style.display = 'none';
+            }
+
+            // Description
+            if (event.extendedProps.description) {
+                document.getElementById('modalDescription').textContent = event.extendedProps.description;
+                document.getElementById('modalDescWrapper').style.display = 'block';
+            } else {
+                document.getElementById('modalDescWrapper').style.display = 'none';
+            }
+
+            // Edit link
+            document.getElementById('modalEditBtn').href = '{{ path('admin') }}?crudAction=edit&crudControllerFqcn=App%5CController%5CAdmin%5CEventCrudController&entityId=' + event.id;
+
+            document.getElementById('eventModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('eventModal').classList.remove('show');
+        }
+
+        function getTypeBadgeClass(type) {
+            const classes = {
+                'pro': 'primary',
+                'perso': 'success',
+                'medical': 'danger',
+                'other': 'secondary'
+            };
+            return classes[type] || 'secondary';
+        }
+
+        function formatDate(date) {
+            return date.toLocaleDateString('fr-FR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatTime(date) {
+            return date.toLocaleTimeString('fr-FR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Close modal on outside click
+        document.getElementById('eventModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+{% endblock %}

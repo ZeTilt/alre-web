@@ -23,10 +23,10 @@ class Event
     ];
 
     public const TYPE_COLORS = [
-        self::TYPE_PRO => '#2B5F75',      // Bleu pro
-        self::TYPE_PERSO => '#28a745',    // Vert
-        self::TYPE_MEDICAL => '#e83e8c',  // Rose/Magenta (plus distinct du bleu)
-        self::TYPE_OTHER => '#6c757d',    // Gris
+        self::TYPE_PRO => '#0066CC',      // Bleu vif
+        self::TYPE_PERSO => '#FF9500',    // Orange
+        self::TYPE_MEDICAL => '#FF2D55',  // Rouge/Rose vif
+        self::TYPE_OTHER => '#8E8E93',    // Gris
     ];
 
     #[ORM\Id]

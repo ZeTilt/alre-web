@@ -294,6 +294,35 @@ class DashboardController extends AbstractDashboardController
         return new JsonResponse($data);
     }
 
+    #[Route('/saeiblauhjc/calendar/events/create', name: 'admin_calendar_event_create', methods: ['POST'])]
+    public function createEvent(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $event = new Event();
+        $event->setTitle($data['title'] ?? 'Sans titre');
+        $event->setType($data['type'] ?? Event::TYPE_PRO);
+
+        $startAt = new \DateTime($data['date'] . ' ' . ($data['time'] ?? '09:00'));
+        $event->setStartAt($startAt);
+
+        if (!empty($data['time'])) {
+            $endAt = (clone $startAt)->modify('+1 hour');
+            $event->setEndAt($endAt);
+        } else {
+            $event->setAllDay(true);
+        }
+
+        $this->entityManager->persist($event);
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'id' => $event->getId(),
+            'message' => 'Événement créé'
+        ]);
+    }
+
     #[Route('/saeiblauhjc/dashboard/export-csv', name: 'admin_dashboard_export_csv')]
     public function exportCsv(
         CompanyRepository $companyRepository,

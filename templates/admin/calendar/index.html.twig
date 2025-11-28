@@ -390,6 +390,7 @@
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 locale: 'fr',
+                firstDay: 1, // Lundi
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
@@ -420,26 +421,47 @@
             document.getElementById('quickDate').value = new Date().toISOString().split('T')[0];
 
             // Quick add form
-            document.getElementById('quickAddForm').addEventListener('submit', function(e) {
+            document.getElementById('quickAddForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
 
                 const formData = new FormData(this);
-                const title = formData.get('title');
-                const type = formData.get('type');
-                const date = formData.get('date');
-                const time = formData.get('time') || '09:00';
+                const data = {
+                    title: formData.get('title'),
+                    type: formData.get('type'),
+                    date: formData.get('date'),
+                    time: formData.get('time')
+                };
 
-                // Build URL for EasyAdmin new event
-                const params = new URLSearchParams({
-                    'crudAction': 'new',
-                    'crudControllerFqcn': 'App\\Controller\\Admin\\EventCrudController',
-                    'Event[title]': title,
-                    'Event[type]': type,
-                    'Event[startAt][date]': date,
-                    'Event[startAt][time]': time
-                });
+                const btn = this.querySelector('button');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création...';
 
-                window.location.href = '{{ path('admin') }}?' + params.toString();
+                try {
+                    const response = await fetch('{{ path('admin_calendar_event_create') }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        calendar.refetchEvents();
+                        this.reset();
+                        document.getElementById('quickDate').value = new Date().toISOString().split('T')[0];
+                        btn.innerHTML = '<i class="fas fa-check"></i> Ajouté !';
+                        setTimeout(() => {
+                            btn.innerHTML = '<i class="fas fa-calendar-plus"></i> Ajouter';
+                            btn.disabled = false;
+                        }, 1500);
+                    }
+                } catch (error) {
+                    btn.innerHTML = '<i class="fas fa-times"></i> Erreur';
+                    setTimeout(() => {
+                        btn.innerHTML = '<i class="fas fa-calendar-plus"></i> Ajouter';
+                        btn.disabled = false;
+                    }, 1500);
+                }
             });
         });
 

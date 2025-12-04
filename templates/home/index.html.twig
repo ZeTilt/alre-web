@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Accueil | Développeur Web Freelance Symfony - Fabrice Dhuicque{% endblock %}
+{% block title %}Création de sites web pour artisans et PME | Alré Web - Bretagne{% endblock %}
 
-{% block meta_description %}Développeur web freelance à Auray (Morbihan), entre Vannes et Lorient. Spécialisé Symfony, je crée vos sites internet et e-commerce sur mesure en Bretagne. Accompagnement complet : design, développement, hébergement, SEO et maintenance. Devis gratuit !{% endblock %}
+{% block meta_description %}Artisans, commerçants, PME : je crée le site web qui vous rend visible sur Google et vous ramène des clients. Basé en Bretagne (Auray, Vannes, Lorient), j'accompagne les professionnels qui veulent développer leur activité en ligne sans se soucier de la technique.{% endblock %}
 
 {% block body %}
 
@@ -25,13 +25,14 @@
         {% endif %}
         <div class="hero-text">
             <h1 class="fade-in">
-                Développeur Web Freelance
+                Votre site web qui attire des clients
                 <br>
-                <span class="text-accent">Sites sur mesure pour dynamiser votre activité</span>
+                <span class="text-accent">pendant que vous vous concentrez sur votre métier</span>
             </h1>
             <p class="lead fade-in-delay-1">
-                Création de sites internet et e-commerce avec Symfony.
-                Accompagnement complet de A à Z : conception, développement, hébergement, SEO et maintenance.
+                Artisans, commerçants, PME : je crée le site qui vous rend visible sur Google,
+                vend vos produits 24h/24 et vous libère des tracas techniques.
+                Vous gérez votre activité, je m'occupe du reste.
             </p>
             <div class="hero-cta fade-in-delay-2">
                 <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
@@ -50,52 +51,53 @@
    ============================================ #}
 <section class="section">
     <div class="container">
-        <h2 class="text-center mb-3">Pourquoi me faire confiance ?</h2>
+        <h2 class="text-center mb-3">Ce que vous gagnez en travaillant avec moi</h2>
         <p class="text-center text-muted mb-5">
-            Les avantages d'un freelance avec l'expertise d'une agence
+            Un site qui travaille pour vous, pas l'inverse
         </p>
 
         <div class="grid grid-4">
             <div class="card service-card">
                 <div class="card-icon">
-                    <i class="fas fa-bolt"></i>
+                    <i class="fas fa-search"></i>
                 </div>
-                <h3 class="card-title">Flexibilité & Réactivité</h3>
+                <h3 class="card-title">Des clients vous trouvent</h3>
                 <p class="card-text">
-                    En tant que freelance, je suis disponible et réactif.
-                    Vous avez un interlocuteur unique qui comprend vos besoins et s'adapte à votre rythme.
+                    Fini l'invisibilité sur Google. Votre site apparaît quand vos futurs clients cherchent vos services.
+                    Plus de visibilité = plus de demandes.
                 </p>
             </div>
 
             <div class="card service-card">
                 <div class="card-icon">
-                    <i class="fas fa-award"></i>
+                    <i class="fas fa-clock"></i>
                 </div>
-                <h3 class="card-title">Expertise Technique</h3>
+                <h3 class="card-title">Vous gagnez du temps</h3>
                 <p class="card-text">
-                    Spécialisé Symfony et PHP, je développe des solutions robustes, sécurisées et évolutives.
-                    Code professionnel et bonnes pratiques garantis.
+                    Devis automatiques, prises de RDV en ligne, ventes 24h/24...
+                    Votre site travaille pendant que vous êtes sur le terrain ou en repos.
                 </p>
             </div>
 
             <div class="card service-card">
                 <div class="card-icon">
-                    <i class="fas fa-euro-sign"></i>
+                    <i class="fas fa-shield-alt"></i>
                 </div>
-                <h3 class="card-title">Prix Transparents</h3>
+                <h3 class="card-title">Zéro tracas technique</h3>
                 <p class="card-text">
-                    Des tarifs justes et compétitifs. Sans les coûts d'une agence, vous bénéficiez d'un excellent rapport qualité/prix pour votre projet web.
+                    Hébergement, mises à jour, sécurité, sauvegardes : je gère tout.
+                    Vous n'avez pas besoin de comprendre la technique pour avoir un site pro.
                 </p>
             </div>
 
             <div class="card service-card">
                 <div class="card-icon">
-                    <i class="fas fa-hands-helping"></i>
+                    <i class="fas fa-handshake"></i>
                 </div>
-                <h3 class="card-title">Accompagnement Complet</h3>
+                <h3 class="card-title">Un seul interlocuteur</h3>
                 <p class="card-text">
-                    De la conception à la maintenance, je prends tout en charge.
-                    Hébergement, SEO, support... Vous n'avez rien à gérer techniquement.
+                    Pas d'agence avec 5 contacts différents. Vous m'appelez, je réponds.
+                    Communication directe, décisions rapides, projet qui avance.
                 </p>
             </div>
         </div>
@@ -107,21 +109,21 @@
    ============================================ #}
 <section class="section section-light">
     <div class="container">
-        <h2 class="text-center mb-3">Mes Services</h2>
+        <h2 class="text-center mb-3">Comment je peux vous aider</h2>
         <p class="text-center text-muted mb-5">
-            Une offre complète pour tous vos besoins web
+            Des solutions concrètes pour développer votre activité en ligne
         </p>
 
         <div class="grid grid-3">
-            {# Service 1 - Développement Symfony (cœur de métier) #}
+            {# Service 1 - Site vitrine #}
             <div class="card">
                 <div class="card-icon">
-                    <i class="fas fa-code"></i>
+                    <i class="fas fa-globe"></i>
                 </div>
-                <h3 class="card-title">Développement Symfony</h3>
+                <h3 class="card-title">Être trouvé sur Google</h3>
                 <p class="card-text">
-                    Code robuste et sur mesure. Fonctionnalités personnalisées,
-                    intégrations API, architecture évolutive et sécurisée.
+                    Un site vitrine optimisé pour que vos clients vous trouvent
+                    quand ils cherchent vos services. Fini l'annuaire papier.
                 </p>
                 <a href="{{ path('app_services') }}#developpement" class="card-link">
                     En savoir plus <i class="fas fa-arrow-right"></i>
@@ -133,27 +135,27 @@
                 <div class="card-icon">
                     <i class="fas fa-shopping-cart"></i>
                 </div>
-                <h3 class="card-title">Sites E-commerce</h3>
+                <h3 class="card-title">Vendre en ligne 24h/24</h3>
                 <p class="card-text">
-                    Boutiques en ligne complètes. Catalogue, paiements sécurisés,
-                    gestion des stocks et commandes. Vendez en ligne facilement !
+                    Une boutique qui prend les commandes même quand vous dormez.
+                    Élargissez votre clientèle au-delà de votre zone géographique.
                 </p>
                 <a href="{{ path('app_services') }}#ecommerce" class="card-link">
                     En savoir plus <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
 
-            {# Service 3 - Gestion de projet #}
+            {# Service 3 - Automatisation #}
             <div class="card">
                 <div class="card-icon">
-                    <i class="fas fa-project-diagram"></i>
+                    <i class="fas fa-robot"></i>
                 </div>
-                <h3 class="card-title">Gestion de Projet</h3>
+                <h3 class="card-title">Automatiser les tâches répétitives</h3>
                 <p class="card-text">
-                    Accompagnement de A à Z. Conseil stratégique, méthodologie agile,
-                    respect des délais et du budget. Communication transparente.
+                    Devis, factures, prises de RDV, relances... Libérez-vous des tâches
+                    chronophages avec des outils sur mesure.
                 </p>
-                <a href="{{ path('app_services') }}#gestion-projet" class="card-link">
+                <a href="{{ path('app_services') }}#developpement" class="card-link">
                     En savoir plus <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
@@ -163,10 +165,10 @@
                 <div class="card-icon">
                     <i class="fas fa-server"></i>
                 </div>
-                <h3 class="card-title">Hébergement & Maintenance</h3>
+                <h3 class="card-title">Ne plus se soucier de la technique</h3>
                 <p class="card-text">
-                    Serveur performant en France, SSL inclus, sauvegardes quotidiennes.
-                    Mises à jour régulières et support réactif. Tranquillité totale.
+                    Hébergement, sécurité, mises à jour, sauvegardes : je gère tout.
+                    Vous avez un site pro sans rien y connaître.
                 </p>
                 <a href="{{ path('app_services') }}#hebergement" class="card-link">
                     En savoir plus <i class="fas fa-arrow-right"></i>
@@ -176,27 +178,27 @@
             {# Service 5 - SEO #}
             <div class="card">
                 <div class="card-icon">
-                    <i class="fas fa-search"></i>
+                    <i class="fas fa-chart-line"></i>
                 </div>
-                <h3 class="card-title">Référencement SEO</h3>
+                <h3 class="card-title">Attirer plus de clients</h3>
                 <p class="card-text">
-                    Optimisation pour Google : code propre, site rapide, stratégie de
-                    contenu. Améliorez votre visibilité et attirez plus de clients.
+                    Référencement optimisé pour apparaître en haut des résultats Google.
+                    Plus de visibilité = plus de demandes de devis.
                 </p>
                 <a href="{{ path('app_services') }}#seo" class="card-link">
                     En savoir plus <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
 
-            {# Service 6 - Design (peut être sous-traité) #}
+            {# Service 6 - Image pro #}
             <div class="card">
                 <div class="card-icon">
-                    <i class="fas fa-palette"></i>
+                    <i class="fas fa-star"></i>
                 </div>
-                <h3 class="card-title">Conception & Design UI/UX</h3>
+                <h3 class="card-title">Avoir une image professionnelle</h3>
                 <p class="card-text">
-                    Design moderne et responsive, expérience utilisateur optimisée.
-                    Votre site sera beau, intuitif et adapté à tous les écrans.
+                    Un design moderne qui inspire confiance. Vos clients savent
+                    qu'ils ont affaire à un professionnel sérieux.
                 </p>
                 <a href="{{ path('app_services') }}#conception" class="card-link">
                     En savoir plus <i class="fas fa-arrow-right"></i>
@@ -350,11 +352,11 @@
    ============================================ #}
 <section class="section section-light">
     <div class="container text-center">
-        <h2 class="mb-3">Votre projet sera le prochain ?</h2>
+        <h2 class="mb-3">Prêt à avoir un site qui vous ramène des clients ?</h2>
         <p class="lead mb-4">
-            Discutons de vos besoins autour d'un café ou par téléphone.
+            Expliquez-moi votre activité et vos objectifs, je vous propose une solution adaptée.
             <br>
-            Devis gratuit et sans engagement.
+            Premier échange gratuit et sans engagement.
         </p>
         <div style="display: inline-flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
             <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">

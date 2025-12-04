@@ -20,8 +20,8 @@ doctrine:
 when@test:
     doctrine:
         dbal:
-            # SQLite doesn't use dbname_suffix - DATABASE_URL in .env.test.local specifies the full path
-            # dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+            # Use a separate test database (configured in .env.test or .env.test.local)
+            dbname_suffix: '_test%env(default::TEST_TOKEN)%'
 
 when@prod:
     doctrine:

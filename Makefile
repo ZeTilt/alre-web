@@ -74,10 +74,10 @@ deploy: ## Déploie sur le serveur de production (git pull + composer + cache + 
 	@chmod -R 755 public/uploads
 	@echo "📦 Installation des dépendances..."
 	@$(COMPOSER) install --no-dev --optimize-autoloader
-	@echo "🗄️  Exécution des migrations..."
-	@$(CONSOLE) doctrine:migrations:migrate --no-interaction --env=prod
 	@echo "🧹 Nettoyage du cache..."
 	@$(CONSOLE) cache:clear --env=prod --no-debug
+	@echo "🗄️  Exécution des migrations..."
+	@$(CONSOLE) doctrine:migrations:migrate --no-interaction --env=prod
 	@echo "✅ Déploiement terminé avec succès!"
 
 deploy-force: ## Déploie en forçant le git pull (git reset --hard + pull)
@@ -89,10 +89,10 @@ deploy-force: ## Déploie en forçant le git pull (git reset --hard + pull)
 	@chmod -R 755 public/uploads
 	@echo "📦 Installation des dépendances..."
 	@$(COMPOSER) install --no-dev --optimize-autoloader
-	@echo "🗄️  Exécution des migrations..."
-	@$(CONSOLE) doctrine:migrations:migrate --no-interaction --env=prod
 	@echo "🧹 Nettoyage du cache..."
 	@$(CONSOLE) cache:clear --env=prod --no-debug
+	@echo "🗄️  Exécution des migrations..."
+	@$(CONSOLE) doctrine:migrations:migrate --no-interaction --env=prod
 	@echo "✅ Déploiement forcé terminé!"
 
 setup: install migrate ## Setup complet du projet (install + migrate)

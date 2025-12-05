@@ -9,6 +9,9 @@ use App\Entity\Devis;
 use App\Entity\Event;
 use App\Entity\Expense;
 use App\Entity\Facture;
+use App\Entity\Prospect;
+use App\Entity\ProspectFollowUp;
+use App\Entity\ProspectInteraction;
 use App\Entity\User;
 use App\Entity\Project;
 use App\Entity\Partner;
@@ -18,7 +21,10 @@ use App\Repository\DevisRepository;
 use App\Repository\EventRepository;
 use App\Repository\ExpenseRepository;
 use App\Repository\FactureRepository;
+use App\Repository\ProspectRepository;
+use App\Repository\ProspectFollowUpRepository;
 use App\Service\ExpenseGenerationService;
+use App\Service\ProspectionEmailService;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
@@ -324,6 +330,73 @@ class DashboardController extends AbstractDashboardController
         ]);
     }
 
+    #[Route('/saeiblauhjc/prospection/pipeline', name: 'admin_prospection_pipeline')]
+    public function prospectionPipeline(
+        ProspectRepository $prospectRepository,
+        ProspectFollowUpRepository $followUpRepository
+    ): Response {
+        $prospectsByStatus = $prospectRepository->findGroupedByStatus();
+        $urgentFollowUps = $followUpRepository->findUrgent(2);
+
+        // Stats
+        $totalProspects = 0;
+        foreach ($prospectsByStatus as $prospects) {
+            $totalProspects += count($prospects);
+        }
+
+        $totalValue = $prospectRepository->getTotalEstimatedValue();
+        $conversionRate = $prospectRepository->getConversionRate();
+        $wonThisMonth = $prospectRepository->countWonThisMonth();
+        $lostThisMonth = $prospectRepository->countLostThisMonth();
+
+        return $this->render('admin/prospection/pipeline.html.twig', [
+            'prospectsByStatus' => $prospectsByStatus,
+            'urgentFollowUps' => $urgentFollowUps,
+            'totalProspects' => $totalProspects,
+            'totalValue' => $totalValue,
+            'conversionRate' => $conversionRate,
+            'wonThisMonth' => $wonThisMonth,
+            'lostThisMonth' => $lostThisMonth,
+        ]);
+    }
+
+    #[Route('/saeiblauhjc/prospection/send-email/{id}', name: 'admin_prospection_send_email')]
+    public function sendProspectionEmail(
+        Request $request,
+        Prospect $prospect,
+        ProspectionEmailService $emailService
+    ): Response {
+        if ($request->isMethod('POST')) {
+            $toEmail = $request->request->get('email');
+            $subject = $request->request->get('subject');
+            $content = $request->request->get('content');
+            $contactId = $request->request->get('contact');
+
+            $contact = null;
+            if ($contactId) {
+                $contact = $this->entityManager->getRepository(\App\Entity\ProspectContact::class)->find($contactId);
+            }
+
+            try {
+                $emailService->sendProspectionEmail($prospect, $toEmail, $subject, $content, $contact);
+                $this->addFlash('success', 'Email envoyé avec succès !');
+                return $this->redirectToRoute('admin', [
+                    'crudAction' => 'detail',
+                    'crudControllerFqcn' => ProspectCrudController::class,
+                    'entityId' => $prospect->getId()
+                ]);
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Erreur lors de l\'envoi : ' . $e->getMessage());
+            }
+        }
+
+        return $this->render('admin/prospection/send_email.html.twig', [
+            'prospect' => $prospect,
+            'defaultSubject' => $emailService->getDefaultSubject($prospect),
+            'defaultContent' => $emailService->getDefaultEmailContent($prospect),
+        ]);
+    }
+
     #[Route('/saeiblauhjc/dashboard/export-csv', name: 'admin_dashboard_export_csv')]
     public function exportCsv(
         CompanyRepository $companyRepository,
@@ -443,6 +516,12 @@ class DashboardController extends AbstractDashboardController
 
         yield MenuItem::section('Clients');
         yield MenuItem::linkToCrud('Clients', 'fas fa-users', Client::class);
+
+        yield MenuItem::section('Prospection');
+        yield MenuItem::linkToRoute('Pipeline', 'fas fa-funnel-dollar', 'admin_prospection_pipeline');
+        yield MenuItem::linkToCrud('Prospects', 'fas fa-building', Prospect::class);
+        yield MenuItem::linkToCrud('Interactions', 'fas fa-comments', ProspectInteraction::class);
+        yield MenuItem::linkToCrud('Relances', 'fas fa-bell', ProspectFollowUp::class);
 
         yield MenuItem::section('Administration');
         yield MenuItem::linkToCrud('Mon Entreprise', 'fas fa-building', Company::class);

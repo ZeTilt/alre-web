@@ -30,8 +30,4 @@
 /data
 
 # Large files and personal docs
-docs/*.db
-docs/*.pdf
-docs/*.jpg
-docs/*.png
-docs/*.html
+docs/*

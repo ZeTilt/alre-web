@@ -1,0 +1,360 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}
+    <i class="fas fa-funnel-dollar"></i> Pipeline de Prospection
+{% endblock %}
+
+{% block page_content %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --info: #06b6d4;
+        --purple: #8b5cf6;
+        --secondary: #6b7280;
+    }
+
+    .pipeline-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border-left: 4px solid var(--primary);
+    }
+    .stat-card.success { border-left-color: var(--success); }
+    .stat-card.warning { border-left-color: var(--warning); }
+    .stat-card.danger { border-left-color: var(--danger); }
+    .stat-card.info { border-left-color: var(--info); }
+
+    .stat-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    /* Kanban */
+    .pipeline-kanban {
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        padding-bottom: 1rem;
+    }
+
+    .kanban-column {
+        flex: 1;
+        min-width: 280px;
+        max-width: 320px;
+        background: #f3f4f6;
+        border-radius: 12px;
+        padding: 1rem;
+    }
+
+    .kanban-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid;
+    }
+    .kanban-header.identified { border-color: var(--secondary); }
+    .kanban-header.contacted { border-color: var(--info); }
+    .kanban-header.in_discussion { border-color: var(--warning); }
+    .kanban-header.quote_sent { border-color: var(--primary); }
+
+    .kanban-title {
+        font-weight: 700;
+        font-size: 0.875rem;
+        color: #374151;
+    }
+
+    .kanban-count {
+        background: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6b7280;
+    }
+
+    .kanban-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        min-height: 100px;
+    }
+
+    .prospect-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+    }
+    .prospect-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .prospect-name {
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: #111827;
+        margin-bottom: 0.25rem;
+    }
+    .prospect-name a {
+        color: inherit;
+        text-decoration: none;
+    }
+    .prospect-name a:hover {
+        color: var(--primary);
+    }
+
+    .prospect-contact {
+        font-size: 0.8125rem;
+        color: #6b7280;
+        margin-bottom: 0.5rem;
+    }
+
+    .prospect-meta {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        font-size: 0.75rem;
+    }
+
+    .prospect-value {
+        background: #f0fdf4;
+        color: var(--success);
+        padding: 0.125rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+
+    .prospect-followup {
+        padding: 0.125rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+    .prospect-followup.overdue {
+        background: #fef2f2;
+        color: var(--danger);
+    }
+    .prospect-followup.soon {
+        background: #fffbeb;
+        color: var(--warning);
+    }
+    .prospect-followup.normal {
+        background: #f0fdf4;
+        color: var(--success);
+    }
+
+    .prospect-source {
+        background: #f3f4f6;
+        color: #6b7280;
+        padding: 0.125rem 0.5rem;
+        border-radius: 4px;
+    }
+
+    /* Alertes relances */
+    .urgent-followups {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+
+    .urgent-title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #111827;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .urgent-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .urgent-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem;
+        background: #f9fafb;
+        border-radius: 8px;
+        border-left: 3px solid var(--danger);
+    }
+    .urgent-item.soon {
+        border-left-color: var(--warning);
+    }
+
+    .urgent-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .urgent-prospect {
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .urgent-desc {
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .urgent-date {
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    .urgent-date.overdue { color: var(--danger); }
+    .urgent-date.soon { color: var(--warning); }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: #9ca3af;
+    }
+</style>
+
+<!-- Stats -->
+<div class="pipeline-stats">
+    <div class="stat-card info">
+        <div class="stat-label">Prospects Actifs</div>
+        <div class="stat-value">{{ totalProspects }}</div>
+    </div>
+    <div class="stat-card success">
+        <div class="stat-label">Valeur Pipeline</div>
+        <div class="stat-value">{{ (totalValue / 1000)|number_format(1) }}k</div>
+    </div>
+    <div class="stat-card primary">
+        <div class="stat-label">Taux Conversion</div>
+        <div class="stat-value">{{ conversionRate }}%</div>
+    </div>
+    <div class="stat-card success">
+        <div class="stat-label">Gagnes ce mois</div>
+        <div class="stat-value">{{ wonThisMonth }}</div>
+    </div>
+    <div class="stat-card danger">
+        <div class="stat-label">Perdus ce mois</div>
+        <div class="stat-value">{{ lostThisMonth }}</div>
+    </div>
+</div>
+
+<!-- Relances urgentes -->
+{% if urgentFollowUps|length > 0 %}
+<div class="urgent-followups">
+    <div class="urgent-title">
+        <i class="fas fa-bell" style="color: var(--danger);"></i>
+        Relances urgentes ({{ urgentFollowUps|length }})
+    </div>
+    <div class="urgent-list">
+        {% for followUp in urgentFollowUps %}
+            <div class="urgent-item {% if followUp.urgencyLevel == 'soon' %}soon{% endif %}">
+                <div class="urgent-info">
+                    <span class="urgent-prospect">
+                        <a href="{{ path('admin', {crudAction: 'detail', crudControllerFqcn: 'App\\\\Controller\\\\Admin\\\\ProspectCrudController', entityId: followUp.prospect.id}) }}">
+                            {{ followUp.prospect.companyName }}
+                        </a>
+                    </span>
+                    <span class="urgent-desc">{{ followUp.title }}</span>
+                </div>
+                <span class="urgent-date {% if followUp.overdue %}overdue{% else %}soon{% endif %}">
+                    {% if followUp.overdue %}
+                        <i class="fas fa-exclamation-triangle"></i>
+                    {% endif %}
+                    {{ followUp.dueAt|date('d/m/Y') }}
+                </span>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Pipeline Kanban -->
+<div class="pipeline-kanban">
+    {% set statusConfig = {
+        'identified': {'label': 'Identifies', 'icon': 'fa-search'},
+        'contacted': {'label': 'Contactes', 'icon': 'fa-paper-plane'},
+        'in_discussion': {'label': 'En discussion', 'icon': 'fa-comments'},
+        'quote_sent': {'label': 'Devis envoye', 'icon': 'fa-file-invoice'}
+    } %}
+
+    {% for status, config in statusConfig %}
+        {% set prospects = prospectsByStatus[status] ?? [] %}
+        <div class="kanban-column">
+            <div class="kanban-header {{ status }}">
+                <span class="kanban-title">
+                    <i class="fas {{ config.icon }}"></i> {{ config.label }}
+                </span>
+                <span class="kanban-count">{{ prospects|length }}</span>
+            </div>
+            <div class="kanban-cards">
+                {% if prospects|length > 0 %}
+                    {% for prospect in prospects %}
+                        <div class="prospect-card">
+                            <div class="prospect-name">
+                                <a href="{{ path('admin', {crudAction: 'detail', crudControllerFqcn: 'App\\\\Controller\\\\Admin\\\\ProspectCrudController', entityId: prospect.id}) }}">
+                                    {{ prospect.companyName }}
+                                </a>
+                            </div>
+                            {% if prospect.primaryContact %}
+                                <div class="prospect-contact">
+                                    <i class="fas fa-user"></i> {{ prospect.primaryContact.firstName }} {{ prospect.primaryContact.lastName }}
+                                </div>
+                            {% endif %}
+                            <div class="prospect-meta">
+                                {% if prospect.estimatedValue %}
+                                    <span class="prospect-value">{{ prospect.estimatedValue|number_format(0, ',', ' ') }}</span>
+                                {% endif %}
+                                {% if prospect.nextFollowUp %}
+                                    <span class="prospect-followup {{ prospect.nextFollowUp.urgencyLevel }}">
+                                        <i class="fas fa-bell"></i> {{ prospect.nextFollowUp.dueAt|date('d/m') }}
+                                    </span>
+                                {% endif %}
+                                <span class="prospect-source">{{ prospect.sourceLabel }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-inbox fa-2x"></i>
+                        <p>Aucun prospect</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Bouton ajouter -->
+<div style="margin-top: 1rem;">
+    <a href="{{ path('admin', {crudAction: 'new', crudControllerFqcn: 'App\\\\Controller\\\\Admin\\\\ProspectCrudController'}) }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Nouveau prospect
+    </a>
+</div>
+
+{% endblock %}

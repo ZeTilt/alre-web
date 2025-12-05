@@ -1,0 +1,194 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}
+    <i class="fas fa-envelope"></i> Envoyer un email - {{ prospect.companyName }}
+{% endblock %}
+
+{% block page_content %}
+<style>
+    .email-form {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        max-width: 800px;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 0.9375rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-group textarea {
+        min-height: 200px;
+        font-family: inherit;
+        resize: vertical;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .btn-send {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-send:hover {
+        background: #2563eb;
+    }
+
+    .btn-cancel {
+        background: #f3f4f6;
+        color: #374151;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        text-decoration: none;
+    }
+
+    .btn-cancel:hover {
+        background: #e5e7eb;
+    }
+
+    .prospect-info {
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .prospect-info-title {
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+
+    .prospect-info-detail {
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .from-info {
+        font-size: 0.875rem;
+        color: #6b7280;
+        background: #f0f9ff;
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        margin-bottom: 1rem;
+    }
+</style>
+
+<div class="email-form">
+    <div class="prospect-info">
+        <div class="prospect-info-title">{{ prospect.companyName }}</div>
+        <div class="prospect-info-detail">
+            {{ prospect.activity ?? 'Activite non renseignee' }}
+            {% if prospect.city %} - {{ prospect.city }}{% endif %}
+        </div>
+    </div>
+
+    <div class="from-info">
+        <i class="fas fa-paper-plane"></i> Envoye depuis : <strong>fabrice@alre-web.bzh</strong>
+    </div>
+
+    <form method="POST">
+        <div class="form-group">
+            <label for="contact">Contact</label>
+            <select name="contact" id="contact" onchange="updateEmail()">
+                <option value="">-- Selectionner un contact --</option>
+                {% for contact in prospect.contacts %}
+                    <option value="{{ contact.id }}"
+                            data-email="{{ contact.email }}"
+                            {% if contact.primary %}selected{% endif %}>
+                        {{ contact.firstName }} {{ contact.lastName }}
+                        {% if contact.email %}({{ contact.email }}){% endif %}
+                        {% if contact.primary %} - Principal{% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email destinataire *</label>
+            <input type="email" name="email" id="email" required
+                   value="{{ prospect.primaryContact.email ?? '' }}"
+                   placeholder="exemple@domaine.com">
+        </div>
+
+        <div class="form-group">
+            <label for="subject">Objet *</label>
+            <input type="text" name="subject" id="subject" required
+                   value="{{ defaultSubject }}"
+                   placeholder="Objet de l'email">
+        </div>
+
+        <div class="form-group">
+            <label for="content">Message *</label>
+            <textarea name="content" id="content" required
+                      placeholder="Votre message...">{{ defaultContent }}</textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-send">
+                <i class="fas fa-paper-plane"></i> Envoyer l'email
+            </button>
+            <a href="{{ path('admin', {crudAction: 'detail', crudControllerFqcn: 'App\\\\Controller\\\\Admin\\\\ProspectCrudController', entityId: prospect.id}) }}" class="btn-cancel">
+                Annuler
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+function updateEmail() {
+    const select = document.getElementById('contact');
+    const emailInput = document.getElementById('email');
+    const selectedOption = select.options[select.selectedIndex];
+
+    if (selectedOption && selectedOption.dataset.email) {
+        emailInput.value = selectedOption.dataset.email;
+    }
+}
+</script>
+{% endblock %}

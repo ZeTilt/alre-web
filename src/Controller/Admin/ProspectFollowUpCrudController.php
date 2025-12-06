@@ -56,6 +56,7 @@ class ProspectFollowUpCrudController extends AbstractCrudController
             $urgencyField,
             AssociationField::new('prospect', 'Prospect')
                 ->renderAsNativeWidget()
+                ->setQueryBuilder(fn ($qb) => $qb->orderBy('entity.companyName', 'ASC'))
                 ->setFormTypeOption('attr', ['class' => 'prospect-select', 'data-prospect-filter' => 'source'])
                 ->formatValue(function ($value, $entity) {
                     if ($value && $this->getContext()->getCrud()->getCurrentPage() === Crud::PAGE_INDEX) {

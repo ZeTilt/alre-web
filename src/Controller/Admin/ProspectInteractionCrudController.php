@@ -34,13 +34,15 @@ class ProspectInteractionCrudController extends AbstractCrudController
             ->setPageTitle('edit', 'Modifier l\'interaction')
             ->setPageTitle('detail', 'Détails de l\'interaction')
             ->setDefaultSort(['createdAt' => 'DESC'])
-            ->setPaginatorPageSize(30);
+            ->setPaginatorPageSize(30)
+            ->addFormTheme('admin/form/prospect_contact_filter.html.twig');
     }
 
     public function configureFields(string $pageName): iterable
     {
         return [
             AssociationField::new('prospect', 'Prospect')
+                ->setFormTypeOption('attr', ['class' => 'prospect-select'])
                 ->formatValue(function ($value, $entity) {
                     if ($value && $this->getContext()->getCrud()->getCurrentPage() === Crud::PAGE_INDEX) {
                         $url = $this->generateUrl('admin', [
@@ -54,6 +56,7 @@ class ProspectInteractionCrudController extends AbstractCrudController
                 })
                 ->renderAsHtml(),
             AssociationField::new('contact', 'Contact')
+                ->setFormTypeOption('attr', ['class' => 'contact-select'])
                 ->hideOnIndex(),
             ChoiceField::new('type', 'Type')
                 ->setChoices(ProspectInteraction::getTypeChoices())

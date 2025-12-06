@@ -10,11 +10,6 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\HasLifecycleCallbacks]
 class ProspectFollowUp
 {
-    // Priority constants
-    public const PRIORITY_LOW = 'low';
-    public const PRIORITY_MEDIUM = 'medium';
-    public const PRIORITY_HIGH = 'high';
-
     // Urgency levels for display
     public const URGENCY_NORMAL = 'normal';
     public const URGENCY_SOON = 'soon';
@@ -30,17 +25,21 @@ class ProspectFollowUp
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Prospect $prospect = null;
 
+    #[ORM\ManyToOne(targetEntity: ProspectContact::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?ProspectContact $contact = null;
+
+    #[ORM\Column(length: 50)]
+    private string $type = ProspectInteraction::TYPE_EMAIL;
+
     #[ORM\Column(length: 255)]
-    private ?string $title = null;
+    private ?string $subject = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $description = null;
+    private ?string $content = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $dueAt = null;
-
-    #[ORM\Column(length: 20)]
-    private string $priority = self::PRIORITY_MEDIUM;
 
     #[ORM\Column]
     private bool $isCompleted = false;
@@ -51,20 +50,6 @@ class ProspectFollowUp
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    public static function getPriorityChoices(): array
-    {
-        return [
-            'Basse' => self::PRIORITY_LOW,
-            'Moyenne' => self::PRIORITY_MEDIUM,
-            'Haute' => self::PRIORITY_HIGH,
-        ];
-    }
-
-    public function getPriorityLabel(): string
-    {
-        return array_search($this->priority, self::getPriorityChoices()) ?: $this->priority;
-    }
-
     public function getUrgencyLevel(): string
     {
         if ($this->isCompleted) {
@@ -73,6 +58,10 @@ class ProspectFollowUp
 
         $now = new \DateTime();
         $now->setTime(0, 0, 0);
+
+        if (!$this->dueAt) {
+            return self::URGENCY_NORMAL;
+        }
 
         $dueDate = clone $this->dueAt;
         $dueDate->setTime(0, 0, 0);
@@ -100,6 +89,17 @@ class ProspectFollowUp
         };
     }
 
+    public function getUrgencyLabel(): string
+    {
+        return match ($this->getUrgencyLevel()) {
+            self::URGENCY_OVERDUE => 'En retard',
+            self::URGENCY_SOON => 'Bientôt',
+            self::URGENCY_NORMAL => 'Normal',
+            self::URGENCY_COMPLETED => 'Terminé',
+            default => 'Normal',
+        };
+    }
+
     public function isOverdue(): bool
     {
         return $this->getUrgencyLevel() === self::URGENCY_OVERDUE;
@@ -122,6 +122,22 @@ class ProspectFollowUp
         $this->completedAt = new \DateTimeImmutable();
     }
 
+    /**
+     * Convert this follow-up to an interaction when completed
+     */
+    public function toInteraction(): ProspectInteraction
+    {
+        $interaction = new ProspectInteraction();
+        $interaction->setProspect($this->prospect);
+        $interaction->setContact($this->contact);
+        $interaction->setType($this->type);
+        $interaction->setDirection(ProspectInteraction::DIRECTION_SENT);
+        $interaction->setSubject($this->subject);
+        $interaction->setContent($this->content);
+
+        return $interaction;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -138,25 +154,52 @@ class ProspectFollowUp
         return $this;
     }
 
-    public function getTitle(): ?string
+    public function getContact(): ?ProspectContact
     {
-        return $this->title;
+        return $this->contact;
     }
 
-    public function setTitle(string $title): static
+    public function setContact(?ProspectContact $contact): static
     {
-        $this->title = $title;
+        $this->contact = $contact;
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getType(): string
     {
-        return $this->description;
+        return $this->type;
     }
 
-    public function setDescription(?string $description): static
+    public function setType(string $type): static
     {
-        $this->description = $description;
+        $this->type = $type;
+        return $this;
+    }
+
+    public function getTypeLabel(): string
+    {
+        return array_search($this->type, ProspectInteraction::getTypeChoices()) ?: $this->type;
+    }
+
+    public function getSubject(): ?string
+    {
+        return $this->subject;
+    }
+
+    public function setSubject(string $subject): static
+    {
+        $this->subject = $subject;
+        return $this;
+    }
+
+    public function getContent(): ?string
+    {
+        return $this->content;
+    }
+
+    public function setContent(?string $content): static
+    {
+        $this->content = $content;
         return $this;
     }
 
@@ -168,17 +211,6 @@ class ProspectFollowUp
     public function setDueAt(\DateTimeInterface $dueAt): static
     {
         $this->dueAt = $dueAt;
-        return $this;
-    }
-
-    public function getPriority(): string
-    {
-        return $this->priority;
-    }
-
-    public function setPriority(string $priority): static
-    {
-        $this->priority = $priority;
         return $this;
     }
 
@@ -220,6 +252,6 @@ class ProspectFollowUp
 
     public function __toString(): string
     {
-        return $this->title ?? 'Nouvelle relance';
+        return $this->subject ?? 'Nouvelle relance';
     }
 }

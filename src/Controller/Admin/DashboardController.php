@@ -360,6 +360,22 @@ class DashboardController extends AbstractDashboardController
         ]);
     }
 
+    #[Route('/saeiblauhjc/prospection/contacts/{id}', name: 'admin_prospection_contacts', methods: ['GET'])]
+    public function getProspectContacts(Prospect $prospect): JsonResponse
+    {
+        $contacts = [];
+        foreach ($prospect->getContacts() as $contact) {
+            $contacts[] = [
+                'id' => $contact->getId(),
+                'name' => $contact->getFirstName() . ' ' . $contact->getLastName(),
+                'email' => $contact->getEmail(),
+                'primary' => $contact->isPrimary(),
+            ];
+        }
+
+        return new JsonResponse($contacts);
+    }
+
     #[Route('/saeiblauhjc/prospection/send-email/{id}', name: 'admin_prospection_send_email')]
     public function sendProspectionEmail(
         Request $request,

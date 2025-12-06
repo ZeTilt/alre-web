@@ -310,9 +310,15 @@ class ProspectCrudController extends AbstractCrudController
         // Create a new follow-up with default values
         $followUp = new ProspectFollowUp();
         $followUp->setProspect($prospect);
-        $followUp->setTitle('Relance ' . $prospect->getCompanyName());
+        $followUp->setSubject('Relance - ' . $prospect->getCompanyName());
         $followUp->setDueAt(new \DateTime('+3 days'));
-        $followUp->setPriority(ProspectFollowUp::PRIORITY_MEDIUM);
+        $followUp->setType(\App\Entity\ProspectInteraction::TYPE_EMAIL);
+
+        // Set primary contact if exists
+        $primaryContact = $prospect->getPrimaryContact();
+        if ($primaryContact) {
+            $followUp->setContact($primaryContact);
+        }
 
         $entityManager->persist($followUp);
         $entityManager->flush();

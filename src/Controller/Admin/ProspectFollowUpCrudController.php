@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\ProspectFollowUp;
+use App\Entity\ProspectInteraction;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -37,27 +38,24 @@ class ProspectFollowUpCrudController extends AbstractCrudController
             ->setPageTitle('edit', 'Modifier la relance')
             ->setPageTitle('detail', 'Détails de la relance')
             ->setDefaultSort(['dueAt' => 'ASC'])
-            ->setPaginatorPageSize(30);
+            ->setPaginatorPageSize(30)
+            ->addFormTheme('admin/form/prospect_contact_filter.html.twig');
     }
 
     public function configureFields(string $pageName): iterable
     {
+        $urgencyField = TextField::new('urgencyLabel', 'Urgence')
+            ->formatValue(function ($value, $entity) {
+                $badgeClass = $entity->getUrgencyBadgeClass();
+                return sprintf('<span class="badge badge-%s">%s</span>', $badgeClass, $value);
+            })
+            ->renderAsHtml()
+            ->onlyOnIndex();
+
         return [
-            TextField::new('urgencyBadge', 'Urgence')
-                ->formatValue(function ($value, $entity) {
-                    $urgency = $entity->getUrgencyLevel();
-                    $labels = [
-                        ProspectFollowUp::URGENCY_OVERDUE => 'En retard',
-                        ProspectFollowUp::URGENCY_SOON => 'Bientôt',
-                        ProspectFollowUp::URGENCY_NORMAL => 'Normal',
-                        ProspectFollowUp::URGENCY_COMPLETED => 'Terminé',
-                    ];
-                    $badgeClass = $entity->getUrgencyBadgeClass();
-                    return sprintf('<span class="badge badge-%s">%s</span>', $badgeClass, $labels[$urgency] ?? $urgency);
-                })
-                ->renderAsHtml()
-                ->onlyOnIndex(),
+            $urgencyField,
             AssociationField::new('prospect', 'Prospect')
+                ->setFormTypeOption('attr', ['class' => 'prospect-select'])
                 ->formatValue(function ($value, $entity) {
                     if ($value && $this->getContext()->getCrud()->getCurrentPage() === Crud::PAGE_INDEX) {
                         $url = $this->generateUrl('admin', [
@@ -70,20 +68,29 @@ class ProspectFollowUpCrudController extends AbstractCrudController
                     return $value;
                 })
                 ->renderAsHtml(),
-            TextField::new('title', 'Titre'),
-            TextareaField::new('description', 'Description')
+            AssociationField::new('contact', 'Contact')
+                ->setFormTypeOption('attr', ['class' => 'contact-select'])
                 ->hideOnIndex(),
-            DateField::new('dueAt', 'Échéance'),
-            ChoiceField::new('priority', 'Priorité')
-                ->setChoices(ProspectFollowUp::getPriorityChoices())
+            ChoiceField::new('type', 'Type')
+                ->setChoices(ProspectInteraction::getTypeChoices())
                 ->renderAsBadges([
-                    ProspectFollowUp::PRIORITY_LOW => 'secondary',
-                    ProspectFollowUp::PRIORITY_MEDIUM => 'warning',
-                    ProspectFollowUp::PRIORITY_HIGH => 'danger',
+                    ProspectInteraction::TYPE_EMAIL => 'info',
+                    ProspectInteraction::TYPE_PHONE => 'success',
+                    ProspectInteraction::TYPE_LINKEDIN => 'primary',
+                    ProspectInteraction::TYPE_FACEBOOK => 'primary',
+                    ProspectInteraction::TYPE_MEETING => 'warning',
+                    ProspectInteraction::TYPE_VIDEO_CALL => 'warning',
+                    ProspectInteraction::TYPE_SMS => 'secondary',
+                    ProspectInteraction::TYPE_OTHER => 'dark',
                 ]),
-            BooleanField::new('isCompleted', 'Terminée')
+            TextField::new('subject', 'Sujet'),
+            TextareaField::new('content', 'Contenu du message')
+                ->hideOnIndex()
+                ->setHelp('Le message qui sera envoyé lors de la relance'),
+            DateField::new('dueAt', 'Date de relance'),
+            BooleanField::new('isCompleted', 'Envoyée')
                 ->renderAsSwitch(true),
-            DateTimeField::new('completedAt', 'Terminée le')
+            DateTimeField::new('completedAt', 'Envoyée le')
                 ->hideOnForm()
                 ->hideOnIndex(),
             DateTimeField::new('createdAt', 'Créée le')
@@ -96,16 +103,16 @@ class ProspectFollowUpCrudController extends AbstractCrudController
     {
         return $filters
             ->add('prospect')
-            ->add(ChoiceFilter::new('priority')->setChoices(ProspectFollowUp::getPriorityChoices()))
+            ->add(ChoiceFilter::new('type')->setChoices(ProspectInteraction::getTypeChoices()))
             ->add(BooleanFilter::new('isCompleted'))
             ->add(DateTimeFilter::new('dueAt'));
     }
 
     public function configureActions(Actions $actions): Actions
     {
-        $markComplete = Action::new('markComplete', 'Marquer terminée')
+        $markComplete = Action::new('markComplete', 'Marquer envoyée')
             ->linkToCrudAction('markComplete')
-            ->setIcon('fas fa-check')
+            ->setIcon('fas fa-paper-plane')
             ->addCssClass('btn btn-sm btn-success')
             ->displayIf(fn($entity) => !$entity->isCompleted());
 
@@ -128,9 +135,20 @@ class ProspectFollowUpCrudController extends AbstractCrudController
     {
         $followUp = $this->getContext()->getEntity()->getInstance();
         $followUp->complete();
+
+        // Create an interaction from this follow-up
+        $interaction = $followUp->toInteraction();
+        $entityManager->persist($interaction);
+
+        // Update prospect's lastContactAt
+        $prospect = $followUp->getProspect();
+        if ($prospect) {
+            $prospect->setLastContactAt(new \DateTimeImmutable());
+        }
+
         $entityManager->flush();
 
-        $this->addFlash('success', 'Relance marquée comme terminée.');
+        $this->addFlash('success', 'Relance marquée comme envoyée et ajoutée aux interactions.');
 
         return $this->redirectToRoute('admin', [
             'crudAction' => 'index',

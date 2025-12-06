@@ -1,0 +1,89 @@
+{% extends '@EasyAdmin/crud/form_theme.html.twig' %}
+
+{% block _ProspectInteraction_prospect_widget %}
+    {{ parent() }}
+    {{ _self.contact_filter_script() }}
+{% endblock %}
+
+{% block _ProspectFollowUp_prospect_widget %}
+    {{ parent() }}
+    {{ _self.contact_filter_script() }}
+{% endblock %}
+
+{% macro contact_filter_script() %}
+<script>
+(function() {
+    // Only run once
+    if (window.prospectContactFilterInitialized) return;
+    window.prospectContactFilterInitialized = true;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initProspectContactFilter();
+    });
+
+    // Also run immediately in case DOM is already loaded
+    if (document.readyState !== 'loading') {
+        initProspectContactFilter();
+    }
+
+    function initProspectContactFilter() {
+        const prospectSelect = document.querySelector('.prospect-select, [name*="[prospect]"]');
+        const contactSelect = document.querySelector('.contact-select, [name*="[contact]"]');
+
+        if (!prospectSelect || !contactSelect) return;
+
+        // Store original options
+        const originalOptions = Array.from(contactSelect.options).map(opt => ({
+            value: opt.value,
+            text: opt.text,
+            prospectId: opt.dataset.prospectId
+        }));
+
+        // Function to filter contacts
+        function filterContacts(prospectId) {
+            if (!prospectId) {
+                // Show all contacts if no prospect selected
+                contactSelect.innerHTML = '<option value="">-- Selectionner un contact --</option>';
+                return;
+            }
+
+            // Fetch contacts for this prospect
+            fetch('/saeiblauhjc/prospection/contacts/' + prospectId)
+                .then(response => response.json())
+                .then(contacts => {
+                    const currentValue = contactSelect.value;
+                    contactSelect.innerHTML = '<option value="">-- Selectionner un contact --</option>';
+
+                    contacts.forEach(contact => {
+                        const option = document.createElement('option');
+                        option.value = contact.id;
+                        option.text = contact.name + (contact.email ? ' (' + contact.email + ')' : '');
+                        if (contact.primary) {
+                            option.text += ' - Principal';
+                        }
+                        contactSelect.appendChild(option);
+                    });
+
+                    // Restore selection if still valid
+                    if (currentValue) {
+                        contactSelect.value = currentValue;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching contacts:', error);
+                });
+        }
+
+        // Listen for prospect changes
+        prospectSelect.addEventListener('change', function() {
+            filterContacts(this.value);
+        });
+
+        // Initial filter if prospect is already selected
+        if (prospectSelect.value) {
+            filterContacts(prospectSelect.value);
+        }
+    }
+})();
+</script>
+{% endmacro %}

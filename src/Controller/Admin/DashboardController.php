@@ -376,6 +376,30 @@ class DashboardController extends AbstractDashboardController
         return new JsonResponse($contacts);
     }
 
+    #[Route('/saeiblauhjc/prospection/update-status/{id}', name: 'admin_prospection_update_status', methods: ['POST'])]
+    public function updateProspectStatus(Request $request, Prospect $prospect): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $newStatus = $data['status'] ?? null;
+
+        $validStatuses = [
+            Prospect::STATUS_IDENTIFIED,
+            Prospect::STATUS_CONTACTED,
+            Prospect::STATUS_IN_DISCUSSION,
+            Prospect::STATUS_QUOTE_SENT,
+        ];
+
+        if (!$newStatus || !in_array($newStatus, $validStatuses)) {
+            return new JsonResponse(['error' => 'Statut invalide'], 400);
+        }
+
+        $prospect->setStatus($newStatus);
+        $prospect->setLastContactAt(new \DateTimeImmutable());
+        $this->entityManager->flush();
+
+        return new JsonResponse(['success' => true, 'status' => $newStatus]);
+    }
+
     #[Route('/saeiblauhjc/prospection/send-email/{id}', name: 'admin_prospection_send_email')]
     public function sendProspectionEmail(
         Request $request,

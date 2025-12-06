@@ -106,11 +106,19 @@
         padding: 1rem;
         box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         transition: transform 0.2s, box-shadow 0.2s;
-        cursor: pointer;
+        cursor: grab;
     }
     .prospect-card:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .prospect-card.dragging {
+        opacity: 0.5;
+        cursor: grabbing;
+    }
+    .kanban-cards.drag-over {
+        background: rgba(59, 130, 246, 0.1);
+        border-radius: 8px;
     }
 
     .prospect-name {
@@ -305,17 +313,17 @@
 
     {% for status, config in statusConfig %}
         {% set prospects = prospectsByStatus[status] ?? [] %}
-        <div class="kanban-column">
+        <div class="kanban-column" data-status="{{ status }}">
             <div class="kanban-header {{ status }}">
                 <span class="kanban-title">
                     <i class="fas {{ config.icon }}"></i> {{ config.label }}
                 </span>
-                <span class="kanban-count">{{ prospects|length }}</span>
+                <span class="kanban-count" data-count>{{ prospects|length }}</span>
             </div>
-            <div class="kanban-cards">
+            <div class="kanban-cards" data-dropzone="{{ status }}">
                 {% if prospects|length > 0 %}
                     {% for prospect in prospects %}
-                        <div class="prospect-card">
+                        <div class="prospect-card" draggable="true" data-id="{{ prospect.id }}">
                             <div class="prospect-name">
                                 <a href="{{ path('admin', {crudAction: 'detail', crudControllerFqcn: 'App\\Controller\\Admin\\ProspectCrudController', entityId: prospect.id}) }}">
                                     {{ prospect.companyName }}
@@ -328,7 +336,7 @@
                             {% endif %}
                             <div class="prospect-meta">
                                 {% if prospect.estimatedValue %}
-                                    <span class="prospect-value">{{ prospect.estimatedValue|number_format(0, ',', ' ') }}</span>
+                                    <span class="prospect-value">{{ prospect.estimatedValue|number_format(0, ',', ' ') }}€</span>
                                 {% endif %}
                                 {% if prospect.nextFollowUp %}
                                     <span class="prospect-followup {{ prospect.nextFollowUp.urgencyLevel }}">
@@ -356,5 +364,94 @@
         <i class="fas fa-plus"></i> Nouveau prospect
     </a>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let draggedCard = null;
+
+    // Drag start
+    document.querySelectorAll('.prospect-card[draggable="true"]').forEach(card => {
+        card.addEventListener('dragstart', function(e) {
+            draggedCard = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', this.dataset.id);
+        });
+
+        card.addEventListener('dragend', function() {
+            this.classList.remove('dragging');
+            document.querySelectorAll('.kanban-cards').forEach(zone => {
+                zone.classList.remove('drag-over');
+            });
+            draggedCard = null;
+        });
+    });
+
+    // Drop zones
+    document.querySelectorAll('.kanban-cards[data-dropzone]').forEach(zone => {
+        zone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            this.classList.add('drag-over');
+        });
+
+        zone.addEventListener('dragleave', function(e) {
+            if (!this.contains(e.relatedTarget)) {
+                this.classList.remove('drag-over');
+            }
+        });
+
+        zone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+
+            if (!draggedCard) return;
+
+            const prospectId = draggedCard.dataset.id;
+            const newStatus = this.dataset.dropzone;
+            const oldColumn = draggedCard.closest('.kanban-column');
+            const newColumn = this.closest('.kanban-column');
+
+            if (oldColumn === newColumn) return;
+
+            // Remove empty state if present
+            const emptyState = this.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+
+            // Move card visually
+            this.appendChild(draggedCard);
+
+            // Update counts
+            const oldCount = oldColumn.querySelector('[data-count]');
+            const newCount = newColumn.querySelector('[data-count]');
+            oldCount.textContent = parseInt(oldCount.textContent) - 1;
+            newCount.textContent = parseInt(newCount.textContent) + 1;
+
+            // Add empty state if old column is now empty
+            if (oldColumn.querySelectorAll('.prospect-card').length === 0) {
+                const oldZone = oldColumn.querySelector('.kanban-cards');
+                oldZone.innerHTML = '<div class="empty-state"><i class="fas fa-inbox fa-2x"></i><p>Aucun prospect</p></div>';
+            }
+
+            // Update server
+            fetch('/saeiblauhjc/prospection/update-status/' + prospectId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Erreur serveur');
+                return response.json();
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                location.reload();
+            });
+        });
+    });
+});
+</script>
 
 {% endblock %}

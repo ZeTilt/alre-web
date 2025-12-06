@@ -276,7 +276,7 @@
             <div class="urgent-item {% if followUp.urgencyLevel == 'soon' %}soon{% endif %}">
                 <div class="urgent-info">
                     <span class="urgent-prospect">
-                        <a href="{{ path('admin', {crudAction: 'detail', crudControllerFqcn: 'App\\\\Controller\\\\Admin\\\\ProspectCrudController', entityId: followUp.prospect.id}) }}">
+                        <a href="{{ path('admin', {crudAction: 'detail', crudControllerFqcn: 'App\\Controller\\Admin\\ProspectCrudController', entityId: followUp.prospect.id}) }}">
                             {{ followUp.prospect.companyName }}
                         </a>
                     </span>
@@ -317,7 +317,7 @@
                     {% for prospect in prospects %}
                         <div class="prospect-card">
                             <div class="prospect-name">
-                                <a href="{{ path('admin', {crudAction: 'detail', crudControllerFqcn: 'App\\\\Controller\\\\Admin\\\\ProspectCrudController', entityId: prospect.id}) }}">
+                                <a href="{{ path('admin', {crudAction: 'detail', crudControllerFqcn: 'App\\Controller\\Admin\\ProspectCrudController', entityId: prospect.id}) }}">
                                     {{ prospect.companyName }}
                                 </a>
                             </div>
@@ -352,7 +352,7 @@
 
 <!-- Bouton ajouter -->
 <div style="margin-top: 1rem;">
-    <a href="{{ path('admin', {crudAction: 'new', crudControllerFqcn: 'App\\\\Controller\\\\Admin\\\\ProspectCrudController'}) }}" class="btn btn-primary">
+    <a href="{{ path('admin', {crudAction: 'new', crudControllerFqcn: 'App\\Controller\\Admin\\ProspectCrudController'}) }}" class="btn btn-primary">
         <i class="fas fa-plus"></i> Nouveau prospect
     </a>
 </div>

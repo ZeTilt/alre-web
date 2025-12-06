@@ -3,59 +3,61 @@
 {% block form_end %}
     {{ parent() }}
     <script>
-    (function() {
-        if (window.prospectContactFilterInitialized) return;
-        window.prospectContactFilterInitialized = true;
+    document.addEventListener('DOMContentLoaded', function() {
+        // Find prospect and contact selects using data attributes
+        const prospectSelect = document.querySelector('select[data-prospect-filter="source"]');
+        const contactSelect = document.querySelector('select[data-prospect-filter="target"]');
 
-        function initProspectContactFilter() {
-            const prospectSelect = document.querySelector('[name$="[prospect]"]');
-            const contactSelect = document.querySelector('[name$="[contact]"]');
+        if (!prospectSelect || !contactSelect) {
+            return;
+        }
 
-            if (!prospectSelect || !contactSelect) return;
+        // Store the original selected contact value
+        const originalContactValue = contactSelect.value;
 
-            function filterContacts(prospectId) {
-                if (!prospectId) {
+        function filterContacts(prospectId) {
+            if (!prospectId) {
+                contactSelect.innerHTML = '<option value="">-- Sélectionner un contact --</option>';
+                return;
+            }
+
+            fetch('/saeiblauhjc/prospection/contacts/' + prospectId)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(contacts => {
                     contactSelect.innerHTML = '<option value="">-- Sélectionner un contact --</option>';
-                    return;
-                }
 
-                fetch('/saeiblauhjc/prospection/contacts/' + prospectId)
-                    .then(response => response.json())
-                    .then(contacts => {
-                        const currentValue = contactSelect.value;
-                        contactSelect.innerHTML = '<option value="">-- Sélectionner un contact --</option>';
+                    contacts.forEach(contact => {
+                        const option = document.createElement('option');
+                        option.value = contact.id;
+                        let text = contact.name;
+                        if (contact.email) text += ' (' + contact.email + ')';
+                        if (contact.primary) text += ' ★';
+                        option.text = text;
+                        contactSelect.appendChild(option);
+                    });
 
-                        contacts.forEach(contact => {
-                            const option = document.createElement('option');
-                            option.value = contact.id;
-                            option.text = contact.name + (contact.email ? ' (' + contact.email + ')' : '');
-                            if (contact.primary) {
-                                option.text += ' - Principal';
-                            }
-                            contactSelect.appendChild(option);
-                        });
-
-                        if (currentValue) {
-                            contactSelect.value = currentValue;
-                        }
-                    })
-                    .catch(error => console.error('Error fetching contacts:', error));
-            }
-
-            prospectSelect.addEventListener('change', function() {
-                filterContacts(this.value);
-            });
-
-            if (prospectSelect.value) {
-                filterContacts(prospectSelect.value);
-            }
+                    // Restore original value if it exists in new options
+                    if (originalContactValue) {
+                        contactSelect.value = originalContactValue;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching contacts:', error);
+                });
         }
 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initProspectContactFilter);
-        } else {
-            initProspectContactFilter();
+        // Listen for changes on prospect select
+        prospectSelect.addEventListener('change', function() {
+            filterContacts(this.value);
+        });
+
+        // Initial filter if prospect already selected
+        if (prospectSelect.value) {
+            filterContacts(prospectSelect.value);
         }
-    })();
+    });
     </script>
 {% endblock %}

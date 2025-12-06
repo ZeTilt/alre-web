@@ -42,7 +42,8 @@ class ProspectInteractionCrudController extends AbstractCrudController
     {
         return [
             AssociationField::new('prospect', 'Prospect')
-                ->setFormTypeOption('attr', ['class' => 'prospect-select'])
+                ->renderAsNativeWidget()
+                ->setFormTypeOption('attr', ['class' => 'prospect-select', 'data-prospect-filter' => 'source'])
                 ->formatValue(function ($value, $entity) {
                     if ($value && $this->getContext()->getCrud()->getCurrentPage() === Crud::PAGE_INDEX) {
                         $url = $this->generateUrl('admin', [
@@ -56,7 +57,8 @@ class ProspectInteractionCrudController extends AbstractCrudController
                 })
                 ->renderAsHtml(),
             AssociationField::new('contact', 'Contact')
-                ->setFormTypeOption('attr', ['class' => 'contact-select'])
+                ->renderAsNativeWidget()
+                ->setFormTypeOption('attr', ['class' => 'contact-select', 'data-prospect-filter' => 'target'])
                 ->hideOnIndex(),
             ChoiceField::new('type', 'Type')
                 ->setChoices(ProspectInteraction::getTypeChoices())

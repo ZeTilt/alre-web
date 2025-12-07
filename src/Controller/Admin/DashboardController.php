@@ -262,12 +262,14 @@ class DashboardController extends AbstractDashboardController
     }
 
     #[Route('/saeiblauhjc/calendar', name: 'admin_calendar')]
-    public function calendar(EventRepository $eventRepository): Response
+    public function calendar(EventRepository $eventRepository, EventTypeRepository $eventTypeRepository): Response
     {
         $upcomingEvents = $eventRepository->findUpcoming(7);
+        $eventTypes = $eventTypeRepository->findAllOrdered();
 
         return $this->render('admin/calendar/index.html.twig', [
             'upcomingEvents' => $upcomingEvents,
+            'eventTypes' => $eventTypes,
         ]);
     }
 

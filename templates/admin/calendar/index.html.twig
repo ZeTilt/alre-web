@@ -307,7 +307,7 @@
                 <p style="color: #999; font-size: 0.9rem;">Aucun événement à venir</p>
             {% else %}
                 {% for event in upcomingEvents %}
-                <div class="upcoming-event type-{{ event.type }}">
+                <div class="upcoming-event" style="border-left-color: {{ event.color }};">
                     <div class="upcoming-event-title">{{ event.title }}</div>
                     <div class="upcoming-event-date">
                         <i class="far fa-calendar"></i>
@@ -324,22 +324,16 @@
         {# Legend #}
         <div class="sidebar-card">
             <h3><i class="fas fa-palette"></i> Légende</h3>
-            <div class="legend-item">
-                <span class="legend-color" style="background: #0066CC;"></span>
-                Professionnel
-            </div>
-            <div class="legend-item">
-                <span class="legend-color" style="background: #FF9500;"></span>
-                Personnel
-            </div>
-            <div class="legend-item">
-                <span class="legend-color" style="background: #FF2D55;"></span>
-                Médical
-            </div>
-            <div class="legend-item">
-                <span class="legend-color" style="background: #8E8E93;"></span>
-                Autre
-            </div>
+            {% if eventTypes is empty %}
+                <p style="color: #999; font-size: 0.9rem;">Aucun type défini</p>
+            {% else %}
+                {% for type in eventTypes %}
+                <div class="legend-item">
+                    <span class="legend-color" style="background: {{ type.color }};"></span>
+                    {{ type.name }}
+                </div>
+                {% endfor %}
+            {% endif %}
         </div>
     </div>
 </div>

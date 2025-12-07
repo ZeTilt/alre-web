@@ -122,16 +122,11 @@
 
         .upcoming-event {
             padding: 0.75rem;
-            border-left: 3px solid;
+            border-left: 3px solid #8E8E93;
             background: #f8f9fa;
             border-radius: 0 4px 4px 0;
             margin-bottom: 0.5rem;
         }
-
-        .upcoming-event.type-pro { border-color: #0066CC; }
-        .upcoming-event.type-perso { border-color: #FF9500; }
-        .upcoming-event.type-medical { border-color: #FF2D55; }
-        .upcoming-event.type-other { border-color: #8E8E93; }
 
         .upcoming-event-title {
             font-weight: 500;
@@ -281,11 +276,11 @@
                 </div>
                 <div class="form-group">
                     <label for="quickType">Type</label>
-                    <select id="quickType" name="type">
-                        <option value="pro">Professionnel</option>
-                        <option value="perso">Personnel</option>
-                        <option value="medical">Médical</option>
-                        <option value="other">Autre</option>
+                    <select id="quickType" name="eventTypeId">
+                        <option value="">-- Choisir --</option>
+                        {% for type in eventTypes %}
+                        <option value="{{ type.id }}">{{ type.name }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div class="form-group">
@@ -428,7 +423,7 @@
                 const formData = new FormData(this);
                 const data = {
                     title: formData.get('title'),
-                    type: formData.get('type'),
+                    eventTypeId: formData.get('eventTypeId'),
                     date: formData.get('date'),
                     time: formData.get('time')
                 };
@@ -468,7 +463,7 @@
 
         function showEventModal(event) {
             document.getElementById('modalTitle').textContent = event.title;
-            document.getElementById('modalType').innerHTML = '<span class="badge bg-' + getTypeBadgeClass(event.extendedProps.type) + '">' + event.extendedProps.typeLabel + '</span>';
+            document.getElementById('modalType').innerHTML = '<span class="badge" style="background-color: ' + event.extendedProps.typeColor + '; color: white;">' + event.extendedProps.typeLabel + '</span>';
 
             let dateStr = formatDate(event.start);
             if (event.end && !event.allDay) {
@@ -508,16 +503,6 @@
 
         function closeModal() {
             document.getElementById('eventModal').classList.remove('show');
-        }
-
-        function getTypeBadgeClass(type) {
-            const classes = {
-                'pro': 'primary',
-                'perso': 'success',
-                'medical': 'danger',
-                'other': 'secondary'
-            };
-            return classes[type] || 'secondary';
         }
 
         function formatDate(date) {

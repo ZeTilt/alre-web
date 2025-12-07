@@ -292,8 +292,9 @@ class DashboardController extends AbstractDashboardController
                 'allDay' => $event->isAllDay(),
                 'color' => $event->getColor(),
                 'extendedProps' => [
-                    'type' => $eventType?->getId(),
+                    'typeId' => $eventType?->getId(),
                     'typeLabel' => $eventType?->getName() ?? 'Non défini',
+                    'typeColor' => $eventType?->getColor() ?? '#8E8E93',
                     'description' => $event->getDescription(),
                     'location' => $event->getLocation(),
                     'clientId' => $event->getClient()?->getId(),

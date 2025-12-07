@@ -11,12 +11,11 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ColorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
-use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 
 class EventCrudController extends AbstractCrudController
@@ -51,7 +50,7 @@ class EventCrudController extends AbstractCrudController
     public function configureFilters(Filters $filters): Filters
     {
         return $filters
-            ->add(ChoiceFilter::new('type')->setChoices(Event::TYPES))
+            ->add(EntityFilter::new('eventType')->setLabel('Type'))
             ->add(DateTimeFilter::new('startAt')->setLabel('Date'));
     }
 
@@ -63,15 +62,21 @@ class EventCrudController extends AbstractCrudController
             ->setRequired(true)
             ->setColumns(12);
 
-        yield ChoiceField::new('type', 'Type')
-            ->setChoices(Event::TYPES)
-            ->renderAsBadges([
-                Event::TYPE_PRO => 'primary',
-                Event::TYPE_PERSO => 'success',
-                Event::TYPE_MEDICAL => 'danger',
-                Event::TYPE_OTHER => 'secondary',
-            ])
-            ->setColumns(6);
+        yield AssociationField::new('eventType', 'Type')
+            ->setQueryBuilder(fn ($qb) => $qb->orderBy('entity.position', 'ASC')->addOrderBy('entity.name', 'ASC'))
+            ->setColumns(6)
+            ->formatValue(function ($value, $entity) {
+                if (!$value) {
+                    return '<span class="badge" style="background-color: #8E8E93; color: white;">Non défini</span>';
+                }
+                $color = $entity->getEventType()->getColor();
+                return sprintf(
+                    '<span class="badge" style="background-color: %s; color: white;">%s</span>',
+                    $color,
+                    htmlspecialchars($value)
+                );
+            })
+            ->renderAsHtml();
 
         yield BooleanField::new('allDay', 'Journée entière')
             ->setColumns(6)

@@ -10,25 +10,6 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: '`event`')]
 class Event
 {
-    public const TYPE_PRO = 'pro';
-    public const TYPE_PERSO = 'perso';
-    public const TYPE_MEDICAL = 'medical';
-    public const TYPE_OTHER = 'other';
-
-    public const TYPES = [
-        'Professionnel' => self::TYPE_PRO,
-        'Personnel' => self::TYPE_PERSO,
-        'Médical' => self::TYPE_MEDICAL,
-        'Autre' => self::TYPE_OTHER,
-    ];
-
-    public const TYPE_COLORS = [
-        self::TYPE_PRO => '#0066CC',      // Bleu vif
-        self::TYPE_PERSO => '#FF9500',    // Orange
-        self::TYPE_MEDICAL => '#FF2D55',  // Rouge/Rose vif
-        self::TYPE_OTHER => '#8E8E93',    // Gris
-    ];
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -40,8 +21,9 @@ class Event
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(length: 20)]
-    private ?string $type = self::TYPE_PRO;
+    #[ORM\ManyToOne(targetEntity: EventType::class, inversedBy: 'events')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?EventType $eventType = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $startAt = null;
@@ -100,14 +82,14 @@ class Event
         return $this;
     }
 
-    public function getType(): ?string
+    public function getEventType(): ?EventType
     {
-        return $this->type;
+        return $this->eventType;
     }
 
-    public function setType(string $type): static
+    public function setEventType(?EventType $eventType): static
     {
-        $this->type = $type;
+        $this->eventType = $eventType;
         return $this;
     }
 
@@ -157,11 +139,16 @@ class Event
 
     public function getColor(): ?string
     {
-        // Si pas de couleur définie, utiliser la couleur du type
-        if (!$this->color) {
-            return self::TYPE_COLORS[$this->type] ?? self::TYPE_COLORS[self::TYPE_OTHER];
+        // Si couleur personnalisée définie, l'utiliser
+        if ($this->color) {
+            return $this->color;
         }
-        return $this->color;
+        // Sinon utiliser la couleur du type
+        if ($this->eventType) {
+            return $this->eventType->getColor();
+        }
+        // Couleur par défaut (gris)
+        return '#8E8E93';
     }
 
     public function setColor(?string $color): static
@@ -201,11 +188,6 @@ class Event
     {
         $this->client = $client;
         return $this;
-    }
-
-    public function getTypeLabel(): string
-    {
-        return array_search($this->type, self::TYPES) ?: 'Autre';
     }
 
     public function __toString(): string

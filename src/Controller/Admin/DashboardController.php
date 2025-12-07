@@ -7,6 +7,7 @@ use App\Entity\Company;
 use App\Entity\ContactMessage;
 use App\Entity\Devis;
 use App\Entity\Event;
+use App\Entity\EventType;
 use App\Entity\Expense;
 use App\Entity\Facture;
 use App\Entity\Prospect;
@@ -19,6 +20,7 @@ use App\Entity\Testimonial;
 use App\Repository\CompanyRepository;
 use App\Repository\DevisRepository;
 use App\Repository\EventRepository;
+use App\Repository\EventTypeRepository;
 use App\Repository\ExpenseRepository;
 use App\Repository\FactureRepository;
 use App\Repository\ProspectRepository;
@@ -279,6 +281,7 @@ class DashboardController extends AbstractDashboardController
 
         $data = [];
         foreach ($events as $event) {
+            $eventType = $event->getEventType();
             $data[] = [
                 'id' => $event->getId(),
                 'title' => $event->getTitle(),
@@ -287,8 +290,8 @@ class DashboardController extends AbstractDashboardController
                 'allDay' => $event->isAllDay(),
                 'color' => $event->getColor(),
                 'extendedProps' => [
-                    'type' => $event->getType(),
-                    'typeLabel' => $event->getTypeLabel(),
+                    'type' => $eventType?->getId(),
+                    'typeLabel' => $eventType?->getName() ?? 'Non défini',
                     'description' => $event->getDescription(),
                     'location' => $event->getLocation(),
                     'clientId' => $event->getClient()?->getId(),
@@ -301,13 +304,18 @@ class DashboardController extends AbstractDashboardController
     }
 
     #[Route('/saeiblauhjc/calendar/events/create', name: 'admin_calendar_event_create', methods: ['POST'])]
-    public function createEvent(Request $request): JsonResponse
+    public function createEvent(Request $request, EventTypeRepository $eventTypeRepository): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
         $event = new Event();
         $event->setTitle($data['title'] ?? 'Sans titre');
-        $event->setType($data['type'] ?? Event::TYPE_PRO);
+
+        // Set event type if provided
+        if (!empty($data['eventTypeId'])) {
+            $eventType = $eventTypeRepository->find($data['eventTypeId']);
+            $event->setEventType($eventType);
+        }
 
         $tz = new \DateTimeZone('Europe/Paris');
         $startAt = new \DateTime($data['date'] . ' ' . ($data['time'] ?? '09:00'), $tz);
@@ -553,6 +561,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Factures', 'fas fa-file-invoice-dollar', Facture::class);
         yield MenuItem::linkToCrud('Dépenses', 'fas fa-receipt', Expense::class);
         yield MenuItem::linkToCrud('Événements', 'fas fa-calendar-check', Event::class);
+        yield MenuItem::linkToCrud('Types d\'événements', 'fas fa-tags', EventType::class);
 
         yield MenuItem::section('Clients');
         yield MenuItem::linkToCrud('Clients', 'fas fa-users', Client::class);

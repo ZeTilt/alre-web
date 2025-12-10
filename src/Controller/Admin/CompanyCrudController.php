@@ -162,7 +162,7 @@ class CompanyCrudController extends AbstractCrudController
             // Ensure only one company record exists
             $existingCompany = $entityManager->getRepository(Company::class)->findOneBy([]);
             if ($existingCompany) {
-                $this->addFlash('error', 'Une entreprise existe déjà. Vous ne pouvez en avoir qu\'une seule.');
+                $this->addFlash('danger', 'Une entreprise existe déjà. Vous ne pouvez en avoir qu\'une seule.');
                 return;
             }
         }

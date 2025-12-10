@@ -95,14 +95,14 @@ class ProjectCrudController extends AbstractCrudController
                     // Validate MIME type (only allow images)
                     $allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
                     if (!in_array($uploadedFile->getMimeType(), $allowedMimes)) {
-                        $this->addFlash('error', 'Type de fichier non autorisé. Formats acceptés : JPEG, PNG, WebP, GIF');
+                        $this->addFlash('danger', 'Type de fichier non autorisé. Formats acceptés : JPEG, PNG, WebP, GIF');
                         continue;
                     }
 
                     // Validate file size (max 5MB)
                     $maxSize = 5 * 1024 * 1024; // 5MB in bytes
                     if ($uploadedFile->getSize() > $maxSize) {
-                        $this->addFlash('error', 'Fichier trop volumineux. Taille maximale : 5 MB');
+                        $this->addFlash('danger', 'Fichier trop volumineux. Taille maximale : 5 MB');
                         continue;
                     }
 

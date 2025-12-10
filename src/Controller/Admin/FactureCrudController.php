@@ -22,18 +22,40 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use App\Service\PdfGeneratorService;
 use App\Service\NumberingService;
 use App\Service\CompanyService;
+use App\Service\Workflow\WorkflowService;
+use App\Service\Workflow\Config\FactureWorkflowConfig;
+use Doctrine\ORM\QueryBuilder;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 
 class FactureCrudController extends AbstractCrudController
 {
     public function __construct(
         private readonly NumberingService $numberingService,
-        private readonly CompanyService $companyService
+        private readonly CompanyService $companyService,
+        private readonly WorkflowService $workflowService,
+        private readonly FactureWorkflowConfig $workflowConfig
     ) {
     }
 
     public static function getEntityFqcn(): string
     {
         return Facture::class;
+    }
+
+    public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
+    {
+        $qb = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
+
+        // Eager load relations to avoid N+1 queries
+        $qb->leftJoin('entity.client', 'c')->addSelect('c')
+           ->leftJoin('entity.items', 'i')->addSelect('i')
+           ->leftJoin('entity.devis', 'd')->addSelect('d')
+           ->leftJoin('entity.createdBy', 'u')->addSelect('u');
+
+        return $qb;
     }
 
     public function configureCrud(Crud $crud): Crud
@@ -177,77 +199,12 @@ class FactureCrudController extends AbstractCrudController
 
     private function renderStatusWithActions($entity): string
     {
-        $currentStatus = $entity->getStatus();
-        $statusLabels = array_flip(Facture::getStatusChoices());
-        $currentLabel = $statusLabels[$currentStatus] ?? $currentStatus;
-        
-        $badgeClass = [
-            Facture::STATUS_BROUILLON => 'secondary',
-            Facture::STATUS_A_ENVOYER => 'warning',
-            Facture::STATUS_ENVOYE => 'info',
-            Facture::STATUS_A_RELANCER => 'danger',
-            Facture::STATUS_RELANCE => 'warning',
-            Facture::STATUS_PAYE => 'success',
-            Facture::STATUS_EN_RETARD => 'danger',
-            Facture::STATUS_ANNULE => 'secondary',
-        ];
-        
-        $possibleStatuses = $this->getPossibleStatusTransitions($currentStatus);
-        
-        if (empty($possibleStatuses)) {
-            return sprintf('<span class="badge badge-%s">%s</span>', $badgeClass[$currentStatus], $currentLabel);
-        }
-        
-        $dropdown = '<div class="btn-group">';
-        $dropdown .= sprintf('<span class="badge badge-%s dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">%s <i class="fas fa-chevron-down fa-xs"></i></span>', $badgeClass[$currentStatus], $currentLabel);
-        $dropdown .= '<ul class="dropdown-menu">';
-        
-        foreach ($possibleStatuses as $status) {
-            $label = $statusLabels[$status] ?? $status;
-            $actionName = $this->getActionNameForStatus($status);
-            $url = $this->generateUrl('admin', [
-                'crudAction' => 'changeStatus',
-                'crudControllerFqcn' => self::class,
-                'entityId' => $entity->getId(),
-                'action' => $actionName
-            ]);
-            $dropdown .= sprintf('<li><a class="dropdown-item" href="%s">%s</a></li>', $url, $label);
-        }
-        
-        $dropdown .= '</ul></div>';
-        
-        return $dropdown;
-    }
-
-    private function getPossibleStatusTransitions(string $currentStatus): array
-    {
-        $transitions = [
-            Facture::STATUS_BROUILLON => [Facture::STATUS_A_ENVOYER],
-            Facture::STATUS_A_ENVOYER => [Facture::STATUS_ENVOYE, Facture::STATUS_ANNULE],
-            Facture::STATUS_ENVOYE => [Facture::STATUS_RELANCE, Facture::STATUS_PAYE, Facture::STATUS_EN_RETARD],
-            Facture::STATUS_A_RELANCER => [Facture::STATUS_RELANCE, Facture::STATUS_PAYE],
-            Facture::STATUS_RELANCE => [Facture::STATUS_PAYE, Facture::STATUS_EN_RETARD],
-            Facture::STATUS_PAYE => [],
-            Facture::STATUS_EN_RETARD => [Facture::STATUS_PAYE],
-            Facture::STATUS_ANNULE => [],
-        ];
-
-        return $transitions[$currentStatus] ?? [];
-    }
-
-    private function getActionNameForStatus(string $status): string
-    {
-        $actionMap = [
-            Facture::STATUS_A_ENVOYER => 'markAsReady',
-            Facture::STATUS_ENVOYE => 'markAsSent',
-            Facture::STATUS_A_RELANCER => 'markAsToRelaunch',
-            Facture::STATUS_RELANCE => 'markAsRelance',
-            Facture::STATUS_PAYE => 'markAsPaid',
-            Facture::STATUS_EN_RETARD => 'markAsOverdue',
-            Facture::STATUS_ANNULE => 'markAsCancelled',
-        ];
-
-        return $actionMap[$status] ?? 'changeStatus';
+        return $this->workflowService->renderStatusDropdown(
+            $entity,
+            $this->workflowConfig,
+            self::class,
+            fn($e) => $e->getId()
+        );
     }
 
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
@@ -310,28 +267,18 @@ class FactureCrudController extends AbstractCrudController
     {
         $facture = $this->getContext()->getEntity()->getInstance();
         $actionName = $this->getContext()->getRequest()->get('action');
-        
-        // Debug info
+
         if (!$actionName) {
-            $this->addFlash('error', 'Action non spécifiée.');
+            $this->addFlash('danger', 'Action non spécifiée.');
             return $this->redirectToRoute('admin', [
                 'crudAction' => 'index',
                 'crudControllerFqcn' => self::class
             ]);
         }
-        
-        $statusMap = [
-            'markAsReady' => Facture::STATUS_A_ENVOYER,
-            'markAsSent' => Facture::STATUS_ENVOYE,
-            'markAsToRelaunch' => Facture::STATUS_A_RELANCER,
-            'markAsRelance' => Facture::STATUS_RELANCE,
-            'markAsPaid' => Facture::STATUS_PAYE,
-            'markAsOverdue' => Facture::STATUS_EN_RETARD,
-            'markAsCancelled' => Facture::STATUS_ANNULE,
-        ];
-        
-        if (isset($statusMap[$actionName])) {
-            $newStatus = $statusMap[$actionName];
+
+        $newStatus = $this->workflowService->getStatusForAction($this->workflowConfig, $actionName);
+
+        if ($newStatus !== null) {
             $facture->setStatus($newStatus);
 
             // Set payment date when marked as paid
@@ -345,22 +292,12 @@ class FactureCrudController extends AbstractCrudController
             }
 
             $entityManager->flush();
-            
-            $statusLabels = [
-                Facture::STATUS_A_ENVOYER => 'à envoyer',
-                Facture::STATUS_ENVOYE => 'envoyée',
-                Facture::STATUS_A_RELANCER => 'à relancer',
-                Facture::STATUS_RELANCE => 'relancée',
-                Facture::STATUS_PAYE => 'payée',
-                Facture::STATUS_EN_RETARD => 'en retard',
-                Facture::STATUS_ANNULE => 'annulée',
-            ];
-            
-            $this->addFlash('success', 'Facture marquée comme ' . $statusLabels[$newStatus] . '.');
+
+            $this->addFlash('success', $this->workflowService->getStatusChangeMessage($this->workflowConfig, $newStatus));
         } else {
-            $this->addFlash('error', 'Action non reconnue: ' . $actionName);
+            $this->addFlash('danger', 'Action non reconnue: ' . $actionName);
         }
-        
+
         return $this->redirectToRoute('admin', [
             'crudAction' => 'index',
             'crudControllerFqcn' => self::class
@@ -394,7 +331,7 @@ class FactureCrudController extends AbstractCrudController
             return $this->file($filepath, basename($filepath));
 
         } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur lors de la génération du PDF: ' . $e->getMessage());
+            $this->addFlash('danger', 'Erreur lors de la génération du PDF: ' . $e->getMessage());
 
             return $this->redirectToRoute('admin', [
                 'crudAction' => 'detail',

@@ -17,12 +17,28 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ColorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
+use Doctrine\ORM\QueryBuilder;
 
 class EventCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
     {
         return Event::class;
+    }
+
+    public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
+    {
+        $qb = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
+
+        // Eager load relations to avoid N+1 queries
+        $qb->leftJoin('entity.eventType', 'et')->addSelect('et')
+           ->leftJoin('entity.client', 'c')->addSelect('c');
+
+        return $qb;
     }
 
     public function configureCrud(Crud $crud): Crud

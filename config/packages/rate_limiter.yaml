@@ -1,0 +1,14 @@
+# Rate limiter configuration
+framework:
+    rate_limiter:
+        # Login rate limiter - 5 attempts per minute per IP
+        login:
+            policy: 'sliding_window'
+            limit: 5
+            interval: '1 minute'
+
+        # Contact form rate limiter - 3 submissions per hour per IP
+        contact_form:
+            policy: 'sliding_window'
+            limit: 3
+            interval: '1 hour'

@@ -56,6 +56,9 @@ class SecurityHeadersSubscriber implements EventSubscriberInterface
 
             // Disable some browser features that could be abused
             $headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+
+            // Content Security Policy
+            $headers->set('Content-Security-Policy', $this->buildCsp());
         }
 
         // Apply these headers in all environments for better security defaults
@@ -67,5 +70,42 @@ class SecurityHeadersSubscriber implements EventSubscriberInterface
     private function isStaticAsset(string $path): bool
     {
         return (bool) preg_match('/\.(css|js|jpg|jpeg|png|gif|webp|avif|svg|woff|woff2|ttf|eot|ico)$/i', $path);
+    }
+
+    private function buildCsp(): string
+    {
+        $directives = [
+            // Default: only allow resources from same origin
+            "default-src 'self'",
+
+            // Scripts: self + CDNs + inline (needed for EasyAdmin and analytics)
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://matomo.alre-web.bzh",
+
+            // Styles: self + CDNs + inline (needed for EasyAdmin)
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com",
+
+            // Fonts: self + CDNs
+            "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:",
+
+            // Images: self + data URIs (for inline images)
+            "img-src 'self' data: https://matomo.alre-web.bzh",
+
+            // Connections (AJAX, WebSocket)
+            "connect-src 'self' https://matomo.alre-web.bzh",
+
+            // Forms can only submit to same origin
+            "form-action 'self'",
+
+            // Frame ancestors (prevent clickjacking)
+            "frame-ancestors 'self'",
+
+            // Base URI restriction
+            "base-uri 'self'",
+
+            // Block all object/embed/applet
+            "object-src 'none'",
+        ];
+
+        return implode('; ', $directives);
     }
 }

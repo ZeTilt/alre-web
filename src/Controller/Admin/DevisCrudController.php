@@ -19,21 +19,42 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 use App\Service\PdfGeneratorService;
 use App\Service\NumberingService;
 use App\Service\CompanyService;
+use App\Service\Workflow\WorkflowService;
+use App\Service\Workflow\Config\DevisWorkflowConfig;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 
 class DevisCrudController extends AbstractCrudController
 {
     public function __construct(
         private readonly NumberingService $numberingService,
-        private readonly CompanyService $companyService
+        private readonly CompanyService $companyService,
+        private readonly WorkflowService $workflowService,
+        private readonly DevisWorkflowConfig $workflowConfig
     ) {
     }
 
     public static function getEntityFqcn(): string
     {
         return Devis::class;
+    }
+
+    public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
+    {
+        $qb = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
+
+        // Eager load relations to avoid N+1 queries
+        $qb->leftJoin('entity.client', 'c')->addSelect('c')
+           ->leftJoin('entity.items', 'i')->addSelect('i')
+           ->leftJoin('entity.createdBy', 'u')->addSelect('u');
+
+        return $qb;
     }
 
     public function configureCrud(Crud $crud): Crud
@@ -188,80 +209,12 @@ class DevisCrudController extends AbstractCrudController
 
     private function renderStatusWithActions($entity): string
     {
-        $currentStatus = $entity->getStatus();
-        $statusLabels = array_flip(Devis::getStatusChoices());
-        $currentLabel = $statusLabels[$currentStatus] ?? $currentStatus;
-        
-        $badgeClass = [
-            Devis::STATUS_BROUILLON => 'secondary',
-            Devis::STATUS_A_ENVOYER => 'warning',
-            Devis::STATUS_ENVOYE => 'info',
-            Devis::STATUS_A_RELANCER => 'danger',
-            Devis::STATUS_RELANCE => 'warning',
-            Devis::STATUS_ACCEPTE => 'success',
-            Devis::STATUS_REFUSE => 'danger',
-            Devis::STATUS_EXPIRE => 'dark',
-            Devis::STATUS_ANNULE => 'secondary',
-        ];
-        
-        $possibleStatuses = $this->getPossibleStatusTransitions($currentStatus);
-        
-        if (empty($possibleStatuses)) {
-            return sprintf('<span class="badge badge-%s">%s</span>', $badgeClass[$currentStatus], $currentLabel);
-        }
-        
-        $dropdown = '<div class="btn-group">';
-        $dropdown .= sprintf('<span class="badge badge-%s dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">%s <i class="fas fa-chevron-down fa-xs"></i></span>', $badgeClass[$currentStatus], $currentLabel);
-        $dropdown .= '<ul class="dropdown-menu">';
-        
-        foreach ($possibleStatuses as $status) {
-            $label = $statusLabels[$status] ?? $status;
-            $actionName = $this->getActionNameForStatus($status);
-            $url = $this->generateUrl('admin', [
-                'crudAction' => 'changeStatus',
-                'crudControllerFqcn' => self::class,
-                'entityId' => $entity->getId(),
-                'action' => $actionName
-            ]);
-            $dropdown .= sprintf('<li><a class="dropdown-item" href="%s">%s</a></li>', $url, $label);
-        }
-        
-        $dropdown .= '</ul></div>';
-        
-        return $dropdown;
-    }
-
-    private function getPossibleStatusTransitions(string $currentStatus): array
-    {
-        $transitions = [
-            Devis::STATUS_BROUILLON => [Devis::STATUS_A_ENVOYER],
-            Devis::STATUS_A_ENVOYER => [Devis::STATUS_ENVOYE, Devis::STATUS_ANNULE],
-            Devis::STATUS_ENVOYE => [Devis::STATUS_RELANCE, Devis::STATUS_ACCEPTE, Devis::STATUS_REFUSE],
-            Devis::STATUS_A_RELANCER => [Devis::STATUS_RELANCE, Devis::STATUS_ACCEPTE, Devis::STATUS_REFUSE],
-            Devis::STATUS_RELANCE => [Devis::STATUS_ACCEPTE, Devis::STATUS_REFUSE, Devis::STATUS_EXPIRE],
-            Devis::STATUS_ACCEPTE => [Devis::STATUS_ANNULE],
-            Devis::STATUS_REFUSE => [],
-            Devis::STATUS_EXPIRE => [],
-            Devis::STATUS_ANNULE => [],
-        ];
-        
-        return $transitions[$currentStatus] ?? [];
-    }
-
-    private function getActionNameForStatus(string $status): string
-    {
-        $actionMap = [
-            Devis::STATUS_A_ENVOYER => 'markAsReady',
-            Devis::STATUS_ENVOYE => 'markAsSent',
-            Devis::STATUS_A_RELANCER => 'markAsToRelaunch',
-            Devis::STATUS_RELANCE => 'markAsRelance',
-            Devis::STATUS_ACCEPTE => 'markAsAccepted',
-            Devis::STATUS_REFUSE => 'markAsRejected',
-            Devis::STATUS_EXPIRE => 'markAsExpired',
-            Devis::STATUS_ANNULE => 'markAsCancelled',
-        ];
-        
-        return $actionMap[$status] ?? 'changeStatus';
+        return $this->workflowService->renderStatusDropdown(
+            $entity,
+            $this->workflowConfig,
+            self::class,
+            fn($e) => $e->getId()
+        );
     }
 
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
@@ -319,29 +272,18 @@ class DevisCrudController extends AbstractCrudController
     {
         $devis = $this->getContext()->getEntity()->getInstance();
         $actionName = $this->getContext()->getRequest()->get('action');
-        
-        // Debug info
+
         if (!$actionName) {
-            $this->addFlash('error', 'Action non spécifiée.');
+            $this->addFlash('danger', 'Action non spécifiée.');
             return $this->redirectToRoute('admin', [
                 'crudAction' => 'index',
                 'crudControllerFqcn' => self::class
             ]);
         }
-        
-        $statusMap = [
-            'markAsReady' => Devis::STATUS_A_ENVOYER,
-            'markAsSent' => Devis::STATUS_ENVOYE,
-            'markAsToRelaunch' => Devis::STATUS_A_RELANCER,
-            'markAsRelance' => Devis::STATUS_RELANCE,
-            'markAsAccepted' => Devis::STATUS_ACCEPTE,
-            'markAsRejected' => Devis::STATUS_REFUSE,
-            'markAsExpired' => Devis::STATUS_EXPIRE,
-            'markAsCancelled' => Devis::STATUS_ANNULE,
-        ];
-        
-        if (isset($statusMap[$actionName])) {
-            $newStatus = $statusMap[$actionName];
+
+        $newStatus = $this->workflowService->getStatusForAction($this->workflowConfig, $actionName);
+
+        if ($newStatus !== null) {
             $devis->setStatus($newStatus);
 
             // Set new validity date when marked as relance (30 days from now)
@@ -350,23 +292,12 @@ class DevisCrudController extends AbstractCrudController
             }
 
             $entityManager->flush();
-            
-            $statusLabels = [
-                Devis::STATUS_A_ENVOYER => 'à envoyer',
-                Devis::STATUS_ENVOYE => 'envoyé',
-                Devis::STATUS_A_RELANCER => 'à relancer',
-                Devis::STATUS_RELANCE => 'relancé',
-                Devis::STATUS_ACCEPTE => 'accepté',
-                Devis::STATUS_REFUSE => 'refusé',
-                Devis::STATUS_EXPIRE => 'expiré',
-                Devis::STATUS_ANNULE => 'annulé',
-            ];
-            
-            $this->addFlash('success', 'Devis marqué comme ' . $statusLabels[$newStatus] . '.');
+
+            $this->addFlash('success', $this->workflowService->getStatusChangeMessage($this->workflowConfig, $newStatus));
         } else {
-            $this->addFlash('error', 'Action non reconnue: ' . $actionName);
+            $this->addFlash('danger', 'Action non reconnue: ' . $actionName);
         }
-        
+
         return $this->redirectToRoute('admin', [
             'crudAction' => 'index',
             'crudControllerFqcn' => self::class
@@ -378,7 +309,7 @@ class DevisCrudController extends AbstractCrudController
         $devis = $this->getContext()->getEntity()->getInstance();
         
         if (!$devis->canBeConverted()) {
-            $this->addFlash('error', 'Ce devis ne peut pas être converti en facture.');
+            $this->addFlash('danger', 'Ce devis ne peut pas être converti en facture.');
             return $this->redirectToRoute('admin', ['crudAction' => 'detail', 'crudControllerFqcn' => self::class, 'entityId' => $devis->getId()]);
         }
 
@@ -438,7 +369,7 @@ class DevisCrudController extends AbstractCrudController
             return $this->file($filepath, basename($filepath));
 
         } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur lors de la génération du PDF: ' . $e->getMessage());
+            $this->addFlash('danger', 'Erreur lors de la génération du PDF: ' . $e->getMessage());
 
             return $this->redirectToRoute('admin', [
                 'crudAction' => 'detail',

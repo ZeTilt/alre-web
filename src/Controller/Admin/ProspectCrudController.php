@@ -21,12 +21,37 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
+use Doctrine\ORM\QueryBuilder;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
+use App\Service\Workflow\WorkflowService;
+use App\Service\Workflow\Config\ProspectWorkflowConfig;
 
 class ProspectCrudController extends AbstractCrudController
 {
+    public function __construct(
+        private readonly WorkflowService $workflowService,
+        private readonly ProspectWorkflowConfig $workflowConfig
+    ) {
+    }
+
     public static function getEntityFqcn(): string
     {
         return Prospect::class;
+    }
+
+    public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
+    {
+        $qb = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
+
+        // Eager load relations to avoid N+1 queries
+        $qb->leftJoin('entity.contacts', 'pc')->addSelect('pc')
+           ->leftJoin('entity.convertedClient', 'cc')->addSelect('cc')
+           ->leftJoin('entity.linkedDevis', 'ld')->addSelect('ld');
+
+        return $qb;
     }
 
     public function configureCrud(Crud $crud): Crud
@@ -172,72 +197,12 @@ class ProspectCrudController extends AbstractCrudController
 
     private function renderStatusWithActions($entity): string
     {
-        $currentStatus = $entity->getStatus();
-        $statusLabels = array_flip(Prospect::getStatusChoices());
-        $currentLabel = $statusLabels[$currentStatus] ?? $currentStatus;
-
-        $badgeClass = [
-            Prospect::STATUS_IDENTIFIED => 'secondary',
-            Prospect::STATUS_CONTACTED => 'info',
-            Prospect::STATUS_IN_DISCUSSION => 'warning',
-            Prospect::STATUS_QUOTE_SENT => 'primary',
-            Prospect::STATUS_WON => 'success',
-            Prospect::STATUS_LOST => 'danger',
-        ];
-
-        $possibleStatuses = $this->getPossibleStatusTransitions($currentStatus);
-
-        if (empty($possibleStatuses)) {
-            return sprintf('<span class="badge badge-%s">%s</span>', $badgeClass[$currentStatus], $currentLabel);
-        }
-
-        $dropdown = '<div class="btn-group">';
-        $dropdown .= sprintf('<span class="badge badge-%s dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">%s <i class="fas fa-chevron-down fa-xs"></i></span>', $badgeClass[$currentStatus], $currentLabel);
-        $dropdown .= '<ul class="dropdown-menu">';
-
-        foreach ($possibleStatuses as $status) {
-            $label = $statusLabels[$status] ?? $status;
-            $actionName = $this->getActionNameForStatus($status);
-            $url = $this->generateUrl('admin', [
-                'crudAction' => 'changeStatus',
-                'crudControllerFqcn' => self::class,
-                'entityId' => $entity->getId(),
-                'action' => $actionName
-            ]);
-            $dropdown .= sprintf('<li><a class="dropdown-item" href="%s">%s</a></li>', $url, $label);
-        }
-
-        $dropdown .= '</ul></div>';
-
-        return $dropdown;
-    }
-
-    private function getPossibleStatusTransitions(string $currentStatus): array
-    {
-        $transitions = [
-            Prospect::STATUS_IDENTIFIED => [Prospect::STATUS_CONTACTED, Prospect::STATUS_LOST],
-            Prospect::STATUS_CONTACTED => [Prospect::STATUS_IN_DISCUSSION, Prospect::STATUS_LOST],
-            Prospect::STATUS_IN_DISCUSSION => [Prospect::STATUS_QUOTE_SENT, Prospect::STATUS_WON, Prospect::STATUS_LOST],
-            Prospect::STATUS_QUOTE_SENT => [Prospect::STATUS_WON, Prospect::STATUS_LOST, Prospect::STATUS_IN_DISCUSSION],
-            Prospect::STATUS_WON => [],
-            Prospect::STATUS_LOST => [Prospect::STATUS_IDENTIFIED], // Allow to reactivate
-        ];
-
-        return $transitions[$currentStatus] ?? [];
-    }
-
-    private function getActionNameForStatus(string $status): string
-    {
-        $actionMap = [
-            Prospect::STATUS_IDENTIFIED => 'markAsIdentified',
-            Prospect::STATUS_CONTACTED => 'markAsContacted',
-            Prospect::STATUS_IN_DISCUSSION => 'markAsInDiscussion',
-            Prospect::STATUS_QUOTE_SENT => 'markAsQuoteSent',
-            Prospect::STATUS_WON => 'markAsWon',
-            Prospect::STATUS_LOST => 'markAsLost',
-        ];
-
-        return $actionMap[$status] ?? 'changeStatus';
+        return $this->workflowService->renderStatusDropdown(
+            $entity,
+            $this->workflowConfig,
+            self::class,
+            fn($e) => $e->getId()
+        );
     }
 
     public function changeStatus(EntityManagerInterface $entityManager): \Symfony\Component\HttpFoundation\RedirectResponse
@@ -246,24 +211,16 @@ class ProspectCrudController extends AbstractCrudController
         $actionName = $this->getContext()->getRequest()->get('action');
 
         if (!$actionName) {
-            $this->addFlash('error', 'Action non spécifiée.');
+            $this->addFlash('danger', 'Action non spécifiée.');
             return $this->redirectToRoute('admin', [
                 'crudAction' => 'index',
                 'crudControllerFqcn' => self::class
             ]);
         }
 
-        $statusMap = [
-            'markAsIdentified' => Prospect::STATUS_IDENTIFIED,
-            'markAsContacted' => Prospect::STATUS_CONTACTED,
-            'markAsInDiscussion' => Prospect::STATUS_IN_DISCUSSION,
-            'markAsQuoteSent' => Prospect::STATUS_QUOTE_SENT,
-            'markAsWon' => Prospect::STATUS_WON,
-            'markAsLost' => Prospect::STATUS_LOST,
-        ];
+        $newStatus = $this->workflowService->getStatusForAction($this->workflowConfig, $actionName);
 
-        if (isset($statusMap[$actionName])) {
-            $newStatus = $statusMap[$actionName];
+        if ($newStatus !== null) {
             $oldStatus = $prospect->getStatus();
             $prospect->setStatus($newStatus);
 
@@ -274,18 +231,9 @@ class ProspectCrudController extends AbstractCrudController
 
             $entityManager->flush();
 
-            $statusLabels = [
-                Prospect::STATUS_IDENTIFIED => 'identifié',
-                Prospect::STATUS_CONTACTED => 'contacté',
-                Prospect::STATUS_IN_DISCUSSION => 'en discussion',
-                Prospect::STATUS_QUOTE_SENT => 'devis envoyé',
-                Prospect::STATUS_WON => 'gagné',
-                Prospect::STATUS_LOST => 'perdu',
-            ];
-
-            $this->addFlash('success', 'Prospect marqué comme ' . $statusLabels[$newStatus] . '.');
+            $this->addFlash('success', $this->workflowService->getStatusChangeMessage($this->workflowConfig, $newStatus));
         } else {
-            $this->addFlash('error', 'Action non reconnue: ' . $actionName);
+            $this->addFlash('danger', 'Action non reconnue: ' . $actionName);
         }
 
         return $this->redirectToRoute('admin', [

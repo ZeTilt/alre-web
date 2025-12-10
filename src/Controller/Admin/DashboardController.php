@@ -437,7 +437,7 @@ class DashboardController extends AbstractDashboardController
                     'entityId' => $prospect->getId()
                 ]);
             } catch (\Exception $e) {
-                $this->addFlash('error', 'Erreur lors de l\'envoi : ' . $e->getMessage());
+                $this->addFlash('danger', 'Erreur lors de l\'envoi : ' . $e->getMessage());
             }
         }
 

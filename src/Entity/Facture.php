@@ -400,6 +400,38 @@ class Facture
         return number_format($ttc - $ht, 2, '.', '');
     }
 
+    /**
+     * Retourne l'acompte déjà versé (depuis le devis lié)
+     */
+    public function getAcompteVerse(): ?float
+    {
+        if ($this->devis && $this->devis->getAcompte()) {
+            return (float) $this->devis->getAcompte();
+        }
+        return null;
+    }
+
+    /**
+     * Retourne le pourcentage d'acompte (depuis le devis lié)
+     */
+    public function getAcomptePercentage(): ?float
+    {
+        if ($this->devis && $this->devis->getAcomptePercentage()) {
+            return (float) $this->devis->getAcomptePercentage();
+        }
+        return null;
+    }
+
+    /**
+     * Retourne le montant net à payer (total TTC - acompte versé)
+     */
+    public function getNetAPayer(): float
+    {
+        $totalTtc = (float) $this->totalTtc;
+        $acompte = $this->getAcompteVerse() ?? 0;
+        return $totalTtc - $acompte;
+    }
+
     public function isOverdue(): bool
     {
         if ($this->status === self::STATUS_PAYE) {

@@ -67,6 +67,7 @@
         .total-ht-row { border-top: 1px solid #E0E0E0; }
         .total-ht-row td { padding-top: 8px; font-size: 11px; }
         .tva-row td { color: #666; font-size: 9px; padding: 4px 10px; }
+        .acompte-row td { color: #2E7D32; font-size: 10px; padding: 6px 10px; background-color: #E8F5E9; }
         .total-final-row { background: #3A4556; color: white; }
         .total-final-row td { padding: 10px; font-size: 13px; font-weight: bold; letter-spacing: 1px; }
 
@@ -221,6 +222,8 @@
 {% set totalHt = facture.totalHt %}
 {% set vatAmount = totalHt * (vatRate / 100) %}
 {% set totalTtc = totalHt + vatAmount %}
+{% set acompteVerse = facture.acompteVerse %}
+{% set netAPayer = facture.netAPayer %}
 
 <div class="totals-wrapper">
     <table class="totals-table">
@@ -239,10 +242,21 @@
                     <td class="value">{{ totalTtc|number_format(2, ',', ' ') }} €</td>
                 </tr>
             {% endif %}
-            <tr class="total-final-row">
-                <td class="label">TOTAL</td>
-                <td class="value">{{ (vatRate > 0 ? totalTtc : totalHt)|number_format(2, ',', ' ') }} €</td>
-            </tr>
+            {% if acompteVerse and acompteVerse > 0 %}
+                <tr class="acompte-row">
+                    <td class="label">Acompte versé{% if facture.acomptePercentage %} ({{ facture.acomptePercentage|number_format(0) }}%){% endif %}</td>
+                    <td class="value">- {{ acompteVerse|number_format(2, ',', ' ') }} €</td>
+                </tr>
+                <tr class="total-final-row">
+                    <td class="label">NET À PAYER</td>
+                    <td class="value">{{ netAPayer|number_format(2, ',', ' ') }} €</td>
+                </tr>
+            {% else %}
+                <tr class="total-final-row">
+                    <td class="label">NET À PAYER</td>
+                    <td class="value">{{ (vatRate > 0 ? totalTtc : totalHt)|number_format(2, ',', ' ') }} €</td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
 </div>

@@ -270,9 +270,37 @@ class DevisCrudController extends AbstractCrudController
             
             // Recalculate totals based on items
             $entityInstance->calculateTotals();
+
+            // Sync acompte/percentage values
+            $entityInstance->syncAcompteValues();
         }
 
         parent::persistEntity($entityManager, $entityInstance);
+    }
+
+    public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        if ($entityInstance instanceof Devis) {
+            // Set position for items in natural order if not set
+            $position = 1;
+            foreach ($entityInstance->getItems() as $item) {
+                if ($item->getPosition() === null) {
+                    $item->setPosition($position);
+                }
+                $position++;
+            }
+
+            // Recalculate totals based on items
+            $entityInstance->calculateTotals();
+
+            // Sync acompte/percentage values
+            $entityInstance->syncAcompteValues();
+
+            // Update timestamp
+            $entityInstance->setUpdatedAt(new \DateTimeImmutable());
+        }
+
+        parent::updateEntity($entityManager, $entityInstance);
     }
 
     public function changeStatus(EntityManagerInterface $entityManager): \Symfony\Component\HttpFoundation\RedirectResponse

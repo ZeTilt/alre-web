@@ -396,6 +396,39 @@ class Devis
         return $this;
     }
 
+    /**
+     * Synchronise acompte et acomptePercentage.
+     * Si acompte est renseigné, calcule le pourcentage (arrondi à l'entier).
+     * Si acomptePercentage est renseigné, calcule le montant (arrondi au centime).
+     */
+    public function syncAcompteValues(): void
+    {
+        $totalTtc = (float) $this->totalTtc;
+
+        if ($totalTtc <= 0) {
+            return;
+        }
+
+        $acompte = $this->acompte !== null ? (float) $this->acompte : null;
+        $percentage = $this->acomptePercentage !== null ? (float) $this->acomptePercentage : null;
+
+        // Si un montant est défini mais pas de pourcentage, calculer le pourcentage (arrondi à l'entier)
+        if ($acompte !== null && $acompte > 0 && ($percentage === null || $percentage == 0)) {
+            $calculatedPercentage = round(($acompte / $totalTtc) * 100);
+            $this->acomptePercentage = (string) $calculatedPercentage;
+        }
+        // Si un pourcentage est défini mais pas de montant, calculer le montant (arrondi au centime)
+        elseif ($percentage !== null && $percentage > 0 && ($acompte === null || $acompte == 0)) {
+            $calculatedAcompte = round($totalTtc * $percentage / 100, 2);
+            $this->acompte = number_format($calculatedAcompte, 2, '.', '');
+        }
+        // Si les deux sont définis, recalculer le montant à partir du pourcentage (priorité au %)
+        elseif ($percentage !== null && $percentage > 0) {
+            $calculatedAcompte = round($totalTtc * $percentage / 100, 2);
+            $this->acompte = number_format($calculatedAcompte, 2, '.', '');
+        }
+    }
+
     // Business logic methods
     
     private function calculateTotalTtc(): void

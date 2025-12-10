@@ -45,6 +45,13 @@ class DevisCrudController extends AbstractCrudController
         return Devis::class;
     }
 
+    public function createEntity(string $entityFqcn): Devis
+    {
+        $devis = new Devis();
+        $devis->setNumber($this->numberingService->generateDevisNumber());
+        return $devis;
+    }
+
     public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
     {
         $qb = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);

@@ -45,6 +45,13 @@ class FactureCrudController extends AbstractCrudController
         return Facture::class;
     }
 
+    public function createEntity(string $entityFqcn): Facture
+    {
+        $facture = new Facture();
+        $facture->setNumber($this->numberingService->generateFactureNumber());
+        return $facture;
+    }
+
     public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
     {
         $qb = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);

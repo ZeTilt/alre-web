@@ -6,6 +6,8 @@ use App\Entity\Devis;
 use App\Entity\Facture;
 use TCPDF;
 use Spatie\Browsershot\Browsershot;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Twig\Environment;
 
 class PdfGeneratorService
@@ -749,5 +751,136 @@ class PdfGeneratorService
             ->savePdf($filepath);
 
         return $filepath;
+    }
+
+    /**
+     * Generate Devis PDF using DOMPDF (pure PHP, no external dependencies)
+     */
+    public function generateDevisPdfWithDompdf(Devis $devis): string
+    {
+        $company = $this->companyService->getCompanyOrDefault();
+
+        // Render HTML from Twig template
+        $html = $this->twig->render('pdf/devis.html.twig', [
+            'devis' => $devis,
+            'company' => $company,
+        ]);
+
+        // Replace asset URLs with absolute file paths for DOMPDF
+        $html = $this->convertAssetsForDompdf($html);
+
+        // Configure DOMPDF
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('defaultFont', 'Helvetica');
+        $options->setChroot($this->projectDir . '/public');
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        // Create output directory structure
+        $year = $devis->getDateCreation()->format('Y');
+        $outputDir = $this->projectDir . '/var/pdf/devis/' . $year;
+        if (!is_dir($outputDir)) {
+            mkdir($outputDir, 0755, true);
+        }
+
+        // Generate filename
+        $clientName = $devis->getClient()->getCompanyName() ?: $devis->getClient()->getName();
+        $date = $devis->getDateCreation()->format('Y-m-d');
+        $filename = sprintf(
+            '%s-Devis-%s-%s.pdf',
+            $date,
+            $devis->getNumber(),
+            $this->sanitizeFilename($clientName)
+        );
+        $filepath = $outputDir . '/' . $filename;
+
+        // Save PDF to file
+        file_put_contents($filepath, $dompdf->output());
+
+        return $filepath;
+    }
+
+    /**
+     * Generate Facture PDF using DOMPDF (pure PHP, no external dependencies)
+     */
+    public function generateFacturePdfWithDompdf(Facture $facture): string
+    {
+        $company = $this->companyService->getCompanyOrDefault();
+
+        // Render HTML from Twig template
+        $html = $this->twig->render('pdf/facture.html.twig', [
+            'facture' => $facture,
+            'company' => $company,
+        ]);
+
+        // Replace asset URLs with absolute file paths for DOMPDF
+        $html = $this->convertAssetsForDompdf($html);
+
+        // Configure DOMPDF
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('defaultFont', 'Helvetica');
+        $options->setChroot($this->projectDir . '/public');
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        // Create output directory structure
+        $year = $facture->getDateFacture()->format('Y');
+        $outputDir = $this->projectDir . '/var/pdf/factures/' . $year;
+        if (!is_dir($outputDir)) {
+            mkdir($outputDir, 0755, true);
+        }
+
+        // Generate filename
+        $clientName = $facture->getClient()->getCompanyName() ?: $facture->getClient()->getName();
+        $date = $facture->getDateFacture()->format('Y-m-d');
+        $filename = sprintf(
+            '%s-Facture-%s-%s.pdf',
+            $date,
+            $facture->getNumber(),
+            $this->sanitizeFilename($clientName)
+        );
+        $filepath = $outputDir . '/' . $filename;
+
+        // Save PDF to file
+        file_put_contents($filepath, $dompdf->output());
+
+        return $filepath;
+    }
+
+    /**
+     * Convert asset URLs to absolute file paths for DOMPDF
+     */
+    private function convertAssetsForDompdf(string $html): string
+    {
+        // Replace relative and absolute URLs with file paths
+        $publicDir = $this->projectDir . '/public';
+
+        // Match src="/images/..." or src="https://...images/..."
+        $html = preg_replace_callback(
+            '/src=["\'](?:https?:\/\/[^\/]+)?\/?(images\/[^"\']+)["\']/i',
+            function ($matches) use ($publicDir) {
+                $imagePath = $publicDir . '/' . $matches[1];
+                if (file_exists($imagePath)) {
+                    return 'src="' . $imagePath . '"';
+                }
+                return $matches[0];
+            },
+            $html
+        );
+
+        // Remove print button for PDF
+        $html = preg_replace('/<button[^>]*class="print-button"[^>]*>.*?<\/button>/is', '', $html);
+
+        return $html;
     }
 }

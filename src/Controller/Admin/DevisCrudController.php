@@ -369,8 +369,8 @@ class DevisCrudController extends AbstractCrudController
         $devis = $this->getContext()->getEntity()->getInstance();
 
         try {
-            // Use TCPDF for PDF generation (no Node.js dependency)
-            $filepath = $pdfGenerator->generateDevisPdf($devis);
+            // Use DOMPDF for PDF generation (pure PHP, no Node.js dependency)
+            $filepath = $pdfGenerator->generateDevisPdfWithDompdf($devis);
 
             // Return PDF as download
             return $this->file($filepath, basename($filepath));

@@ -331,8 +331,8 @@ class FactureCrudController extends AbstractCrudController
         $facture = $this->getContext()->getEntity()->getInstance();
 
         try {
-            // Use TCPDF for PDF generation (no Node.js dependency)
-            $filepath = $pdfGenerator->generateFacturePdf($facture);
+            // Use DOMPDF for PDF generation (pure PHP, no Node.js dependency)
+            $filepath = $pdfGenerator->generateFacturePdfWithDompdf($facture);
 
             // Return PDF as download
             return $this->file($filepath, basename($filepath));

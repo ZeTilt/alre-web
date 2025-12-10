@@ -441,13 +441,15 @@ class Devis
     public function calculateTotals(): void
     {
         $totalHt = 0;
-        $totalVat = 0;
-        
+
         foreach ($this->items as $item) {
             $totalHt += $item->getTotalAfterDiscount();
-            $totalVat += $item->getVatAmount();
         }
-        
+
+        // Use the document's VAT rate, not item's individual rates
+        $vatRate = (float) $this->vatRate;
+        $totalVat = $totalHt * ($vatRate / 100);
+
         $this->totalHt = number_format($totalHt, 2, '.', '');
         $this->totalTtc = number_format($totalHt + $totalVat, 2, '.', '');
     }

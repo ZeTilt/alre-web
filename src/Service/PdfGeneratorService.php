@@ -790,10 +790,8 @@ class PdfGeneratorService
 
         // Generate filename
         $clientName = $devis->getClient()->getCompanyName() ?: $devis->getClient()->getName();
-        $date = $devis->getDateCreation()->format('Y-m-d');
         $filename = sprintf(
-            '%s-Devis-%s-%s.pdf',
-            $date,
+            '%s-%s.pdf',
             $devis->getNumber(),
             $this->sanitizeFilename($clientName)
         );
@@ -842,10 +840,8 @@ class PdfGeneratorService
 
         // Generate filename
         $clientName = $facture->getClient()->getCompanyName() ?: $facture->getClient()->getName();
-        $date = $facture->getDateFacture()->format('Y-m-d');
         $filename = sprintf(
-            '%s-Facture-%s-%s.pdf',
-            $date,
+            '%s-%s.pdf',
             $facture->getNumber(),
             $this->sanitizeFilename($clientName)
         );

@@ -149,10 +149,16 @@
     <div class="client-info">
         {% if devis.client.companyName %}
             <div class="client-name">{{ devis.client.companyName }}</div>
+            {% if devis.client.name and devis.client.name != devis.client.companyName %}
+                {{ devis.client.name }}<br>
+            {% endif %}
+        {% else %}
+            <div class="client-name">{{ devis.client.name }}</div>
         {% endif %}
-        <div class="client-name">{{ devis.client.name }}</div>
         {{ devis.client.address }}<br>
         {{ devis.client.postalCode }} {{ devis.client.city }}
+        {% if devis.client.siret %}<br><strong>SIRET:</strong> {{ devis.client.siret }}{% endif %}
+        {% if devis.client.vatNumber %}<br><strong>N° TVA:</strong> {{ devis.client.vatNumber }}{% endif %}
         {% if devis.client.email %}<br><strong>Email:</strong> {{ devis.client.email }}{% endif %}
         {% if devis.client.phone %}<br><strong>Tél:</strong> {{ devis.client.phone }}{% endif %}
     </div>

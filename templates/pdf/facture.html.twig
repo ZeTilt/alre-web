@@ -155,10 +155,16 @@
     <div class="client-info">
         {% if facture.client.companyName %}
             <div class="client-name">{{ facture.client.companyName }}</div>
+            {% if facture.client.name and facture.client.name != facture.client.companyName %}
+                {{ facture.client.name }}<br>
+            {% endif %}
+        {% else %}
+            <div class="client-name">{{ facture.client.name }}</div>
         {% endif %}
-        <div class="client-name">{{ facture.client.name }}</div>
         {{ facture.client.address }}<br>
         {{ facture.client.postalCode }} {{ facture.client.city }}
+        {% if facture.client.siret %}<br><strong>SIRET:</strong> {{ facture.client.siret }}{% endif %}
+        {% if facture.client.vatNumber %}<br><strong>N° TVA:</strong> {{ facture.client.vatNumber }}{% endif %}
         {% if facture.client.email %}<br><strong>Email:</strong> {{ facture.client.email }}{% endif %}
         {% if facture.client.phone %}<br><strong>Tél:</strong> {{ facture.client.phone }}{% endif %}
     </div>

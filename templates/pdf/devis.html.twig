@@ -212,10 +212,10 @@
 </table>
 
 <!-- Totaux -->
-{% set vatRate = devis.vatRate %}
+{% set vatRate = devis.vatRate|default(0) %}
 {% set totalHt = devis.totalHt %}
-{% set vatAmount = totalHt * (vatRate / 100) %}
-{% set totalTtc = totalHt + vatAmount %}
+{% set totalTtc = devis.totalTtc %}
+{% set vatAmount = totalTtc - totalHt %}
 
 <div class="totals-wrapper">
     <table class="totals-table">

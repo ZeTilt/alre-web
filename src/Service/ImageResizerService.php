@@ -12,10 +12,13 @@ class ImageResizerService
     private const QUALITY_PNG = 8; // 0-9, lower is better quality
     private const MAX_FILE_SIZE = 500 * 1024; // 500 KB
 
-    // Tailles responsive pour les portraits (affichés à 260x350 sur desktop)
+    // Tailles responsive pour les portraits
+    // Mobile: 200x280, Desktop: 260x350
     private const PORTRAIT_SIZES = [
-        '1x' => ['width' => 260, 'height' => 350],
-        '2x' => ['width' => 520, 'height' => 700],
+        '200w' => ['width' => 200, 'height' => 280],   // Mobile 1x
+        '260w' => ['width' => 260, 'height' => 350],   // Desktop 1x
+        '400w' => ['width' => 400, 'height' => 560],   // Mobile 2x retina
+        '520w' => ['width' => 520, 'height' => 700],   // Desktop 2x retina
     ];
 
     // Tailles responsive pour les photos larges (affichées à ~600px max)
@@ -292,7 +295,7 @@ class ImageResizerService
 
     /**
      * Obtient les chemins des versions responsive d'une image
-     * @return array ['1x' => '...', '2x' => '...'] ou tableau vide si pas de versions
+     * @return array ['200w' => '...', '260w' => '...', etc.] ou tableau vide si pas de versions
      */
     public function getResponsiveVersions(string $relativePath): array
     {
@@ -304,7 +307,9 @@ class ImageResizerService
         $relativeDir = pathinfo($relativePath, PATHINFO_DIRNAME);
 
         $versions = [];
-        foreach (['1x', '2x'] as $suffix) {
+        // Chercher les nouvelles versions (200w, 260w, etc.) et les anciennes (1x, 2x)
+        $suffixes = ['200w', '260w', '400w', '520w', '600w', '1200w', '1x', '2x'];
+        foreach ($suffixes as $suffix) {
             $versionPath = $directory . '/' . $baseName . '-' . $suffix . '.' . $extension;
             if (file_exists($versionPath)) {
                 $versions[$suffix] = $relativeDir . '/' . $baseName . '-' . $suffix . '.' . $extension;

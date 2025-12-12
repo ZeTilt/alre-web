@@ -22,8 +22,8 @@ class ResponsiveImageExtension extends AbstractExtension
         ];
     }
 
-    // Mapping des suffixes vers les largeurs réelles
-    private const WIDTH_MAP = [
+    // Mapping des anciens suffixes (1x, 2x) vers les largeurs
+    private const LEGACY_WIDTH_MAP = [
         '1x' => 260,
         '2x' => 520,
     ];
@@ -45,9 +45,15 @@ class ResponsiveImageExtension extends AbstractExtension
 
         $srcset = [];
         foreach ($versions as $suffix => $path) {
-            $width = self::WIDTH_MAP[$suffix] ?? null;
-            if ($width) {
-                $srcset[] = '/' . $path . ' ' . $width . 'w';
+            // Les nouveaux suffixes sont déjà au format "200w", "260w", etc.
+            if (str_ends_with($suffix, 'w')) {
+                $srcset[] = '/' . $path . ' ' . $suffix;
+            } else {
+                // Anciens suffixes 1x, 2x -> convertir en largeurs
+                $width = self::LEGACY_WIDTH_MAP[$suffix] ?? null;
+                if ($width) {
+                    $srcset[] = '/' . $path . ' ' . $width . 'w';
+                }
             }
         }
 

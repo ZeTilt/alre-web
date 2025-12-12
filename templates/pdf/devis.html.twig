@@ -236,44 +236,31 @@
                     <td class="label">TVA ({{ vatRate|number_format(0) }}%)</td>
                     <td class="value">{{ vatAmount|number_format(2, ',', ' ') }} €</td>
                 </tr>
-                <tr class="total-ht-row">
-                    <td class="label">Total TTC</td>
-                    <td class="value">{{ totalTtc|number_format(2, ',', ' ') }} €</td>
-                </tr>
             {% endif %}
-            {% if devis.acompte and devis.acompte > 0 %}
-                {% set finalTotal = vatRate > 0 ? totalTtc : totalHt %}
-                {% set restant = finalTotal - devis.acompte %}
-                <tr class="tva-row">
-                    <td class="label">Acompte</td>
-                    <td class="value">- {{ devis.acompte|number_format(2, ',', ' ') }} €</td>
-                </tr>
-                <tr class="total-final-row">
-                    <td class="label">RESTE À PAYER</td>
-                    <td class="value">{{ restant|number_format(2, ',', ' ') }} €</td>
-                </tr>
-            {% else %}
-                {% set finalTotal = vatRate > 0 ? totalTtc : totalHt %}
-                <tr class="total-final-row">
-                    <td class="label">TOTAL</td>
-                    <td class="value">{{ finalTotal|number_format(2, ',', ' ') }} €</td>
-                </tr>
-            {% endif %}
+            {% set finalTotal = vatRate > 0 ? totalTtc : totalHt %}
+            <tr class="total-final-row">
+                <td class="label">TOTAL {{ vatRate > 0 ? 'TTC' : 'HT' }}</td>
+                <td class="value">{{ finalTotal|number_format(2, ',', ' ') }} €</td>
+            </tr>
         </tbody>
     </table>
 </div>
 
 <!-- Acompte demandé -->
 {% if devis.acompte and devis.acompte > 0 %}
+{% set finalTotal = vatRate > 0 ? totalTtc : totalHt %}
+{% set solde = finalTotal - devis.acompte %}
 <div class="acompte-wrapper">
-    <div class="acompte-title">Acompte demandé à la signature</div>
+    <div class="acompte-title">Conditions de paiement</div>
     <div class="acompte-text">
+        <strong>Acompte à la signature :</strong>
         {% if devis.acomptePercentage and devis.acomptePercentage > 0 %}
-            <strong>{{ devis.acomptePercentage|number_format(0) }}%</strong> du montant total, soit <strong>{{ devis.acompte|number_format(2, ',', ' ') }} €</strong>
+            {{ devis.acomptePercentage|number_format(0) }}% du montant total, soit <strong>{{ devis.acompte|number_format(2, ',', ' ') }} €</strong>
         {% else %}
             <strong>{{ devis.acompte|number_format(2, ',', ' ') }} €</strong>
         {% endif %}
-        <br>Le solde sera facturé à la livraison du projet.
+        <br><strong>Solde à la livraison :</strong> {{ solde|number_format(2, ',', ' ') }} €
+        <br><br><em>Les travaux ne pourront débuter qu'après réception de l'acompte.</em>
     </div>
 </div>
 {% endif %}

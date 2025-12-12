@@ -96,6 +96,9 @@ class DevisCrudController extends AbstractCrudController
                     return $value;
                 })
                 ->renderAsHtml(),
+            TextareaField::new('additionalInfo', 'Information complémentaire')
+                ->onlyOnForms()
+                ->setHelp('Texte libre affiché entre l\'objet et les prestations (sans label)'),
             AssociationField::new('client', 'Client'),
             ChoiceField::new('status', 'Statut')
                 ->setChoices(Devis::getStatusChoices())
@@ -355,6 +358,7 @@ class DevisCrudController extends AbstractCrudController
         $facture->setCreatedBy($this->getUser());
         $facture->setTitle($devis->getTitle());
         $facture->setDescription($devis->getDescription());
+        $facture->setAdditionalInfo($devis->getAdditionalInfo());
         $facture->setConditions($devis->getConditions());
         $facture->setNotes($devis->getNotes());
         $facture->setTotalHt($devis->getTotalHt());

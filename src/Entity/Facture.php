@@ -34,6 +34,9 @@ class Facture
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $additionalInfo = null;
+
     #[ORM\ManyToOne(inversedBy: 'factures')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Client $client = null;
@@ -133,6 +136,18 @@ class Facture
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    public function getAdditionalInfo(): ?string
+    {
+        return $this->additionalInfo;
+    }
+
+    public function setAdditionalInfo(?string $additionalInfo): static
+    {
+        $this->additionalInfo = $additionalInfo;
 
         return $this;
     }
@@ -476,6 +491,7 @@ class Facture
         $this->client = $devis->getClient();
         $this->title = $devis->getTitle();
         $this->description = $devis->getDescription();
+        $this->additionalInfo = $devis->getAdditionalInfo();
         $this->totalHt = $devis->getTotalHt();
         $this->vatRate = $devis->getVatRate();
         $this->totalTtc = $devis->getTotalTtc();

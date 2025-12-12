@@ -35,6 +35,9 @@ class Devis
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $additionalInfo = null;
+
     #[ORM\ManyToOne(inversedBy: 'devis')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Client $client = null;
@@ -137,6 +140,18 @@ class Devis
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    public function getAdditionalInfo(): ?string
+    {
+        return $this->additionalInfo;
+    }
+
+    public function setAdditionalInfo(?string $additionalInfo): static
+    {
+        $this->additionalInfo = $additionalInfo;
 
         return $this;
     }

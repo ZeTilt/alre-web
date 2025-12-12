@@ -177,6 +177,13 @@
 </div>
 {% endif %}
 
+<!-- Information complémentaire -->
+{% if devis.additionalInfo %}
+<div class="object-wrapper">
+    <div class="object-text">{{ devis.additionalInfo|nl2br }}</div>
+</div>
+{% endif %}
+
 <!-- Vérifier s'il y a des remises -->
 {% set hasDiscount = false %}
 {% for item in devis.items %}

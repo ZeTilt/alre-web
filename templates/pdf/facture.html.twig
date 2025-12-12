@@ -179,6 +179,13 @@
 </div>
 {% endif %}
 
+<!-- Information complémentaire -->
+{% if facture.additionalInfo %}
+<div class="object-wrapper">
+    <div class="object-text">{{ facture.additionalInfo|nl2br }}</div>
+</div>
+{% endif %}
+
 <!-- Vérifier s'il y a des remises -->
 {% set hasDiscount = false %}
 {% for item in facture.items %}

@@ -97,6 +97,9 @@ class FactureCrudController extends AbstractCrudController
                     return $value;
                 })
                 ->renderAsHtml(),
+            TextareaField::new('additionalInfo', 'Information complémentaire')
+                ->onlyOnForms()
+                ->setHelp('Texte libre affiché entre l\'objet et les prestations (sans label)'),
             AssociationField::new('client', 'Client'),
             AssociationField::new('devis', 'Devis')->onlyOnDetail(),
             ChoiceField::new('status', 'Statut')

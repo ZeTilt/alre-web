@@ -16,7 +16,8 @@
         <div class="hero-portrait-wrapper fade-in">
             <div class="hero-portrait-left">
                 <img src="{{ asset('uploads/profile/' ~ company.homePortraitPhoto) }}"
-                     {% if srcset %}srcset="{{ srcset }}"{% endif %}
+                     {% if srcset %}srcset="{{ srcset }}"
+                     sizes="(max-width: 992px) 200px, 260px"{% endif %}
                      alt="Fabrice Dhuicque"
                      width="260"
                      height="350"

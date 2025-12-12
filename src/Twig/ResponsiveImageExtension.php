@@ -22,8 +22,16 @@ class ResponsiveImageExtension extends AbstractExtension
         ];
     }
 
+    // Mapping des suffixes vers les largeurs réelles
+    private const WIDTH_MAP = [
+        '1x' => 260,
+        '2x' => 520,
+    ];
+
     /**
      * Génère l'attribut srcset pour une image responsive
+     * Utilise des descripteurs de largeur (w) pour permettre au navigateur
+     * de choisir la bonne image selon la taille d'affichage et la densité
      * @param string $relativePath Chemin relatif depuis uploads/ (ex: profile/photo.jpg)
      * @return string srcset attribute value ou empty string
      */
@@ -36,8 +44,11 @@ class ResponsiveImageExtension extends AbstractExtension
         }
 
         $srcset = [];
-        foreach ($versions as $density => $path) {
-            $srcset[] = '/' . $path . ' ' . $density;
+        foreach ($versions as $suffix => $path) {
+            $width = self::WIDTH_MAP[$suffix] ?? null;
+            if ($width) {
+                $srcset[] = '/' . $path . ' ' . $width . 'w';
+            }
         }
 
         return implode(', ', $srcset);

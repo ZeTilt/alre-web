@@ -62,3 +62,7 @@ services:
     App\Service\ImageResizerService:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    App\Twig\ResponsiveImageExtension:
+        arguments:
+            $projectDir: '%kernel.project_dir%'

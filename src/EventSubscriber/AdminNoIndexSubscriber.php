@@ -11,7 +11,7 @@ class AdminNoIndexSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            KernelEvents::RESPONSE => 'onKernelResponse',
+            KernelEvents::RESPONSE => ['onKernelResponse', -100], // Priorité basse pour s'exécuter après d'autres middlewares
         ];
     }
 
@@ -22,12 +22,16 @@ class AdminNoIndexSubscriber implements EventSubscriberInterface
         }
 
         $request = $event->getRequest();
+        $response = $event->getResponse();
         $pathInfo = $request->getPathInfo();
 
-        // Bloquer l'indexation de toutes les pages admin sans révéler l'URL dans robots.txt
         if (str_starts_with($pathInfo, '/saeiblauhjc')) {
-            $response = $event->getResponse();
+            // Bloquer l'indexation des pages admin
             $response->headers->set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+        } else {
+            // Forcer l'indexation des pages publiques
+            // (pour contrer une éventuelle config serveur qui ajoute noindex)
+            $response->headers->set('X-Robots-Tag', 'index, follow');
         }
     }
 }

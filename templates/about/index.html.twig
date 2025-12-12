@@ -21,9 +21,15 @@
     <div class="container">
         <div class="about-layout">
             {% if company and company.aboutWidePhoto %}
+            {% set srcset = responsive_srcset('uploads/profile/' ~ company.aboutWidePhoto) %}
             <div class="about-photo-wrapper fade-in">
                 <div class="about-photo-left">
-                    <img src="{{ asset('uploads/profile/' ~ company.aboutWidePhoto) }}" alt="Fabrice Dhuicque">
+                    <img src="{{ asset('uploads/profile/' ~ company.aboutWidePhoto) }}"
+                         {% if srcset %}srcset="{{ srcset }}"{% endif %}
+                         alt="Fabrice Dhuicque"
+                         width="600"
+                         height="400"
+                         loading="lazy">
                 </div>
                 {% if company.aboutWidePhotoCredit %}
                 <div class="photo-credit">

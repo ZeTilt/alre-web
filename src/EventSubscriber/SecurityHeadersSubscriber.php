@@ -82,10 +82,10 @@ class SecurityHeadersSubscriber implements EventSubscriberInterface
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://matomo.alre-web.bzh",
 
             // Styles: self + CDNs + inline (needed for EasyAdmin)
-            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com",
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
 
-            // Fonts: self + CDNs
-            "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:",
+            // Fonts: self + Google Fonts (FontAwesome now hosted locally)
+            "font-src 'self' https://fonts.gstatic.com data:",
 
             // Images: self + data URIs (for inline images)
             "img-src 'self' data: https://matomo.alre-web.bzh",

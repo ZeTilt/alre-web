@@ -27,7 +27,8 @@ class SendEventRemindersCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $now = new \DateTimeImmutable();
+        $tz = new \DateTimeZone('Europe/Paris');
+        $now = new \DateTimeImmutable('now', $tz);
         $sentCount = 0;
 
         // Rappels H-1 (fenêtre de 5 minutes autour de H-1)

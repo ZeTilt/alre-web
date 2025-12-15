@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Event;
+use App\Filter\ShowPastEventsFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -22,9 +23,15 @@ use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use Doctrine\ORM\QueryBuilder;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class EventCrudController extends AbstractCrudController
 {
+    public function __construct(
+        private RequestStack $requestStack
+    ) {
+    }
+
     public static function getEntityFqcn(): string
     {
         return Event::class;
@@ -37,6 +44,15 @@ class EventCrudController extends AbstractCrudController
         // Eager load relations to avoid N+1 queries
         $qb->leftJoin('entity.eventType', 'et')->addSelect('et')
            ->leftJoin('entity.client', 'c')->addSelect('c');
+
+        // Hide past events by default unless "showPast" filter is enabled
+        $request = $this->requestStack->getCurrentRequest();
+        $showPast = $request?->query->all('filters')['showPast'] ?? null;
+
+        if ($showPast !== '1') {
+            $qb->andWhere('entity.startAt >= :today')
+               ->setParameter('today', new \DateTimeImmutable('today'));
+        }
 
         return $qb;
     }
@@ -66,6 +82,7 @@ class EventCrudController extends AbstractCrudController
     public function configureFilters(Filters $filters): Filters
     {
         return $filters
+            ->add(ShowPastEventsFilter::new('showPast', 'Afficher les événements passés'))
             ->add(EntityFilter::new('eventType')->setLabel('Type'))
             ->add(DateTimeFilter::new('startAt')->setLabel('Date'));
     }

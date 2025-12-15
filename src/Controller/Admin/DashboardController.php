@@ -525,27 +525,23 @@ class DashboardController extends AbstractDashboardController
 
     private function formatEventDate(Event $event): string
     {
-        $formatter = new \IntlDateFormatter(
-            'fr_FR',
-            \IntlDateFormatter::FULL,
-            \IntlDateFormatter::SHORT,
-            'Europe/Paris'
-        );
-
         $start = $event->getStartAt();
         $end = $event->getEndAt();
 
+        // Format jour en français
+        $days = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+        $months = ['', 'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+        $dayName = $days[(int) $start->format('w')];
+        $dayNum = $start->format('j');
+        $monthName = $months[(int) $start->format('n')];
+        $year = $start->format('Y');
+
         if ($event->isAllDay()) {
-            $formatter = new \IntlDateFormatter(
-                'fr_FR',
-                \IntlDateFormatter::FULL,
-                \IntlDateFormatter::NONE,
-                'Europe/Paris'
-            );
-            return ucfirst($formatter->format($start)) . ' (journée entière)';
+            return ucfirst($dayName) . ' ' . $dayNum . ' ' . $monthName . ' ' . $year . ' (journée entière)';
         }
 
-        $result = ucfirst($formatter->format($start));
+        $result = ucfirst($dayName) . ' ' . $dayNum . ' ' . $monthName . ' ' . $year . ' à ' . $start->format('H:i');
 
         if ($end && $end->format('Y-m-d') === $start->format('Y-m-d')) {
             $result .= ' - ' . $end->format('H:i');

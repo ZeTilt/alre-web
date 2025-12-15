@@ -1,4 +1,4 @@
-const CACHE_NAME = 'alre-admin-v1';
+const CACHE_NAME = 'alre-admin-v2';
 const OFFLINE_URL = '/saeiblauhjc';
 
 // Assets à mettre en cache
@@ -74,6 +74,46 @@ self.addEventListener('fetch', event => {
             })
             .catch(() => {
                 return caches.match(request);
+            })
+    );
+});
+
+// === PUSH NOTIFICATIONS ===
+self.addEventListener('push', event => {
+    const data = event.data?.json() ?? {};
+
+    const options = {
+        body: data.body || 'Vous avez un rappel',
+        icon: '/images/android-chrome-192x192.png',
+        badge: '/images/android-chrome-192x192.png',
+        tag: data.tag || 'event-reminder',
+        data: {
+            url: data.url || '/saeiblauhjc/calendar'
+        },
+        requireInteraction: true,
+        vibrate: [200, 100, 200]
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(data.title || 'Rappel', options)
+    );
+});
+
+// Clic sur notification
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+
+    const url = event.notification.data?.url || '/saeiblauhjc/calendar';
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true })
+            .then(clientList => {
+                for (const client of clientList) {
+                    if (client.url.includes('/saeiblauhjc') && 'focus' in client) {
+                        return client.focus();
+                    }
+                }
+                return clients.openWindow(url);
             })
     );
 });

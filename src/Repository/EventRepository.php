@@ -102,4 +102,22 @@ class EventRepository extends ServiceEntityRepository
 
         return $counts;
     }
+
+    /**
+     * Trouve les événements qui commencent dans une fenêtre de temps
+     * Utilisé pour les rappels de notifications push
+     */
+    public function findEventsStartingBetween(
+        \DateTimeInterface $start,
+        \DateTimeInterface $end
+    ): array {
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.startAt >= :start')
+            ->andWhere('e.startAt <= :end')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->orderBy('e.startAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

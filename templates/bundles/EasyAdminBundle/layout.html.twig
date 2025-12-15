@@ -132,5 +132,124 @@
                 .then(reg => console.log('Admin SW registered'))
                 .catch(err => console.log('Admin SW failed:', err));
         }
+
+        // === PUSH NOTIFICATIONS MANAGER ===
+        window.PushNotificationManager = {
+            publicKey: null,
+            registration: null,
+
+            async init() {
+                if (!('PushManager' in window)) {
+                    console.log('Push non supporté');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/saeiblauhjc/push/vapid-public-key');
+                    const data = await response.json();
+                    this.publicKey = data.publicKey;
+
+                    this.registration = await navigator.serviceWorker.ready;
+                    await this.updateUI();
+                } catch (err) {
+                    console.error('Erreur init push:', err);
+                }
+            },
+
+            async subscribe() {
+                try {
+                    const subscription = await this.registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: this.urlBase64ToUint8Array(this.publicKey)
+                    });
+
+                    await fetch('/saeiblauhjc/push/subscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(subscription.toJSON())
+                    });
+
+                    await this.updateUI();
+                    return true;
+                } catch (err) {
+                    console.error('Erreur abonnement:', err);
+                    return false;
+                }
+            },
+
+            async unsubscribe() {
+                const subscription = await this.registration.pushManager.getSubscription();
+                if (subscription) {
+                    await subscription.unsubscribe();
+                    await fetch('/saeiblauhjc/push/unsubscribe', { method: 'POST' });
+                }
+                await this.updateUI();
+            },
+
+            async isSubscribed() {
+                if (!this.registration) return false;
+                const subscription = await this.registration.pushManager.getSubscription();
+                return !!subscription;
+            },
+
+            async updateUI() {
+                const subscription = await this.registration.pushManager.getSubscription();
+                const btn = document.getElementById('pushToggleBtn');
+                const testBtn = document.getElementById('pushTestBtn');
+
+                if (btn) {
+                    if (subscription) {
+                        btn.innerHTML = '<i class="fas fa-bell-slash"></i> Désactiver';
+                        btn.classList.remove('btn-primary');
+                        btn.classList.add('btn-outline-secondary');
+                    } else {
+                        btn.innerHTML = '<i class="fas fa-bell"></i> Activer les notifications';
+                        btn.classList.remove('btn-outline-secondary');
+                        btn.classList.add('btn-primary');
+                    }
+                    btn.dataset.subscribed = subscription ? 'true' : 'false';
+                }
+
+                if (testBtn) {
+                    testBtn.style.display = subscription ? 'block' : 'none';
+                }
+            },
+
+            async test() {
+                const response = await fetch('/saeiblauhjc/push/test', { method: 'POST' });
+                const data = await response.json();
+                if (!data.success) {
+                    alert('Erreur lors de l\'envoi de la notification test');
+                }
+            },
+
+            urlBase64ToUint8Array(base64String) {
+                const padding = '='.repeat((4 - base64String.length % 4) % 4);
+                const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+                const rawData = window.atob(base64);
+                return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
+            }
+        };
+
+        // Fonction globale pour toggle
+        window.togglePushSubscription = async function() {
+            const isSubscribed = await PushNotificationManager.isSubscribed();
+            if (isSubscribed) {
+                await PushNotificationManager.unsubscribe();
+            } else {
+                await PushNotificationManager.subscribe();
+            }
+        };
+
+        window.testPushNotification = async function() {
+            await PushNotificationManager.test();
+        };
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            if ('PushManager' in window) {
+                PushNotificationManager.init();
+            }
+        });
     </script>
 {% endblock %}

@@ -330,6 +330,20 @@
                 {% endfor %}
             {% endif %}
         </div>
+
+        {# Notifications #}
+        <div class="sidebar-card" id="pushNotificationCard">
+            <h3><i class="fas fa-bell"></i> Notifications</h3>
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 0.75rem;">
+                Recevez des rappels avant vos événements (1h et 10min avant).
+            </p>
+            <button id="pushToggleBtn" class="btn btn-primary btn-sm w-100" onclick="togglePushSubscription()">
+                <i class="fas fa-bell"></i> Activer les notifications
+            </button>
+            <button id="pushTestBtn" class="btn btn-outline-secondary btn-sm w-100 mt-2" onclick="testPushNotification()" style="display:none;">
+                <i class="fas fa-paper-plane"></i> Tester
+            </button>
+        </div>
     </div>
 </div>
 

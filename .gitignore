@@ -31,3 +31,6 @@
 
 # Large files and personal docs
 docs/*
+
+# Claude Code config
+.claude/

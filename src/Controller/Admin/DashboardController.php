@@ -299,6 +299,7 @@ class DashboardController extends AbstractDashboardController
                     'location' => $event->getLocation(),
                     'clientId' => $event->getClient()?->getId(),
                     'clientName' => $event->getClient()?->getName(),
+                    'formattedDate' => $this->formatEventDate($event),
                 ],
             ];
         }
@@ -520,6 +521,37 @@ class DashboardController extends AbstractDashboardController
         $response->headers->set('Content-Disposition', 'attachment; filename="dashboard_' . $year . '_' . date('Ymd') . '.csv"');
 
         return $response;
+    }
+
+    private function formatEventDate(Event $event): string
+    {
+        $formatter = new \IntlDateFormatter(
+            'fr_FR',
+            \IntlDateFormatter::FULL,
+            \IntlDateFormatter::SHORT,
+            'Europe/Paris'
+        );
+
+        $start = $event->getStartAt();
+        $end = $event->getEndAt();
+
+        if ($event->isAllDay()) {
+            $formatter = new \IntlDateFormatter(
+                'fr_FR',
+                \IntlDateFormatter::FULL,
+                \IntlDateFormatter::NONE,
+                'Europe/Paris'
+            );
+            return ucfirst($formatter->format($start)) . ' (journée entière)';
+        }
+
+        $result = ucfirst($formatter->format($start));
+
+        if ($end && $end->format('Y-m-d') === $start->format('Y-m-d')) {
+            $result .= ' - ' . $end->format('H:i');
+        }
+
+        return $result;
     }
 
     public function configureDashboard(): Dashboard

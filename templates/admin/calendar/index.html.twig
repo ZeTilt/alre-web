@@ -479,11 +479,7 @@
             document.getElementById('modalTitle').textContent = event.title;
             document.getElementById('modalType').innerHTML = '<span class="badge" style="background-color: ' + event.extendedProps.typeColor + '; color: white;">' + event.extendedProps.typeLabel + '</span>';
 
-            let dateStr = formatDate(event.start);
-            if (event.end && !event.allDay) {
-                dateStr += ' - ' + formatTime(event.end);
-            }
-            document.getElementById('modalDate').textContent = dateStr;
+            document.getElementById('modalDate').textContent = event.extendedProps.formattedDate;
 
             // Location
             if (event.extendedProps.location) {
@@ -517,24 +513,6 @@
 
         function closeModal() {
             document.getElementById('eventModal').classList.remove('show');
-        }
-
-        function formatDate(date) {
-            return date.toLocaleDateString('fr-FR', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-
-        function formatTime(date) {
-            return date.toLocaleTimeString('fr-FR', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
         }
 
         // Close modal on outside click

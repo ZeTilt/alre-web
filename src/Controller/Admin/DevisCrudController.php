@@ -206,6 +206,14 @@ class DevisCrudController extends AbstractCrudController
                 return in_array($entity->getStatus(), [Devis::STATUS_ENVOYE, Devis::STATUS_RELANCE]);
             });
 
+        $duplicate = Action::new('duplicate', 'Dupliquer')
+            ->linkToCrudAction('duplicate')
+            ->setIcon('fas fa-copy')
+            ->addCssClass('btn btn-secondary')
+            ->displayIf(function ($entity) {
+                return in_array($entity->getStatus(), [Devis::STATUS_REFUSE, Devis::STATUS_ANNULE, Devis::STATUS_EXPIRE]);
+            });
+
         return $actions
             ->add(Crud::PAGE_INDEX, $generateInvoice)
             ->add(Crud::PAGE_INDEX, $generatePdf)
@@ -213,8 +221,10 @@ class DevisCrudController extends AbstractCrudController
             ->add(Crud::PAGE_INDEX, $markAsSent)
             ->add(Crud::PAGE_INDEX, $markAsAccepted)
             ->add(Crud::PAGE_INDEX, $markAsRejected)
+            ->add(Crud::PAGE_INDEX, $duplicate)
             ->add(Crud::PAGE_DETAIL, $generateInvoice)
-            ->add(Crud::PAGE_DETAIL, $generatePdf);
+            ->add(Crud::PAGE_DETAIL, $generatePdf)
+            ->add(Crud::PAGE_DETAIL, $duplicate);
     }
 
     private function renderStatusWithActions($entity): string
@@ -416,5 +426,57 @@ class DevisCrudController extends AbstractCrudController
                 'entityId' => $devis->getId()
             ]);
         }
+    }
+
+    public function duplicate(EntityManagerInterface $entityManager): \Symfony\Component\HttpFoundation\RedirectResponse
+    {
+        /** @var Devis $original */
+        $original = $this->getContext()->getEntity()->getInstance();
+
+        // Create new devis
+        $newDevis = new Devis();
+        $newDevis->setNumber($this->numberingService->generateDevisNumber());
+        $newDevis->setTitle($original->getTitle() . ' (copie)');
+        $newDevis->setDescription($original->getDescription());
+        $newDevis->setAdditionalInfo($original->getAdditionalInfo());
+        $newDevis->setClient($original->getClient());
+        $newDevis->setStatus(Devis::STATUS_BROUILLON);
+        $newDevis->setVatRate($original->getVatRate());
+        $newDevis->setConditions($original->getConditions());
+        $newDevis->setNotes($original->getNotes());
+        $newDevis->setAcompte($original->getAcompte());
+        $newDevis->setAcomptePercentage($original->getAcomptePercentage());
+        $newDevis->setCreatedBy($this->getUser());
+        $newDevis->setDateCreation(new \DateTimeImmutable());
+        $newDevis->setDateValidite(new \DateTimeImmutable('+30 days'));
+
+        // Copy items
+        foreach ($original->getItems() as $item) {
+            $newItem = new \App\Entity\DevisItem();
+            $newItem->setDevis($newDevis);
+            $newItem->setDescription($item->getDescription());
+            $newItem->setUnit($item->getUnit());
+            $newItem->setPosition($item->getPosition());
+            $newItem->setDiscount($item->getDiscount());
+            $newItem->setVatRate($item->getVatRate());
+            $newItem->setQuantity($item->getQuantity());
+            $newItem->setUnitPrice($item->getUnitPrice()); // Triggers calculateTotal
+
+            $newDevis->addItem($newItem);
+        }
+
+        // Calculate totals
+        $newDevis->calculateTotals();
+
+        $entityManager->persist($newDevis);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Devis dupliqué avec succès.');
+
+        return $this->redirectToRoute('admin', [
+            'crudAction' => 'edit',
+            'crudControllerFqcn' => self::class,
+            'entityId' => $newDevis->getId()
+        ]);
     }
 }

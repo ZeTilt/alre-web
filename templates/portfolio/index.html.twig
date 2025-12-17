@@ -151,7 +151,7 @@
                 </p>
                 {% endif %}
 
-                <p class="card-text">{{ project.shortDescription }}</p>
+                <p class="card-text">{{ project.shortDescription|length > 120 ? project.shortDescription|slice(0, 120) ~ '...' : project.shortDescription }}</p>
 
                 <h4 style="font-size: 1rem; margin-top: 1rem; color: var(--primary-color);">Technologies :</h4>
                 <div class="project-tags">

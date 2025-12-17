@@ -1580,7 +1580,7 @@ textarea.form-control {
 
 /* Comparison table */
 .comparison-table {
-    max-width: 800px;
+    max-width: 950px;
     margin: 0 auto;
     border-radius: var(--radius-lg);
     overflow: hidden;
@@ -1589,7 +1589,7 @@ textarea.form-control {
 
 .comparison-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
     background: white;
 }
 

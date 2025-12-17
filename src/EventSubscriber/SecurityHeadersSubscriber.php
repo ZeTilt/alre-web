@@ -87,8 +87,8 @@ class SecurityHeadersSubscriber implements EventSubscriberInterface
             // Fonts: self + Google Fonts (FontAwesome now hosted locally)
             "font-src 'self' https://fonts.gstatic.com data:",
 
-            // Images: self + data URIs (for inline images)
-            "img-src 'self' data: https://matomo.alre-web.bzh",
+            // Images: self + data URIs (for inline images) + EcoIndex badge
+            "img-src 'self' data: https://matomo.alre-web.bzh https://bff.ecoindex.fr",
 
             // Connections (AJAX, WebSocket)
             "connect-src 'self' https://matomo.alre-web.bzh",

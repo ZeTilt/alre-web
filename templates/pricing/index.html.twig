@@ -2,7 +2,7 @@
 
 {% block title %}Tarifs | Développeur Web Freelance - Prix Transparents{% endblock %}
 
-{% block meta_description %}Tarifs transparents pour la création de sites internet à Auray, Vannes et Lorient (Morbihan). Site vitrine à partir de 1200€, e-commerce à partir de 2500€, hébergement + maintenance 80€/mois. Devis gratuit et personnalisé en Bretagne.{% endblock %}
+{% block meta_description %}Tarifs transparents pour la création de sites internet à Auray, Vannes et Lorient (Morbihan). Page unique à partir de 490€, site vitrine à partir de 1200€, e-commerce à partir de 2500€. Devis gratuit en Bretagne.{% endblock %}
 
 {% block body %}
 
@@ -36,8 +36,44 @@
     <div class="container">
         <h2 class="text-center mb-5">Offres Principales</h2>
 
-        <div class="grid grid-3">
-            {# Offre 1 : Site Vitrine #}
+        <div class="grid grid-4">
+            {# Offre 1 : Page Unique #}
+            <div class="pricing-card card">
+                <div class="card-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h3 class="card-title">Page Unique</h3>
+                <div class="pricing-price">
+                    <span>à partir de</span>
+                    490 €
+                </div>
+                <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
+                    Une page, l'essentiel
+                </p>
+                <ul class="pricing-features">
+                    <li>Design moderne et responsive</li>
+                    <li>Une page complète et optimisée</li>
+                    <li>Formulaire de contact</li>
+                    <li>Optimisation SEO de base</li>
+                    <li>Intégration de vos contenus</li>
+                    <li>1 mois de support offert</li>
+                </ul>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <p style="font-weight: 600; color: var(--primary-color); margin-bottom: 1rem;">
+                        Idéal pour :
+                    </p>
+                    <p style="font-size: 0.9rem; color: var(--text-muted);">
+                        Entrepreneurs qui démarrent, présence rapide
+                    </p>
+                </div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="{{ path('app_contact') }}" class="btn btn-outline">
+                        Demander un devis
+                    </a>
+                </div>
+            </div>
+
+            {# Offre 2 : Site Vitrine #}
             <div class="pricing-card card">
                 <div class="card-icon">
                     <i class="fas fa-desktop"></i>
@@ -48,23 +84,23 @@
                     1 200 €
                 </div>
                 <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
-                    Pour un site de 5-7 pages
+                    Pour un site de 4-5 pages
                 </p>
                 <ul class="pricing-features">
                     <li>Design moderne et responsive</li>
-                    <li>5 à 7 pages personnalisées</li>
+                    <li>4 à 5 pages personnalisées</li>
                     <li>Formulaire de contact</li>
                     <li>Optimisation SEO de base</li>
                     <li>Intégration de vos contenus</li>
                     <li>Formation à la gestion</li>
-                    <li>1 mois de support offert</li>
+                    <li>2 mois de support offert</li>
                 </ul>
                 <div style="text-align: center; margin-top: 2rem;">
                     <p style="font-weight: 600; color: var(--primary-color); margin-bottom: 1rem;">
                         Idéal pour :
                     </p>
                     <p style="font-size: 0.9rem; color: var(--text-muted);">
-                        Artisans, associations, professions libérales, TPE
+                        Artisans, professions libérales, TPE
                     </p>
                 </div>
                 <div style="text-align: center; margin-top: 2rem;">
@@ -74,7 +110,7 @@
                 </div>
             </div>
 
-            {# Offre 2 : Site E-commerce (Featured) #}
+            {# Offre 3 : Site E-commerce (Featured) #}
             <div class="pricing-card card featured">
                 <div class="card-icon">
                     <i class="fas fa-shopping-cart"></i>
@@ -96,14 +132,14 @@
                     <li>Emails transactionnels</li>
                     <li>Module de livraison</li>
                     <li>Formation complète</li>
-                    <li>2 mois de support offert</li>
+                    <li>3 mois de support offert</li>
                 </ul>
                 <div style="text-align: center; margin-top: 2rem;">
                     <p style="font-weight: 600; color: var(--primary-color); margin-bottom: 1rem;">
                         Idéal pour :
                     </p>
                     <p style="font-size: 0.9rem; color: var(--text-muted);">
-                        Boutiques, commerces locaux, artisans créateurs
+                        Boutiques, commerces, artisans créateurs
                     </p>
                 </div>
                 <div style="text-align: center; margin-top: 2rem;">
@@ -113,34 +149,33 @@
                 </div>
             </div>
 
-            {# Offre 3 : Sur Mesure #}
+            {# Offre 4 : Sur Mesure #}
             <div class="pricing-card card">
                 <div class="card-icon">
                     <i class="fas fa-cogs"></i>
                 </div>
-                <h3 class="card-title">Site Sur Mesure</h3>
+                <h3 class="card-title">Sur Mesure</h3>
                 <div class="pricing-price">
                     Sur devis
                 </div>
                 <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
-                    Projet spécifique
+                    Besoin spécifique
                 </p>
                 <ul class="pricing-features">
-                    <li>Fonctionnalités complexes</li>
+                    <li>Fonctionnalités sur mesure</li>
                     <li>Intégrations avancées</li>
-                    <li>Application métier</li>
-                    <li>Portail / Extranet</li>
-                    <li>Module de réservation</li>
                     <li>Espace membres</li>
+                    <li>Module de réservation</li>
+                    <li>Portail client</li>
+                    <li>Application métier</li>
                     <li>API personnalisée</li>
-                    <li>Tout ce dont vous avez besoin !</li>
                 </ul>
                 <div style="text-align: center; margin-top: 2rem;">
                     <p style="font-weight: 600; color: var(--primary-color); margin-bottom: 1rem;">
                         Idéal pour :
                     </p>
                     <p style="font-size: 0.9rem; color: var(--text-muted);">
-                        PME, plateformes, projets spécifiques
+                        Besoins qui ne rentrent pas dans les cases
                     </p>
                 </div>
                 <div style="text-align: center; margin-top: 2rem;">
@@ -149,6 +184,12 @@
                     </a>
                 </div>
             </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <p style="color: var(--text-muted); font-style: italic;">
+                Sur mesure ≠ forcément plus cher. C'est simplement un projet qui nécessite une discussion pour définir le périmètre.
+            </p>
         </div>
     </div>
 </section>

@@ -82,9 +82,10 @@ class ContactType extends AbstractType
                 'placeholder' => 'Sélectionnez le type de projet',
                 'attr' => ['class' => 'form-control'],
                 'choices' => [
-                    'Site Vitrine' => 'vitrine',
-                    'E-commerce' => 'ecommerce',
-                    'Application sur mesure' => 'sur-mesure',
+                    'Page unique (à partir de 490€)' => 'page-unique',
+                    'Site vitrine (à partir de 1 200€)' => 'vitrine',
+                    'Site e-commerce (à partir de 2 500€)' => 'ecommerce',
+                    'Projet sur mesure' => 'sur-mesure',
                     'Refonte de site existant' => 'refonte',
                     'Maintenance / Support' => 'maintenance',
                     'Autre / Je ne sais pas' => 'autre'

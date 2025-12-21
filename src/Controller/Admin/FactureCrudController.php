@@ -103,6 +103,22 @@ class FactureCrudController extends AbstractCrudController
                 ->setHelp('Texte libre affiché entre l\'objet et les prestations (sans label)'),
             AssociationField::new('client', 'Client'),
             AssociationField::new('devis', 'Devis')->onlyOnDetail(),
+            AssociationField::new('factureAcompte', 'Facture d\'acompte')
+                ->onlyOnDetail()
+                ->formatValue(function ($value, $entity) {
+                    if ($value) {
+                        return $value->getNumber();
+                    }
+                    return null;
+                }),
+            ChoiceField::new('type', 'Type')
+                ->setChoices(Facture::getTypeChoices())
+                ->renderAsBadges([
+                    Facture::TYPE_STANDARD => 'primary',
+                    Facture::TYPE_ACOMPTE => 'warning',
+                    Facture::TYPE_SOLDE => 'success',
+                ])
+                ->hideOnForm(),
             ChoiceField::new('status', 'Statut')
                 ->setChoices(Facture::getStatusChoices())
                 ->renderAsBadges([

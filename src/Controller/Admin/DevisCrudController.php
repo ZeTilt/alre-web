@@ -166,8 +166,23 @@ class DevisCrudController extends AbstractCrudController
             ->setIcon('fas fa-file-invoice')
             ->addCssClass('btn btn-success')
             ->displayIf(function ($entity) {
-                // Afficher pour tous les devis acceptés qui n'ont pas encore de facture
-                return $entity->getStatus() === Devis::STATUS_ACCEPTE && $entity->getFacture() === null;
+                return $entity->canBeConverted();
+            });
+
+        $generateAcompteInvoice = Action::new('generateAcompteInvoice', 'Facture d\'acompte')
+            ->linkToCrudAction('generateAcompteInvoice')
+            ->setIcon('fas fa-file-invoice-dollar')
+            ->addCssClass('btn btn-warning')
+            ->displayIf(function ($entity) {
+                return $entity->canGenerateFactureAcompte();
+            });
+
+        $generateSoldeInvoice = Action::new('generateSoldeInvoice', 'Facture de solde')
+            ->linkToCrudAction('generateSoldeInvoice')
+            ->setIcon('fas fa-file-invoice')
+            ->addCssClass('btn btn-success')
+            ->displayIf(function ($entity) {
+                return $entity->canGenerateFactureSolde();
             });
 
         $generatePdf = Action::new('generatePdf', 'Générer PDF')
@@ -227,6 +242,8 @@ class DevisCrudController extends AbstractCrudController
             ->add(Crud::PAGE_INDEX, $markAsRejected)
             ->add(Crud::PAGE_INDEX, $duplicate)
             ->add(Crud::PAGE_DETAIL, $generateInvoice)
+            ->add(Crud::PAGE_DETAIL, $generateAcompteInvoice)
+            ->add(Crud::PAGE_DETAIL, $generateSoldeInvoice)
             ->add(Crud::PAGE_DETAIL, $generatePdf)
             ->add(Crud::PAGE_DETAIL, $duplicate);
     }
@@ -402,7 +419,130 @@ class DevisCrudController extends AbstractCrudController
         $entityManager->flush();
         
         $this->addFlash('success', 'Facture générée avec succès.');
-        
+
+        return $this->redirectToRoute('admin', [
+            'crudAction' => 'detail',
+            'crudControllerFqcn' => 'App\\Controller\\Admin\\FactureCrudController',
+            'entityId' => $facture->getId()
+        ]);
+    }
+
+    public function generateAcompteInvoice(EntityManagerInterface $entityManager): \Symfony\Component\HttpFoundation\RedirectResponse
+    {
+        $devis = $this->getContext()->getEntity()->getInstance();
+
+        if (!$devis->canGenerateFactureAcompte()) {
+            $this->addFlash('danger', 'Impossible de générer une facture d\'acompte pour ce devis.');
+            return $this->redirectToRoute('admin', ['crudAction' => 'detail', 'crudControllerFqcn' => self::class, 'entityId' => $devis->getId()]);
+        }
+
+        // Créer la facture d'acompte
+        $facture = new \App\Entity\Facture();
+        $facture->setType(\App\Entity\Facture::TYPE_ACOMPTE);
+        $facture->setDevis($devis);
+        $facture->setClient($devis->getClient());
+        $facture->setCreatedBy($this->getUser());
+        $facture->setTitle('Acompte - ' . $devis->getTitle());
+        $facture->setDescription('Facture d\'acompte pour le devis ' . $devis->getNumber());
+        $facture->setConditions($devis->getConditions());
+        $facture->setNotes($devis->getNotes());
+        $facture->setVatRate($devis->getVatRate());
+
+        // Montant = acompte du devis
+        $acompteHt = (float) $devis->getAcompte();
+        $vatRate = (float) $devis->getVatRate();
+        $acompteTtc = $acompteHt * (1 + $vatRate / 100);
+
+        $facture->setTotalHt(number_format($acompteHt, 2, '.', ''));
+        $facture->setTotalTtc(number_format($acompteTtc, 2, '.', ''));
+
+        // Générer numéro séquentiel
+        $facture->setNumber($this->numberingService->generateFactureNumber());
+
+        // Créer une seule ligne pour l'acompte
+        $factureItem = new \App\Entity\FactureItem();
+        $factureItem->setFacture($facture);
+        $factureItem->setDescription('Acompte sur devis ' . $devis->getNumber() . ' - ' . $devis->getTitle());
+        $factureItem->setQuantity('1');
+        $factureItem->setUnit('forfait');
+        $factureItem->setUnitPrice(number_format($acompteHt, 2, '.', ''));
+        $factureItem->setTotal(number_format($acompteHt, 2, '.', ''));
+        $factureItem->setVatRate($devis->getVatRate());
+        $factureItem->setPosition(1);
+
+        $facture->addItem($factureItem);
+
+        $entityManager->persist($facture);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Facture d\'acompte générée avec succès.');
+
+        return $this->redirectToRoute('admin', [
+            'crudAction' => 'detail',
+            'crudControllerFqcn' => 'App\\Controller\\Admin\\FactureCrudController',
+            'entityId' => $facture->getId()
+        ]);
+    }
+
+    public function generateSoldeInvoice(EntityManagerInterface $entityManager): \Symfony\Component\HttpFoundation\RedirectResponse
+    {
+        $devis = $this->getContext()->getEntity()->getInstance();
+
+        if (!$devis->canGenerateFactureSolde()) {
+            $this->addFlash('danger', 'Impossible de générer une facture de solde pour ce devis.');
+            return $this->redirectToRoute('admin', ['crudAction' => 'detail', 'crudControllerFqcn' => self::class, 'entityId' => $devis->getId()]);
+        }
+
+        $factureAcompte = $devis->getFactureAcompte();
+
+        // Créer la facture de solde
+        $facture = new \App\Entity\Facture();
+        $facture->setType(\App\Entity\Facture::TYPE_SOLDE);
+        $facture->setDevis($devis);
+        $facture->setFactureAcompte($factureAcompte);
+        $facture->setClient($devis->getClient());
+        $facture->setCreatedBy($this->getUser());
+        $facture->setTitle('Solde - ' . $devis->getTitle());
+        $facture->setDescription($devis->getDescription());
+        $facture->setAdditionalInfo($devis->getAdditionalInfo());
+        $facture->setConditions($devis->getConditions());
+        $facture->setNotes($devis->getNotes());
+        $facture->setVatRate($devis->getVatRate());
+
+        // Montant = total du devis - acompte
+        $totalHt = (float) $devis->getTotalHt();
+        $acompteHt = (float) $devis->getAcompte();
+        $soldeHt = $totalHt - $acompteHt;
+        $vatRate = (float) $devis->getVatRate();
+        $soldeTtc = $soldeHt * (1 + $vatRate / 100);
+
+        $facture->setTotalHt(number_format($soldeHt, 2, '.', ''));
+        $facture->setTotalTtc(number_format($soldeTtc, 2, '.', ''));
+
+        // Générer numéro séquentiel
+        $facture->setNumber($this->numberingService->generateFactureNumber());
+
+        // Copier les items du devis
+        foreach ($devis->getItems() as $devisItem) {
+            $factureItem = new \App\Entity\FactureItem();
+            $factureItem->setFacture($facture);
+            $factureItem->setDescription($devisItem->getDescription());
+            $factureItem->setQuantity($devisItem->getQuantity());
+            $factureItem->setUnit($devisItem->getUnit());
+            $factureItem->setUnitPrice($devisItem->getUnitPrice());
+            $factureItem->setDiscount($devisItem->getDiscount());
+            $factureItem->setVatRate($devisItem->getVatRate());
+            $factureItem->setTotal($devisItem->getTotal());
+            $factureItem->setPosition($devisItem->getPosition());
+
+            $facture->addItem($factureItem);
+        }
+
+        $entityManager->persist($facture);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Facture de solde générée avec succès.');
+
         return $this->redirectToRoute('admin', [
             'crudAction' => 'detail',
             'crudControllerFqcn' => 'App\\Controller\\Admin\\FactureCrudController',

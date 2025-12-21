@@ -124,7 +124,13 @@
         </div>
     </span>
     <span class="doc-cell">
-        <div class="doc-title">FACTURE</div>
+        {% if facture.type == 'acompte' %}
+            <div class="doc-title" style="font-size: 14px;">FACTURE D'ACOMPTE</div>
+        {% elseif facture.type == 'solde' %}
+            <div class="doc-title" style="font-size: 16px;">FACTURE DE SOLDE</div>
+        {% else %}
+            <div class="doc-title">FACTURE</div>
+        {% endif %}
         <table class="doc-info-table">
             <tbody>
                 <tr>
@@ -143,6 +149,12 @@
                 <tr>
                     <td class="doc-label">Devis</td>
                     <td class="doc-value">{{ facture.devis.number }}</td>
+                </tr>
+                {% endif %}
+                {% if facture.factureAcompte %}
+                <tr>
+                    <td class="doc-label">Acompte</td>
+                    <td class="doc-value">{{ facture.factureAcompte.number }}</td>
                 </tr>
                 {% endif %}
             </tbody>
@@ -227,36 +239,54 @@
 {% set totalHt = facture.totalHt %}
 {% set totalTtc = facture.totalTtc %}
 {% set vatAmount = totalTtc - totalHt %}
-{% set acompteAmount = facture.acompteAmount %}
-{% set netAPayer = facture.netAPayer %}
 
 <div class="totals-wrapper">
     <table class="totals-table">
         <tbody>
-            <tr class="total-ht-row">
-                <td class="label">Total HT</td>
-                <td class="value">{{ totalHt|number_format(2, ',', ' ') }} €</td>
-            </tr>
-            {% if vatRate > 0 %}
-                <tr class="tva-row">
-                    <td class="label">TVA ({{ vatRate|number_format(0) }}%)</td>
-                    <td class="value">{{ vatAmount|number_format(2, ',', ' ') }} €</td>
-                </tr>
+            {% if facture.type == 'solde' and facture.factureAcompte %}
+                {# Facture de solde : afficher le récapitulatif complet #}
+                {% set devisTotalHt = facture.devis.totalHt %}
+                {% set devisTotalTtc = facture.devis.totalTtc %}
+                {% set acompteHt = facture.factureAcompte.totalHt %}
+                {% set acompteTtc = facture.factureAcompte.totalTtc %}
                 <tr class="total-ht-row">
-                    <td class="label">Total TTC</td>
-                    <td class="value">{{ totalTtc|number_format(2, ',', ' ') }} €</td>
+                    <td class="label">Total devis HT</td>
+                    <td class="value">{{ devisTotalHt|number_format(2, ',', ' ') }} €</td>
                 </tr>
-            {% endif %}
-            {% if acompteAmount and acompteAmount > 0 and facture.acomptePaye %}
+                {% if vatRate > 0 %}
+                    <tr class="tva-row">
+                        <td class="label">TVA ({{ vatRate|number_format(0) }}%)</td>
+                        <td class="value">{{ (devisTotalTtc - devisTotalHt)|number_format(2, ',', ' ') }} €</td>
+                    </tr>
+                    <tr class="total-ht-row">
+                        <td class="label">Total devis TTC</td>
+                        <td class="value">{{ devisTotalTtc|number_format(2, ',', ' ') }} €</td>
+                    </tr>
+                {% endif %}
                 <tr class="acompte-row">
-                    <td class="label">Acompte versé{% if facture.acomptePercentage %} ({{ facture.acomptePercentage|number_format(0) }}%){% endif %}</td>
-                    <td class="value">- {{ acompteAmount|number_format(2, ',', ' ') }} €</td>
+                    <td class="label">Acompte versé ({{ facture.factureAcompte.number }})</td>
+                    <td class="value">- {{ (vatRate > 0 ? acompteTtc : acompteHt)|number_format(2, ',', ' ') }} €</td>
                 </tr>
                 <tr class="total-final-row">
-                    <td class="label">NET À PAYER</td>
-                    <td class="value">{{ netAPayer|number_format(2, ',', ' ') }} €</td>
+                    <td class="label">SOLDE À PAYER</td>
+                    <td class="value">{{ (vatRate > 0 ? totalTtc : totalHt)|number_format(2, ',', ' ') }} €</td>
                 </tr>
             {% else %}
+                {# Facture standard ou d'acompte #}
+                <tr class="total-ht-row">
+                    <td class="label">Total HT</td>
+                    <td class="value">{{ totalHt|number_format(2, ',', ' ') }} €</td>
+                </tr>
+                {% if vatRate > 0 %}
+                    <tr class="tva-row">
+                        <td class="label">TVA ({{ vatRate|number_format(0) }}%)</td>
+                        <td class="value">{{ vatAmount|number_format(2, ',', ' ') }} €</td>
+                    </tr>
+                    <tr class="total-ht-row">
+                        <td class="label">Total TTC</td>
+                        <td class="value">{{ totalTtc|number_format(2, ',', ' ') }} €</td>
+                    </tr>
+                {% endif %}
                 <tr class="total-final-row">
                     <td class="label">NET À PAYER</td>
                     <td class="value">{{ (vatRate > 0 ? totalTtc : totalHt)|number_format(2, ',', ' ') }} €</td>

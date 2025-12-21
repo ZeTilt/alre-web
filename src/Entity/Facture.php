@@ -20,6 +20,10 @@ class Facture
     public const STATUS_EN_RETARD = 'en_retard';
     public const STATUS_ANNULE = 'annule';
 
+    public const TYPE_STANDARD = 'standard';
+    public const TYPE_ACOMPTE = 'acompte';
+    public const TYPE_SOLDE = 'solde';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -41,7 +45,7 @@ class Facture
     #[ORM\JoinColumn(nullable: false)]
     private ?Client $client = null;
 
-    #[ORM\OneToOne(inversedBy: 'facture', cascade: ['persist', 'remove'])]
+    #[ORM\ManyToOne(inversedBy: 'factures')]
     private ?Devis $devis = null;
 
     #[ORM\Column(length: 50)]
@@ -93,12 +97,22 @@ class Facture
     #[ORM\Column(type: Types::BOOLEAN)]
     private bool $acomptePaye = true;
 
+    #[ORM\Column(length: 20)]
+    private string $type = self::TYPE_STANDARD;
+
+    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'facturesSolde')]
+    private ?Facture $factureAcompte = null;
+
+    #[ORM\OneToMany(mappedBy: 'factureAcompte', targetEntity: self::class)]
+    private Collection $facturesSolde;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->dateFacture = new \DateTimeImmutable();
         $this->dateEcheance = new \DateTimeImmutable('+30 days');
         $this->items = new ArrayCollection();
+        $this->facturesSolde = new ArrayCollection();
         $this->number = $this->generateNumber();
     }
 
@@ -430,6 +444,68 @@ class Facture
         $this->acomptePaye = $acomptePaye;
 
         return $this;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function isAcompte(): bool
+    {
+        return $this->type === self::TYPE_ACOMPTE;
+    }
+
+    public function isSolde(): bool
+    {
+        return $this->type === self::TYPE_SOLDE;
+    }
+
+    public function isStandard(): bool
+    {
+        return $this->type === self::TYPE_STANDARD;
+    }
+
+    public function getFactureAcompte(): ?self
+    {
+        return $this->factureAcompte;
+    }
+
+    public function setFactureAcompte(?self $factureAcompte): static
+    {
+        $this->factureAcompte = $factureAcompte;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Facture>
+     */
+    public function getFacturesSolde(): Collection
+    {
+        return $this->facturesSolde;
+    }
+
+    public static function getTypeChoices(): array
+    {
+        return [
+            'Standard' => self::TYPE_STANDARD,
+            'Acompte' => self::TYPE_ACOMPTE,
+            'Solde' => self::TYPE_SOLDE,
+        ];
+    }
+
+    public function getTypeLabel(): string
+    {
+        $choices = self::getTypeChoices();
+        return array_search($this->type, $choices) ?: $this->type;
     }
 
     /**

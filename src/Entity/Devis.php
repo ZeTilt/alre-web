@@ -81,8 +81,8 @@ class Devis
     #[ORM\OneToMany(mappedBy: 'devis', targetEntity: DevisItem::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
     private Collection $items;
 
-    #[ORM\OneToOne(mappedBy: 'devis', cascade: ['persist'])]
-    private ?Facture $facture = null;
+    #[ORM\OneToMany(mappedBy: 'devis', targetEntity: Facture::class, cascade: ['persist'])]
+    private Collection $factures;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
@@ -103,6 +103,7 @@ class Devis
         $this->dateCreation = new \DateTimeImmutable();
         $this->dateValidite = new \DateTimeImmutable('+30 days');
         $this->items = new ArrayCollection();
+        $this->factures = new ArrayCollection();
         // Number will be set by the NumberingService
     }
 
@@ -356,26 +357,89 @@ class Devis
         return $this;
     }
 
-    public function getFacture(): ?Facture
+    /**
+     * @return Collection<int, Facture>
+     */
+    public function getFactures(): Collection
     {
-        return $this->facture;
+        return $this->factures;
     }
 
-    public function setFacture(?Facture $facture): static
+    public function addFacture(Facture $facture): static
     {
-        // unset the owning side of the relation if necessary
-        if ($facture === null && $this->facture !== null) {
-            $this->facture->setDevis(null);
-        }
-
-        // set the owning side of the relation if necessary
-        if ($facture !== null && $facture->getDevis() !== $this) {
+        if (!$this->factures->contains($facture)) {
+            $this->factures->add($facture);
             $facture->setDevis($this);
         }
 
-        $this->facture = $facture;
+        return $this;
+    }
+
+    public function removeFacture(Facture $facture): static
+    {
+        if ($this->factures->removeElement($facture)) {
+            if ($facture->getDevis() === $this) {
+                $facture->setDevis(null);
+            }
+        }
 
         return $this;
+    }
+
+    /**
+     * Retourne la facture d'acompte liée au devis
+     */
+    public function getFactureAcompte(): ?Facture
+    {
+        foreach ($this->factures as $facture) {
+            if ($facture->isAcompte()) {
+                return $facture;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Retourne la facture de solde liée au devis
+     */
+    public function getFactureSolde(): ?Facture
+    {
+        foreach ($this->factures as $facture) {
+            if ($facture->isSolde()) {
+                return $facture;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Retourne la facture standard liée au devis (ancienne logique)
+     */
+    public function getFacture(): ?Facture
+    {
+        foreach ($this->factures as $facture) {
+            if ($facture->isStandard()) {
+                return $facture;
+            }
+        }
+        // Fallback: retourne la première facture
+        return $this->factures->first() ?: null;
+    }
+
+    /**
+     * Vérifie si le devis a une facture d'acompte
+     */
+    public function hasFactureAcompte(): bool
+    {
+        return $this->getFactureAcompte() !== null;
+    }
+
+    /**
+     * Vérifie si le devis a une facture de solde
+     */
+    public function hasFactureSolde(): bool
+    {
+        return $this->getFactureSolde() !== null;
     }
 
     public function getCreatedBy(): ?User
@@ -520,9 +584,37 @@ class Devis
         ]);
     }
 
+    /**
+     * Vérifie si le devis peut être converti en facture standard (sans acompte)
+     */
     public function canBeConverted(): bool
     {
-        return $this->status === self::STATUS_ACCEPTE && !$this->facture;
+        return $this->status === self::STATUS_ACCEPTE
+            && $this->factures->isEmpty()
+            && (!$this->acompte || (float)$this->acompte <= 0);
+    }
+
+    /**
+     * Vérifie si on peut générer une facture d'acompte
+     */
+    public function canGenerateFactureAcompte(): bool
+    {
+        return $this->status === self::STATUS_ACCEPTE
+            && !$this->hasFactureAcompte()
+            && $this->acompte
+            && (float)$this->acompte > 0;
+    }
+
+    /**
+     * Vérifie si on peut générer une facture de solde
+     */
+    public function canGenerateFactureSolde(): bool
+    {
+        $factureAcompte = $this->getFactureAcompte();
+        return $this->status === self::STATUS_ACCEPTE
+            && $factureAcompte !== null
+            && $factureAcompte->getStatus() === Facture::STATUS_PAYE
+            && !$this->hasFactureSolde();
     }
 
 

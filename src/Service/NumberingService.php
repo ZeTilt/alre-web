@@ -44,14 +44,9 @@ class NumberingService
         return sprintf('%s-DEV-%s-%s-%02d', self::PREFIX, $year, $month, $nextNumber);
     }
 
-    public function generateFactureNumber(Devis $devis = null): string
+    public function generateFactureNumber(): string
     {
-        // If devis is provided, replace DEV with FAC in the devis number
-        if ($devis && $devis->getNumber()) {
-            return str_replace('-DEV-', '-FAC-', $devis->getNumber());
-        }
-
-        // Otherwise, generate a new facture number
+        // Always generate sequential facture numbers (independent of devis)
         $currentDate = new \DateTimeImmutable();
         $year = $currentDate->format('Y');
         $month = $currentDate->format('m');

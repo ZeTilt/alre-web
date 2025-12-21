@@ -379,8 +379,8 @@ class DevisCrudController extends AbstractCrudController
         $facture->setTotalTtc($devis->getTotalTtc());
         $facture->setVatRate($devis->getVatRate());
         
-        // Generate invoice number based on devis number
-        $facture->setNumber($this->numberingService->generateFactureNumber($devis));
+        // Generate sequential invoice number
+        $facture->setNumber($this->numberingService->generateFactureNumber());
         
         // Copy items
         foreach ($devis->getItems() as $devisItem) {

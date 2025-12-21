@@ -71,12 +71,12 @@ class NumberingServiceTest extends TestCase
 
     public function testGenerateFirstDevisNumberOfMonth(): void
     {
-        $this->mockDevisRepository(null); // No existing devis
+        $this->mockDevisRepository(null);
 
         $number = $this->service->generateDevisNumber();
 
         $currentDate = new \DateTimeImmutable();
-        $expectedPrefix = 'DEV-' . $currentDate->format('Y') . '-' . $currentDate->format('m') . '-';
+        $expectedPrefix = 'AW-DEV-' . $currentDate->format('Y') . '-' . $currentDate->format('m') . '-';
 
         $this->assertStringStartsWith($expectedPrefix, $number);
         $this->assertStringEndsWith('-01', $number);
@@ -86,17 +86,16 @@ class NumberingServiceTest extends TestCase
     {
         $lastDevis = new Devis();
         $lastDevis->setTitle('Last');
-        // Use reflection to set the number since constructor might be different
         $reflection = new \ReflectionClass($lastDevis);
         $numberProperty = $reflection->getProperty('number');
-        $numberProperty->setValue($lastDevis, 'DEV-2025-12-05');
+        $numberProperty->setValue($lastDevis, 'AW-DEV-2025-12-05');
 
         $this->mockDevisRepository($lastDevis);
 
         $number = $this->service->generateDevisNumber();
 
         $currentDate = new \DateTimeImmutable();
-        $expectedNumber = sprintf('DEV-%s-%s-06', $currentDate->format('Y'), $currentDate->format('m'));
+        $expectedNumber = sprintf('AW-DEV-%s-%s-06', $currentDate->format('Y'), $currentDate->format('m'));
 
         $this->assertEquals($expectedNumber, $number);
     }
@@ -107,31 +106,18 @@ class NumberingServiceTest extends TestCase
 
         $number = $this->service->generateDevisNumber();
 
-        // Format should be DEV-YYYY-MM-XX
-        $this->assertMatchesRegularExpression('/^DEV-\d{4}-\d{2}-\d{2}$/', $number);
+        // Format should be AW-DEV-YYYY-MM-XX
+        $this->assertMatchesRegularExpression('/^AW-DEV-\d{4}-\d{2}-\d{2}$/', $number);
     }
 
-    public function testGenerateFactureNumberFromDevis(): void
-    {
-        $devis = new Devis();
-        $devis->setTitle('Test');
-        $reflection = new \ReflectionClass($devis);
-        $numberProperty = $reflection->getProperty('number');
-        $numberProperty->setValue($devis, 'DEV-2025-12-05');
-
-        $factureNumber = $this->service->generateFactureNumber($devis);
-
-        $this->assertEquals('FAC-2025-12-05', $factureNumber);
-    }
-
-    public function testGenerateFactureNumberWithoutDevis(): void
+    public function testGenerateFactureNumber(): void
     {
         $this->mockFactureRepository(null);
 
         $number = $this->service->generateFactureNumber();
 
         $currentDate = new \DateTimeImmutable();
-        $expectedPrefix = 'FAC-' . $currentDate->format('Y') . '-' . $currentDate->format('m') . '-';
+        $expectedPrefix = 'AW-FAC-' . $currentDate->format('Y') . '-' . $currentDate->format('m') . '-';
 
         $this->assertStringStartsWith($expectedPrefix, $number);
         $this->assertStringEndsWith('-01', $number);
@@ -143,14 +129,14 @@ class NumberingServiceTest extends TestCase
         $lastFacture->setTitle('Last');
         $reflection = new \ReflectionClass($lastFacture);
         $numberProperty = $reflection->getProperty('number');
-        $numberProperty->setValue($lastFacture, 'FAC-2025-12-10');
+        $numberProperty->setValue($lastFacture, 'AW-FAC-2025-12-10');
 
         $this->mockFactureRepository($lastFacture);
 
         $number = $this->service->generateFactureNumber();
 
         $currentDate = new \DateTimeImmutable();
-        $expectedNumber = sprintf('FAC-%s-%s-11', $currentDate->format('Y'), $currentDate->format('m'));
+        $expectedNumber = sprintf('AW-FAC-%s-%s-11', $currentDate->format('Y'), $currentDate->format('m'));
 
         $this->assertEquals($expectedNumber, $number);
     }
@@ -161,22 +147,8 @@ class NumberingServiceTest extends TestCase
 
         $number = $this->service->generateFactureNumber();
 
-        // Format should be FAC-YYYY-MM-XX
-        $this->assertMatchesRegularExpression('/^FAC-\d{4}-\d{2}-\d{2}$/', $number);
-    }
-
-    public function testDevisToFactureNumberConversionPreservesSequence(): void
-    {
-        $devis = new Devis();
-        $devis->setTitle('Test');
-        $reflection = new \ReflectionClass($devis);
-        $numberProperty = $reflection->getProperty('number');
-        $numberProperty->setValue($devis, 'DEV-2025-06-15');
-
-        $factureNumber = $this->service->generateFactureNumber($devis);
-
-        $this->assertEquals('FAC-2025-06-15', $factureNumber);
-        $this->assertStringContainsString('06-15', $factureNumber);
+        // Format should be AW-FAC-YYYY-MM-XX
+        $this->assertMatchesRegularExpression('/^AW-FAC-\d{4}-\d{2}-\d{2}$/', $number);
     }
 
     public function testNumberingUsesCurrentDate(): void

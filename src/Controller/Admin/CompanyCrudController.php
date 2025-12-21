@@ -18,12 +18,51 @@ use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Validator\Constraints\File;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 
 class CompanyCrudController extends AbstractCrudController
 {
+    public function __construct(
+        private readonly EntityManagerInterface $entityManager,
+        private readonly AdminUrlGenerator $adminUrlGenerator
+    ) {
+    }
+
     public static function getEntityFqcn(): string
     {
         return Company::class;
+    }
+
+    public function index(\EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext $context): \Symfony\Component\HttpFoundation\Response
+    {
+        // Redirect directly to the single company edit page
+        $company = $this->entityManager->getRepository(Company::class)->findOneBy([]);
+
+        if ($company) {
+            $url = $this->adminUrlGenerator
+                ->setController(self::class)
+                ->setAction(Action::EDIT)
+                ->setEntityId($company->getId())
+                ->generateUrl();
+
+            return $this->redirect($url);
+        }
+
+        // No company exists, redirect to new
+        $url = $this->adminUrlGenerator
+            ->setController(self::class)
+            ->setAction(Action::NEW)
+            ->generateUrl();
+
+        return $this->redirect($url);
+    }
+
+    public function configureActions(Actions $actions): Actions
+    {
+        return $actions
+            ->disable(Action::INDEX, Action::DELETE);
     }
 
     public function configureCrud(Crud $crud): Crud

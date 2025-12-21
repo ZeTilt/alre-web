@@ -94,6 +94,9 @@ class Devis
     #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
     private ?string $acomptePercentage = null;
 
+    #[ORM\Column(type: Types::BOOLEAN)]
+    private bool $acompteVerse = true;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -407,6 +410,18 @@ class Devis
     public function setAcomptePercentage(?string $acomptePercentage): static
     {
         $this->acomptePercentage = $acomptePercentage;
+
+        return $this;
+    }
+
+    public function isAcompteVerse(): bool
+    {
+        return $this->acompteVerse;
+    }
+
+    public function setAcompteVerse(bool $acompteVerse): static
+    {
+        $this->acompteVerse = $acompteVerse;
 
         return $this;
     }

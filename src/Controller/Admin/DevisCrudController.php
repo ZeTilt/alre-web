@@ -16,6 +16,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use Doctrine\ORM\EntityManagerInterface;
@@ -138,6 +139,9 @@ class DevisCrudController extends AbstractCrudController
                 ->onlyOnForms(),
             NumberField::new('acomptePercentage', 'Acompte (%)')
                 ->setNumDecimals(2)
+                ->onlyOnForms(),
+            BooleanField::new('acompteVerse', 'Acompte versé')
+                ->setHelp('Décocher si l\'acompte n\'a pas encore été versé')
                 ->onlyOnForms(),
             TextareaField::new('description', 'Description')->onlyOnForms(),
             TextareaField::new('conditions', 'Conditions')->onlyOnForms(),

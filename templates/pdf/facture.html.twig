@@ -227,7 +227,7 @@
 {% set totalHt = facture.totalHt %}
 {% set totalTtc = facture.totalTtc %}
 {% set vatAmount = totalTtc - totalHt %}
-{% set acompteVerse = facture.acompteVerse %}
+{% set acompteAmount = facture.acompteAmount %}
 {% set netAPayer = facture.netAPayer %}
 
 <div class="totals-wrapper">
@@ -247,15 +247,26 @@
                     <td class="value">{{ totalTtc|number_format(2, ',', ' ') }} €</td>
                 </tr>
             {% endif %}
-            {% if acompteVerse and acompteVerse > 0 %}
-                <tr class="acompte-row">
-                    <td class="label">Acompte versé{% if facture.acomptePercentage %} ({{ facture.acomptePercentage|number_format(0) }}%){% endif %}</td>
-                    <td class="value">- {{ acompteVerse|number_format(2, ',', ' ') }} €</td>
-                </tr>
-                <tr class="total-final-row">
-                    <td class="label">NET À PAYER</td>
-                    <td class="value">{{ netAPayer|number_format(2, ',', ' ') }} €</td>
-                </tr>
+            {% if acompteAmount and acompteAmount > 0 %}
+                {% if facture.acomptePaye %}
+                    <tr class="acompte-row">
+                        <td class="label">Acompte versé{% if facture.acomptePercentage %} ({{ facture.acomptePercentage|number_format(0) }}%){% endif %}</td>
+                        <td class="value">- {{ acompteAmount|number_format(2, ',', ' ') }} €</td>
+                    </tr>
+                    <tr class="total-final-row">
+                        <td class="label">NET À PAYER</td>
+                        <td class="value">{{ netAPayer|number_format(2, ',', ' ') }} €</td>
+                    </tr>
+                {% else %}
+                    <tr class="acompte-row" style="background-color: #FFF3CD; color: #856404;">
+                        <td class="label">Acompte attendu{% if facture.acomptePercentage %} ({{ facture.acomptePercentage|number_format(0) }}%){% endif %}</td>
+                        <td class="value">{{ acompteAmount|number_format(2, ',', ' ') }} €</td>
+                    </tr>
+                    <tr class="total-final-row">
+                        <td class="label">NET À PAYER</td>
+                        <td class="value">{{ (vatRate > 0 ? totalTtc : totalHt)|number_format(2, ',', ' ') }} €</td>
+                    </tr>
+                {% endif %}
             {% else %}
                 <tr class="total-final-row">
                     <td class="label">NET À PAYER</td>

@@ -7,6 +7,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
@@ -126,6 +127,9 @@ class FactureCrudController extends AbstractCrudController
                 ->setHelp('Date effective du paiement (utilisée pour le calcul du CA)')
                 ->hideOnIndex()
                 ->setFormTypeOption('required', false),
+            BooleanField::new('acomptePaye', 'Acompte versé')
+                ->setHelp('Décocher si l\'acompte n\'a pas encore été versé')
+                ->onlyOnForms(),
             ChoiceField::new('modePaiement', 'Mode paiement')
                 ->setChoices(Facture::getModePaiementChoices())
                 ->onlyOnForms(),

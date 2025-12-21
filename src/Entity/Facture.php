@@ -90,6 +90,9 @@ class Facture
     #[ORM\JoinColumn(nullable: false)]
     private ?User $createdBy = null;
 
+    #[ORM\Column(type: Types::BOOLEAN)]
+    private bool $acomptePaye = true;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -417,15 +420,35 @@ class Facture
         return number_format($ttc - $ht, 2, '.', '');
     }
 
+    public function isAcomptePaye(): bool
+    {
+        return $this->acomptePaye;
+    }
+
+    public function setAcomptePaye(bool $acomptePaye): static
+    {
+        $this->acomptePaye = $acomptePaye;
+
+        return $this;
+    }
+
     /**
-     * Retourne l'acompte déjà versé (depuis le devis lié)
+     * Retourne le montant d'acompte (depuis le devis lié)
      */
-    public function getAcompteVerse(): ?float
+    public function getAcompteAmount(): ?float
     {
         if ($this->devis && $this->devis->getAcompte()) {
             return (float) $this->devis->getAcompte();
         }
         return null;
+    }
+
+    /**
+     * @deprecated Use getAcompteAmount() instead
+     */
+    public function getAcompteVerse(): ?float
+    {
+        return $this->getAcompteAmount();
     }
 
     /**

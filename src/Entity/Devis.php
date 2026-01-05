@@ -413,7 +413,7 @@ class Devis
     }
 
     /**
-     * Retourne la facture standard liée au devis (ancienne logique)
+     * Retourne la facture standard liée au devis
      */
     public function getFacture(): ?Facture
     {
@@ -422,8 +422,15 @@ class Devis
                 return $facture;
             }
         }
-        // Fallback: retourne la première facture
-        return $this->factures->first() ?: null;
+        return null;
+    }
+
+    /**
+     * Vérifie si le devis a une facture standard
+     */
+    public function hasFactureStandard(): bool
+    {
+        return $this->getFacture() !== null;
     }
 
     /**
@@ -585,13 +592,15 @@ class Devis
     }
 
     /**
-     * Vérifie si le devis peut être converti en facture standard (sans acompte)
+     * Vérifie si le devis peut être converti en facture standard
      */
     public function canBeConverted(): bool
     {
+        // Peut générer une facture standard si :
+        // - Statut accepté
+        // - Pas de facture standard existante
         return $this->status === self::STATUS_ACCEPTE
-            && $this->factures->isEmpty()
-            && (!$this->acompte || (float)$this->acompte <= 0);
+            && $this->getFacture() === null;
     }
 
     /**

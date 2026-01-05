@@ -225,15 +225,6 @@
         <div class="stat-subtitle">Devis → Factures</div>
     </div>
 
-    <div class="stat-card danger">
-        <div class="stat-header">
-            <span class="stat-label">Dépenses {{ year }}</span>
-            <div class="stat-icon danger"><i class="fas fa-money-bill-wave"></i></div>
-        </div>
-        <div class="stat-value">{{ (depensesAnnee / 1000)|number_format(1) }}k€</div>
-        <div class="stat-subtitle">Dépenses professionnelles</div>
-    </div>
-
     <div class="stat-card {% if margeNetAnnee >= 30 %}success{% elseif margeNetAnnee >= 15 %}warning{% else %}danger{% endif %}">
         <div class="stat-header">
             <span class="stat-label">Bénéfice Net {{ year }}</span>
@@ -242,7 +233,7 @@
             </div>
         </div>
         <div class="stat-value">{{ (beneficeNetAnnee / 1000)|number_format(1) }}k€</div>
-        <div class="stat-subtitle">Après dépenses & URSSAF : {{ margeNetAnnee }}%</div>
+        <div class="stat-subtitle">Après cotisations URSSAF : {{ margeNetAnnee }}%</div>
     </div>
 </div>
 
@@ -311,11 +302,11 @@
     </div>
 </div>
 
-<!-- CA, Dépenses, Cotisations et Bénéfice -->
+<!-- CA, Cotisations et Bénéfice -->
 <div class="chart-container">
     <div class="chart-title">
         <i class="fas fa-chart-bar" style="color: var(--info);"></i>
-        CA, Dépenses, Cotisations URSSAF et Bénéfice Net par Mois
+        CA, Cotisations URSSAF et Bénéfice Net par Mois
     </div>
     <canvas id="chartComparaison" class="chart-canvas"></canvas>
 </div>
@@ -332,7 +323,6 @@ Chart.defaults.plugins.tooltip.cornerRadius = 8;
 // Données PHP → JS
 const caParMois = {{ caParMois|json_encode|raw }};
 const caFactureParMois = {{ caFactureParMois|json_encode|raw }};
-const depensesParMois = {{ depensesParMois|json_encode|raw }};
 const cotisationsParMois = {{ cotisationsParMois|json_encode|raw }};
 const topClients = {{ topClients|json_encode|raw }};
 
@@ -415,7 +405,7 @@ new Chart(document.getElementById('chartClients'), {
     }
 });
 
-// 3. Graphique CA vs Dépenses vs Cotisations (Barres)
+// 3. Graphique CA vs Cotisations (Barres)
 new Chart(document.getElementById('chartComparaison'), {
     type: 'bar',
     data: {
@@ -429,13 +419,6 @@ new Chart(document.getElementById('chartComparaison'), {
                 borderWidth: 1
             },
             {
-                label: 'Dépenses',
-                data: Object.values(depensesParMois),
-                backgroundColor: 'rgba(239, 68, 68, 0.7)',
-                borderColor: '#ef4444',
-                borderWidth: 1
-            },
-            {
                 label: 'Cotisations URSSAF',
                 data: Object.values(cotisationsParMois),
                 backgroundColor: 'rgba(245, 158, 11, 0.7)',
@@ -445,9 +428,8 @@ new Chart(document.getElementById('chartComparaison'), {
             {
                 label: 'Bénéfice Net',
                 data: Object.values(caParMois).map((ca, index) => {
-                    const depenses = Object.values(depensesParMois)[index];
-                    const cotisations = Object.values(cotisationsParMois)[index];
-                    return ca - depenses - cotisations;
+                    const cotisations = Object.values(cotisationsParMois)[index] || 0;
+                    return ca - cotisations;
                 }),
                 backgroundColor: 'rgba(59, 130, 246, 0.7)',
                 borderColor: '#3b82f6',

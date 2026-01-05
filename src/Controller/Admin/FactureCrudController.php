@@ -359,13 +359,25 @@ class FactureCrudController extends AbstractCrudController
     public function deleteEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
         if ($entityInstance instanceof Facture) {
+            // If this is a facture d'acompte with linked factures de solde, prevent deletion
+            if ($entityInstance->isAcompte() && !$entityInstance->getFacturesSolde()->isEmpty()) {
+                $this->addFlash('danger', 'Impossible de supprimer cette facture d\'acompte car elle est liée à des factures de solde.');
+                return;
+            }
+
             // If this invoice is linked to a quote, remove the link before deletion
             if ($entityInstance->getDevis()) {
                 $devis = $entityInstance->getDevis();
-                $devis->setFacture(null);
+                $devis->removeFacture($entityInstance);
                 $entityInstance->setDevis(null);
-                $entityManager->flush();
             }
+
+            // If this is a facture de solde, clear the acompte reference
+            if ($entityInstance->isSolde() && $entityInstance->getFactureAcompte()) {
+                $entityInstance->setFactureAcompte(null);
+            }
+
+            $entityManager->flush();
         }
 
         parent::deleteEntity($entityManager, $entityInstance);

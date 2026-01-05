@@ -73,10 +73,10 @@ class Client
     #[ORM\Column]
     private bool $isActive = true;
 
-    #[ORM\OneToMany(mappedBy: 'client', targetEntity: Devis::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'client', targetEntity: Devis::class)]
     private Collection $devis;
 
-    #[ORM\OneToMany(mappedBy: 'client', targetEntity: Facture::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'client', targetEntity: Facture::class)]
     private Collection $factures;
 
     #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'client')]

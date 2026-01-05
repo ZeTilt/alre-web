@@ -8,7 +8,6 @@ use App\Entity\ContactMessage;
 use App\Entity\Devis;
 use App\Entity\Event;
 use App\Entity\EventType;
-use App\Entity\Expense;
 use App\Entity\Facture;
 use App\Entity\Prospect;
 use App\Entity\ProspectFollowUp;
@@ -21,11 +20,9 @@ use App\Repository\CompanyRepository;
 use App\Repository\DevisRepository;
 use App\Repository\EventRepository;
 use App\Repository\EventTypeRepository;
-use App\Repository\ExpenseRepository;
 use App\Repository\FactureRepository;
 use App\Repository\ProspectRepository;
 use App\Repository\ProspectFollowUpRepository;
-use App\Service\ExpenseGenerationService;
 use App\Service\ProspectionEmailService;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
@@ -57,13 +54,8 @@ class DashboardController extends AbstractDashboardController
     public function businessDashboard(
         CompanyRepository $companyRepository,
         FactureRepository $factureRepository,
-        DevisRepository $devisRepository,
-        ExpenseRepository $expenseRepository,
-        ExpenseGenerationService $expenseGenerationService
+        DevisRepository $devisRepository
     ): Response {
-        // Générer automatiquement les dépenses récurrentes manquantes
-        $expenseGenerationService->generateRecurringExpenses();
-
         // Récupérer les informations de l'entreprise
         $company = $companyRepository->findOneBy([]);
 
@@ -131,10 +123,10 @@ class DashboardController extends AbstractDashboardController
         $devisARelancer = $devisRepository->getQuotesToFollowUp(7);
         $nbDevisARelancer = count($devisARelancer);
 
-        // ===== DÉPENSES =====
+        // ===== DÉPENSES (fonctionnalité désactivée) =====
 
-        $depensesMois = $expenseRepository->getTotalExpensesByPeriod($startOfMonth, $endOfMonth);
-        $depensesAnnee = $expenseRepository->getTotalExpensesByPeriod($startOfYear, $endOfYear);
+        $depensesMois = 0;
+        $depensesAnnee = 0;
 
         // Bénéfice net (CA - dépenses - cotisations URSSAF)
         $beneficeNetMois = $caMoisEncaisse - $depensesMois - $cotisationsMois;
@@ -156,8 +148,8 @@ class DashboardController extends AbstractDashboardController
         $topClients = $factureRepository->getRevenueByClient($year);
         $topClients = array_slice($topClients, 0, 5); // Top 5 clients
 
-        // Dépenses mensuelles (pour graphique)
-        $depensesParMois = $expenseRepository->getMonthlyExpensesForYear($year);
+        // Dépenses mensuelles (fonctionnalité désactivée)
+        $depensesParMois = [];
 
         // Cotisations URSSAF mensuelles (pour graphique)
         $cotisationsParMois = [];
@@ -452,15 +444,14 @@ class DashboardController extends AbstractDashboardController
     #[Route('/saeiblauhjc/dashboard/export-csv', name: 'admin_dashboard_export_csv')]
     public function exportCsv(
         CompanyRepository $companyRepository,
-        FactureRepository $factureRepository,
-        ExpenseRepository $expenseRepository
+        FactureRepository $factureRepository
     ): Response {
         $company = $companyRepository->findOneBy([]);
         $year = $company?->getAnneeFiscaleEnCours() ?? (int) date('Y');
 
         // Données mensuelles
         $caParMois = $factureRepository->getMonthlyPaidRevenueForYear($year);
-        $depensesParMois = $expenseRepository->getMonthlyExpensesForYear($year);
+        $depensesParMois = []; // Fonctionnalité dépenses désactivée
 
         // Créer le contenu CSV
         $csv = [];
@@ -590,7 +581,6 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Gestion commerciale');
         yield MenuItem::linkToCrud('Devis', 'fas fa-file-invoice', Devis::class);
         yield MenuItem::linkToCrud('Factures', 'fas fa-file-invoice-dollar', Facture::class);
-        yield MenuItem::linkToCrud('Dépenses', 'fas fa-receipt', Expense::class);
         yield MenuItem::linkToCrud('Événements', 'fas fa-calendar-check', Event::class);
         yield MenuItem::linkToCrud('Types d\'événements', 'fas fa-tags', EventType::class);
 

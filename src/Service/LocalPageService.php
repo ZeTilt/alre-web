@@ -2,43 +2,86 @@
 
 namespace App\Service;
 
+use App\Entity\City;
+use App\Repository\CityRepository;
 use Symfony\Component\Yaml\Yaml;
 
 class LocalPageService
 {
-    private array $config;
-    private string $configPath;
+    private array $servicesConfig;
 
-    public function __construct(string $projectDir)
-    {
-        $this->configPath = $projectDir . '/config/local_pages.yaml';
-        $this->loadConfig();
+    public function __construct(
+        private CityRepository $cityRepository,
+        private string $projectDir,
+    ) {
+        $this->loadServicesConfig();
     }
 
-    private function loadConfig(): void
+    private function loadServicesConfig(): void
     {
-        if (!file_exists($this->configPath)) {
-            $this->config = ['cities' => [], 'services' => []];
-            return;
-        }
+        $configPath = $this->projectDir . '/config/local_pages.yaml';
 
-        $this->config = Yaml::parseFile($this->configPath);
+        if (file_exists($configPath)) {
+            $config = Yaml::parseFile($configPath);
+            $this->servicesConfig = $config['services'] ?? [];
+        } else {
+            // Configuration par défaut
+            $this->servicesConfig = [
+                'developpeur-web' => [
+                    'title' => 'Développeur Web',
+                    'description' => 'Création de sites internet sur mesure',
+                    'icon' => 'fa-code',
+                ],
+                'creation-site-internet' => [
+                    'title' => 'Création de Site Internet',
+                    'description' => 'Sites vitrines et e-commerce professionnels',
+                    'icon' => 'fa-globe',
+                ],
+                'agence-web' => [
+                    'title' => 'Agence Web',
+                    'description' => 'Accompagnement complet pour votre présence en ligne',
+                    'icon' => 'fa-building',
+                ],
+            ];
+        }
     }
 
     /**
-     * Retourne toutes les villes configurées.
+     * Retourne toutes les villes actives depuis la base de données.
+     *
+     * @return City[]
      */
     public function getCities(): array
     {
-        return $this->config['cities'] ?? [];
+        return $this->cityRepository->findAllActive();
     }
 
     /**
      * Retourne une ville par son slug.
      */
-    public function getCity(string $slug): ?array
+    public function getCity(string $slug): ?City
     {
-        return $this->config['cities'][$slug] ?? null;
+        return $this->cityRepository->findBySlug($slug);
+    }
+
+    /**
+     * Retourne une ville sous forme de tableau (pour compatibilité templates).
+     */
+    public function getCityAsArray(string $slug): ?array
+    {
+        $city = $this->getCity($slug);
+
+        if (!$city) {
+            return null;
+        }
+
+        return [
+            'name' => $city->getName(),
+            'region' => $city->getRegion(),
+            'description' => $city->getDescription(),
+            'nearby' => $city->getNearby(),
+            'keywords' => $city->getKeywords(),
+        ];
     }
 
     /**
@@ -46,7 +89,7 @@ class LocalPageService
      */
     public function getServices(): array
     {
-        return $this->config['services'] ?? [];
+        return $this->servicesConfig;
     }
 
     /**
@@ -54,26 +97,28 @@ class LocalPageService
      */
     public function getService(string $slug): ?array
     {
-        return $this->config['services'][$slug] ?? null;
+        return $this->servicesConfig[$slug] ?? null;
     }
 
     /**
      * Génère toutes les combinaisons service-ville pour le sitemap.
      *
-     * @return array<array{service: string, city: string, url: string}>
+     * @return array<array{service: string, city: string, url: string, cityEntity: City}>
      */
     public function getAllPages(): array
     {
         $pages = [];
+        $cities = $this->getCities();
 
-        foreach ($this->config['services'] as $serviceSlug => $service) {
-            foreach ($this->config['cities'] as $citySlug => $city) {
+        foreach ($this->servicesConfig as $serviceSlug => $service) {
+            foreach ($cities as $city) {
                 $pages[] = [
                     'service' => $serviceSlug,
                     'serviceTitle' => $service['title'],
-                    'city' => $citySlug,
-                    'cityName' => $city['name'],
-                    'url' => $serviceSlug . '-' . $citySlug,
+                    'city' => $city->getSlug(),
+                    'cityName' => $city->getName(),
+                    'url' => $serviceSlug . '-' . $city->getSlug(),
+                    'cityEntity' => $city,
                 ];
             }
         }
@@ -88,10 +133,12 @@ class LocalPageService
      */
     public function parseSlug(string $slug): array
     {
-        foreach ($this->config['services'] as $serviceSlug => $service) {
+        foreach ($this->servicesConfig as $serviceSlug => $service) {
             if (str_starts_with($slug, $serviceSlug . '-')) {
                 $citySlug = substr($slug, strlen($serviceSlug) + 1);
-                if (isset($this->config['cities'][$citySlug])) {
+                $city = $this->getCity($citySlug);
+
+                if ($city) {
                     return [
                         'service' => $serviceSlug,
                         'city' => $citySlug,
@@ -113,5 +160,16 @@ class LocalPageService
     {
         $parsed = $this->parseSlug($slug);
         return $parsed['service'] !== null && $parsed['city'] !== null;
+    }
+
+    /**
+     * Retourne le nombre de pages générées.
+     */
+    public function getPageCount(): int
+    {
+        $citiesCount = count($this->getCities());
+        $servicesCount = count($this->servicesConfig);
+
+        return $citiesCount * $servicesCount;
     }
 }

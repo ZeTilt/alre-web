@@ -29,21 +29,44 @@ class LocalPageController extends AbstractController
             throw $this->createNotFoundException('Page non trouvée');
         }
 
+        // Convertir l'entité City en tableau pour le template
+        $cityArray = [
+            'name' => $city->getName(),
+            'region' => $city->getRegion(),
+            'description' => $city->getDescription(),
+            'nearby' => $city->getNearby(),
+            'keywords' => $city->getKeywords(),
+        ];
+
         return $this->render('local_page/show.html.twig', [
             'service' => $service,
             'serviceSlug' => $parsed['service'],
-            'city' => $city,
+            'city' => $cityArray,
             'citySlug' => $parsed['city'],
-            'pageTitle' => $service['title'] . ' ' . $city['name'],
+            'pageTitle' => $service['title'] . ' ' . $city->getName(),
         ]);
     }
 
     #[Route('/nos-zones-intervention', name: 'app_local_pages_index')]
     public function index(): Response
     {
+        $cities = $this->localPageService->getCities();
+
+        // Convertir les entités en tableaux pour le template
+        $citiesArray = [];
+        foreach ($cities as $city) {
+            $citiesArray[$city->getSlug()] = [
+                'name' => $city->getName(),
+                'region' => $city->getRegion(),
+                'description' => $city->getDescription(),
+                'nearby' => $city->getNearby(),
+                'keywords' => $city->getKeywords(),
+            ];
+        }
+
         return $this->render('local_page/index.html.twig', [
             'pages' => $this->localPageService->getAllPages(),
-            'cities' => $this->localPageService->getCities(),
+            'cities' => $citiesArray,
             'services' => $this->localPageService->getServices(),
         ]);
     }

@@ -93,3 +93,7 @@ services:
     App\Service\LocalPageService:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    App\Command\ImportCitiesCommand:
+        arguments:
+            $projectDir: '%kernel.project_dir%'

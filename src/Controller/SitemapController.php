@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\ProjectRepository;
+use App\Service\LocalPageService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -10,6 +11,10 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class SitemapController extends AbstractController
 {
+    public function __construct(
+        private LocalPageService $localPageService,
+    ) {}
+
     #[Route('/sitemap.xml', name: 'sitemap', defaults: ['_format' => 'xml'])]
     public function index(ProjectRepository $projectRepository): Response
     {
@@ -92,6 +97,26 @@ class SitemapController extends AbstractController
                 'changefreq' => 'monthly',
                 'priority' => '0.7',
                 'lastmod' => $project->getUpdatedAt()?->format('Y-m-d'),
+            ];
+        }
+
+        // Pages locales SEO (générées automatiquement depuis les villes en BDD)
+        $localPages = $this->localPageService->getAllPages();
+        foreach ($localPages as $page) {
+            $urls[] = [
+                'loc' => $this->generateUrl('app_local_page', ['slug' => $page['url']], UrlGeneratorInterface::ABSOLUTE_URL),
+                'changefreq' => 'monthly',
+                'priority' => '0.6',
+                'lastmod' => $page['cityEntity']->getUpdatedAt()?->format('Y-m-d') ?? $page['cityEntity']->getCreatedAt()->format('Y-m-d'),
+            ];
+        }
+
+        // Page index des zones d'intervention
+        if (count($localPages) > 0) {
+            $urls[] = [
+                'loc' => $this->generateUrl('app_local_pages_index', [], UrlGeneratorInterface::ABSOLUTE_URL),
+                'changefreq' => 'monthly',
+                'priority' => '0.7',
             ];
         }
 

@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\City;
 use App\Entity\Client;
 use App\Entity\Company;
 use App\Entity\ContactMessage;
@@ -887,6 +888,7 @@ class DashboardController extends AbstractDashboardController
 
         yield MenuItem::section('SEO');
         yield MenuItem::linkToCrud('Mots-clés SEO', 'fas fa-search', SeoKeyword::class);
+        yield MenuItem::linkToCrud('Villes (SEO Local)', 'fas fa-map-marker-alt', City::class);
 
         yield MenuItem::section('Gestion commerciale');
         yield MenuItem::linkToCrud('Devis', 'fas fa-file-invoice', Devis::class);

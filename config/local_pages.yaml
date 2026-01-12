@@ -1,66 +1,82 @@
 # Configuration des landing pages locales SEO
 # Chaque ville génère des pages optimisées pour le référencement local
+# Commandes utiles :
+#   - bin/console app:purge-cities      # Vider toutes les villes
+#   - bin/console app:import-cities     # Importer depuis ce fichier
+#   - bin/console app:import-cities -f  # Forcer la mise à jour
 
 cities:
+  # ================================================
+  # MORBIHAN (56) - Zone principale
+  # ================================================
+
   auray:
     name: "Auray"
     region: "Morbihan"
-    description: "Basé à Auray, je suis votre développeur web de proximité."
+    description: "Basé à Auray, je suis votre développeur web de proximité pour tous vos projets digitaux."
     nearby:
       - "Vannes"
       - "Lorient"
       - "Carnac"
       - "Sainte-Anne-d'Auray"
+      - "Pluneret"
     keywords:
       - "développeur web Auray"
       - "création site internet Auray"
       - "agence web Auray"
+      - "freelance web Auray"
 
   vannes:
     name: "Vannes"
     region: "Morbihan"
-    description: "À 20 minutes d'Auray, j'interviens régulièrement sur Vannes et ses alentours."
+    description: "À 20 minutes d'Auray, j'interviens régulièrement sur Vannes et sa métropole pour créer des sites web professionnels."
     nearby:
       - "Auray"
       - "Arradon"
       - "Séné"
       - "Theix-Noyalo"
+      - "Saint-Avé"
     keywords:
       - "développeur web Vannes"
       - "création site internet Vannes"
       - "agence web Vannes"
+      - "site e-commerce Vannes"
 
   lorient:
     name: "Lorient"
     region: "Morbihan"
-    description: "À 30 minutes d'Auray, je me déplace facilement sur Lorient pour vos projets web."
+    description: "À 30 minutes d'Auray, je me déplace facilement sur Lorient et son agglomération pour vos projets web."
     nearby:
       - "Lanester"
       - "Hennebont"
       - "Ploemeur"
       - "Larmor-Plage"
+      - "Guidel"
     keywords:
       - "développeur web Lorient"
       - "création site internet Lorient"
       - "agence web Lorient"
+      - "site vitrine Lorient"
 
   carnac:
     name: "Carnac"
     region: "Morbihan"
-    description: "Carnac, ses mégalithes et ses commerces méritent une présence web de qualité."
+    description: "Carnac, ses mégalithes et ses commerces méritent une présence web de qualité pour attirer visiteurs et clients."
     nearby:
       - "Auray"
       - "Quiberon"
       - "La Trinité-sur-Mer"
       - "Plouharnel"
+      - "Erdeven"
     keywords:
       - "développeur web Carnac"
       - "création site internet Carnac"
+      - "site tourisme Carnac"
 
   quiberon:
     name: "Quiberon"
     region: "Morbihan"
-    description: "Presqu'île de Quiberon : je crée des sites web pour les professionnels du tourisme et du commerce local."
+    description: "Presqu'île de Quiberon : je crée des sites web pour les professionnels du tourisme, de la thalasso et du commerce local."
     nearby:
       - "Carnac"
       - "Auray"
@@ -69,16 +85,18 @@ cities:
     keywords:
       - "développeur web Quiberon"
       - "création site internet Quiberon"
+      - "site tourisme presqu'île"
 
   hennebont:
     name: "Hennebont"
     region: "Morbihan"
-    description: "Entre Lorient et Auray, Hennebont est une étape naturelle pour mes interventions."
+    description: "Entre Lorient et Auray, Hennebont est une étape naturelle pour mes interventions auprès des artisans et commerçants."
     nearby:
       - "Lorient"
       - "Lanester"
       - "Inzinzac-Lochrist"
       - "Kervignac"
+      - "Brandérion"
     keywords:
       - "développeur web Hennebont"
       - "création site internet Hennebont"
@@ -86,26 +104,388 @@ cities:
   pontivy:
     name: "Pontivy"
     region: "Morbihan"
-    description: "Au cœur de la Bretagne, Pontivy mérite aussi un développeur web de qualité."
+    description: "Au cœur de la Bretagne, Pontivy et le centre Morbihan méritent aussi un développeur web de qualité."
     nearby:
       - "Loudéac"
       - "Locminé"
       - "Guémené-sur-Scorff"
+      - "Baud"
+      - "Cléguérec"
     keywords:
       - "développeur web Pontivy"
       - "création site internet Pontivy"
+      - "site web centre Bretagne"
 
   ploermel:
     name: "Ploërmel"
     region: "Morbihan"
-    description: "Ploërmel et le pays de Brocéliande : des sites web qui racontent votre histoire."
+    description: "Ploërmel et le pays de Brocéliande : des sites web qui racontent l'histoire de votre entreprise."
     nearby:
       - "Josselin"
       - "Mauron"
       - "La Trinité-Porhoët"
+      - "Taupont"
+      - "Campénéac"
     keywords:
       - "développeur web Ploërmel"
       - "création site internet Ploërmel"
+      - "site web Brocéliande"
+
+  la-trinite-sur-mer:
+    name: "La Trinité-sur-Mer"
+    region: "Morbihan"
+    description: "Port mythique de la voile, La Trinité-sur-Mer mérite des sites web à la hauteur de sa réputation nautique."
+    nearby:
+      - "Carnac"
+      - "Locmariaquer"
+      - "Crac'h"
+      - "Auray"
+    keywords:
+      - "développeur web La Trinité-sur-Mer"
+      - "site internet nautisme"
+      - "création site voile Bretagne"
+
+  sarzeau:
+    name: "Sarzeau"
+    region: "Morbihan"
+    description: "Presqu'île de Rhuys : j'accompagne les professionnels du tourisme et de l'artisanat dans leur visibilité en ligne."
+    nearby:
+      - "Vannes"
+      - "Arzon"
+      - "Saint-Gildas-de-Rhuys"
+      - "Le Tour-du-Parc"
+      - "Muzillac"
+    keywords:
+      - "développeur web Sarzeau"
+      - "création site internet Rhuys"
+      - "site tourisme Golfe du Morbihan"
+
+  locmine:
+    name: "Locminé"
+    region: "Morbihan"
+    description: "Au carrefour du Morbihan, Locminé et ses entreprises artisanales méritent une visibilité web professionnelle."
+    nearby:
+      - "Pontivy"
+      - "Josselin"
+      - "Baud"
+      - "Bignan"
+      - "Moréac"
+    keywords:
+      - "développeur web Locminé"
+      - "création site internet centre Morbihan"
+
+  muzillac:
+    name: "Muzillac"
+    region: "Morbihan"
+    description: "Porte d'entrée du Morbihan depuis Nantes, Muzillac et ses environs bénéficient de mon expertise web."
+    nearby:
+      - "Vannes"
+      - "La Roche-Bernard"
+      - "Questembert"
+      - "Ambon"
+      - "Damgan"
+    keywords:
+      - "développeur web Muzillac"
+      - "création site internet sud Morbihan"
+
+  questembert:
+    name: "Questembert"
+    region: "Morbihan"
+    description: "Questembert, cité de caractère : je crée des sites web qui mettent en valeur votre savoir-faire local."
+    nearby:
+      - "Vannes"
+      - "Muzillac"
+      - "Rochefort-en-Terre"
+      - "Elven"
+      - "Malestroit"
+    keywords:
+      - "développeur web Questembert"
+      - "création site internet Questembert"
+
+  guer:
+    name: "Guer"
+    region: "Morbihan"
+    description: "Guer et le pays de Ploërmel : un développeur web local pour vos projets digitaux."
+    nearby:
+      - "Ploërmel"
+      - "Beignon"
+      - "Paimpont"
+      - "Monteneuf"
+      - "Augan"
+    keywords:
+      - "développeur web Guer"
+      - "création site internet Guer"
+
+  # ================================================
+  # FINISTÈRE (29)
+  # ================================================
+
+  quimper:
+    name: "Quimper"
+    region: "Finistère"
+    description: "Capitale de la Cornouaille, Quimper et son bassin économique bénéficient de mon expertise en création web."
+    nearby:
+      - "Bénodet"
+      - "Fouesnant"
+      - "Concarneau"
+      - "Douarnenez"
+      - "Pont-l'Abbé"
+    keywords:
+      - "développeur web Quimper"
+      - "création site internet Quimper"
+      - "agence web Finistère"
+
+  brest:
+    name: "Brest"
+    region: "Finistère"
+    description: "Métropole du Finistère Nord, Brest accueille mes interventions pour des projets web ambitieux."
+    nearby:
+      - "Plougastel-Daoulas"
+      - "Guipavas"
+      - "Le Relecq-Kerhuon"
+      - "Landerneau"
+      - "Plouzané"
+    keywords:
+      - "développeur web Brest"
+      - "création site internet Brest"
+      - "agence web Brest"
+
+  concarneau:
+    name: "Concarneau"
+    region: "Finistère"
+    description: "Ville close et port de pêche, j'accompagne les professionnels de Concarneau dans leur présence en ligne."
+    nearby:
+      - "Quimper"
+      - "Fouesnant"
+      - "Trégunc"
+      - "Rosporden"
+      - "Pont-Aven"
+    keywords:
+      - "développeur web Concarneau"
+      - "création site internet Finistère Sud"
+
+  douarnenez:
+    name: "Douarnenez"
+    region: "Finistère"
+    description: "Cité sardinière et port de caractère, Douarnenez inspire des sites web authentiques."
+    nearby:
+      - "Quimper"
+      - "Audierne"
+      - "Châteaulin"
+      - "Locronan"
+      - "Poullan-sur-Mer"
+    keywords:
+      - "développeur web Douarnenez"
+      - "création site internet Douarnenez"
+
+  morlaix:
+    name: "Morlaix"
+    region: "Finistère"
+    description: "Ville d'art et d'histoire, Morlaix et le Trégor finistérien méritent des sites web de qualité."
+    nearby:
+      - "Saint-Pol-de-Léon"
+      - "Roscoff"
+      - "Carantec"
+      - "Plouigneau"
+      - "Plougonven"
+    keywords:
+      - "développeur web Morlaix"
+      - "création site internet Morlaix"
+
+  landerneau:
+    name: "Landerneau"
+    region: "Finistère"
+    description: "Entre Brest et la rade, Landerneau dynamique mérite un accompagnement web professionnel."
+    nearby:
+      - "Brest"
+      - "Daoulas"
+      - "Dirinon"
+      - "Pencran"
+      - "La Roche-Maurice"
+    keywords:
+      - "développeur web Landerneau"
+      - "création site internet Landerneau"
+
+  # ================================================
+  # CÔTES-D'ARMOR (22)
+  # ================================================
+
+  saint-brieuc:
+    name: "Saint-Brieuc"
+    region: "Côtes-d'Armor"
+    description: "Préfecture des Côtes-d'Armor, Saint-Brieuc et son agglomération profitent de mon expertise digitale."
+    nearby:
+      - "Plérin"
+      - "Langueux"
+      - "Trégueux"
+      - "Ploufragan"
+      - "Lamballe"
+    keywords:
+      - "développeur web Saint-Brieuc"
+      - "création site internet Côtes-d'Armor"
+      - "agence web Saint-Brieuc"
+
+  lannion:
+    name: "Lannion"
+    region: "Côtes-d'Armor"
+    description: "Capitale du Trégor et technopole bretonne, Lannion allie tradition et innovation digitale."
+    nearby:
+      - "Perros-Guirec"
+      - "Trébeurden"
+      - "Pleumeur-Bodou"
+      - "Ploubezre"
+      - "Tréguier"
+    keywords:
+      - "développeur web Lannion"
+      - "création site internet Lannion"
+      - "site web Trégor"
+
+  dinan:
+    name: "Dinan"
+    region: "Côtes-d'Armor"
+    description: "Cité médiévale de charme, Dinan et ses environs inspirent des sites web authentiques et professionnels."
+    nearby:
+      - "Saint-Malo"
+      - "Dinard"
+      - "Plancoët"
+      - "Léhon"
+      - "Évran"
+    keywords:
+      - "développeur web Dinan"
+      - "création site internet Dinan"
+
+  guingamp:
+    name: "Guingamp"
+    region: "Côtes-d'Armor"
+    description: "Ville de l'En Avant, Guingamp dynamique mérite des sites web à la hauteur de ses ambitions."
+    nearby:
+      - "Paimpol"
+      - "Belle-Isle-en-Terre"
+      - "Bourbriac"
+      - "Ploumagoar"
+      - "Saint-Agathon"
+    keywords:
+      - "développeur web Guingamp"
+      - "création site internet Guingamp"
+
+  lamballe:
+    name: "Lamballe"
+    region: "Côtes-d'Armor"
+    description: "Cité du haras national, Lamballe et Penthièvre bénéficient de mon accompagnement web sur mesure."
+    nearby:
+      - "Saint-Brieuc"
+      - "Plancoët"
+      - "Moncontour"
+      - "Plédéliac"
+      - "Hénanbihen"
+    keywords:
+      - "développeur web Lamballe"
+      - "création site internet Lamballe"
+
+  paimpol:
+    name: "Paimpol"
+    region: "Côtes-d'Armor"
+    description: "Port d'Islande légendaire, Paimpol inspire des sites web maritimes et authentiques."
+    nearby:
+      - "Guingamp"
+      - "Bréhat"
+      - "Ploubazlanec"
+      - "Plouézec"
+      - "Pontrieux"
+    keywords:
+      - "développeur web Paimpol"
+      - "création site internet Paimpol"
+
+  # ================================================
+  # ILLE-ET-VILAINE (35)
+  # ================================================
+
+  rennes:
+    name: "Rennes"
+    region: "Ille-et-Vilaine"
+    description: "Capitale bretonne et métropole dynamique, j'interviens sur Rennes pour des projets web d'envergure."
+    nearby:
+      - "Cesson-Sévigné"
+      - "Saint-Grégoire"
+      - "Bruz"
+      - "Chantepie"
+      - "Betton"
+    keywords:
+      - "développeur web Rennes"
+      - "création site internet Rennes"
+      - "agence web Rennes"
+      - "freelance web Rennes"
+
+  saint-malo:
+    name: "Saint-Malo"
+    region: "Ille-et-Vilaine"
+    description: "Cité corsaire et destination touristique majeure, Saint-Malo mérite des sites web exceptionnels."
+    nearby:
+      - "Dinard"
+      - "Cancale"
+      - "Dinan"
+      - "Dol-de-Bretagne"
+      - "Saint-Coulomb"
+    keywords:
+      - "développeur web Saint-Malo"
+      - "création site internet Saint-Malo"
+      - "site tourisme Côte d'Émeraude"
+
+  fougeres:
+    name: "Fougères"
+    region: "Ille-et-Vilaine"
+    description: "Cité médiévale aux portes de la Bretagne, Fougères et ses entreprises méritent une présence web forte."
+    nearby:
+      - "Vitré"
+      - "Louvigné-du-Désert"
+      - "Saint-Brice-en-Coglès"
+      - "Lécousse"
+      - "Romagné"
+    keywords:
+      - "développeur web Fougères"
+      - "création site internet Fougères"
+
+  vitre:
+    name: "Vitré"
+    region: "Ille-et-Vilaine"
+    description: "Plus belle ville de Bretagne selon certains, Vitré mérite des sites web à la hauteur de son patrimoine."
+    nearby:
+      - "Fougères"
+      - "Châteaubourg"
+      - "Janzé"
+      - "La Guerche-de-Bretagne"
+      - "Argentré-du-Plessis"
+    keywords:
+      - "développeur web Vitré"
+      - "création site internet Vitré"
+
+  redon:
+    name: "Redon"
+    region: "Ille-et-Vilaine"
+    description: "Carrefour des trois départements, Redon et le pays de Vilaine profitent de mon expertise web."
+    nearby:
+      - "La Gacilly"
+      - "Pipriac"
+      - "Guémené-Penfao"
+      - "Saint-Nicolas-de-Redon"
+      - "Allaire"
+    keywords:
+      - "développeur web Redon"
+      - "création site internet Redon"
+
+  dinard:
+    name: "Dinard"
+    region: "Ille-et-Vilaine"
+    description: "Station balnéaire élégante, Dinard et la Côte d'Émeraude inspirent des sites web raffinés."
+    nearby:
+      - "Saint-Malo"
+      - "Dinan"
+      - "Pleurtuit"
+      - "Saint-Lunaire"
+      - "Saint-Briac-sur-Mer"
+    keywords:
+      - "développeur web Dinard"
+      - "création site internet Dinard"
 
 # Services disponibles pour les landing pages
 services:

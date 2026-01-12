@@ -173,6 +173,405 @@
     {% endif %}
 </style>
 
+<!-- Google Search Console Status -->
+<div class="stat-card {% if googleOAuthConnected %}success{% elseif googleOAuthConfigured %}info{% else %}warning{% endif %}" style="margin-bottom: 1.5rem;">
+    <div class="stat-header">
+        <span class="stat-label">Google Search Console</span>
+        <div class="stat-icon {% if googleOAuthConnected %}success{% elseif googleOAuthConfigured %}info{% else %}warning{% endif %}">
+            <i class="fab fa-google"></i>
+        </div>
+    </div>
+    {% if not googleOAuthConfigured %}
+        <div style="color: #92400e; font-size: 0.875rem;">
+            <i class="fas fa-exclamation-triangle"></i>
+            Credentials non configurés. Ajoutez <code>GOOGLE_CLIENT_ID</code> et <code>GOOGLE_CLIENT_SECRET</code> dans le fichier <code>.env.local</code>
+        </div>
+    {% elseif googleOAuthConnected %}
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <span style="color: #065f46; font-weight: 600;">
+                    <i class="fas fa-check-circle"></i> Connecté
+                </span>
+                {% if googleOAuthToken %}
+                    <div style="font-size: 0.75rem; margin-top: 0.25rem;">
+                        {% if googleOAuthToken.isExpiringSoon(5) %}
+                            <span style="color: #f59e0b;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Token expire bientôt (sera rafraîchi automatiquement)
+                            </span>
+                        {% elseif googleOAuthToken.isExpired %}
+                            <span style="color: #ef4444;">
+                                <i class="fas fa-times-circle"></i>
+                                Token expiré - sera rafraîchi au prochain appel API
+                            </span>
+                        {% else %}
+                            <span style="color: #6b7280;">
+                                Expire le {{ googleOAuthToken.expiresAt|date('d/m/Y à H:i') }}
+                            </span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {% if lastSeoSyncAt %}
+                    <div style="font-size: 0.75rem; margin-top: 0.25rem; color: #6b7280;">
+                        <i class="fas fa-sync-alt"></i> Dernière sync SEO: {{ lastSeoSyncAt|date('d/m/Y à H:i') }}
+                    </div>
+                {% endif %}
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="{{ path('admin_google_sync_seo') }}" class="btn btn-sm btn-primary" title="Synchroniser les positions SEO">
+                    <i class="fas fa-sync-alt"></i> Sync SEO
+                </a>
+                <a href="{{ path('admin_google_disconnect') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-unlink"></i> Déconnecter
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="color: #6b7280;">Non connecté</div>
+            <a href="{{ path('admin_google_connect') }}" class="btn btn-sm btn-primary">
+                <i class="fab fa-google"></i> Connecter Google Search Console
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Google Reviews Widget -->
+<div class="stat-card {% if googlePlacesConfigured %}{% if reviewStats.total > 0 %}success{% else %}info{% endif %}{% else %}warning{% endif %}" style="margin-bottom: 1.5rem;">
+    <div class="stat-header">
+        <span class="stat-label">Avis Google</span>
+        <div class="stat-icon {% if googlePlacesConfigured %}{% if reviewStats.total > 0 %}success{% else %}info{% endif %}{% else %}warning{% endif %}">
+            <i class="fas fa-star"></i>
+        </div>
+    </div>
+    {% if not googlePlacesConfigured %}
+        <div style="color: #92400e; font-size: 0.875rem;">
+            <i class="fas fa-exclamation-triangle"></i>
+            API non configurée. Ajoutez <code>GOOGLE_PLACES_API_KEY</code> et <code>GOOGLE_PLACE_ID</code> dans le fichier <code>.env.local</code>
+        </div>
+    {% elseif reviewStats.total > 0 %}
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; gap: 2rem; align-items: center; flex-wrap: wrap;">
+                <!-- Note moyenne -->
+                <div>
+                    <div style="font-size: 2rem; font-weight: 700; color: #f59e0b; display: flex; align-items: center; gap: 0.5rem;">
+                        {{ reviewStats.averageRating|number_format(1, ',', ' ') }}
+                        <i class="fas fa-star" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div style="font-size: 0.75rem; color: #6b7280;">Note moyenne</div>
+                </div>
+                <!-- Compteurs -->
+                <div style="display: flex; gap: 1.5rem;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.25rem; font-weight: 700; color: #10b981;">{{ reviewStats.approved }}</div>
+                        <div style="font-size: 0.75rem; color: #6b7280;">Approuvés</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.25rem; font-weight: 700; color: #f59e0b;">{{ reviewStats.pending }}</div>
+                        <div style="font-size: 0.75rem; color: #6b7280;">En attente</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.25rem; font-weight: 700; color: #6b7280;">{{ reviewStats.total }}</div>
+                        <div style="font-size: 0.75rem; color: #6b7280;">Total</div>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                {% if not reviewsDataFresh %}
+                    <span style="font-size: 0.75rem; color: #6b7280;">
+                        <i class="fas fa-clock"></i> Données &gt; 12h
+                    </span>
+                {% endif %}
+                <a href="{{ path('admin_reviews_sync') }}" class="btn btn-sm btn-primary" title="Synchroniser les avis Google">
+                    <i class="fas fa-sync-alt"></i> Sync Avis
+                </a>
+                <a href="{{ ea_url().setController('App\\\\Controller\\\\Admin\\\\GoogleReviewCrudController').setAction('index') }}" class="btn btn-sm btn-outline-secondary" title="Gérer les avis">
+                    <i class="fas fa-cog"></i>
+                </a>
+            </div>
+        </div>
+        {% if pendingReviews|length > 0 %}
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+                <div style="font-size: 0.875rem; font-weight: 600; color: #92400e; margin-bottom: 0.5rem;">
+                    <i class="fas fa-bell"></i> {{ pendingReviews|length }} avis en attente de modération
+                </div>
+                {% for review in pendingReviews|slice(0, 3) %}
+                    <div style="background: #fffbeb; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <div style="font-weight: 500;">{{ review.authorName }}</div>
+                                <div style="color: #f59e0b;">
+                                    {% for i in 1..5 %}
+                                        <i class="fas fa-star{% if i > review.rating %}-o{% endif %}" style="font-size: 0.75rem;"></i>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div style="font-size: 0.75rem; color: #6b7280;">{{ review.reviewDate|date('d/m/Y') }}</div>
+                        </div>
+                        {% if review.comment %}
+                            <div style="font-size: 0.875rem; color: #4b5563; margin-top: 0.5rem; font-style: italic;">
+                                "{{ review.commentExcerpt(100) }}"
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="color: #6b7280;">Aucun avis synchronisé</div>
+            <a href="{{ path('admin_reviews_sync') }}" class="btn btn-sm btn-primary">
+                <i class="fas fa-sync-alt"></i> Synchroniser les avis
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- SEO Positions Widget -->
+{% if googleOAuthConnected and seoKeywords|length > 0 %}
+<div class="chart-container" style="padding: 1rem 1.5rem; margin-bottom: 1.5rem;">
+    <div class="chart-title" style="margin-bottom: 1rem;">
+        <i class="fas fa-search" style="color: var(--primary);"></i>
+        Positions SEO
+        <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">
+            ({{ seoKeywords|length }} mot{% if seoKeywords|length > 1 %}s{% endif %}-clé{% if seoKeywords|length > 1 %}s{% endif %})
+        </span>
+    </div>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid #e5e7eb;">
+                    <th style="text-align: left; padding: 0.75rem 0.5rem; color: #6b7280; font-weight: 600;">Mot-clé</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #6b7280; font-weight: 600;">Position</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #6b7280; font-weight: 600;">vs M-1</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #6b7280; font-weight: 600;">Clics</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #6b7280; font-weight: 600;">Impressions</th>
+                    <th style="text-align: right; padding: 0.75rem 0.5rem; color: #6b7280; font-weight: 600;">Dernière sync</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for keyword in seoKeywords %}
+                    {% set latestPosition = keyword.latestPosition %}
+                    {% set comparison = seoPositionComparisons[keyword.id] ?? null %}
+                    <tr style="border-bottom: 1px solid #f3f4f6;">
+                        <td style="padding: 0.75rem 0.5rem; font-weight: 500;">
+                            {{ keyword.keyword }}
+                            {% if not keyword.active %}
+                                <span style="font-size: 0.625rem; background: #9ca3af; color: white; padding: 0.125rem 0.375rem; border-radius: 4px; margin-left: 0.5rem;">Inactif</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {% if latestPosition %}
+                                {% set pos = latestPosition.position %}
+                                {% if pos <= 10 %}
+                                    <span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 700;">
+                                        {{ pos|number_format(1) }}
+                                    </span>
+                                {% elseif pos <= 20 %}
+                                    <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 700;">
+                                        {{ pos|number_format(1) }}
+                                    </span>
+                                {% else %}
+                                    <span style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 700;">
+                                        {{ pos|number_format(1) }}
+                                    </span>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #9ca3af; font-style: italic;">Pas de données</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {% if comparison %}
+                                {% if comparison.status == 'improved' %}
+                                    <span style="color: #10b981; font-weight: 600;">
+                                        <i class="fas fa-arrow-up"></i> +{{ comparison.variation|abs|number_format(1) }}
+                                    </span>
+                                {% elseif comparison.status == 'degraded' %}
+                                    <span style="color: #ef4444; font-weight: 600;">
+                                        <i class="fas fa-arrow-down"></i> {{ comparison.variation|number_format(1) }}
+                                    </span>
+                                {% elseif comparison.status == 'stable' %}
+                                    <span style="color: #6b7280;">=</span>
+                                {% elseif comparison.status == 'new' %}
+                                    <span style="background: #dbeafe; color: #1d4ed8; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500;">Nouveau</span>
+                                {% else %}
+                                    <span style="color: #9ca3af;">-</span>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #9ca3af;">-</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {% if latestPosition %}
+                                <span style="font-weight: 600;">{{ latestPosition.clicks }}</span>
+                            {% else %}
+                                <span style="color: #9ca3af;">-</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {% if latestPosition %}
+                                {{ latestPosition.impressions|number_format(0, '', ' ') }}
+                            {% else %}
+                                <span style="color: #9ca3af;">-</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: right; padding: 0.75rem 0.5rem; color: #6b7280; font-size: 0.75rem;">
+                            {% if keyword.lastSyncAt %}
+                                {{ keyword.lastSyncAt|date('d/m/Y H:i') }}
+                            {% else %}
+                                <span style="font-style: italic;">Jamais</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if seoKeywords|length > 0 %}
+        <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <a href="{{ ea_url().setController('App\\\\Controller\\\\Admin\\\\SeoKeywordCrudController').setAction('index') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-cog"></i> Gérer les mots-clés
+            </a>
+            {% if googleOAuthConnected %}
+                <a href="{{ path('admin_google_sync_seo') }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-sync-alt"></i> Synchroniser
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% elseif googleOAuthConnected %}
+<div class="stat-card info" style="margin-bottom: 1.5rem;">
+    <div class="stat-header">
+        <span class="stat-label">Positions SEO</span>
+        <div class="stat-icon info"><i class="fas fa-search"></i></div>
+    </div>
+    <div style="color: #6b7280; font-size: 0.875rem;">
+        Aucun mot-clé configuré.
+        <a href="{{ ea_url().setController('App\\\\Controller\\\\Admin\\\\SeoKeywordCrudController').setAction('new') }}" style="color: var(--primary); text-decoration: underline;">
+            Ajouter des mots-clés
+        </a>
+        pour commencer le suivi SEO.
+    </div>
+</div>
+{% endif %}
+
+<!-- SEO Evolution Chart (Clics/Impressions) -->
+{% if googleOAuthConnected and seoKeywords|length > 0 %}
+<div class="chart-container" style="margin-bottom: 1.5rem;">
+    <div class="chart-title">
+        <i class="fas fa-chart-line" style="color: var(--info);"></i>
+        Évolution SEO - 30 derniers jours
+    </div>
+    {% if seoChartData.hasEnoughData %}
+        <canvas id="chartSeoEvolution" class="chart-canvas"></canvas>
+    {% else %}
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; color: #6b7280;">
+            <i class="fas fa-chart-line" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;"></i>
+            <div style="font-size: 0.875rem; text-align: center;">
+                Données insuffisantes pour afficher les tendances<br>
+                <span style="font-size: 0.75rem; opacity: 0.7;">({{ seoChartData.daysWithData }} jour{% if seoChartData.daysWithData > 1 %}s{% endif %} de données, minimum 7 requis)</span>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- SEO Performance Categories -->
+<div class="grid-2" style="margin-bottom: 1.5rem;">
+    <!-- Top Performers -->
+    <div class="chart-container" style="height: auto; padding: 1.25rem;">
+        <div class="chart-title" style="margin-bottom: 1rem;">
+            <i class="fas fa-trophy" style="color: var(--success);"></i>
+            Top Performers
+            <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">(Position &le; 10)</span>
+        </div>
+        {% if seoPerformanceData.topPerformers|length > 0 %}
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                {% for item in seoPerformanceData.topPerformers %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: #f0fdf4; border-radius: 8px;">
+                        <div style="font-weight: 500; font-size: 0.875rem;">{{ item.keyword }}</div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span style="background: #d1fae5; color: #065f46; padding: 0.125rem 0.5rem; border-radius: 9999px; font-weight: 700; font-size: 0.75rem;">
+                                #{{ item.position|number_format(0) }}
+                            </span>
+                            <span style="color: #6b7280; font-size: 0.75rem;">{{ item.clicks }} clics</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; color: #6b7280;">
+                <i class="fas fa-trophy" style="font-size: 2rem; opacity: 0.3; margin-bottom: 0.5rem;"></i>
+                <div style="font-size: 0.875rem; text-align: center;">Aucun mot-clé en première page encore</div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- À améliorer -->
+    <div class="chart-container" style="height: auto; padding: 1.25rem;">
+        <div class="chart-title" style="margin-bottom: 1rem;">
+            <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
+            À améliorer
+            <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">(Position &gt; 20)</span>
+        </div>
+        {% if seoPerformanceData.toImprove|length > 0 %}
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                {% for item in seoPerformanceData.toImprove %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: #fef2f2; border-radius: 8px;">
+                        <div style="font-weight: 500; font-size: 0.875rem;">{{ item.keyword }}</div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span style="background: #fee2e2; color: #991b1b; padding: 0.125rem 0.5rem; border-radius: 9999px; font-weight: 700; font-size: 0.75rem;">
+                                #{{ item.position|number_format(0) }}
+                            </span>
+                            <span style="color: #6b7280; font-size: 0.75rem;">{{ item.impressions|number_format(0, '', ' ') }} imp.</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; color: #6b7280;">
+                <i class="fas fa-check-circle" style="font-size: 2rem; opacity: 0.3; color: #10b981; margin-bottom: 0.5rem;"></i>
+                <div style="font-size: 0.875rem; text-align: center;">Tous vos mots-clés sont bien positionnés</div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Opportunités CTR -->
+{% if seoPerformanceData.ctrOpportunities|length > 0 %}
+<div class="chart-container" style="height: auto; padding: 1.25rem; margin-bottom: 1.5rem;">
+    <div class="chart-title" style="margin-bottom: 1rem;">
+        <i class="fas fa-lightbulb" style="color: var(--warning);"></i>
+        Opportunités CTR
+        <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">(Beaucoup d'impressions, peu de clics)</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0.75rem;">
+        {% for item in seoPerformanceData.ctrOpportunities %}
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #fffbeb; border-radius: 8px; border-left: 3px solid #f59e0b;">
+                <div>
+                    <div style="font-weight: 500; font-size: 0.875rem;">{{ item.keyword }}</div>
+                    <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                        {{ item.impressions|number_format(0, '', ' ') }} impressions
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 700; font-size: 0.875rem;">
+                        CTR {{ item.ctr }}%
+                    </div>
+                    <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                        {{ item.clicks }} clics
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div style="margin-top: 0.75rem; font-size: 0.75rem; color: #6b7280;">
+        <i class="fas fa-info-circle"></i> Ces mots-clés génèrent des impressions mais peu de clics. Améliorez vos meta descriptions et titres pour augmenter le CTR.
+    </div>
+</div>
+{% endif %}
+{% endif %}
+
 <!-- KPI Période sélectionnée -->
 <div class="chart-container" style="padding: 1rem 1.5rem; margin-bottom: 1.5rem;">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
@@ -381,6 +780,115 @@ const caParMoisComparison = {{ caParMoisComparison|json_encode|raw }};
 const cotisationsParMois = {{ cotisationsParMois|json_encode|raw }};
 const topClients = {{ topClients|json_encode|raw }};
 const monthLabels = {{ monthLabels|json_encode|raw }};
+
+// SEO Chart Data
+const seoChartLabels = {{ seoChartData.labels|json_encode|raw }};
+const seoChartClicks = {{ seoChartData.clicks|json_encode|raw }};
+const seoChartImpressions = {{ seoChartData.impressions|json_encode|raw }};
+const seoHasEnoughData = {{ seoChartData.hasEnoughData ? 'true' : 'false' }};
+
+// 0. Graphique SEO Évolution (Clics/Impressions)
+if (seoHasEnoughData && document.getElementById('chartSeoEvolution')) {
+    new Chart(document.getElementById('chartSeoEvolution'), {
+        type: 'line',
+        data: {
+            labels: seoChartLabels,
+            datasets: [
+                {
+                    label: 'Clics',
+                    data: seoChartClicks,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Impressions',
+                    data: seoChartImpressions,
+                    borderColor: '#06b6d4',
+                    backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: { usePointStyle: true, padding: 15 }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: (items) => {
+                            if (items.length > 0) {
+                                return 'Date: ' + items[0].label;
+                            }
+                            return '';
+                        },
+                        label: (ctx) => {
+                            const value = ctx.parsed.y.toLocaleString('fr-FR');
+                            return ctx.dataset.label + ': ' + value;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Clics',
+                        color: '#3b82f6'
+                    },
+                    ticks: {
+                        color: '#3b82f6'
+                    },
+                    grid: { color: 'rgba(0,0,0,0.05)' }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Impressions',
+                        color: '#06b6d4'
+                    },
+                    ticks: {
+                        color: '#06b6d4'
+                    },
+                    grid: { drawOnChartArea: false }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        maxTicksLimit: 10
+                    }
+                }
+            }
+        }
+    });
+}
 
 // 1. Graphique Évolution CA Mensuel (Ligne) avec comparaison N-1
 const hasComparisonData = caParMoisComparison.some(v => v > 0);

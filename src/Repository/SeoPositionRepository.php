@@ -1,0 +1,236 @@
+<?php
+
+namespace App\Repository;
+
+use App\Entity\SeoKeyword;
+use App\Entity\SeoPosition;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
+
+/**
+ * @extends ServiceEntityRepository<SeoPosition>
+ */
+class SeoPositionRepository extends ServiceEntityRepository
+{
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, SeoPosition::class);
+    }
+
+    /**
+     * Retourne la dernière position pour un mot-clé.
+     */
+    public function findLatestForKeyword(SeoKeyword $keyword): ?SeoPosition
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.keyword = :keyword')
+            ->setParameter('keyword', $keyword)
+            ->orderBy('p.date', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * Retourne les positions d'un mot-clé sur une période.
+     *
+     * @return SeoPosition[]
+     */
+    public function findByKeywordAndPeriod(
+        SeoKeyword $keyword,
+        \DateTimeImmutable $startDate,
+        \DateTimeImmutable $endDate
+    ): array {
+        return $this->createQueryBuilder('p')
+            ->where('p.keyword = :keyword')
+            ->andWhere('p.date >= :startDate')
+            ->andWhere('p.date <= :endDate')
+            ->setParameter('keyword', $keyword)
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->orderBy('p.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Retourne la position d'un mot-clé à une date donnée.
+     */
+    public function findByKeywordAndDate(SeoKeyword $keyword, \DateTimeImmutable $date): ?SeoPosition
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.keyword = :keyword')
+            ->andWhere('p.date = :date')
+            ->setParameter('keyword', $keyword)
+            ->setParameter('date', $date)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * Retourne les positions de tous les mots-clés actifs pour une date.
+     *
+     * @return SeoPosition[]
+     */
+    public function findAllForDate(\DateTimeImmutable $date): array
+    {
+        return $this->createQueryBuilder('p')
+            ->join('p.keyword', 'k')
+            ->where('k.isActive = :active')
+            ->andWhere('p.date = :date')
+            ->setParameter('active', true)
+            ->setParameter('date', $date)
+            ->orderBy('p.position', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Calcule les totaux de clics et impressions sur une période.
+     *
+     * @return array{clicks: int, impressions: int}
+     */
+    public function getTotalsForPeriod(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
+    {
+        $result = $this->createQueryBuilder('p')
+            ->select('SUM(p.clicks) as clicks, SUM(p.impressions) as impressions')
+            ->join('p.keyword', 'k')
+            ->where('k.isActive = :active')
+            ->andWhere('p.date >= :startDate')
+            ->andWhere('p.date <= :endDate')
+            ->setParameter('active', true)
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->getQuery()
+            ->getSingleResult();
+
+        return [
+            'clicks' => (int) ($result['clicks'] ?? 0),
+            'impressions' => (int) ($result['impressions'] ?? 0),
+        ];
+    }
+
+    /**
+     * Calcule la position moyenne d'un mot-clé sur une période.
+     */
+    public function getAveragePositionForPeriod(
+        SeoKeyword $keyword,
+        \DateTimeImmutable $startDate,
+        \DateTimeImmutable $endDate
+    ): ?float {
+        $result = $this->createQueryBuilder('p')
+            ->select('AVG(p.position) as avgPosition')
+            ->where('p.keyword = :keyword')
+            ->andWhere('p.date >= :startDate')
+            ->andWhere('p.date <= :endDate')
+            ->setParameter('keyword', $keyword)
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $result !== null ? round((float) $result, 1) : null;
+    }
+
+    /**
+     * Récupère les positions moyennes de tous les mots-clés actifs pour une période.
+     *
+     * @return array<int, array{keywordId: int, avgPosition: float, totalClicks: int, totalImpressions: int}>
+     */
+    public function getAveragePositionsForAllKeywords(
+        \DateTimeImmutable $startDate,
+        \DateTimeImmutable $endDate
+    ): array {
+        $results = $this->createQueryBuilder('p')
+            ->select(
+                'IDENTITY(p.keyword) as keywordId',
+                'AVG(p.position) as avgPosition',
+                'SUM(p.clicks) as totalClicks',
+                'SUM(p.impressions) as totalImpressions'
+            )
+            ->join('p.keyword', 'k')
+            ->where('k.isActive = :active')
+            ->andWhere('p.date >= :startDate')
+            ->andWhere('p.date <= :endDate')
+            ->setParameter('active', true)
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->groupBy('p.keyword')
+            ->getQuery()
+            ->getResult();
+
+        $data = [];
+        foreach ($results as $row) {
+            $data[(int) $row['keywordId']] = [
+                'keywordId' => (int) $row['keywordId'],
+                'avgPosition' => round((float) $row['avgPosition'], 1),
+                'totalClicks' => (int) $row['totalClicks'],
+                'totalImpressions' => (int) $row['totalImpressions'],
+            ];
+        }
+
+        return $data;
+    }
+
+    /**
+     * Récupère les totaux quotidiens de clics et impressions sur une période.
+     *
+     * @return array<string, array{date: string, clicks: int, impressions: int}>
+     */
+    public function getDailyTotals(
+        \DateTimeImmutable $startDate,
+        \DateTimeImmutable $endDate
+    ): array {
+        $results = $this->createQueryBuilder('p')
+            ->select(
+                'p.date as dateObj',
+                'SUM(p.clicks) as totalClicks',
+                'SUM(p.impressions) as totalImpressions'
+            )
+            ->join('p.keyword', 'k')
+            ->where('k.isActive = :active')
+            ->andWhere('p.date >= :startDate')
+            ->andWhere('p.date <= :endDate')
+            ->setParameter('active', true)
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->groupBy('p.date')
+            ->orderBy('p.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $data = [];
+        foreach ($results as $row) {
+            $dateKey = $row['dateObj']->format('Y-m-d');
+            $data[$dateKey] = [
+                'date' => $dateKey,
+                'clicks' => (int) $row['totalClicks'],
+                'impressions' => (int) $row['totalImpressions'],
+            ];
+        }
+
+        return $data;
+    }
+
+    /**
+     * Compte le nombre de jours avec des données sur une période.
+     */
+    public function countDaysWithData(
+        \DateTimeImmutable $startDate,
+        \DateTimeImmutable $endDate
+    ): int {
+        $result = $this->createQueryBuilder('p')
+            ->select('COUNT(DISTINCT p.date) as dayCount')
+            ->join('p.keyword', 'k')
+            ->where('k.isActive = :active')
+            ->andWhere('p.date >= :startDate')
+            ->andWhere('p.date <= :endDate')
+            ->setParameter('active', true)
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $result;
+    }
+}

@@ -331,6 +331,87 @@
 {% endif %}
 
 {# ============================================
+   AVIS GOOGLE - Preuve sociale
+   ============================================ #}
+{% if googleReviews is defined and googleReviews|length > 0 %}
+<section class="section">
+    <div class="container">
+        <h2 class="text-center mb-3">
+            <i class="fab fa-google" style="color: #4285F4;"></i>
+            Avis Google
+        </h2>
+        <p class="text-center text-muted mb-4">
+            Ce que mes clients disent sur Google
+        </p>
+
+        {# Bandeau note moyenne #}
+        {% if googleReviewStats is defined and googleReviewStats.approved > 0 %}
+        <div class="text-center mb-5">
+            <div style="display: inline-flex; align-items: center; gap: 1rem; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 1rem 2rem; border-radius: 50px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                {# Étoiles visuelles #}
+                <div style="display: flex; gap: 0.15rem; font-size: 1.3rem;">
+                    {% set avgRating = googleReviewStats.averageRating|default(0) %}
+                    {% for i in 1..5 %}
+                        {% if i <= avgRating|round(0, 'floor') %}
+                            <i class="fas fa-star" style="color: #f59e0b;"></i>
+                        {% elseif i - 0.5 <= avgRating %}
+                            <i class="fas fa-star-half-alt" style="color: #f59e0b;"></i>
+                        {% else %}
+                            <i class="far fa-star" style="color: #d1d5db;"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {# Note et nombre d'avis #}
+                <div style="font-size: 1.1rem;">
+                    <strong style="color: #111827;">{{ avgRating|number_format(1, ',', ' ') }}/5</strong>
+                    <span style="color: #6b7280;">
+                        basé sur {{ googleReviewStats.approved }} avis{{ googleReviewStats.approved > 1 ? '' : '' }}
+                    </span>
+                </div>
+                {# Badge Excellent si note >= 4.5 #}
+                {% if avgRating >= 4.5 %}
+                <span style="background: linear-gradient(135deg, var(--accent-color) 0%, #1e8a98 100%); color: white; padding: 0.35rem 0.85rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                    Excellent
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="grid grid-{{ googleReviews|length == 1 ? '1' : (googleReviews|length == 2 ? '2' : '3') }}">
+            {% for review in googleReviews %}
+            <div class="testimonial-card">
+                <div class="rating">
+                    {% for i in 1..5 %}
+                        {% if i <= review.rating %}
+                            <i class="fas fa-star"></i>
+                        {% else %}
+                            <i class="far fa-star" style="opacity: 0.3;"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% if review.comment %}
+                <p class="testimonial-text">{{ review.commentExcerpt(200) }}</p>
+                {% else %}
+                <p class="testimonial-text" style="font-style: italic; opacity: 0.7;">(Avis sans commentaire)</p>
+                {% endif %}
+                <div class="testimonial-author">
+                    <div>
+                        <div class="testimonial-author-name">{{ review.authorName }}</div>
+                        <div class="testimonial-author-company">
+                            <i class="fab fa-google" style="color: #4285F4; font-size: 0.85rem;"></i>
+                            {{ review.reviewDate|date('F Y') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# ============================================
    ÉCOCONCEPTION - Badge et CTA
    ============================================ #}
 <section class="section eco-section">

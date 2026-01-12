@@ -9,9 +9,11 @@ use App\Entity\Devis;
 use App\Entity\Event;
 use App\Entity\EventType;
 use App\Entity\Facture;
+use App\Entity\GoogleReview;
 use App\Entity\Prospect;
 use App\Entity\ProspectFollowUp;
 use App\Entity\ProspectInteraction;
+use App\Entity\SeoKeyword;
 use App\Entity\User;
 use App\Entity\Project;
 use App\Entity\Partner;
@@ -23,8 +25,15 @@ use App\Repository\EventTypeRepository;
 use App\Repository\FactureRepository;
 use App\Repository\ProspectRepository;
 use App\Repository\ProspectFollowUpRepository;
+use App\Repository\GoogleReviewRepository;
+use App\Repository\SeoKeywordRepository;
+use App\Repository\SeoPositionRepository;
 use App\Service\DashboardPeriodService;
+use App\Service\GoogleOAuthService;
+use App\Service\GooglePlacesService;
 use App\Service\ProspectionEmailService;
+use App\Service\ReviewSyncService;
+use App\Service\SeoDataImportService;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
@@ -40,7 +49,11 @@ class DashboardController extends AbstractDashboardController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private ParameterBagInterface $params
+        private ParameterBagInterface $params,
+        private GoogleOAuthService $googleOAuthService,
+        private SeoDataImportService $seoDataImportService,
+        private GooglePlacesService $googlePlacesService,
+        private ReviewSyncService $reviewSyncService,
     ) {
     }
 
@@ -57,7 +70,10 @@ class DashboardController extends AbstractDashboardController
         CompanyRepository $companyRepository,
         FactureRepository $factureRepository,
         DevisRepository $devisRepository,
-        DashboardPeriodService $periodService
+        DashboardPeriodService $periodService,
+        SeoKeywordRepository $seoKeywordRepository,
+        SeoPositionRepository $seoPositionRepository,
+        GoogleReviewRepository $googleReviewRepository
     ): Response {
         // Récupérer les informations de l'entreprise
         $company = $companyRepository->findOneBy([]);
@@ -323,6 +339,37 @@ class DashboardController extends AbstractDashboardController
 
             // Mode démo
             'demoMode' => ($_ENV['APP_DEMO_MODE'] ?? '0') === '1',
+
+            // Google OAuth
+            'googleOAuthConfigured' => $this->googleOAuthService->isConfigured(),
+            'googleOAuthConnected' => $this->googleOAuthService->isConnected(),
+            'googleOAuthToken' => $this->googleOAuthService->getValidToken(),
+
+            // SEO Sync
+            'lastSeoSyncAt' => $this->seoDataImportService->getLastSyncDate(),
+
+            // SEO Keywords with positions
+            'seoKeywords' => $seoKeywordRepository->findAllWithLatestPosition(),
+
+            // SEO Position comparisons (current month vs previous month)
+            'seoPositionComparisons' => $this->calculateSeoPositionComparisons(
+                $seoKeywordRepository,
+                $seoPositionRepository
+            ),
+
+            // SEO Chart data (last 30 days)
+            'seoChartData' => $this->prepareSeoChartData($seoPositionRepository),
+
+            // SEO Performance categories
+            'seoPerformanceData' => $this->categorizeSeoKeywords(
+                $seoKeywordRepository->findAllWithLatestPosition()
+            ),
+
+            // Google Reviews
+            'googlePlacesConfigured' => $this->googlePlacesService->isConfigured(),
+            'reviewStats' => $googleReviewRepository->getStats(),
+            'reviewsDataFresh' => $this->reviewSyncService->isDataFresh(),
+            'pendingReviews' => $googleReviewRepository->findPending(),
         ]);
     }
 
@@ -587,6 +634,192 @@ class DashboardController extends AbstractDashboardController
         return $response;
     }
 
+    /**
+     * Catégorise les mots-clés SEO en Top Performers, À améliorer, et Opportunités CTR.
+     *
+     * @param array $keywords Liste des mots-clés avec leurs positions
+     * @return array{topPerformers: array, toImprove: array, ctrOpportunities: array}
+     */
+    private function categorizeSeoKeywords(array $keywords): array
+    {
+        $topPerformers = [];
+        $toImprove = [];
+        $ctrOpportunities = [];
+
+        foreach ($keywords as $keyword) {
+            if (!$keyword->isActive()) {
+                continue;
+            }
+
+            $latestPosition = $keyword->getLatestPosition();
+            if (!$latestPosition) {
+                continue;
+            }
+
+            $position = $latestPosition->getPosition();
+            $clicks = $latestPosition->getClicks();
+            $impressions = $latestPosition->getImpressions();
+            $ctr = $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0;
+
+            $keywordData = [
+                'keyword' => $keyword->getKeyword(),
+                'position' => $position,
+                'clicks' => $clicks,
+                'impressions' => $impressions,
+                'ctr' => $ctr,
+            ];
+
+            // Top Performers: position <= 10 (première page)
+            if ($position <= 10) {
+                $topPerformers[] = $keywordData;
+            }
+
+            // À améliorer: position > 20 (au-delà de la 2ème page)
+            if ($position > 20) {
+                $toImprove[] = $keywordData;
+            }
+
+            // Opportunités CTR: beaucoup d'impressions (>= 100) mais CTR < 2%
+            if ($impressions >= 100 && $ctr < 2) {
+                $ctrOpportunities[] = $keywordData;
+            }
+        }
+
+        // Trier par position (meilleure en premier pour top performers)
+        usort($topPerformers, fn($a, $b) => $a['position'] <=> $b['position']);
+        // Trier par position (pire en premier pour à améliorer)
+        usort($toImprove, fn($a, $b) => $b['position'] <=> $a['position']);
+        // Trier par impressions (plus d'impressions = plus grande opportunité)
+        usort($ctrOpportunities, fn($a, $b) => $b['impressions'] <=> $a['impressions']);
+
+        return [
+            'topPerformers' => array_slice($topPerformers, 0, 5),
+            'toImprove' => array_slice($toImprove, 0, 5),
+            'ctrOpportunities' => array_slice($ctrOpportunities, 0, 5),
+        ];
+    }
+
+    /**
+     * Prépare les données pour le graphique SEO (clics/impressions sur 30 jours).
+     *
+     * @return array{labels: array, clicks: array, impressions: array, hasEnoughData: bool}
+     */
+    private function prepareSeoChartData(SeoPositionRepository $positionRepository): array
+    {
+        $now = new \DateTimeImmutable();
+        $startDate = $now->modify('-29 days')->setTime(0, 0, 0);
+        $endDate = $now->setTime(23, 59, 59);
+
+        // Vérifier si on a assez de données (minimum 7 jours)
+        $daysWithData = $positionRepository->countDaysWithData($startDate, $endDate);
+        $hasEnoughData = $daysWithData >= 7;
+
+        // Récupérer les données quotidiennes
+        $dailyData = $positionRepository->getDailyTotals($startDate, $endDate);
+
+        // Préparer les labels et datasets pour les 30 jours
+        $labels = [];
+        $clicks = [];
+        $impressions = [];
+
+        $currentDate = $startDate;
+        while ($currentDate <= $endDate) {
+            $dateKey = $currentDate->format('Y-m-d');
+            $labels[] = $currentDate->format('d/m');
+
+            if (isset($dailyData[$dateKey])) {
+                $clicks[] = $dailyData[$dateKey]['clicks'];
+                $impressions[] = $dailyData[$dateKey]['impressions'];
+            } else {
+                $clicks[] = 0;
+                $impressions[] = 0;
+            }
+
+            $currentDate = $currentDate->modify('+1 day');
+        }
+
+        return [
+            'labels' => $labels,
+            'clicks' => $clicks,
+            'impressions' => $impressions,
+            'hasEnoughData' => $hasEnoughData,
+            'daysWithData' => $daysWithData,
+        ];
+    }
+
+    /**
+     * Calcule les comparaisons de positions SEO entre le mois courant et le mois précédent.
+     *
+     * @return array<int, array{currentPosition: ?float, previousPosition: ?float, variation: ?float, status: string}>
+     */
+    private function calculateSeoPositionComparisons(
+        SeoKeywordRepository $keywordRepository,
+        SeoPositionRepository $positionRepository
+    ): array {
+        $now = new \DateTimeImmutable();
+
+        // Période du mois courant
+        $currentMonthStart = $now->modify('first day of this month')->setTime(0, 0, 0);
+        $currentMonthEnd = $now->setTime(23, 59, 59);
+
+        // Période du mois précédent
+        $previousMonthStart = $now->modify('first day of last month')->setTime(0, 0, 0);
+        $previousMonthEnd = $now->modify('last day of last month')->setTime(23, 59, 59);
+
+        // Récupérer les positions moyennes pour chaque période
+        $currentPositions = $positionRepository->getAveragePositionsForAllKeywords(
+            $currentMonthStart,
+            $currentMonthEnd
+        );
+        $previousPositions = $positionRepository->getAveragePositionsForAllKeywords(
+            $previousMonthStart,
+            $previousMonthEnd
+        );
+
+        // Récupérer tous les mots-clés actifs
+        $keywords = $keywordRepository->findActiveKeywords();
+
+        $comparisons = [];
+        foreach ($keywords as $keyword) {
+            $keywordId = $keyword->getId();
+            $currentData = $currentPositions[$keywordId] ?? null;
+            $previousData = $previousPositions[$keywordId] ?? null;
+
+            $currentPosition = $currentData['avgPosition'] ?? null;
+            $previousPosition = $previousData['avgPosition'] ?? null;
+
+            // Calculer la variation
+            $variation = null;
+            $status = 'no_data';
+
+            if ($currentPosition !== null && $previousPosition !== null) {
+                // Variation = position précédente - position actuelle
+                // Positif = amélioration (on monte dans le classement)
+                // Négatif = dégradation (on descend dans le classement)
+                $variation = round($previousPosition - $currentPosition, 1);
+
+                if ($variation > 0) {
+                    $status = 'improved';
+                } elseif ($variation < 0) {
+                    $status = 'degraded';
+                } else {
+                    $status = 'stable';
+                }
+            } elseif ($currentPosition !== null && $previousPosition === null) {
+                $status = 'new';
+            }
+
+            $comparisons[$keywordId] = [
+                'currentPosition' => $currentPosition,
+                'previousPosition' => $previousPosition,
+                'variation' => $variation,
+                'status' => $status,
+            ];
+        }
+
+        return $comparisons;
+    }
+
     private function formatEventDate(Event $event): string
     {
         $start = $event->getStartAt();
@@ -649,7 +882,11 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Portfolio', 'fas fa-folder-open', Project::class);
         yield MenuItem::linkToCrud('Partenaires', 'fas fa-handshake', Partner::class);
         yield MenuItem::linkToCrud('Témoignages', 'fas fa-star', Testimonial::class);
+        yield MenuItem::linkToCrud('Avis Google', 'fab fa-google', GoogleReview::class);
         yield MenuItem::linkToCrud('Messages de contact', 'fas fa-envelope', ContactMessage::class);
+
+        yield MenuItem::section('SEO');
+        yield MenuItem::linkToCrud('Mots-clés SEO', 'fas fa-search', SeoKeyword::class);
 
         yield MenuItem::section('Gestion commerciale');
         yield MenuItem::linkToCrud('Devis', 'fas fa-file-invoice', Devis::class);

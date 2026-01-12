@@ -75,3 +75,17 @@ services:
             $vapidSubject: '%vapid.subject%'
             $vapidPublicKey: '%vapid.public_key%'
             $vapidPrivateKey: '%vapid.private_key%'
+
+    App\Service\GoogleOAuthService:
+        arguments:
+            $googleClientId: '%env(GOOGLE_CLIENT_ID)%'
+            $googleClientSecret: '%env(GOOGLE_CLIENT_SECRET)%'
+
+    App\Service\GoogleSearchConsoleService:
+        arguments:
+            $googleSiteUrl: '%env(GOOGLE_SITE_URL)%'
+
+    App\Service\GooglePlacesService:
+        arguments:
+            $googlePlacesApiKey: '%env(GOOGLE_PLACES_API_KEY)%'
+            $googlePlaceId: '%env(GOOGLE_PLACE_ID)%'

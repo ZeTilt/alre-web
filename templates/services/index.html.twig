@@ -4,6 +4,98 @@
 
 {% block meta_description %}Site vitrine, e-commerce, outils métier : je crée des sites qui correspondent à votre activité. Basé à Auray, j'accompagne les artisans et TPE en Bretagne.{% endblock %}
 
+{% block structured_data %}
+{{ parent() }}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": [
+        {
+            "@type": "ListItem",
+            "position": 1,
+            "item": {
+                "@type": "Service",
+                "name": "Développement Web Sur Mesure",
+                "description": "Création de sites vitrines, applications métier et outils personnalisés avec Symfony",
+                "provider": {
+                    "@type": "ProfessionalService",
+                    "name": "Alré Web"
+                },
+                "areaServed": "Bretagne, France",
+                "serviceType": "Développement Web"
+            }
+        },
+        {
+            "@type": "ListItem",
+            "position": 2,
+            "item": {
+                "@type": "Service",
+                "name": "Site Vitrine",
+                "description": "Site one-page ou multi-pages pour présenter votre activité et être visible sur Google",
+                "provider": {
+                    "@type": "ProfessionalService",
+                    "name": "Alré Web"
+                },
+                "areaServed": "Bretagne, France",
+                "offers": {
+                    "@type": "Offer",
+                    "price": "490",
+                    "priceCurrency": "EUR",
+                    "priceSpecification": {
+                        "@type": "PriceSpecification",
+                        "price": "490",
+                        "priceCurrency": "EUR",
+                        "description": "À partir de"
+                    }
+                }
+            }
+        },
+        {
+            "@type": "ListItem",
+            "position": 3,
+            "item": {
+                "@type": "Service",
+                "name": "Site E-commerce",
+                "description": "Boutique en ligne complète pour vendre vos produits 24h/24",
+                "provider": {
+                    "@type": "ProfessionalService",
+                    "name": "Alré Web"
+                },
+                "areaServed": "Bretagne, France",
+                "serviceType": "E-commerce"
+            }
+        },
+        {
+            "@type": "ListItem",
+            "position": 4,
+            "item": {
+                "@type": "Service",
+                "name": "Hébergement et Maintenance",
+                "description": "Hébergement sécurisé, mises à jour et support technique pour votre site web",
+                "provider": {
+                    "@type": "ProfessionalService",
+                    "name": "Alré Web"
+                },
+                "areaServed": "Bretagne, France",
+                "offers": {
+                    "@type": "Offer",
+                    "price": "29",
+                    "priceCurrency": "EUR",
+                    "priceSpecification": {
+                        "@type": "PriceSpecification",
+                        "price": "29",
+                        "priceCurrency": "EUR",
+                        "unitText": "mois"
+                    }
+                }
+            }
+        }
+    ]
+}
+</script>
+{% endblock %}
+
 {% block body %}
 
 {# Hero Section #}

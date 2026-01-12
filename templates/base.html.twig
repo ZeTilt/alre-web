@@ -80,11 +80,24 @@
             "email": "contact@alre-web.bzh",
             "address": {
                 "@type": "PostalAddress",
-                "addressLocality": "Bretagne",
+                "streetAddress": "12 rue du Lait",
+                "postalCode": "56400",
+                "addressLocality": "Auray",
+                "addressRegion": "Bretagne",
                 "addressCountry": "FR"
             },
+            "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": 47.6683,
+                "longitude": -2.9833
+            },
             "priceRange": "€€",
-            "openingHours": "Mo-Fr 09:00-18:00",
+            "openingHoursSpecification": {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                "opens": "09:00",
+                "closes": "18:00"
+            },
             "sameAs": [
                 "https://www.linkedin.com/in/fabrice-dhuicque/"
             ],
@@ -95,8 +108,13 @@
                 "url": "https://www.linkedin.com/in/fabrice-dhuicque/"
             },
             "areaServed": {
-                "@type": "Country",
-                "name": "France"
+                "@type": "GeoCircle",
+                "geoMidpoint": {
+                    "@type": "GeoCoordinates",
+                    "latitude": 47.6683,
+                    "longitude": -2.9833
+                },
+                "geoRadius": "50000"
             },
             "serviceType": [
                 "Développement Web",
@@ -104,7 +122,14 @@
                 "E-commerce",
                 "Maintenance web",
                 "Référencement SEO"
-            ]
+            ]{% if schema_aggregate_rating %},
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "{{ schema_aggregate_rating.ratingValue }}",
+                "bestRating": "5",
+                "worstRating": "1",
+                "reviewCount": "{{ schema_aggregate_rating.reviewCount }}"
+            }{% endif %}
         }
         </script>
         {% endblock %}

@@ -29,9 +29,9 @@
 <section class="section section-light" style="padding: 2rem 0;">
     <div class="container">
         <img src="{{ asset('uploads/projects/' ~ featuredImage.imageFilename) }}"
-             alt="{{ featuredImage.altText ?? featuredImage.caption ?? project.title }}"
+             alt="{{ featuredImage.altText|default(featuredImage.caption)|default(project.title ~ ' - Réalisation Alré Web') }}"
              class="lightbox-image"
-             data-caption="{{ featuredImage.caption ?? featuredImage.altText ?? project.title }}"
+             data-caption="{{ featuredImage.caption|default(featuredImage.altText)|default(project.title) }}"
              style="width: 100%; max-height: 500px; object-fit: cover; border-radius: var(--border-radius);">
         {% if featuredImage.caption %}
         <p style="text-align: center; color: var(--text-muted); margin-top: 1rem;">
@@ -123,9 +123,9 @@
             {% for image in galleryImages %}
             <div>
                 <img src="{{ asset('uploads/projects/' ~ image.imageFilename) }}"
-                     alt="{{ image.altText ?? image.caption ?? project.title }}"
+                     alt="{{ image.altText|default(image.caption)|default(project.title ~ ' - Réalisation Alré Web') }}"
                      class="lightbox-image"
-                     data-caption="{{ image.caption ?? image.altText ?? project.title }}"
+                     data-caption="{{ image.caption|default(image.altText)|default(project.title) }}"
                      style="width: 100%; height: auto; border-radius: var(--border-radius);">
                 {% if image.caption %}
                 <p style="text-align: center; color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">

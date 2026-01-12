@@ -23,6 +23,7 @@ use App\Repository\EventTypeRepository;
 use App\Repository\FactureRepository;
 use App\Repository\ProspectRepository;
 use App\Repository\ProspectFollowUpRepository;
+use App\Service\DashboardPeriodService;
 use App\Service\ProspectionEmailService;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
@@ -52,24 +53,62 @@ class DashboardController extends AbstractDashboardController
 
     #[Route('/saeiblauhjc/business-dashboard', name: 'admin_business_dashboard')]
     public function businessDashboard(
+        Request $request,
         CompanyRepository $companyRepository,
         FactureRepository $factureRepository,
-        DevisRepository $devisRepository
+        DevisRepository $devisRepository,
+        DashboardPeriodService $periodService
     ): Response {
         // Récupérer les informations de l'entreprise
         $company = $companyRepository->findOneBy([]);
 
-        // Année fiscale en cours
+        // Gestion de la période sélectionnée
+        $periodType = $request->query->get('period');
+        $customStartStr = $request->query->get('startDate');
+        $customEndStr = $request->query->get('endDate');
+
+        // Si période dans l'URL, sauvegarder en session
+        if ($periodType) {
+            $periodService->savePeriodToSession($periodType, $customStartStr, $customEndStr);
+        } else {
+            // Sinon récupérer depuis la session
+            $sessionData = $periodService->getPeriodFromSession();
+            $periodType = $sessionData['type'];
+            $customStartStr = $sessionData['customStart'];
+            $customEndStr = $sessionData['customEnd'];
+        }
+
+        // Convertir les dates custom si fournies
+        $customStart = $customStartStr ? new \DateTimeImmutable($customStartStr . ' 00:00:00') : null;
+        $customEnd = $customEndStr ? new \DateTimeImmutable($customEndStr . ' 23:59:59') : null;
+
+        // Obtenir les dates de la période
+        $periodDates = $periodService->getPeriodDates($periodType, $customStart, $customEnd);
+        $startOfPeriod = $periodDates['start'];
+        $endOfPeriod = $periodDates['end'];
+        $periodLabel = $periodDates['label'];
+        $periodYear = $periodDates['year'];
+
+        // Période de comparaison (N-1)
+        $comparisonDates = $periodService->getComparisonPeriodDates($startOfPeriod, $endOfPeriod);
+        $startOfComparison = $comparisonDates['start'];
+        $endOfComparison = $comparisonDates['end'];
+
+        // Labels des mois pour les graphiques
+        $monthLabels = $periodService->getMonthLabelsForPeriod($startOfPeriod, $endOfPeriod);
+        $monthKeys = $periodService->getMonthKeysForPeriod($startOfPeriod, $endOfPeriod);
+
+        // Année fiscale en cours (pour les objectifs et plafond)
         $year = $company?->getAnneeFiscaleEnCours() ?? (int) date('Y');
 
-        // Période en cours (mois et année)
+        // Période en cours (mois et année) - pour les KPI du mois
         $now = new \DateTimeImmutable();
         $startOfMonth = $now->modify('first day of this month')->setTime(0, 0, 0);
         $endOfMonth = $now->modify('last day of this month')->setTime(23, 59, 59);
         $startOfYear = new \DateTimeImmutable($year . '-01-01 00:00:00');
         $endOfYear = new \DateTimeImmutable($year . '-12-31 23:59:59');
 
-        // Période précédente pour comparaison
+        // Période précédente pour comparaison du mois
         $startOfPreviousMonth = $now->modify('first day of last month')->setTime(0, 0, 0);
         $endOfPreviousMonth = $now->modify('last day of last month')->setTime(23, 59, 59);
 
@@ -136,16 +175,35 @@ class DashboardController extends AbstractDashboardController
         $margeNetMois = $caMoisEncaisse > 0 ? round(($beneficeNetMois / $caMoisEncaisse) * 100, 1) : 0;
         $margeNetAnnee = $caAnneeEncaisse > 0 ? round(($beneficeNetAnnee / $caAnneeEncaisse) * 100, 1) : 0;
 
-        // ===== DONNÉES POUR GRAPHIQUES =====
+        // ===== DONNÉES POUR GRAPHIQUES (basé sur la période sélectionnée) =====
 
-        // CA mensuel encaissé (pour graphique ligne)
-        $caParMois = $factureRepository->getMonthlyPaidRevenueForYear($year);
+        // CA mensuel encaissé (pour graphique ligne) - période sélectionnée
+        $caParMoisData = $factureRepository->getMonthlyPaidRevenueForPeriod($startOfPeriod, $endOfPeriod);
 
-        // CA facturé par mois (pour comparaison)
-        $caFactureParMois = $factureRepository->getMonthlyRevenueForYear($year);
+        // Convertir les données en tableau indexé par ordre des mois
+        $caParMois = [];
+        foreach ($monthKeys as $key) {
+            $caParMois[] = $caParMoisData[$key] ?? 0;
+        }
 
-        // Top clients (pour camembert)
-        $topClients = $factureRepository->getRevenueByClient($year);
+        // CA période de comparaison N-1
+        $caParMoisComparisonData = $factureRepository->getMonthlyPaidRevenueForPeriod($startOfComparison, $endOfComparison);
+        $caParMoisComparison = [];
+        $comparisonKeys = $periodService->getMonthKeysForPeriod($startOfComparison, $endOfComparison);
+        foreach ($comparisonKeys as $key) {
+            $caParMoisComparison[] = $caParMoisComparisonData[$key] ?? 0;
+        }
+
+        // Total CA période vs comparaison
+        $caPeriode = $factureRepository->getRevenueByPeriod($startOfPeriod, $endOfPeriod, true);
+        $caPeriodeComparison = $factureRepository->getRevenueByPeriod($startOfComparison, $endOfComparison, true);
+        $variationPeriodePourcent = 0;
+        if ($caPeriodeComparison > 0) {
+            $variationPeriodePourcent = round((($caPeriode - $caPeriodeComparison) / $caPeriodeComparison) * 100, 1);
+        }
+
+        // Top clients (pour camembert) - basé sur la période sélectionnée
+        $topClients = $factureRepository->getRevenueByClientForPeriod($startOfPeriod, $endOfPeriod);
         $topClients = array_slice($topClients, 0, 5); // Top 5 clients
 
         // Dépenses mensuelles (fonctionnalité désactivée)
@@ -153,8 +211,8 @@ class DashboardController extends AbstractDashboardController
 
         // Cotisations URSSAF mensuelles (pour graphique)
         $cotisationsParMois = [];
-        foreach ($caParMois as $month => $ca) {
-            $cotisationsParMois[$month] = round($ca * ($tauxCotisations / 100), 2);
+        foreach ($caParMois as $ca) {
+            $cotisationsParMois[] = round($ca * ($tauxCotisations / 100), 2);
         }
 
         // ===== PRÉVISIONS =====
@@ -194,7 +252,21 @@ class DashboardController extends AbstractDashboardController
             'company' => $company,
             'year' => $year,
 
-            // CA
+            // Sélecteur de période
+            'periodType' => $periodType,
+            'periodLabel' => $periodLabel,
+            'periodChoices' => DashboardPeriodService::getPeriodChoices(),
+            'customStartDate' => $customStartStr,
+            'customEndDate' => $customEndStr,
+            'startOfPeriod' => $startOfPeriod,
+            'endOfPeriod' => $endOfPeriod,
+
+            // CA période sélectionnée
+            'caPeriode' => $caPeriode,
+            'caPeriodeComparison' => $caPeriodeComparison,
+            'variationPeriodePourcent' => $variationPeriodePourcent,
+
+            // CA mois (KPI fixes)
             'caMoisEncaisse' => $caMoisEncaisse,
             'caAnneeEncaisse' => $caAnneeEncaisse,
             'variationMoisPourcent' => $variationMoisPourcent,
@@ -239,7 +311,8 @@ class DashboardController extends AbstractDashboardController
 
             // Données graphiques
             'caParMois' => $caParMois,
-            'caFactureParMois' => $caFactureParMois,
+            'caParMoisComparison' => $caParMoisComparison,
+            'monthLabels' => $monthLabels,
             'topClients' => $topClients,
             'depensesParMois' => $depensesParMois,
             'cotisationsParMois' => $cotisationsParMois,

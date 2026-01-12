@@ -9,7 +9,7 @@
 {# Hero Section #}
 <section class="hero" style="padding: 4rem 0;">
     <div class="hero-content">
-        <h1 class="fade-in">Portfolio</h1>
+        <h1 class="fade-in">Réalisations web pour artisans et TPE en Bretagne</h1>
         <p class="lead fade-in-delay-1">
             Découvrez quelques projets que j'ai réalisés<br>
             pour mes clients
@@ -132,7 +132,7 @@
             <a href="{{ path('app_portfolio_show', {slug: project.slug}) }}" class="card project-card" data-category="{{ project.category }}">
                 {% set featuredImage = project.featuredImage %}
                 {% if featuredImage %}
-                <img src="{{ asset('uploads/projects/' ~ featuredImage.imageFilename) }}" alt="{{ featuredImage.altText ?? featuredImage.caption ?? project.title }}" class="project-image">
+                <img src="{{ asset('uploads/projects/' ~ featuredImage.imageFilename) }}" alt="{{ featuredImage.altText|default(featuredImage.caption)|default(project.title ~ ' - Réalisation Alré Web') }}" class="project-image">
                 {% else %}
                 <div class="project-image" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); display: flex; align-items: center; justify-content: center;">
                     <i class="fas fa-image" style="font-size: 3rem; color: rgba(255,255,255,0.5);"></i>

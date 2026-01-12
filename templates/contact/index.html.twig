@@ -4,12 +4,64 @@
 
 {% block meta_description %}Contactez votre développeur web à Auray (Morbihan), entre Vannes et Lorient. Devis gratuit et sans engagement. Réponse sous 24h. Basé en Bretagne, interventions dans toute la France.{% endblock %}
 
+{% block structured_data %}
+{{ parent() }}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+        {
+            "@type": "Question",
+            "name": "Combien coûte un site internet ?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Cela dépend de vos besoins. Une page unique démarre à 490€, un site vitrine à 1 200€, un e-commerce à 2 500€. Je vous fournis un devis détaillé après avoir discuté de votre projet."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Quel est le délai de réalisation ?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Une page unique prend 1-2 semaines, un site vitrine 3-4 semaines, un e-commerce 4-6 semaines. Le délai exact sera précisé dans le devis en fonction de la complexité."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Dois-je fournir les textes et photos ?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Idéalement oui, vous connaissez mieux votre activité. Mais je peux vous accompagner dans la rédaction ou vous recommander des prestataires (designer, photographe)."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Puis-je modifier mon site moi-même après ?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Absolument ! Je vous forme à l'utilisation de votre site. Vous pourrez modifier vos contenus (textes, images, produits...) en toute autonomie."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Où se déroule notre collaboration ?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Je travaille majoritairement à distance (email, téléphone, visio). Pour les clients en Bretagne, je peux me déplacer pour un premier rendez-vous si besoin."
+            }
+        }
+    ]
+}
+</script>
+{% endblock %}
+
 {% block body %}
 
 {# Hero Section #}
 <section class="hero" style="padding: 4rem 0;">
     <div class="hero-content">
-        <h1 class="fade-in">Contact</h1>
+        <h1 class="fade-in">Contactez un développeur web en Bretagne</h1>
         <p class="lead fade-in-delay-1">
             Prêt à concrétiser votre projet web ? Parlons-en !<br>
             Devis gratuit et sans engagement

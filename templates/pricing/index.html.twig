@@ -4,12 +4,92 @@
 
 {% block meta_description %}Tarifs transparents pour la création de sites internet à Auray, Vannes et Lorient (Morbihan). Page unique à partir de 490€, site vitrine à partir de 1200€, e-commerce à partir de 2500€. Devis gratuit en Bretagne.{% endblock %}
 
+{% block structured_data %}
+{{ parent() }}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+        {
+            "@type": "Question",
+            "name": "Combien coûte une page unique ?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Une page unique démarre à 490€. Elle comprend un design moderne et responsive, un formulaire de contact, l'optimisation SEO de base, l'intégration de vos contenus et 1 mois de support offert."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Combien coûte un site vitrine ?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Un site vitrine de 4-5 pages démarre à 1 200€. Il comprend un design moderne, un formulaire de contact, l'optimisation SEO, la formation à la gestion et 2 mois de support offert."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Combien coûte un site e-commerce ?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Un site e-commerce avec jusqu'à 50 produits démarre à 2 500€. Il comprend le catalogue produits, le panier et paiement sécurisé, la gestion des stocks et commandes, l'espace client et 3 mois de support."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Proposez-vous des facilités de paiement ?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Oui, je propose un acompte de 30% à la validation du devis, un paiement échelonné possible selon le projet, et le solde à la livraison du site."
+            }
+        }
+    ]
+}
+</script>
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "AggregateOffer",
+    "name": "Création de sites web",
+    "description": "Tarifs pour la création de sites internet sur mesure en Bretagne",
+    "url": "https://alre-web.bzh/tarifs",
+    "lowPrice": "490",
+    "highPrice": "2500",
+    "priceCurrency": "EUR",
+    "offerCount": "4",
+    "offers": [
+        {
+            "@type": "Offer",
+            "name": "Page Unique",
+            "price": "490",
+            "priceCurrency": "EUR",
+            "description": "Une page complète et optimisée avec design moderne et responsive"
+        },
+        {
+            "@type": "Offer",
+            "name": "Site Vitrine",
+            "price": "1200",
+            "priceCurrency": "EUR",
+            "description": "Site de 4-5 pages personnalisées avec formation à la gestion"
+        },
+        {
+            "@type": "Offer",
+            "name": "Site E-commerce",
+            "price": "2500",
+            "priceCurrency": "EUR",
+            "description": "Boutique en ligne jusqu'à 50 produits avec paiement sécurisé"
+        }
+    ]
+}
+</script>
+{% endblock %}
+
 {% block body %}
 
 {# Hero Section #}
 <section class="hero" style="padding: 4rem 0;">
     <div class="hero-content">
-        <h1 class="fade-in">Tarifs</h1>
+        <h1 class="fade-in">Tarifs transparents : sites web dès 490€</h1>
         <p class="lead fade-in-delay-1">
             Des prix transparents et adaptés à votre projet<br>
             Devis personnalisé gratuit

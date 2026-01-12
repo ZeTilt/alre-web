@@ -34,3 +34,7 @@ docs/*
 
 # Claude Code config
 .claude/
+
+# BMAD workflow files
+_bmad/
+_bmad-output/

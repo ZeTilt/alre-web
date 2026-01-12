@@ -6,7 +6,22 @@
 
 {% block content_header_wrapper %}
     {{ parent() }}
-    <div style="margin-top: -40px; text-align: right;">
+    <div style="margin-top: -40px; display: flex; justify-content: flex-end; gap: 1rem; align-items: center; flex-wrap: wrap;">
+        <form id="periodForm" method="GET" action="{{ path('admin_business_dashboard') }}" style="display: flex; gap: 0.5rem; align-items: center;">
+            <select name="period" id="periodSelect" class="form-select form-select-sm" style="width: auto;" onchange="handlePeriodChange()">
+                {% for label, value in periodChoices %}
+                    <option value="{{ value }}" {% if periodType == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <div id="customDateFields" style="display: {{ periodType == 'custom' ? 'flex' : 'none' }}; gap: 0.5rem; align-items: center;">
+                <input type="date" name="startDate" id="startDate" class="form-control form-control-sm" value="{{ customStartDate }}" style="width: auto;">
+                <span>→</span>
+                <input type="date" name="endDate" id="endDate" class="form-control form-control-sm" value="{{ customEndDate }}" style="width: auto;">
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary">
+                <i class="fas fa-sync"></i>
+            </button>
+        </form>
         <a href="{{ path('admin_dashboard_export_csv') }}" class="btn btn-sm btn-success">
             <i class="fas fa-file-csv"></i> Exporter CSV
         </a>
@@ -158,6 +173,35 @@
     {% endif %}
 </style>
 
+<!-- KPI Période sélectionnée -->
+<div class="chart-container" style="padding: 1rem 1.5rem; margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <div class="chart-title" style="margin-bottom: 0.25rem;">
+                <i class="fas fa-calendar-alt" style="color: var(--primary);"></i>
+                CA {{ periodLabel }}
+            </div>
+            <div style="font-size: 2rem; font-weight: 700; color: #111827;">
+                {{ caPeriode|number_format(2, ',', ' ') }} €
+            </div>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 0.875rem; color: #6b7280; font-weight: 600;">vs N-1</div>
+            {% if caPeriodeComparison > 0 %}
+                <div style="font-size: 1.5rem; font-weight: 700; color: {% if variationPeriodePourcent >= 0 %}#10b981{% else %}#ef4444{% endif %};">
+                    <i class="fas fa-arrow-{% if variationPeriodePourcent >= 0 %}up{% else %}down{% endif %}"></i>
+                    {{ variationPeriodePourcent|abs }}%
+                </div>
+                <div style="font-size: 0.875rem; color: #9ca3af;">
+                    {{ caPeriodeComparison|number_format(2, ',', ' ') }} € N-1
+                </div>
+            {% else %}
+                <div style="font-size: 1rem; color: #9ca3af;">Pas de données N-1</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
 <!-- KPIs Principaux -->
 <div class="dashboard-grid">
     <div class="stat-card primary">
@@ -287,7 +331,7 @@
     <div class="chart-container">
         <div class="chart-title">
             <i class="fas fa-chart-area" style="color: var(--primary);"></i>
-            Évolution CA {{ year }}
+            Évolution CA - {{ periodLabel }}
         </div>
         <canvas id="chartCAMensuel" class="chart-canvas"></canvas>
     </div>
@@ -296,7 +340,7 @@
     <div class="chart-container">
         <div class="chart-title">
             <i class="fas fa-chart-pie" style="color: var(--success);"></i>
-            Top 5 Clients
+            Top 5 Clients - {{ periodLabel }}
         </div>
         <canvas id="chartClients" class="chart-canvas"></canvas>
     </div>
@@ -306,13 +350,24 @@
 <div class="chart-container">
     <div class="chart-title">
         <i class="fas fa-chart-bar" style="color: var(--info);"></i>
-        CA, Cotisations URSSAF et Bénéfice Net par Mois
+        CA, Cotisations URSSAF et Bénéfice Net - {{ periodLabel }}
     </div>
     <canvas id="chartComparaison" class="chart-canvas"></canvas>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
+// Toggle custom date fields
+function handlePeriodChange() {
+    const select = document.getElementById('periodSelect');
+    const customFields = document.getElementById('customDateFields');
+    if (select.value === 'custom') {
+        customFields.style.display = 'flex';
+    } else {
+        customFields.style.display = 'none';
+    }
+}
+
 // Configuration commune
 Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 Chart.defaults.plugins.legend.display = true;
@@ -322,37 +377,52 @@ Chart.defaults.plugins.tooltip.cornerRadius = 8;
 
 // Données PHP → JS
 const caParMois = {{ caParMois|json_encode|raw }};
-const caFactureParMois = {{ caFactureParMois|json_encode|raw }};
+const caParMoisComparison = {{ caParMoisComparison|json_encode|raw }};
 const cotisationsParMois = {{ cotisationsParMois|json_encode|raw }};
 const topClients = {{ topClients|json_encode|raw }};
+const monthLabels = {{ monthLabels|json_encode|raw }};
 
-const mois = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+// 1. Graphique Évolution CA Mensuel (Ligne) avec comparaison N-1
+const hasComparisonData = caParMoisComparison.some(v => v > 0);
 
-// 1. Graphique Évolution CA Mensuel (Ligne)
 new Chart(document.getElementById('chartCAMensuel'), {
     type: 'line',
     data: {
-        labels: mois,
-        datasets: [{
-            label: 'CA Encaissé',
-            data: Object.values(caParMois),
-            borderColor: '#3b82f6',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            fill: true,
-            tension: 0.4,
-            borderWidth: 3,
-            pointRadius: 4,
-            pointHoverRadius: 6
-        }]
+        labels: monthLabels,
+        datasets: [
+            {
+                label: 'CA Encaissé',
+                data: caParMois,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.4,
+                borderWidth: 3,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            },
+            ...(hasComparisonData ? [{
+                label: 'N-1',
+                data: caParMoisComparison,
+                borderColor: '#9ca3af',
+                backgroundColor: 'transparent',
+                borderDash: [5, 5],
+                fill: false,
+                tension: 0.4,
+                borderWidth: 2,
+                pointRadius: 2,
+                pointHoverRadius: 4
+            }] : [])
+        ]
     },
     options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-            legend: { display: false },
+            legend: { display: hasComparisonData },
             tooltip: {
                 callbacks: {
-                    label: (ctx) => 'CA: ' + ctx.parsed.y.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })
+                    label: (ctx) => ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })
                 }
             }
         },
@@ -409,26 +479,26 @@ new Chart(document.getElementById('chartClients'), {
 new Chart(document.getElementById('chartComparaison'), {
     type: 'bar',
     data: {
-        labels: mois,
+        labels: monthLabels,
         datasets: [
             {
                 label: 'CA Encaissé',
-                data: Object.values(caParMois),
+                data: caParMois,
                 backgroundColor: 'rgba(16, 185, 129, 0.7)',
                 borderColor: '#10b981',
                 borderWidth: 1
             },
             {
                 label: 'Cotisations URSSAF',
-                data: Object.values(cotisationsParMois),
+                data: cotisationsParMois,
                 backgroundColor: 'rgba(245, 158, 11, 0.7)',
                 borderColor: '#f59e0b',
                 borderWidth: 1
             },
             {
                 label: 'Bénéfice Net',
-                data: Object.values(caParMois).map((ca, index) => {
-                    const cotisations = Object.values(cotisationsParMois)[index] || 0;
+                data: caParMois.map((ca, index) => {
+                    const cotisations = cotisationsParMois[index] || 0;
                     return ca - cotisations;
                 }),
                 backgroundColor: 'rgba(59, 130, 246, 0.7)',

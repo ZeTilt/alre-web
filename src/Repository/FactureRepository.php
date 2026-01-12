@@ -361,4 +361,65 @@ class FactureRepository extends ServiceEntityRepository
 
         return $monthlyRevenue;
     }
+
+    /**
+     * Retourne le CA par mois avec date d'encaissement pour une période arbitraire
+     * Clé au format YYYY-MM pour gérer les périodes cross-année
+     */
+    public function getMonthlyPaidRevenueForPeriod(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = "
+            SELECT DATE_FORMAT(date_paiement, '%Y-%m') as month_key, SUM(total_ttc) as total
+            FROM facture
+            WHERE date_paiement BETWEEN :startDate AND :endDate
+            AND status = :status
+            GROUP BY DATE_FORMAT(date_paiement, '%Y-%m')
+            ORDER BY month_key
+        ";
+
+        $result = $conn->executeQuery($sql, [
+            'startDate' => $startDate->format('Y-m-d'),
+            'endDate' => $endDate->format('Y-m-d'),
+            'status' => Facture::STATUS_PAYE
+        ])->fetchAllAssociative();
+
+        // Build array with all months in period initialized to 0
+        $monthlyRevenue = [];
+        $current = $startDate->modify('first day of this month');
+        $endMonth = $endDate->modify('first day of this month');
+
+        while ($current <= $endMonth) {
+            $monthlyRevenue[$current->format('Y-m')] = 0.0;
+            $current = $current->modify('+1 month');
+        }
+
+        // Fill with actual data
+        foreach ($result as $row) {
+            if (isset($monthlyRevenue[$row['month_key']])) {
+                $monthlyRevenue[$row['month_key']] = (float) ($row['total'] ?: 0);
+            }
+        }
+
+        return $monthlyRevenue;
+    }
+
+    /**
+     * Retourne le CA par client pour une période donnée
+     */
+    public function getRevenueByClientForPeriod(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
+    {
+        return $this->createQueryBuilder('f')
+            ->select('c.name as clientName', 'c.id as clientId', 'SUM(f.totalTtc) as total', 'COUNT(f.id) as count')
+            ->leftJoin('f.client', 'c')
+            ->andWhere('f.datePaiement BETWEEN :startDate AND :endDate')
+            ->andWhere('f.status = :status')
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->setParameter('status', Facture::STATUS_PAYE)
+            ->groupBy('c.id', 'c.name')
+            ->orderBy('total', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

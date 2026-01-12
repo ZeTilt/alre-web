@@ -285,7 +285,7 @@
                 <a href="{{ path('admin_reviews_sync') }}" class="btn btn-sm btn-primary" title="Synchroniser les avis Google">
                     <i class="fas fa-sync-alt"></i> Sync Avis
                 </a>
-                <a href="{{ ea_url().setController('App\\\\Controller\\\\Admin\\\\GoogleReviewCrudController').setAction('index') }}" class="btn btn-sm btn-outline-secondary" title="Gérer les avis">
+                <a href="{{ ea_url().setController('App\\Controller\\Admin\\GoogleReviewCrudController').setAction('index') }}" class="btn btn-sm btn-outline-secondary" title="Gérer les avis">
                     <i class="fas fa-cog"></i>
                 </a>
             </div>
@@ -429,7 +429,7 @@
     </div>
     {% if seoKeywords|length > 0 %}
         <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
-            <a href="{{ ea_url().setController('App\\\\Controller\\\\Admin\\\\SeoKeywordCrudController').setAction('index') }}" class="btn btn-sm btn-outline-secondary">
+            <a href="{{ ea_url().setController('App\\Controller\\Admin\\SeoKeywordCrudController').setAction('index') }}" class="btn btn-sm btn-outline-secondary">
                 <i class="fas fa-cog"></i> Gérer les mots-clés
             </a>
             {% if googleOAuthConnected %}
@@ -448,7 +448,7 @@
     </div>
     <div style="color: #6b7280; font-size: 0.875rem;">
         Aucun mot-clé configuré.
-        <a href="{{ ea_url().setController('App\\\\Controller\\\\Admin\\\\SeoKeywordCrudController').setAction('new') }}" style="color: var(--primary); text-decoration: underline;">
+        <a href="{{ ea_url().setController('App\\Controller\\Admin\\SeoKeywordCrudController').setAction('new') }}" style="color: var(--primary); text-decoration: underline;">
             Ajouter des mots-clés
         </a>
         pour commencer le suivi SEO.

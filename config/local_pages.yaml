@@ -1,0 +1,125 @@
+# Configuration des landing pages locales SEO
+# Chaque ville génère des pages optimisées pour le référencement local
+
+cities:
+  auray:
+    name: "Auray"
+    region: "Morbihan"
+    description: "Basé à Auray, je suis votre développeur web de proximité."
+    nearby:
+      - "Vannes"
+      - "Lorient"
+      - "Carnac"
+      - "Sainte-Anne-d'Auray"
+    keywords:
+      - "développeur web Auray"
+      - "création site internet Auray"
+      - "agence web Auray"
+
+  vannes:
+    name: "Vannes"
+    region: "Morbihan"
+    description: "À 20 minutes d'Auray, j'interviens régulièrement sur Vannes et ses alentours."
+    nearby:
+      - "Auray"
+      - "Arradon"
+      - "Séné"
+      - "Theix-Noyalo"
+    keywords:
+      - "développeur web Vannes"
+      - "création site internet Vannes"
+      - "agence web Vannes"
+
+  lorient:
+    name: "Lorient"
+    region: "Morbihan"
+    description: "À 30 minutes d'Auray, je me déplace facilement sur Lorient pour vos projets web."
+    nearby:
+      - "Lanester"
+      - "Hennebont"
+      - "Ploemeur"
+      - "Larmor-Plage"
+    keywords:
+      - "développeur web Lorient"
+      - "création site internet Lorient"
+      - "agence web Lorient"
+
+  carnac:
+    name: "Carnac"
+    region: "Morbihan"
+    description: "Carnac, ses mégalithes et ses commerces méritent une présence web de qualité."
+    nearby:
+      - "Auray"
+      - "Quiberon"
+      - "La Trinité-sur-Mer"
+      - "Plouharnel"
+    keywords:
+      - "développeur web Carnac"
+      - "création site internet Carnac"
+
+  quiberon:
+    name: "Quiberon"
+    region: "Morbihan"
+    description: "Presqu'île de Quiberon : je crée des sites web pour les professionnels du tourisme et du commerce local."
+    nearby:
+      - "Carnac"
+      - "Auray"
+      - "Plouharnel"
+      - "Saint-Pierre-Quiberon"
+    keywords:
+      - "développeur web Quiberon"
+      - "création site internet Quiberon"
+
+  hennebont:
+    name: "Hennebont"
+    region: "Morbihan"
+    description: "Entre Lorient et Auray, Hennebont est une étape naturelle pour mes interventions."
+    nearby:
+      - "Lorient"
+      - "Lanester"
+      - "Inzinzac-Lochrist"
+      - "Kervignac"
+    keywords:
+      - "développeur web Hennebont"
+      - "création site internet Hennebont"
+
+  pontivy:
+    name: "Pontivy"
+    region: "Morbihan"
+    description: "Au cœur de la Bretagne, Pontivy mérite aussi un développeur web de qualité."
+    nearby:
+      - "Loudéac"
+      - "Locminé"
+      - "Guémené-sur-Scorff"
+    keywords:
+      - "développeur web Pontivy"
+      - "création site internet Pontivy"
+
+  ploermel:
+    name: "Ploërmel"
+    region: "Morbihan"
+    description: "Ploërmel et le pays de Brocéliande : des sites web qui racontent votre histoire."
+    nearby:
+      - "Josselin"
+      - "Mauron"
+      - "La Trinité-Porhoët"
+    keywords:
+      - "développeur web Ploërmel"
+      - "création site internet Ploërmel"
+
+# Services disponibles pour les landing pages
+services:
+  developpeur-web:
+    title: "Développeur Web"
+    description: "Création de sites internet sur mesure"
+    icon: "fa-code"
+
+  creation-site-internet:
+    title: "Création de Site Internet"
+    description: "Sites vitrines et e-commerce professionnels"
+    icon: "fa-globe"
+
+  agence-web:
+    title: "Agence Web"
+    description: "Accompagnement complet pour votre présence en ligne"
+    icon: "fa-building"

@@ -1,0 +1,206 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ service.title }} {{ city.name }} | Création de sites web {{ city.region }}{% endblock %}
+
+{% block meta_description %}{{ service.title }} à {{ city.name }} ({{ city.region }}). {{ city.description }} Sites vitrines, e-commerce et applications sur mesure pour artisans et TPE.{% endblock %}
+
+{% block structured_data %}
+{{ parent() }}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "{{ service.title }} {{ city.name }}",
+    "description": "{{ service.description }} pour les professionnels de {{ city.name }} et ses environs",
+    "provider": {
+        "@type": "ProfessionalService",
+        "name": "Alré Web",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Auray",
+            "addressRegion": "Bretagne",
+            "postalCode": "56400",
+            "addressCountry": "FR"
+        }
+    },
+    "areaServed": {
+        "@type": "City",
+        "name": "{{ city.name }}",
+        "containedInPlace": {
+            "@type": "AdministrativeArea",
+            "name": "{{ city.region }}"
+        }
+    },
+    "serviceType": "{{ service.title }}"
+}
+</script>
+{% endblock %}
+
+{% block body %}
+
+{# Hero Section #}
+<section class="hero" style="padding: 4rem 0;">
+    <div class="hero-content">
+        <h1 class="fade-in">{{ service.title }} à {{ city.name }}</h1>
+        <p class="lead fade-in-delay-1">
+            {{ city.description }}<br>
+            Création de sites web professionnels pour artisans et TPE en {{ city.region }}.
+        </p>
+        <div class="fade-in-delay-2" style="margin-top: 2rem;">
+            <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-paper-plane"></i> Demander un devis gratuit
+            </a>
+        </div>
+    </div>
+</section>
+
+{# Présentation #}
+<section class="section">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
+            <div>
+                <h2 class="text-primary mb-3">Votre {{ service.title|lower }} de proximité à {{ city.name }}</h2>
+                <p class="lead">
+                    Vous êtes artisan, commerçant ou dirigeant d'une TPE à {{ city.name }} ou dans ses environs ?
+                    Je crée des sites web qui vous ressemblent et qui font la différence face à la concurrence.
+                </p>
+                <p>
+                    Basé à Auray, je me déplace facilement sur {{ city.name }} et les communes alentour
+                    ({{ city.nearby|join(', ') }}). Un premier rendez-vous chez vous ou en visio,
+                    et nous définissons ensemble votre projet.
+                </p>
+
+                <h3 class="mt-4 mb-3">Ce que je peux créer pour vous :</h3>
+                <ul class="service-list">
+                    <li><strong>Site vitrine</strong> : présentez votre activité et soyez visible sur Google quand vos clients cherchent "{{ city.keywords[0]|default(service.title ~ ' ' ~ city.name) }}"</li>
+                    <li><strong>Site e-commerce</strong> : vendez vos produits en ligne 24h/24, même quand votre boutique est fermée</li>
+                    <li><strong>Application métier</strong> : automatisez vos devis, factures, plannings ou gestion de stock</li>
+                    <li><strong>Refonte de site</strong> : modernisez votre site existant pour qu'il soit rapide, responsive et bien référencé</li>
+                </ul>
+
+                <div class="service-highlight mt-4">
+                    <strong>Pourquoi travailler avec un développeur local ?</strong><br>
+                    Parce qu'un interlocuteur unique, disponible et proche de chez vous, c'est plus simple
+                    qu'une agence web impersonnelle. On se comprend, on parle le même langage.
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 5rem; color: var(--accent-color);">
+                    <i class="fas {{ service.icon|default('fa-code') }}"></i>
+                </div>
+                <div style="margin-top: 2rem; padding: 1.5rem; background: var(--light-bg); border-radius: 12px;">
+                    <h4 class="mb-3">Zone d'intervention</h4>
+                    <p class="mb-2"><strong>{{ city.name }}</strong> et environs :</p>
+                    <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;">
+                        {% for nearby in city.nearby %}
+                        <li style="padding: 0.25rem 0;">{{ nearby }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Avantages #}
+<section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Pourquoi choisir Alré Web pour votre site à {{ city.name }} ?</h2>
+
+        <div class="grid grid-3">
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-map-marker-alt"></i></div>
+                <h3 class="card-title">Proximité</h3>
+                <p class="card-text">
+                    Je me déplace à {{ city.name }} pour nos rendez-vous. Un développeur accessible,
+                    pas une hotline anonyme.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-euro-sign"></i></div>
+                <h3 class="card-title">Prix justes</h3>
+                <p class="card-text">
+                    Pas de frais de structure d'agence. Sites vitrines à partir de 490 €,
+                    hébergement + maintenance dès 29 €/mois.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-search"></i></div>
+                <h3 class="card-title">SEO local</h3>
+                <p class="card-text">
+                    Votre site optimisé pour apparaître quand on cherche
+                    "{{ city.keywords[0]|default(service.title ~ ' ' ~ city.name) }}" sur Google.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-code"></i></div>
+                <h3 class="card-title">Sur mesure</h3>
+                <p class="card-text">
+                    Chaque site est créé spécifiquement pour vous. Pas de template générique,
+                    pas de "usine à sites".
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-mobile-alt"></i></div>
+                <h3 class="card-title">Mobile-first</h3>
+                <p class="card-text">
+                    Des sites qui s'affichent parfaitement sur téléphone, tablette et ordinateur.
+                    Plus de 60% du trafic vient du mobile !
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-headset"></i></div>
+                <h3 class="card-title">Support réactif</h3>
+                <p class="card-text">
+                    Un problème ? Un appel ou un email et je m'en occupe.
+                    Pas de ticket support qui traîne des semaines.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Témoignages #}
+<section class="section">
+    <div class="container">
+        <h2 class="text-center mb-5">Ils m'ont fait confiance en {{ city.region }}</h2>
+        <p class="text-center lead mb-4">
+            Artisans, commerçants, professions libérales : des entrepreneurs comme vous
+            qui ont choisi un accompagnement de proximité.
+        </p>
+        <div class="text-center">
+            <a href="{{ path('app_testimonials') }}" class="btn btn-outline">
+                <i class="fas fa-star"></i> Voir les témoignages clients
+            </a>
+        </div>
+    </div>
+</section>
+
+{# CTA Final #}
+<section class="section section-light">
+    <div class="container text-center">
+        <h2 class="mb-3">Besoin d'un {{ service.title|lower }} à {{ city.name }} ?</h2>
+        <p class="lead mb-4">
+            Parlons de votre projet. Premier rendez-vous gratuit et sans engagement.
+        </p>
+        <div style="display: inline-flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+            <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-paper-plane"></i> Demander un devis gratuit
+            </a>
+            <a href="{{ path('app_pricing') }}" class="btn btn-outline btn-lg">
+                <i class="fas fa-euro-sign"></i> Voir les tarifs
+            </a>
+        </div>
+        <p style="margin-top: 1.5rem; color: var(--text-muted);">
+            <i class="fas fa-phone"></i> 06 95 78 69 84 &nbsp;|&nbsp;
+            <i class="fas fa-envelope"></i> contact@alre-web.bzh
+        </p>
+    </div>
+</section>
+
+{% endblock %}

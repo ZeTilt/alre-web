@@ -89,3 +89,7 @@ services:
         arguments:
             $googlePlacesApiKey: '%env(GOOGLE_PLACES_API_KEY)%'
             $googlePlaceId: '%env(GOOGLE_PLACE_ID)%'
+
+    App\Service\LocalPageService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'

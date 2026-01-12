@@ -1,0 +1,100 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Zones d'intervention | Développeur Web Bretagne - Morbihan{% endblock %}
+
+{% block meta_description %}Développeur web freelance intervenant sur tout le Morbihan : Auray, Vannes, Lorient, Carnac, Quiberon, Pontivy, Ploërmel. Création de sites internet pour artisans et TPE en Bretagne.{% endblock %}
+
+{% block body %}
+
+{# Hero Section #}
+<section class="hero" style="padding: 4rem 0;">
+    <div class="hero-content">
+        <h1 class="fade-in">Développeur Web en Bretagne</h1>
+        <p class="lead fade-in-delay-1">
+            Basé à Auray, j'interviens sur tout le Morbihan et au-delà.<br>
+            Un interlocuteur local pour vos projets web.
+        </p>
+    </div>
+</section>
+
+{# Carte / Liste des zones #}
+<section class="section">
+    <div class="container">
+        <h2 class="text-center mb-5">Mes zones d'intervention</h2>
+
+        <div class="grid grid-3">
+            {% for citySlug, city in cities %}
+            <div class="card" style="text-align: center;">
+                <div class="card-icon"><i class="fas fa-map-marker-alt"></i></div>
+                <h3 class="card-title">{{ city.name }}</h3>
+                <p class="card-text">{{ city.description }}</p>
+                <div style="margin-top: 1rem;">
+                    {% for serviceSlug, service in services %}
+                    <a href="{{ path('app_local_page', {slug: serviceSlug ~ '-' ~ citySlug}) }}"
+                       style="display: inline-block; margin: 0.25rem; padding: 0.5rem 1rem; background: var(--light-bg); border-radius: 20px; font-size: 0.85rem; text-decoration: none; color: var(--text-color);">
+                        {{ service.title }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{# Pourquoi local #}
+<section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Pourquoi choisir un développeur web local ?</h2>
+
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem;">
+            <div>
+                <h3 class="text-primary"><i class="fas fa-handshake"></i> Relation de confiance</h3>
+                <p>
+                    On se rencontre, on se serre la main. Vous savez à qui vous avez affaire.
+                    Pas de sous-traitance à l'autre bout du monde, c'est moi qui fais le travail.
+                </p>
+            </div>
+
+            <div>
+                <h3 class="text-primary"><i class="fas fa-comments"></i> Communication simple</h3>
+                <p>
+                    Un appel, un email, et je réponds. Pas de ticket support qui traîne,
+                    pas de serveur vocal avec 15 options.
+                </p>
+            </div>
+
+            <div>
+                <h3 class="text-primary"><i class="fas fa-map-pin"></i> Connaissance du terrain</h3>
+                <p>
+                    Je connais le tissu économique breton, les attentes des clients locaux,
+                    les habitudes de recherche sur Google.
+                </p>
+            </div>
+
+            <div>
+                <h3 class="text-primary"><i class="fas fa-rocket"></i> Réactivité</h3>
+                <p>
+                    Un problème urgent ? Je peux intervenir rapidement.
+                    Pas besoin d'attendre le décalage horaire d'une équipe offshore.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# CTA #}
+<section class="section">
+    <div class="container text-center">
+        <h2 class="mb-3">Votre ville n'est pas listée ?</h2>
+        <p class="lead mb-4">
+            J'interviens sur toute la Bretagne. Contactez-moi pour discuter de votre projet,
+            quelle que soit votre localisation.
+        </p>
+        <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-paper-plane"></i> Demander un devis gratuit
+        </a>
+    </div>
+</section>
+
+{% endblock %}

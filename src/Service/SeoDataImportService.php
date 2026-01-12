@@ -64,12 +64,13 @@ class SeoDataImportService
         foreach ($keywords as $keyword) {
             try {
                 $keywordLower = strtolower($keyword->getKeyword());
-                $data = $gscData[$keywordLower] ?? null;
+                $data = $this->findBestMatchingData($keywordLower, $gscData);
 
                 if ($data === null) {
                     // Mot-clé non trouvé dans GSC (peut-être pas encore indexé)
                     $this->logger->info('Keyword not found in GSC data', [
                         'keyword' => $keyword->getKeyword(),
+                        'available_queries' => array_slice(array_keys($gscData), 0, 20),
                     ]);
                     $skipped++;
                     // On met quand même à jour lastSyncAt pour éviter de réessayer trop vite
@@ -129,6 +130,63 @@ class SeoDataImportService
             'errors' => $errors,
             'message' => $message,
         ];
+    }
+
+    /**
+     * Trouve la meilleure correspondance pour un mot-clé dans les données GSC.
+     * Utilise un matching flexible : exact > contains > partial.
+     *
+     * @param array<string, array{position: float, clicks: int, impressions: int}> $gscData
+     * @return array{position: float, clicks: int, impressions: int}|null
+     */
+    private function findBestMatchingData(string $keyword, array $gscData): ?array
+    {
+        // Normaliser le mot-clé (enlever accents pour comparaison)
+        $keywordNormalized = $this->normalizeString($keyword);
+
+        // 1. Correspondance exacte
+        if (isset($gscData[$keyword])) {
+            return $gscData[$keyword];
+        }
+
+        // 2. Correspondance exacte normalisée
+        foreach ($gscData as $query => $data) {
+            if ($this->normalizeString($query) === $keywordNormalized) {
+                return $data;
+            }
+        }
+
+        // 3. La requête GSC contient le mot-clé (ou l'inverse)
+        $bestMatch = null;
+        $bestImpressions = 0;
+
+        foreach ($gscData as $query => $data) {
+            $queryNormalized = $this->normalizeString($query);
+
+            // Le mot-clé est contenu dans la requête GSC
+            if (str_contains($queryNormalized, $keywordNormalized) ||
+                str_contains($keywordNormalized, $queryNormalized)) {
+                // Prendre celui avec le plus d'impressions
+                if ($data['impressions'] > $bestImpressions) {
+                    $bestMatch = $data;
+                    $bestImpressions = $data['impressions'];
+                }
+            }
+        }
+
+        return $bestMatch;
+    }
+
+    /**
+     * Normalise une chaîne (minuscules, sans accents).
+     */
+    private function normalizeString(string $str): string
+    {
+        $str = strtolower($str);
+        // Remplacer les accents courants
+        $accents = ['é', 'è', 'ê', 'ë', 'à', 'â', 'ä', 'ù', 'û', 'ü', 'ô', 'ö', 'î', 'ï', 'ç'];
+        $noAccents = ['e', 'e', 'e', 'e', 'a', 'a', 'a', 'u', 'u', 'u', 'o', 'o', 'i', 'i', 'c'];
+        return str_replace($accents, $noAccents, $str);
     }
 
     /**

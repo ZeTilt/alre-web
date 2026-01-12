@@ -16,7 +16,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
@@ -130,11 +129,12 @@ class GoogleReviewCrudController extends AbstractCrudController
             ->renderAsHtml()
             ->setFormTypeOption('disabled', true);
 
-        yield IntegerField::new('rating', 'Note')
-            ->formatValue(function ($value) {
+        yield TextField::new('rating', 'Note')
+            ->formatValue(function ($value, GoogleReview $entity) {
+                $rating = $entity->getRating();
                 $stars = '';
                 for ($i = 1; $i <= 5; $i++) {
-                    if ($i <= $value) {
+                    if ($i <= $rating) {
                         $stars .= '<i class="fas fa-star" style="color: #f59e0b;"></i>';
                     } else {
                         $stars .= '<i class="far fa-star" style="color: #d1d5db;"></i>';
@@ -143,7 +143,7 @@ class GoogleReviewCrudController extends AbstractCrudController
                 return $stars;
             })
             ->renderAsHtml()
-            ->setFormTypeOption('disabled', true);
+            ->onlyOnIndex();
 
         if ($pageName === Crud::PAGE_INDEX) {
             yield TextField::new('commentExcerpt', 'Commentaire')

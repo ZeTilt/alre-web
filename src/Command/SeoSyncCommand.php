@@ -30,6 +30,8 @@ class SeoSyncCommand extends Command
             ->addOption('force', 'f', InputOption::VALUE_NONE, 'Force la synchronisation même si les données sont récentes')
             ->addOption('keywords-only', null, InputOption::VALUE_NONE, 'Synchronise uniquement les mots-clés GSC')
             ->addOption('reviews-only', null, InputOption::VALUE_NONE, 'Synchronise uniquement les avis Google')
+            ->addOption('no-import', null, InputOption::VALUE_NONE, 'Ne pas importer les nouveaux mots-clés')
+            ->addOption('no-cleanup', null, InputOption::VALUE_NONE, 'Ne pas désactiver les mots-clés absents')
         ;
     }
 
@@ -39,6 +41,8 @@ class SeoSyncCommand extends Command
         $force = $input->getOption('force');
         $keywordsOnly = $input->getOption('keywords-only');
         $reviewsOnly = $input->getOption('reviews-only');
+        $noImport = $input->getOption('no-import');
+        $noCleanup = $input->getOption('no-cleanup');
 
         $io->title('Synchronisation SEO quotidienne');
         $io->text(sprintf('[%s] Démarrage...', date('Y-m-d H:i:s')));
@@ -61,6 +65,28 @@ class SeoSyncCommand extends Command
                 ['Synchronisés', 'Sans données', 'Erreurs'],
                 [[$gscResult['synced'], $gscResult['skipped'], $gscResult['errors']]]
             );
+
+            // Import new keywords from GSC
+            if (!$noImport) {
+                $io->section('Import automatique des nouveaux mots-clés');
+                $importResult = $this->seoImportService->importNewKeywords();
+                $io->success($importResult['message']);
+
+                if ($importResult['imported'] > 0) {
+                    $io->text(sprintf(
+                        'Seuil appliqué: %d impressions minimum (%d requêtes GSC analysées)',
+                        $importResult['min_impressions'],
+                        $importResult['total_gsc']
+                    ));
+                }
+            }
+
+            // Cleanup missing keywords
+            if (!$noCleanup) {
+                $io->section('Nettoyage des mots-clés absents');
+                $cleanupResult = $this->seoImportService->deactivateMissingKeywords();
+                $io->success($cleanupResult['message']);
+            }
         }
 
         // Sync Google Reviews

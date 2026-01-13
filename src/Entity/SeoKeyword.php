@@ -10,6 +10,13 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: SeoKeywordRepository::class)]
 class SeoKeyword
 {
+    public const SOURCE_MANUAL = 'manual';
+    public const SOURCE_AUTO_GSC = 'auto_gsc';
+
+    public const RELEVANCE_HIGH = 'high';
+    public const RELEVANCE_MEDIUM = 'medium';
+    public const RELEVANCE_LOW = 'low';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -23,6 +30,15 @@ class SeoKeyword
 
     #[ORM\Column]
     private bool $isActive = true;
+
+    #[ORM\Column(length: 20)]
+    private string $source = self::SOURCE_MANUAL;
+
+    #[ORM\Column(length: 20)]
+    private string $relevanceLevel = self::RELEVANCE_MEDIUM;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastSeenInGsc = null;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $lastSyncAt = null;
@@ -144,5 +160,84 @@ class SeoKeyword
     public function __toString(): string
     {
         return $this->keyword ?? 'Nouveau mot-clé';
+    }
+
+    public function getSource(): string
+    {
+        return $this->source;
+    }
+
+    public function setSource(string $source): static
+    {
+        $this->source = $source;
+        return $this;
+    }
+
+    public function isManual(): bool
+    {
+        return $this->source === self::SOURCE_MANUAL;
+    }
+
+    public function isAutoImported(): bool
+    {
+        return $this->source === self::SOURCE_AUTO_GSC;
+    }
+
+    public function getRelevanceLevel(): string
+    {
+        return $this->relevanceLevel;
+    }
+
+    public function setRelevanceLevel(string $relevanceLevel): static
+    {
+        $this->relevanceLevel = $relevanceLevel;
+        return $this;
+    }
+
+    public function getLastSeenInGsc(): ?\DateTimeImmutable
+    {
+        return $this->lastSeenInGsc;
+    }
+
+    public function setLastSeenInGsc(?\DateTimeImmutable $lastSeenInGsc): static
+    {
+        $this->lastSeenInGsc = $lastSeenInGsc;
+        return $this;
+    }
+
+    public static function getSourceChoices(): array
+    {
+        return [
+            'Manuel' => self::SOURCE_MANUAL,
+            'Auto (GSC)' => self::SOURCE_AUTO_GSC,
+        ];
+    }
+
+    public static function getRelevanceLevelChoices(): array
+    {
+        return [
+            'Haute' => self::RELEVANCE_HIGH,
+            'Moyenne' => self::RELEVANCE_MEDIUM,
+            'Basse' => self::RELEVANCE_LOW,
+        ];
+    }
+
+    public function getRelevanceLevelLabel(): string
+    {
+        return match ($this->relevanceLevel) {
+            self::RELEVANCE_HIGH => 'Haute',
+            self::RELEVANCE_MEDIUM => 'Moyenne',
+            self::RELEVANCE_LOW => 'Basse',
+            default => $this->relevanceLevel,
+        };
+    }
+
+    public function getSourceLabel(): string
+    {
+        return match ($this->source) {
+            self::SOURCE_MANUAL => 'Manuel',
+            self::SOURCE_AUTO_GSC => 'Auto (GSC)',
+            default => $this->source,
+        };
     }
 }

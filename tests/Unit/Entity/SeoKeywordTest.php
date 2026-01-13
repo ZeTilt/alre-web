@@ -242,4 +242,153 @@ class SeoKeywordTest extends TestCase
 
         $this->assertNull($keyword->getLastSyncAt());
     }
+
+    // ===== SOURCE FIELD TESTS =====
+
+    public function testSourceDefaultsToManual(): void
+    {
+        $keyword = new SeoKeyword();
+
+        $this->assertEquals(SeoKeyword::SOURCE_MANUAL, $keyword->getSource());
+    }
+
+    public function testSetSource(): void
+    {
+        $keyword = new SeoKeyword();
+
+        $keyword->setSource(SeoKeyword::SOURCE_AUTO_GSC);
+        $this->assertEquals(SeoKeyword::SOURCE_AUTO_GSC, $keyword->getSource());
+
+        $keyword->setSource(SeoKeyword::SOURCE_MANUAL);
+        $this->assertEquals(SeoKeyword::SOURCE_MANUAL, $keyword->getSource());
+    }
+
+    public function testSetSourceReturnsSelf(): void
+    {
+        $keyword = new SeoKeyword();
+
+        $this->assertSame($keyword, $keyword->setSource(SeoKeyword::SOURCE_AUTO_GSC));
+    }
+
+    public function testIsManualReturnsTrueForManualSource(): void
+    {
+        $keyword = new SeoKeyword();
+        $keyword->setSource(SeoKeyword::SOURCE_MANUAL);
+
+        $this->assertTrue($keyword->isManual());
+        $this->assertFalse($keyword->isAutoImported());
+    }
+
+    public function testIsAutoImportedReturnsTrueForAutoGscSource(): void
+    {
+        $keyword = new SeoKeyword();
+        $keyword->setSource(SeoKeyword::SOURCE_AUTO_GSC);
+
+        $this->assertTrue($keyword->isAutoImported());
+        $this->assertFalse($keyword->isManual());
+    }
+
+    public function testGetSourceChoices(): void
+    {
+        $choices = SeoKeyword::getSourceChoices();
+
+        $this->assertIsArray($choices);
+        $this->assertArrayHasKey('Manuel', $choices);
+        $this->assertArrayHasKey('Auto (GSC)', $choices);
+        $this->assertEquals(SeoKeyword::SOURCE_MANUAL, $choices['Manuel']);
+        $this->assertEquals(SeoKeyword::SOURCE_AUTO_GSC, $choices['Auto (GSC)']);
+    }
+
+    public function testGetSourceLabel(): void
+    {
+        $keyword = new SeoKeyword();
+
+        $keyword->setSource(SeoKeyword::SOURCE_MANUAL);
+        $this->assertEquals('Manuel', $keyword->getSourceLabel());
+
+        $keyword->setSource(SeoKeyword::SOURCE_AUTO_GSC);
+        $this->assertEquals('Auto (GSC)', $keyword->getSourceLabel());
+    }
+
+    // ===== RELEVANCE LEVEL FIELD TESTS =====
+
+    public function testRelevanceLevelDefaultsToMedium(): void
+    {
+        $keyword = new SeoKeyword();
+
+        $this->assertEquals(SeoKeyword::RELEVANCE_MEDIUM, $keyword->getRelevanceLevel());
+    }
+
+    public function testSetRelevanceLevel(): void
+    {
+        $keyword = new SeoKeyword();
+
+        $keyword->setRelevanceLevel(SeoKeyword::RELEVANCE_HIGH);
+        $this->assertEquals(SeoKeyword::RELEVANCE_HIGH, $keyword->getRelevanceLevel());
+
+        $keyword->setRelevanceLevel(SeoKeyword::RELEVANCE_LOW);
+        $this->assertEquals(SeoKeyword::RELEVANCE_LOW, $keyword->getRelevanceLevel());
+    }
+
+    public function testSetRelevanceLevelReturnsSelf(): void
+    {
+        $keyword = new SeoKeyword();
+
+        $this->assertSame($keyword, $keyword->setRelevanceLevel(SeoKeyword::RELEVANCE_HIGH));
+    }
+
+    public function testGetRelevanceLevelChoices(): void
+    {
+        $choices = SeoKeyword::getRelevanceLevelChoices();
+
+        $this->assertIsArray($choices);
+        $this->assertArrayHasKey('Haute', $choices);
+        $this->assertArrayHasKey('Moyenne', $choices);
+        $this->assertArrayHasKey('Basse', $choices);
+        $this->assertEquals(SeoKeyword::RELEVANCE_HIGH, $choices['Haute']);
+        $this->assertEquals(SeoKeyword::RELEVANCE_MEDIUM, $choices['Moyenne']);
+        $this->assertEquals(SeoKeyword::RELEVANCE_LOW, $choices['Basse']);
+    }
+
+    public function testGetRelevanceLevelLabel(): void
+    {
+        $keyword = new SeoKeyword();
+
+        $keyword->setRelevanceLevel(SeoKeyword::RELEVANCE_HIGH);
+        $this->assertEquals('Haute', $keyword->getRelevanceLevelLabel());
+
+        $keyword->setRelevanceLevel(SeoKeyword::RELEVANCE_MEDIUM);
+        $this->assertEquals('Moyenne', $keyword->getRelevanceLevelLabel());
+
+        $keyword->setRelevanceLevel(SeoKeyword::RELEVANCE_LOW);
+        $this->assertEquals('Basse', $keyword->getRelevanceLevelLabel());
+    }
+
+    // ===== LAST SEEN IN GSC FIELD TESTS =====
+
+    public function testLastSeenInGscDefaultsToNull(): void
+    {
+        $keyword = new SeoKeyword();
+
+        $this->assertNull($keyword->getLastSeenInGsc());
+    }
+
+    public function testSetLastSeenInGsc(): void
+    {
+        $keyword = new SeoKeyword();
+        $now = new \DateTimeImmutable();
+
+        $keyword->setLastSeenInGsc($now);
+        $this->assertEquals($now, $keyword->getLastSeenInGsc());
+
+        $keyword->setLastSeenInGsc(null);
+        $this->assertNull($keyword->getLastSeenInGsc());
+    }
+
+    public function testSetLastSeenInGscReturnsSelf(): void
+    {
+        $keyword = new SeoKeyword();
+
+        $this->assertSame($keyword, $keyword->setLastSeenInGsc(new \DateTimeImmutable()));
+    }
 }

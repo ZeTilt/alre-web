@@ -256,4 +256,201 @@ class SeoDataImportServiceTest extends TestCase
 
         $this->assertNull($service->getLastSyncDate());
     }
+
+    // ===== importNewKeywords() TESTS =====
+
+    public function testImportNewKeywordsReturnsErrorWhenGscNotAvailable(): void
+    {
+        $service = $this->createService();
+
+        $this->gscService->method('isAvailable')->willReturn(false);
+
+        $result = $service->importNewKeywords();
+
+        $this->assertEquals(0, $result['imported']);
+        $this->assertEquals('Google Search Console non connecté', $result['message']);
+    }
+
+    public function testImportNewKeywordsReturnsEmptyWhenNoGscData(): void
+    {
+        $service = $this->createService();
+
+        $this->gscService->method('isAvailable')->willReturn(true);
+        $this->gscService->method('fetchAllKeywordsData')->willReturn([]);
+
+        $result = $service->importNewKeywords();
+
+        $this->assertEquals(0, $result['imported']);
+        $this->assertEquals(0, $result['total_gsc']);
+        $this->assertStringContainsString('Aucune donnée', $result['message']);
+    }
+
+    public function testImportNewKeywordsImportsAllWhenLessThan100Keywords(): void
+    {
+        $service = $this->createService();
+
+        $this->gscService->method('isAvailable')->willReturn(true);
+        $this->gscService->method('fetchAllKeywordsData')->willReturn([
+            'nouveau mot clé' => ['position' => 10.0, 'clicks' => 5, 'impressions' => 50],
+            'autre mot clé' => ['position' => 20.0, 'clicks' => 1, 'impressions' => 5], // Peu d'impressions
+        ]);
+        $this->keywordRepository->method('findAllKeywordStrings')->willReturn([]);
+
+        $this->entityManager->expects($this->exactly(2))->method('persist');
+        $this->entityManager->expects($this->once())->method('flush');
+
+        $result = $service->importNewKeywords();
+
+        $this->assertEquals(2, $result['imported']);
+        $this->assertEquals(2, $result['total_gsc']);
+        $this->assertEquals(0, $result['min_impressions']); // No filtering below 100
+    }
+
+    public function testImportNewKeywordsFiltersAt10ImpressionsWhenBetween100And1000(): void
+    {
+        $service = $this->createService();
+
+        // Simulate 100-1000 keywords
+        $gscData = [];
+        for ($i = 0; $i < 150; $i++) {
+            $gscData["keyword $i"] = [
+                'position' => 10.0,
+                'clicks' => 1,
+                'impressions' => $i < 100 ? 5 : 15, // First 100 have low impressions, rest have higher
+            ];
+        }
+
+        $this->gscService->method('isAvailable')->willReturn(true);
+        $this->gscService->method('fetchAllKeywordsData')->willReturn($gscData);
+        $this->keywordRepository->method('findAllKeywordStrings')->willReturn([]);
+
+        // Only 50 keywords with >= 10 impressions should be imported
+        $this->entityManager->expects($this->exactly(50))->method('persist');
+        $this->entityManager->expects($this->once())->method('flush');
+
+        $result = $service->importNewKeywords();
+
+        $this->assertEquals(50, $result['imported']);
+        $this->assertEquals(150, $result['total_gsc']);
+        $this->assertEquals(10, $result['min_impressions']);
+    }
+
+    public function testImportNewKeywordsFiltersAt100ImpressionsWhenOver1000(): void
+    {
+        $service = $this->createService();
+
+        // Simulate > 1000 keywords
+        $gscData = [];
+        for ($i = 0; $i < 1100; $i++) {
+            $gscData["keyword $i"] = [
+                'position' => 10.0,
+                'clicks' => 1,
+                'impressions' => $i < 1000 ? 50 : 150, // First 1000 have 50 impressions, rest have 150
+            ];
+        }
+
+        $this->gscService->method('isAvailable')->willReturn(true);
+        $this->gscService->method('fetchAllKeywordsData')->willReturn($gscData);
+        $this->keywordRepository->method('findAllKeywordStrings')->willReturn([]);
+
+        // Only 100 keywords with >= 100 impressions should be imported
+        $this->entityManager->expects($this->exactly(100))->method('persist');
+        $this->entityManager->expects($this->once())->method('flush');
+
+        $result = $service->importNewKeywords();
+
+        $this->assertEquals(100, $result['imported']);
+        $this->assertEquals(1100, $result['total_gsc']);
+        $this->assertEquals(100, $result['min_impressions']);
+    }
+
+    public function testImportNewKeywordsSkipsExistingKeywords(): void
+    {
+        $service = $this->createService();
+
+        $this->gscService->method('isAvailable')->willReturn(true);
+        $this->gscService->method('fetchAllKeywordsData')->willReturn([
+            'existing keyword' => ['position' => 10.0, 'clicks' => 5, 'impressions' => 50],
+            'new keyword' => ['position' => 20.0, 'clicks' => 10, 'impressions' => 100],
+        ]);
+        $this->keywordRepository->method('findAllKeywordStrings')->willReturn(['existing keyword']);
+
+        // Only 1 keyword should be imported (new keyword)
+        $this->entityManager->expects($this->once())->method('persist');
+        $this->entityManager->expects($this->once())->method('flush');
+
+        $result = $service->importNewKeywords();
+
+        $this->assertEquals(1, $result['imported']);
+    }
+
+    public function testImportNewKeywordsDoesNotFlushWhenNoImports(): void
+    {
+        $service = $this->createService();
+
+        $this->gscService->method('isAvailable')->willReturn(true);
+        $this->gscService->method('fetchAllKeywordsData')->willReturn([
+            'existing keyword' => ['position' => 10.0, 'clicks' => 5, 'impressions' => 50],
+        ]);
+        $this->keywordRepository->method('findAllKeywordStrings')->willReturn(['existing keyword']);
+
+        $this->entityManager->expects($this->never())->method('persist');
+        $this->entityManager->expects($this->never())->method('flush');
+
+        $result = $service->importNewKeywords();
+
+        $this->assertEquals(0, $result['imported']);
+    }
+
+    // ===== deactivateMissingKeywords() TESTS =====
+
+    public function testDeactivateMissingKeywordsReturnsDeactivatedCount(): void
+    {
+        $service = $this->createService();
+
+        $this->keywordRepository->method('deactivateAutoKeywordsNotSeenSince')->willReturn(5);
+
+        $result = $service->deactivateMissingKeywords();
+
+        $this->assertEquals(5, $result['deactivated']);
+        $this->assertStringContainsString('5 mot(s)-clé(s) désactivé(s)', $result['message']);
+    }
+
+    public function testDeactivateMissingKeywordsWithCustomThreshold(): void
+    {
+        $service = $this->createService();
+
+        $this->keywordRepository->method('deactivateAutoKeywordsNotSeenSince')->willReturn(3);
+
+        $result = $service->deactivateMissingKeywords(daysThreshold: 60);
+
+        $this->assertEquals(3, $result['deactivated']);
+        $this->assertStringContainsString('60 jours', $result['message']);
+    }
+
+    public function testDeactivateMissingKeywordsLogsWhenDeactivating(): void
+    {
+        $service = $this->createService();
+
+        $this->keywordRepository->method('deactivateAutoKeywordsNotSeenSince')->willReturn(2);
+
+        $this->logger->expects($this->once())
+            ->method('info')
+            ->with('Deactivated missing keywords', $this->anything());
+
+        $service->deactivateMissingKeywords();
+    }
+
+    public function testDeactivateMissingKeywordsDoesNotLogWhenNothingDeactivated(): void
+    {
+        $service = $this->createService();
+
+        $this->keywordRepository->method('deactivateAutoKeywordsNotSeenSince')->willReturn(0);
+
+        $this->logger->expects($this->never())->method('info');
+
+        $result = $service->deactivateMissingKeywords();
+
+        $this->assertEquals(0, $result['deactivated']);
+    }
 }

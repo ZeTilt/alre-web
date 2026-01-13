@@ -88,8 +88,9 @@ class SeoDataImportService
 
                 $this->entityManager->persist($position);
 
-                // Mettre à jour lastSyncAt
+                // Mettre à jour lastSyncAt et lastSeenInGsc
                 $keyword->setLastSyncAt($now);
+                $keyword->setLastSeenInGsc($now);
 
                 $synced++;
 
@@ -218,5 +219,118 @@ class SeoDataImportService
         }
 
         return $lastSync;
+    }
+
+    /**
+     * Importe automatiquement les nouveaux mots-clés depuis GSC.
+     * Filtrage progressif selon le volume :
+     * - < 100 keywords : tout importer
+     * - 100-1000 keywords : >= 10 impressions
+     * - > 1000 keywords : >= 100 impressions
+     *
+     * @return array{imported: int, total_gsc: int, min_impressions: int, message: string}
+     */
+    public function importNewKeywords(): array
+    {
+        if (!$this->gscService->isAvailable()) {
+            return [
+                'imported' => 0,
+                'total_gsc' => 0,
+                'min_impressions' => 0,
+                'message' => 'Google Search Console non connecté',
+            ];
+        }
+
+        $gscData = $this->gscService->fetchAllKeywordsData();
+        $totalKeywords = count($gscData);
+
+        if ($totalKeywords === 0) {
+            return [
+                'imported' => 0,
+                'total_gsc' => 0,
+                'min_impressions' => 0,
+                'message' => 'Aucune donnée retournée par GSC',
+            ];
+        }
+
+        // Filtrage progressif selon le volume
+        $minImpressions = match (true) {
+            $totalKeywords < 100 => 0,
+            $totalKeywords < 1000 => 10,
+            default => 100,
+        };
+
+        // Récupérer les mots-clés existants en base
+        $existingKeywords = $this->keywordRepository->findAllKeywordStrings();
+
+        $imported = 0;
+        $now = new \DateTimeImmutable();
+
+        foreach ($gscData as $keyword => $data) {
+            // Filtrage par impressions
+            if ($data['impressions'] < $minImpressions) {
+                continue;
+            }
+
+            // Skip si déjà en base
+            if (in_array(strtolower($keyword), $existingKeywords, true)) {
+                continue;
+            }
+
+            // Créer le nouveau mot-clé
+            $seoKeyword = new SeoKeyword();
+            $seoKeyword->setKeyword($keyword);
+            $seoKeyword->setSource(SeoKeyword::SOURCE_AUTO_GSC);
+            $seoKeyword->setRelevanceLevel(SeoKeyword::RELEVANCE_MEDIUM);
+            $seoKeyword->setLastSeenInGsc($now);
+
+            $this->entityManager->persist($seoKeyword);
+            $imported++;
+
+            $this->logger->info('Auto-imported new keyword from GSC', [
+                'keyword' => $keyword,
+                'impressions' => $data['impressions'],
+            ]);
+        }
+
+        if ($imported > 0) {
+            $this->entityManager->flush();
+        }
+
+        return [
+            'imported' => $imported,
+            'total_gsc' => $totalKeywords,
+            'min_impressions' => $minImpressions,
+            'message' => sprintf(
+                '%d nouveau(x) mot(s)-clé(s) importé(s) (seuil: %d impressions, %d requêtes GSC)',
+                $imported,
+                $minImpressions,
+                $totalKeywords
+            ),
+        ];
+    }
+
+    /**
+     * Désactive les mots-clés auto-importés absents de GSC depuis 30 jours.
+     *
+     * @return array{deactivated: int, message: string}
+     */
+    public function deactivateMissingKeywords(int $daysThreshold = 30): array
+    {
+        $threshold = new \DateTimeImmutable("-{$daysThreshold} days");
+
+        $deactivated = $this->keywordRepository->deactivateAutoKeywordsNotSeenSince($threshold);
+
+        if ($deactivated > 0) {
+            $this->logger->info('Deactivated missing keywords', [
+                'count' => $deactivated,
+                'threshold_days' => $daysThreshold,
+            ]);
+        }
+
+        return [
+            'deactivated' => $deactivated,
+            'message' => sprintf('%d mot(s)-clé(s) désactivé(s) (absents depuis %d jours)', $deactivated, $daysThreshold),
+        ];
     }
 }

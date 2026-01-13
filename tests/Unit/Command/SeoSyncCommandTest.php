@@ -53,6 +53,19 @@ class SeoSyncCommandTest extends TestCase
             'errors' => $errors,
             'message' => $errors > 0 ? 'Erreur lors de la sync' : 'Synchronisation réussie',
         ]);
+
+        // Mock the new import and cleanup methods
+        $this->seoImportService->method('importNewKeywords')->willReturn([
+            'imported' => 0,
+            'total_gsc' => 10,
+            'min_impressions' => 0,
+            'message' => 'Aucun nouveau mot-clé importé',
+        ]);
+
+        $this->seoImportService->method('deactivateMissingKeywords')->willReturn([
+            'deactivated' => 0,
+            'message' => '0 mot(s)-clé(s) désactivé(s) (absents depuis 30 jours)',
+        ]);
     }
 
     private function mockSuccessfulReviewSync(int $created = 2, int $updated = 1, int $unchanged = 5, int $errors = 0): void
@@ -145,6 +158,13 @@ class SeoSyncCommandTest extends TestCase
             ->with(true) // force=true
             ->willReturn(['synced' => 5, 'skipped' => 0, 'errors' => 0, 'message' => 'OK']);
 
+        $this->seoImportService->method('importNewKeywords')->willReturn([
+            'imported' => 0, 'total_gsc' => 0, 'min_impressions' => 0, 'message' => 'OK',
+        ]);
+        $this->seoImportService->method('deactivateMissingKeywords')->willReturn([
+            'deactivated' => 0, 'message' => 'OK',
+        ]);
+
         $this->reviewSyncService
             ->expects($this->once())
             ->method('syncReviews')
@@ -164,6 +184,13 @@ class SeoSyncCommandTest extends TestCase
             ->method('syncAllKeywords')
             ->with(false) // force=false (default)
             ->willReturn(['synced' => 5, 'skipped' => 0, 'errors' => 0, 'message' => 'OK']);
+
+        $this->seoImportService->method('importNewKeywords')->willReturn([
+            'imported' => 0, 'total_gsc' => 0, 'min_impressions' => 0, 'message' => 'OK',
+        ]);
+        $this->seoImportService->method('deactivateMissingKeywords')->willReturn([
+            'deactivated' => 0, 'message' => 'OK',
+        ]);
 
         $this->reviewSyncService
             ->expects($this->once())
@@ -219,5 +246,93 @@ class SeoSyncCommandTest extends TestCase
         $display = $commandTester->getDisplay();
         $this->assertStringContainsString('Démarrage...', $display);
         $this->assertStringContainsString('Terminé.', $display);
+    }
+
+    // ===== NO-IMPORT OPTION TESTS =====
+
+    public function testNoImportOptionSkipsImport(): void
+    {
+        $this->seoImportService->method('syncAllKeywords')->willReturn([
+            'synced' => 5, 'skipped' => 0, 'errors' => 0, 'message' => 'OK',
+        ]);
+        $this->seoImportService->method('deactivateMissingKeywords')->willReturn([
+            'deactivated' => 0, 'message' => 'OK',
+        ]);
+        $this->mockSuccessfulReviewSync();
+
+        $this->seoImportService->expects($this->never())->method('importNewKeywords');
+
+        $commandTester = $this->createCommandTester();
+        $commandTester->execute(['--no-import' => true]);
+
+        $this->assertEquals(Command::SUCCESS, $commandTester->getStatusCode());
+    }
+
+    // ===== NO-CLEANUP OPTION TESTS =====
+
+    public function testNoCleanupOptionSkipsDeactivation(): void
+    {
+        $this->seoImportService->method('syncAllKeywords')->willReturn([
+            'synced' => 5, 'skipped' => 0, 'errors' => 0, 'message' => 'OK',
+        ]);
+        $this->seoImportService->method('importNewKeywords')->willReturn([
+            'imported' => 0, 'total_gsc' => 0, 'min_impressions' => 0, 'message' => 'OK',
+        ]);
+        $this->mockSuccessfulReviewSync();
+
+        $this->seoImportService->expects($this->never())->method('deactivateMissingKeywords');
+
+        $commandTester = $this->createCommandTester();
+        $commandTester->execute(['--no-cleanup' => true]);
+
+        $this->assertEquals(Command::SUCCESS, $commandTester->getStatusCode());
+    }
+
+    // ===== IMPORT/CLEANUP OUTPUT TESTS =====
+
+    public function testDisplaysImportSection(): void
+    {
+        $this->seoImportService->method('syncAllKeywords')->willReturn([
+            'synced' => 5, 'skipped' => 0, 'errors' => 0, 'message' => 'OK',
+        ]);
+        $this->seoImportService->method('importNewKeywords')->willReturn([
+            'imported' => 3,
+            'total_gsc' => 50,
+            'min_impressions' => 0,
+            'message' => '3 nouveau(x) mot(s)-clé(s) importé(s)',
+        ]);
+        $this->seoImportService->method('deactivateMissingKeywords')->willReturn([
+            'deactivated' => 0, 'message' => 'OK',
+        ]);
+        $this->mockSuccessfulReviewSync();
+
+        $commandTester = $this->createCommandTester();
+        $commandTester->execute([]);
+
+        $display = $commandTester->getDisplay();
+        $this->assertStringContainsString('Import automatique', $display);
+        $this->assertStringContainsString('3 nouveau(x) mot(s)-clé(s) importé(s)', $display);
+    }
+
+    public function testDisplaysCleanupSection(): void
+    {
+        $this->seoImportService->method('syncAllKeywords')->willReturn([
+            'synced' => 5, 'skipped' => 0, 'errors' => 0, 'message' => 'OK',
+        ]);
+        $this->seoImportService->method('importNewKeywords')->willReturn([
+            'imported' => 0, 'total_gsc' => 0, 'min_impressions' => 0, 'message' => 'OK',
+        ]);
+        $this->seoImportService->method('deactivateMissingKeywords')->willReturn([
+            'deactivated' => 2,
+            'message' => '2 mot(s)-clé(s) désactivé(s) (absents depuis 30 jours)',
+        ]);
+        $this->mockSuccessfulReviewSync();
+
+        $commandTester = $this->createCommandTester();
+        $commandTester->execute([]);
+
+        $display = $commandTester->getDisplay();
+        $this->assertStringContainsString('Nettoyage des mots-clés absents', $display);
+        $this->assertStringContainsString('2 mot(s)-clé(s) désactivé(s)', $display);
     }
 }

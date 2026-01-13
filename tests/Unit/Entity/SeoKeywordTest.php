@@ -176,11 +176,11 @@ class SeoKeywordTest extends TestCase
         $lastSync = new \DateTimeImmutable();
 
         $keyword->setKeyword('création site web')
-                ->setTargetUrl('https://alre-web.fr/services')
+                ->setTargetUrl('https://alre-web.bzh/services')
                 ->setLastSyncAt($lastSync);
 
         $this->assertEquals('création site web', $keyword->getKeyword());
-        $this->assertEquals('https://alre-web.fr/services', $keyword->getTargetUrl());
+        $this->assertEquals('https://alre-web.bzh/services', $keyword->getTargetUrl());
         $this->assertEquals($lastSync, $keyword->getLastSyncAt());
     }
 

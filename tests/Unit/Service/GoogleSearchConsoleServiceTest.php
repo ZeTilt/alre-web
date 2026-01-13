@@ -32,7 +32,7 @@ class GoogleSearchConsoleServiceTest extends TestCase
         $this->logger = $this->createMock(LoggerInterface::class);
     }
 
-    private function createService(string $siteUrl = 'https://alre-web.fr'): GoogleSearchConsoleService
+    private function createService(string $siteUrl = 'https://alre-web.bzh'): GoogleSearchConsoleService
     {
         return new GoogleSearchConsoleService(
             $this->httpClient,
@@ -55,7 +55,7 @@ class GoogleSearchConsoleServiceTest extends TestCase
 
     public function testIsAvailableReturnsTrueWhenAllConditionsMet(): void
     {
-        $service = $this->createService('https://alre-web.fr');
+        $service = $this->createService('https://alre-web.bzh');
 
         $this->oauthService->method('isConfigured')->willReturn(true);
         $this->oauthService->method('isConnected')->willReturn(true);
@@ -75,7 +75,7 @@ class GoogleSearchConsoleServiceTest extends TestCase
 
     public function testIsAvailableReturnsFalseWhenNotConfigured(): void
     {
-        $service = $this->createService('https://alre-web.fr');
+        $service = $this->createService('https://alre-web.bzh');
 
         $this->oauthService->method('isConfigured')->willReturn(false);
         $this->oauthService->method('isConnected')->willReturn(true);
@@ -85,7 +85,7 @@ class GoogleSearchConsoleServiceTest extends TestCase
 
     public function testIsAvailableReturnsFalseWhenNotConnected(): void
     {
-        $service = $this->createService('https://alre-web.fr');
+        $service = $this->createService('https://alre-web.bzh');
 
         $this->oauthService->method('isConfigured')->willReturn(true);
         $this->oauthService->method('isConnected')->willReturn(false);

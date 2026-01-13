@@ -341,6 +341,7 @@
             <thead>
                 <tr style="border-bottom: 2px solid #e5e7eb;">
                     <th style="text-align: left; padding: 0.75rem 0.5rem; color: #6b7280; font-weight: 600;">Mot-clé</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #6b7280; font-weight: 600;">Pertinence</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #6b7280; font-weight: 600;">Position</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #6b7280; font-weight: 600;">vs M-1</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #6b7280; font-weight: 600;">Clics</th>
@@ -357,6 +358,15 @@
                             {{ keyword.keyword }}
                             {% if not keyword.active %}
                                 <span style="font-size: 0.625rem; background: #9ca3af; color: white; padding: 0.125rem 0.375rem; border-radius: 4px; margin-left: 0.5rem;">Inactif</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {% if keyword.relevanceLevel == 'high' %}
+                                <span style="background: #d1fae5; color: #065f46; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Haute</span>
+                            {% elseif keyword.relevanceLevel == 'medium' %}
+                                <span style="background: #fef3c7; color: #92400e; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Moyenne</span>
+                            {% else %}
+                                <span style="background: #f3f4f6; color: #6b7280; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Basse</span>
                             {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
@@ -511,13 +521,20 @@
         <div class="chart-title" style="margin-bottom: 1rem;">
             <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
             À améliorer
-            <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">(Position &gt; 20)</span>
+            <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">(Position &gt; 20, pertinence haute/moyenne)</span>
         </div>
         {% if seoPerformanceData.toImprove|length > 0 %}
             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                 {% for item in seoPerformanceData.toImprove %}
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: #fef2f2; border-radius: 8px;">
-                        <div style="font-weight: 500; font-size: 0.875rem;">{{ item.keyword }}</div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="font-weight: 500; font-size: 0.875rem;">{{ item.keyword }}</span>
+                            {% if item.relevanceLevel == 'high' %}
+                                <span style="background: #d1fae5; color: #065f46; padding: 0.0625rem 0.375rem; border-radius: 9999px; font-size: 0.625rem; font-weight: 600;">H</span>
+                            {% else %}
+                                <span style="background: #fef3c7; color: #92400e; padding: 0.0625rem 0.375rem; border-radius: 9999px; font-size: 0.625rem; font-weight: 600;">M</span>
+                            {% endif %}
+                        </div>
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
                             <span style="background: #fee2e2; color: #991b1b; padding: 0.125rem 0.5rem; border-radius: 9999px; font-weight: 700; font-size: 0.75rem;">
                                 #{{ item.position|number_format(0) }}
@@ -530,7 +547,7 @@
         {% else %}
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; color: #6b7280;">
                 <i class="fas fa-check-circle" style="font-size: 2rem; opacity: 0.3; color: #10b981; margin-bottom: 0.5rem;"></i>
-                <div style="font-size: 0.875rem; text-align: center;">Tous vos mots-clés sont bien positionnés</div>
+                <div style="font-size: 0.875rem; text-align: center;">Aucun mot-clé prioritaire à améliorer</div>
             </div>
         {% endif %}
     </div>

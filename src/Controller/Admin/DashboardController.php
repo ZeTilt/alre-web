@@ -668,6 +668,8 @@ class DashboardController extends AbstractDashboardController
                 'clicks' => $clicks,
                 'impressions' => $impressions,
                 'ctr' => $ctr,
+                'relevanceLevel' => $keyword->getRelevanceLevel(),
+                'source' => $keyword->getSource(),
             ];
 
             // Top Performers: position <= 10 (première page)
@@ -675,8 +677,9 @@ class DashboardController extends AbstractDashboardController
                 $topPerformers[] = $keywordData;
             }
 
-            // À améliorer: position > 20 (au-delà de la 2ème page)
-            if ($position > 20) {
+            // À améliorer: position > 20 ET pertinence != low
+            // Les mots-clés "low" ne sont pas prioritaires à améliorer
+            if ($position > 20 && $keyword->getRelevanceLevel() !== SeoKeyword::RELEVANCE_LOW) {
                 $toImprove[] = $keywordData;
             }
 
@@ -688,8 +691,16 @@ class DashboardController extends AbstractDashboardController
 
         // Trier par position (meilleure en premier pour top performers)
         usort($topPerformers, fn($a, $b) => $a['position'] <=> $b['position']);
-        // Trier par position (pire en premier pour à améliorer)
-        usort($toImprove, fn($a, $b) => $b['position'] <=> $a['position']);
+        // Trier par pertinence (high > medium) puis par position (pire en premier)
+        usort($toImprove, function($a, $b) {
+            $relevanceOrder = [SeoKeyword::RELEVANCE_HIGH => 0, SeoKeyword::RELEVANCE_MEDIUM => 1, SeoKeyword::RELEVANCE_LOW => 2];
+            $relevanceA = $relevanceOrder[$a['relevanceLevel']] ?? 2;
+            $relevanceB = $relevanceOrder[$b['relevanceLevel']] ?? 2;
+            if ($relevanceA !== $relevanceB) {
+                return $relevanceA <=> $relevanceB;
+            }
+            return $b['position'] <=> $a['position'];
+        });
         // Trier par impressions (plus d'impressions = plus grande opportunité)
         usort($ctrOpportunities, fn($a, $b) => $b['impressions'] <=> $a['impressions']);
 

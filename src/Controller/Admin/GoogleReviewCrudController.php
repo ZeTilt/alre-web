@@ -65,7 +65,7 @@ class GoogleReviewCrudController extends AbstractCrudController
             ->add(Crud::PAGE_INDEX, $rejectAction)
             ->add(Crud::PAGE_DETAIL, $approveAction)
             ->add(Crud::PAGE_DETAIL, $rejectAction)
-            ->disable(Action::NEW, Action::DELETE)
+            ->disable(Action::NEW)
             ->reorder(Crud::PAGE_INDEX, [Action::DETAIL, 'approve', 'reject', Action::EDIT]);
     }
 

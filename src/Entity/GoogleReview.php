@@ -202,6 +202,14 @@ class GoogleReview
     }
 
     /**
+     * Retourne la note sous forme de string (pour EasyAdmin).
+     */
+    public function getRatingStars(): string
+    {
+        return (string) $this->rating;
+    }
+
+    /**
      * Retourne un extrait du commentaire.
      */
     public function getCommentExcerpt(int $maxLength = 100): string

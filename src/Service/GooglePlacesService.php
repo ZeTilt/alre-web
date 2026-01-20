@@ -11,12 +11,30 @@ class GooglePlacesService
     private const MAX_RETRIES = 3;
     private const RETRY_DELAYS = [1, 2, 4]; // seconds
 
+    private ?string $lastError = null;
+
     public function __construct(
         private HttpClientInterface $httpClient,
         private LoggerInterface $logger,
         private string $googlePlacesApiKey,
         private string $googlePlaceId,
     ) {}
+
+    /**
+     * Retourne la dernière erreur survenue.
+     */
+    public function getLastError(): ?string
+    {
+        return $this->lastError;
+    }
+
+    /**
+     * Efface la dernière erreur.
+     */
+    public function clearLastError(): void
+    {
+        $this->lastError = null;
+    }
 
     /**
      * Vérifie si le service est configuré.
@@ -39,7 +57,10 @@ class GooglePlacesService
      */
     public function fetchReviews(): ?array
     {
+        $this->clearLastError();
+
         if (!$this->isConfigured()) {
+            $this->lastError = 'API non configurée. Ajoutez GOOGLE_PLACES_API_KEY et GOOGLE_PLACE_ID dans .env.local';
             $this->logger->error('Google Places API not configured');
             return null;
         }
@@ -102,9 +123,11 @@ class GooglePlacesService
 
                 // Erreur non-retryable (4xx sauf 429)
                 if ($statusCode >= 400 && $statusCode < 500 && $statusCode !== 429) {
+                    $responseContent = $response->getContent(false);
+                    $this->lastError = $this->parseApiError($statusCode, $responseContent);
                     $this->logger->error('Google Places API client error', [
                         'status_code' => $statusCode,
-                        'response' => $response->getContent(false),
+                        'response' => $responseContent,
                         'attempt' => $attempt + 1,
                     ]);
                     return null;
@@ -132,11 +155,36 @@ class GooglePlacesService
             }
         }
 
+        $errorMessage = $lastException?->getMessage() ?? 'Erreur inconnue après plusieurs tentatives';
+        $this->lastError = "Erreur API après {$attempt} tentatives : {$errorMessage}";
         $this->logger->error('Google Places API failed after all retries', [
             'url' => $url,
             'last_error' => $lastException?->getMessage(),
         ]);
 
         return null;
+    }
+
+    /**
+     * Parse le message d'erreur de l'API Google Places.
+     */
+    private function parseApiError(int $statusCode, string $responseContent): string
+    {
+        try {
+            $data = json_decode($responseContent, true);
+            if (isset($data['error']['message'])) {
+                return sprintf('[%d] %s', $statusCode, $data['error']['message']);
+            }
+        } catch (\Exception) {
+            // Ignore JSON parsing errors
+        }
+
+        return match ($statusCode) {
+            400 => "Requête invalide (400) - Vérifiez le Place ID",
+            401 => "Non autorisé (401) - Vérifiez la clé API",
+            403 => "Accès refusé (403) - Vérifiez les permissions de la clé API",
+            404 => "Place ID non trouvé (404)",
+            default => "Erreur API ({$statusCode})",
+        };
     }
 }

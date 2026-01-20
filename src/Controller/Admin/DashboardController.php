@@ -371,6 +371,7 @@ class DashboardController extends AbstractDashboardController
             'reviewStats' => $googleReviewRepository->getStats(),
             'reviewsDataFresh' => $this->reviewSyncService->isDataFresh(),
             'pendingReviews' => $googleReviewRepository->findPending(),
+            'reviewsApiError' => $this->googlePlacesService->getLastError(),
         ]);
     }
 

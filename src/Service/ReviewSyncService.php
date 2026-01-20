@@ -50,12 +50,13 @@ class ReviewSyncService
         $reviewsData = $this->placesService->fetchReviews();
 
         if ($reviewsData === null) {
+            $apiError = $this->placesService->getLastError();
             return [
                 'created' => 0,
                 'updated' => 0,
                 'unchanged' => 0,
                 'errors' => 1,
-                'message' => 'Erreur lors de la récupération des avis',
+                'message' => $apiError ?? 'Erreur lors de la récupération des avis',
             ];
         }
 
@@ -268,5 +269,13 @@ class ReviewSyncService
     public function isDataFresh(): bool
     {
         return $this->reviewRepository->isDataFresh(self::CACHE_TTL_HOURS);
+    }
+
+    /**
+     * Retourne la dernière erreur de l'API Google Places.
+     */
+    public function getLastApiError(): ?string
+    {
+        return $this->placesService->getLastError();
     }
 }

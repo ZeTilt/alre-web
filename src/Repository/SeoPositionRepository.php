@@ -58,11 +58,17 @@ class SeoPositionRepository extends ServiceEntityRepository
      */
     public function findByKeywordAndDate(SeoKeyword $keyword, \DateTimeImmutable $date): ?SeoPosition
     {
+        // Comparer uniquement la partie date (ignorer l'heure)
+        $startOfDay = $date->setTime(0, 0, 0);
+        $endOfDay = $date->setTime(23, 59, 59);
+
         return $this->createQueryBuilder('p')
             ->where('p.keyword = :keyword')
-            ->andWhere('p.date = :date')
+            ->andWhere('p.date >= :startOfDay')
+            ->andWhere('p.date <= :endOfDay')
             ->setParameter('keyword', $keyword)
-            ->setParameter('date', $date)
+            ->setParameter('startOfDay', $startOfDay)
+            ->setParameter('endOfDay', $endOfDay)
             ->getQuery()
             ->getOneOrNullResult();
     }

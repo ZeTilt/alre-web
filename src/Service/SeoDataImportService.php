@@ -81,10 +81,7 @@ class SeoDataImportService
                 }
 
                 // Chercher une entrée existante pour aujourd'hui
-                $position = $this->positionRepository->findOneBy([
-                    'keyword' => $keyword,
-                    'date' => $today,
-                ]);
+                $position = $this->positionRepository->findByKeywordAndDate($keyword, $today);
 
                 if ($position) {
                     // Mettre à jour l'entrée existante

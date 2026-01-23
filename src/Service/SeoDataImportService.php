@@ -23,6 +23,8 @@ class SeoDataImportService
 
     /**
      * Synchronise les données GSC pour tous les mots-clés actifs.
+     * Récupère les données jour par jour pour les 5 derniers jours disponibles.
+     * (GSC a un délai de 2-3 jours, donc on récupère J-3 à J-7)
      *
      * @return array{synced: int, skipped: int, errors: int, message: string}
      */
@@ -50,74 +52,80 @@ class SeoDataImportService
             ];
         }
 
-        // Récupérer toutes les données GSC en une seule requête
-        $gscData = $this->gscService->fetchAllKeywordsData();
-
-        if (empty($gscData)) {
-            $this->logger->warning('No data returned from GSC API');
-        }
-
         $synced = 0;
         $skipped = 0;
         $errors = 0;
         $now = new \DateTimeImmutable();
-        $today = new \DateTimeImmutable('today');
 
-        foreach ($keywords as $keyword) {
-            try {
-                $keywordLower = strtolower($keyword->getKeyword());
-                $data = $this->findBestMatchingData($keywordLower, $gscData);
+        // Récupérer les données jour par jour (J-3 à J-7 pour éviter le délai GSC)
+        for ($daysAgo = 3; $daysAgo <= 7; $daysAgo++) {
+            $date = new \DateTimeImmutable("-{$daysAgo} days");
 
-                if ($data === null) {
-                    // Mot-clé non trouvé dans GSC (peut-être pas encore indexé)
-                    $this->logger->info('Keyword not found in GSC data', [
-                        'keyword' => $keyword->getKeyword(),
-                        'available_queries' => array_slice(array_keys($gscData), 0, 20),
-                    ]);
-                    $skipped++;
-                    // On met quand même à jour lastSyncAt pour éviter de réessayer trop vite
+            // Vérifier si on a déjà des données pour cette date
+            $existingCount = count($this->positionRepository->findAllForDate($date));
+            if ($existingCount >= count($keywords) && !$force) {
+                continue; // Déjà complet pour cette date
+            }
+
+            // Récupérer les données GSC pour ce jour spécifique
+            $gscData = $this->gscService->fetchAllKeywordsData($date, $date);
+
+            if (empty($gscData)) {
+                continue;
+            }
+
+            foreach ($keywords as $keyword) {
+                try {
+                    $keywordLower = strtolower($keyword->getKeyword());
+                    $data = $this->findBestMatchingData($keywordLower, $gscData);
+
+                    if ($data === null) {
+                        $skipped++;
+                        continue;
+                    }
+
+                    // Chercher une entrée existante pour cette date
+                    $position = $this->positionRepository->findByKeywordAndDate($keyword, $date);
+
+                    if ($position) {
+                        if ($force) {
+                            // Mettre à jour l'entrée existante
+                            $position->setPosition($data['position']);
+                            $position->setClicks($data['clicks']);
+                            $position->setImpressions($data['impressions']);
+                            $synced++;
+                        }
+                    } else {
+                        // Créer une nouvelle entrée SeoPosition
+                        $position = new SeoPosition();
+                        $position->setKeyword($keyword);
+                        $position->setPosition($data['position']);
+                        $position->setClicks($data['clicks']);
+                        $position->setImpressions($data['impressions']);
+                        $position->setDate($date);
+                        $this->entityManager->persist($position);
+                        $synced++;
+                    }
+
+                    // Mettre à jour lastSyncAt et lastSeenInGsc
                     $keyword->setLastSyncAt($now);
-                    continue;
+                    $keyword->setLastSeenInGsc($now);
+
+                    $this->logger->info('Synced keyword position', [
+                        'keyword' => $keyword->getKeyword(),
+                        'date' => $date->format('Y-m-d'),
+                        'position' => $data['position'],
+                        'clicks' => $data['clicks'],
+                        'impressions' => $data['impressions'],
+                    ]);
+
+                } catch (\Exception $e) {
+                    $this->logger->error('Error syncing keyword', [
+                        'keyword' => $keyword->getKeyword(),
+                        'error' => $e->getMessage(),
+                    ]);
+                    $errors++;
                 }
-
-                // Chercher une entrée existante pour aujourd'hui
-                $position = $this->positionRepository->findByKeywordAndDate($keyword, $today);
-
-                if ($position) {
-                    // Mettre à jour l'entrée existante
-                    $position->setPosition($data['position']);
-                    $position->setClicks($data['clicks']);
-                    $position->setImpressions($data['impressions']);
-                } else {
-                    // Créer une nouvelle entrée SeoPosition
-                    $position = new SeoPosition();
-                    $position->setKeyword($keyword);
-                    $position->setPosition($data['position']);
-                    $position->setClicks($data['clicks']);
-                    $position->setImpressions($data['impressions']);
-                    $position->setDate($today);
-                    $this->entityManager->persist($position);
-                }
-
-                // Mettre à jour lastSyncAt et lastSeenInGsc
-                $keyword->setLastSyncAt($now);
-                $keyword->setLastSeenInGsc($now);
-
-                $synced++;
-
-                $this->logger->info('Synced keyword position', [
-                    'keyword' => $keyword->getKeyword(),
-                    'position' => $data['position'],
-                    'clicks' => $data['clicks'],
-                    'impressions' => $data['impressions'],
-                ]);
-
-            } catch (\Exception $e) {
-                $this->logger->error('Error syncing keyword', [
-                    'keyword' => $keyword->getKeyword(),
-                    'error' => $e->getMessage(),
-                ]);
-                $errors++;
             }
         }
 

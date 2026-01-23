@@ -43,7 +43,7 @@ class GoogleSearchConsoleService
 
         // Par défaut, récupérer les données des 7 derniers jours
         $endDate = $endDate ?? new \DateTimeImmutable('-1 day');
-        $startDate = $startDate ?? new \DateTimeImmutable('-90 days');
+        $startDate = $startDate ?? new \DateTimeImmutable('-7 days');
 
         $encodedSiteUrl = urlencode($this->googleSiteUrl);
         $url = self::API_URL . "/{$encodedSiteUrl}/searchAnalytics/query";
@@ -100,7 +100,7 @@ class GoogleSearchConsoleService
         }
 
         $endDate = $endDate ?? new \DateTimeImmutable('-1 day');
-        $startDate = $startDate ?? new \DateTimeImmutable('-90 days');
+        $startDate = $startDate ?? new \DateTimeImmutable('-7 days');
 
         $encodedSiteUrl = urlencode($this->googleSiteUrl);
         $url = self::API_URL . "/{$encodedSiteUrl}/searchAnalytics/query";

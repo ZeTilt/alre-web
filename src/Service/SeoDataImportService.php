@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\SeoKeyword;
 use App\Entity\SeoPosition;
 use App\Repository\SeoKeywordRepository;
+use App\Repository\SeoPositionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -15,6 +16,7 @@ class SeoDataImportService
     public function __construct(
         private GoogleSearchConsoleService $gscService,
         private SeoKeywordRepository $keywordRepository,
+        private SeoPositionRepository $positionRepository,
         private EntityManagerInterface $entityManager,
         private LoggerInterface $logger,
     ) {}
@@ -78,15 +80,27 @@ class SeoDataImportService
                     continue;
                 }
 
-                // Créer une nouvelle entrée SeoPosition
-                $position = new SeoPosition();
-                $position->setKeyword($keyword);
-                $position->setPosition($data['position']);
-                $position->setClicks($data['clicks']);
-                $position->setImpressions($data['impressions']);
-                $position->setDate($today);
+                // Chercher une entrée existante pour aujourd'hui
+                $position = $this->positionRepository->findOneBy([
+                    'keyword' => $keyword,
+                    'date' => $today,
+                ]);
 
-                $this->entityManager->persist($position);
+                if ($position) {
+                    // Mettre à jour l'entrée existante
+                    $position->setPosition($data['position']);
+                    $position->setClicks($data['clicks']);
+                    $position->setImpressions($data['impressions']);
+                } else {
+                    // Créer une nouvelle entrée SeoPosition
+                    $position = new SeoPosition();
+                    $position->setKeyword($keyword);
+                    $position->setPosition($data['position']);
+                    $position->setClicks($data['clicks']);
+                    $position->setImpressions($data['impressions']);
+                    $position->setDate($today);
+                    $this->entityManager->persist($position);
+                }
 
                 // Mettre à jour lastSyncAt et lastSeenInGsc
                 $keyword->setLastSyncAt($now);

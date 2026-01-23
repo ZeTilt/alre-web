@@ -751,10 +751,26 @@ class DashboardController extends AbstractDashboardController
             $currentDate = $currentDate->modify('+1 day');
         }
 
+        // Calculer la moyenne mobile sur 7 jours pour les impressions
+        $impressions7d = [];
+        for ($i = 0; $i < count($impressions); $i++) {
+            if ($i < 6) {
+                // Pas assez de données pour une moyenne 7 jours
+                $impressions7d[] = null;
+            } else {
+                $sum = 0;
+                for ($j = $i - 6; $j <= $i; $j++) {
+                    $sum += $impressions[$j];
+                }
+                $impressions7d[] = $sum;
+            }
+        }
+
         return [
             'labels' => $labels,
             'clicks' => $clicks,
             'impressions' => $impressions,
+            'impressions7d' => $impressions7d,
             'hasEnoughData' => $hasEnoughData,
             'daysWithData' => $daysWithData,
         ];

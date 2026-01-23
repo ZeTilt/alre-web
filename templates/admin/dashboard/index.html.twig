@@ -813,6 +813,7 @@ const monthLabels = {{ monthLabels|json_encode|raw }};
 const seoChartLabels = {{ seoChartData.labels|json_encode|raw }};
 const seoChartClicks = {{ seoChartData.clicks|json_encode|raw }};
 const seoChartImpressions = {{ seoChartData.impressions|json_encode|raw }};
+const seoChartImpressions7d = {{ seoChartData.impressions7d|json_encode|raw }};
 const seoHasEnoughData = {{ seoChartData.hasEnoughData ? 'true' : 'false' }};
 
 // 0. Graphique SEO Évolution (Clics/Impressions)
@@ -844,6 +845,19 @@ if (seoHasEnoughData && document.getElementById('chartSeoEvolution')) {
                     borderWidth: 2,
                     pointRadius: 3,
                     pointHoverRadius: 5,
+                    yAxisID: 'y1'
+                },
+                {
+                    label: 'Impressions (cumul 7j)',
+                    data: seoChartImpressions7d,
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'transparent',
+                    fill: false,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
                     yAxisID: 'y1'
                 }
             ]

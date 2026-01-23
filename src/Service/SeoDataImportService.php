@@ -59,7 +59,7 @@ class SeoDataImportService
 
         // Récupérer les données jour par jour (J-3 à J-7 pour éviter le délai GSC)
         for ($daysAgo = 3; $daysAgo <= 7; $daysAgo++) {
-            $date = new \DateTimeImmutable("-{$daysAgo} days");
+            $date = (new \DateTimeImmutable("-{$daysAgo} days"))->setTime(0, 0, 0);
 
             // Vérifier si on a déjà des données pour cette date
             $existingCount = count($this->positionRepository->findAllForDate($date));

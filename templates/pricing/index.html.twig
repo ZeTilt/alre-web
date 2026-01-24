@@ -2,7 +2,7 @@
 
 {% block title %}Tarifs | Développeur Web Freelance - Prix Transparents{% endblock %}
 
-{% block meta_description %}Tarifs transparents pour la création de sites internet à Auray, Vannes et Lorient (Morbihan). Page unique à partir de 490€, site vitrine à partir de 1200€, e-commerce à partir de 2500€. Devis gratuit en Bretagne.{% endblock %}
+{% block meta_description %}Tarifs transparents pour la création de sites internet et référencement SEO à Auray, Vannes et Lorient (Morbihan). Sites à partir de 490€, audit SEO 250€, accompagnement SEO dès 150€/mois. Devis gratuit en Bretagne et partout en France.{% endblock %}
 
 {% block structured_data %}
 {{ parent() }}
@@ -42,6 +42,14 @@
                 "@type": "Answer",
                 "text": "Oui, je propose un acompte de 30% à la validation du devis, un paiement échelonné possible selon le projet, et le solde à la livraison du site."
             }
+        },
+        {
+            "@type": "Question",
+            "name": "Combien coûte le référencement SEO ?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Un audit SEO coûte 250€. L'optimisation SEO ponctuelle démarre à 350€. Pour un accompagnement mensuel, le SEO local est à 150€/mois et l'accompagnement SEO complet à 250€/mois, incluant les optimisations techniques continues et le suivi des performances."
+            }
         }
     ]
 }
@@ -50,13 +58,13 @@
 {
     "@context": "https://schema.org",
     "@type": "AggregateOffer",
-    "name": "Création de sites web",
-    "description": "Tarifs pour la création de sites internet sur mesure en Bretagne",
+    "name": "Création de sites web et référencement SEO",
+    "description": "Tarifs pour la création de sites internet et référencement SEO en Bretagne",
     "url": "https://alre-web.bzh/tarifs",
-    "lowPrice": "490",
+    "lowPrice": "250",
     "highPrice": "2500",
     "priceCurrency": "EUR",
-    "offerCount": "4",
+    "offerCount": "8",
     "offers": [
         {
             "@type": "Offer",
@@ -78,6 +86,34 @@
             "price": "2500",
             "priceCurrency": "EUR",
             "description": "Boutique en ligne jusqu'à 50 produits avec paiement sécurisé"
+        },
+        {
+            "@type": "Offer",
+            "name": "Audit SEO",
+            "price": "250",
+            "priceCurrency": "EUR",
+            "description": "Analyse technique complète, étude des mots-clés et plan d'action SEO"
+        },
+        {
+            "@type": "Offer",
+            "name": "Optimisation SEO",
+            "price": "350",
+            "priceCurrency": "EUR",
+            "description": "Corrections techniques et optimisations SEO on-page"
+        },
+        {
+            "@type": "Offer",
+            "name": "SEO Local mensuel",
+            "price": "150",
+            "priceCurrency": "EUR",
+            "description": "Google Business Profile, référencement local et suivi mensuel"
+        },
+        {
+            "@type": "Offer",
+            "name": "Accompagnement SEO mensuel",
+            "price": "250",
+            "priceCurrency": "EUR",
+            "description": "Stratégie SEO complète avec optimisations continues et reporting"
         }
     ]
 }
@@ -325,7 +361,7 @@
                     </div>
                     <div style="text-align: center;">
                         <div class="pricing-price" style="margin: 0;">
-                            50 €
+                            25 €
                             <span>/mois</span>
                         </div>
                         <a href="{{ path('app_contact') }}" class="btn btn-outline" style="margin-top: 1rem;">
@@ -365,31 +401,158 @@
     </div>
 </section>
 
-{# Options à la carte #}
+{# Prestations SEO #}
 <section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-5"><i class="fas fa-search"></i> Référencement SEO</h2>
+        <p class="text-center mb-4" style="max-width: 700px; margin: 0 auto 3rem; color: var(--text-muted);">
+            Améliorez votre visibilité sur Google et attirez plus de clients grâce à un référencement naturel optimisé.
+        </p>
+
+        <div class="grid grid-2">
+            {# Audit SEO #}
+            <div class="pricing-card card">
+                <div class="card-icon">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <h3 class="card-title">Audit SEO</h3>
+                <div class="pricing-price">
+                    250 €
+                </div>
+                <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
+                    Analyse complète de votre site
+                </p>
+                <ul class="pricing-features">
+                    <li>Analyse technique complète (vitesse, mobile, erreurs)</li>
+                    <li>Audit des balises SEO (title, meta, H1-H6)</li>
+                    <li>Analyse des mots-clés et positions actuelles</li>
+                    <li>Étude de la concurrence locale</li>
+                    <li>Rapport détaillé avec recommandations</li>
+                    <li>Plan d'action priorisé</li>
+                </ul>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="{{ path('app_contact') }}" class="btn btn-outline">
+                        Demander un audit
+                    </a>
+                </div>
+            </div>
+
+            {# Optimisation SEO #}
+            <div class="pricing-card card">
+                <div class="card-icon">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <h3 class="card-title">Optimisation SEO</h3>
+                <div class="pricing-price">
+                    <span>à partir de</span>
+                    350 €
+                </div>
+                <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
+                    Corrections et améliorations ponctuelles
+                </p>
+                <ul class="pricing-features">
+                    <li>Optimisation des balises title et meta</li>
+                    <li>Restructuration des titres H1, H2, H3</li>
+                    <li>Optimisation des images (compression, alt)</li>
+                    <li>Amélioration de la vitesse de chargement</li>
+                    <li>Données structurées Schema.org</li>
+                    <li>Configuration Google Search Console</li>
+                    <li>Maillage interne optimisé</li>
+                </ul>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="{{ path('app_contact') }}" class="btn btn-outline">
+                        Demander un devis
+                    </a>
+                </div>
+            </div>
+
+            {# SEO Local #}
+            <div class="pricing-card card">
+                <div class="card-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <h3 class="card-title">SEO Local</h3>
+                <div class="pricing-price">
+                    150 €
+                    <span>/mois</span>
+                </div>
+                <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
+                    Visibilité locale sur Google
+                </p>
+                <ul class="pricing-features">
+                    <li>Création/optimisation Google Business Profile</li>
+                    <li>Gestion et réponse aux avis clients</li>
+                    <li>Optimisation SEO local de votre site</li>
+                    <li>Inscription annuaires locaux pertinents</li>
+                    <li>Suivi des positions sur vos mots-clés</li>
+                    <li>Rapport mensuel de performance</li>
+                </ul>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <p style="font-weight: 600; color: var(--primary-color); margin-bottom: 1rem;">
+                        Idéal pour : Commerces, artisans, professions libérales
+                    </p>
+                    <a href="{{ path('app_contact') }}" class="btn btn-primary">
+                        Souscrire
+                    </a>
+                </div>
+            </div>
+
+            {# Accompagnement SEO #}
+            <div class="pricing-card card">
+                <div class="card-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="card-title">Accompagnement SEO</h3>
+                <div class="pricing-price">
+                    250 €
+                    <span>/mois</span>
+                </div>
+                <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
+                    Stratégie SEO complète
+                </p>
+                <ul class="pricing-features">
+                    <li>Audit SEO initial complet</li>
+                    <li>Stratégie de mots-clés personnalisée</li>
+                    <li>Optimisations techniques continues</li>
+                    <li>Gestion Google Business Profile</li>
+                    <li>Suivi des positions et Analytics</li>
+                    <li>Rapport mensuel détaillé + recommandations</li>
+                    <li>Conseils éditoriaux pour votre contenu</li>
+                    <li>Support prioritaire par email</li>
+                </ul>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <p style="font-weight: 600; color: var(--primary-color); margin-bottom: 1rem;">
+                        Idéal pour : TPE/PME qui veulent croître
+                    </p>
+                    <a href="{{ path('app_contact') }}" class="btn btn-primary">
+                        Souscrire
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <p style="color: var(--text-muted); font-style: italic;">
+                <i class="fas fa-info-circle"></i> Le SEO est un travail de fond : les premiers résultats apparaissent généralement après 3 à 6 mois.
+            </p>
+        </div>
+    </div>
+</section>
+
+{# Options à la carte #}
+<section class="section">
     <div class="container">
         <h2 class="text-center mb-5">Options à la Carte</h2>
 
         <div class="grid grid-3">
             <div class="card">
-                <div class="card-icon"><i class="fas fa-search"></i></div>
-                <h3 class="card-title">Accompagnement SEO</h3>
-                <p class="card-text">
-                    Audit SEO approfondi, optimisation de contenu, suivi du ranking, rédaction d'articles.
-                </p>
-                <p style="text-align: center; font-weight: 600; color: var(--primary-color); margin-top: 1rem;">
-                    Sur devis
-                </p>
-            </div>
-
-            <div class="card">
                 <div class="card-icon"><i class="fas fa-pen"></i></div>
-                <h3 class="card-title">Rédaction de Contenu</h3>
+                <h3 class="card-title">Optimisation de Contenu</h3>
                 <p class="card-text">
-                    Rédaction SEO de vos pages, articles de blog, fiches produits optimisées.
+                    Optimisation SEO de vos textes existants : pages, fiches produits, articles de blog.
                 </p>
                 <p style="text-align: center; font-weight: 600; color: var(--primary-color); margin-top: 1rem;">
-                    Sur devis
+                    À partir de 30€/page
                 </p>
             </div>
 
@@ -411,7 +574,7 @@
                     Création d'un logo professionnel et d'une charte graphique complète pour votre marque.
                 </p>
                 <p style="text-align: center; font-weight: 600; color: var(--primary-color); margin-top: 1rem;">
-                    Sur devis
+                    À partir de 250€
                 </p>
             </div>
 
@@ -434,6 +597,17 @@
                 </p>
                 <p style="text-align: center; font-weight: 600; color: var(--primary-color); margin-top: 1rem;">
                     200€/demi-journée
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-sync-alt"></i></div>
+                <h3 class="card-title">Refonte de Site</h3>
+                <p class="card-text">
+                    Modernisation de votre site existant : nouveau design, migration vers WordPress, optimisation.
+                </p>
+                <p style="text-align: center; font-weight: 600; color: var(--primary-color); margin-top: 1rem;">
+                    À partir de 590€
                 </p>
             </div>
         </div>

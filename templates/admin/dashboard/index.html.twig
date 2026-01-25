@@ -338,39 +338,35 @@
     {% endif %}
 </div>
 
-<!-- SEO Positions Widget -->
-{% if googleOAuthConnected and seoKeywords|length > 0 %}
+<!-- SEO Positions Widget - Top 10 -->
+{% if googleOAuthConnected and seoKeywordsTop10|length > 0 %}
 <div class="chart-container" style="padding: 1rem 1.5rem; margin-bottom: 1.5rem;">
     <div class="chart-title" style="margin-bottom: 1rem;">
-        <i class="fas fa-search" style="color: var(--primary);"></i>
-        Positions SEO
+        <i class="fas fa-trophy" style="color: #10b981;"></i>
+        Top 10 - Meilleures performances
         <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">
-            ({{ seoKeywords|length }} mot{% if seoKeywords|length > 1 %}s{% endif %}-clé{% if seoKeywords|length > 1 %}s{% endif %})
+            (triés par clics, impressions, position)
         </span>
     </div>
     <div style="overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
             <thead>
-                <tr style="border-bottom: 2px solid #e5e7eb;">
-                    <th style="text-align: left; padding: 0.75rem 0.5rem; color: #6b7280; font-weight: 600;">Mot-clé</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #6b7280; font-weight: 600;">Pertinence</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #6b7280; font-weight: 600;">Position</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #6b7280; font-weight: 600;">vs M-1</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #6b7280; font-weight: 600;">Clics</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #6b7280; font-weight: 600;">Impressions</th>
-                    <th style="text-align: right; padding: 0.75rem 0.5rem; color: #6b7280; font-weight: 600;">Dernière sync</th>
+                <tr style="border-bottom: 2px solid #10b981;">
+                    <th style="text-align: left; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Mot-clé</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Pertinence</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Position</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">vs M-1</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Clics</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Impressions</th>
                 </tr>
             </thead>
             <tbody>
-                {% for keyword in seoKeywords %}
+                {% for keyword in seoKeywordsTop10 %}
                     {% set latestPosition = keyword.latestPosition %}
                     {% set comparison = seoPositionComparisons[keyword.id] ?? null %}
-                    <tr style="border-bottom: 1px solid #f3f4f6;">
+                    <tr style="border-bottom: 1px solid #d1fae5;">
                         <td style="padding: 0.75rem 0.5rem; font-weight: 500;">
                             {{ keyword.keyword }}
-                            {% if not keyword.active %}
-                                <span style="font-size: 0.625rem; background: #9ca3af; color: white; padding: 0.125rem 0.375rem; border-radius: 4px; margin-left: 0.5rem;">Inactif</span>
-                            {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
                             {% if keyword.relevanceLevel == 'high' %}
@@ -397,8 +393,6 @@
                                         {{ pos|number_format(1) }}
                                     </span>
                                 {% endif %}
-                            {% else %}
-                                <span style="color: #9ca3af; font-style: italic;">Pas de données</span>
                             {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
@@ -423,43 +417,110 @@
                             {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
-                            {% if latestPosition %}
-                                <span style="font-weight: 600;">{{ latestPosition.clicks }}</span>
-                            {% else %}
-                                <span style="color: #9ca3af;">-</span>
-                            {% endif %}
+                            <span style="font-weight: 700; color: #065f46;">{{ latestPosition.clicks }}</span>
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
-                            {% if latestPosition %}
-                                {{ latestPosition.impressions|number_format(0, '', ' ') }}
-                            {% else %}
-                                <span style="color: #9ca3af;">-</span>
-                            {% endif %}
-                        </td>
-                        <td style="text-align: right; padding: 0.75rem 0.5rem; color: #6b7280; font-size: 0.75rem;">
-                            {% if keyword.lastSyncAt %}
-                                {{ keyword.lastSyncAt|date('d/m/Y H:i') }}
-                            {% else %}
-                                <span style="font-style: italic;">Jamais</span>
-                            {% endif %}
+                            {{ latestPosition.impressions|number_format(0, '', ' ') }}
                         </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-    {% if seoKeywords|length > 0 %}
-        <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
-            <a href="{{ ea_url().setController('App\\Controller\\Admin\\SeoKeywordCrudController').setAction('index') }}" class="btn btn-sm btn-outline-secondary">
-                <i class="fas fa-cog"></i> Gérer les mots-clés
-            </a>
-            {% if googleOAuthConnected %}
-                <a href="{{ path('admin_google_sync_seo') }}" class="btn btn-sm btn-primary">
-                    <i class="fas fa-sync-alt"></i> Synchroniser
-                </a>
-            {% endif %}
-        </div>
-    {% endif %}
+</div>
+{% endif %}
+
+<!-- SEO Positions Widget - Bottom 10 (High Relevance Only) -->
+{% if googleOAuthConnected and seoKeywordsBottom10|length > 0 %}
+<div class="chart-container" style="padding: 1rem 1.5rem; margin-bottom: 1.5rem;">
+    <div class="chart-title" style="margin-bottom: 1rem;">
+        <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
+        A travailler - Pertinence haute uniquement
+        <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">
+            (mots-clés prioritaires avec peu de performances)
+        </span>
+    </div>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid #f59e0b;">
+                    <th style="text-align: left; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Mot-clé</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Position</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">vs M-1</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Clics</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Impressions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for keyword in seoKeywordsBottom10 %}
+                    {% set latestPosition = keyword.latestPosition %}
+                    {% set comparison = seoPositionComparisons[keyword.id] ?? null %}
+                    <tr style="border-bottom: 1px solid #fef3c7;">
+                        <td style="padding: 0.75rem 0.5rem; font-weight: 500;">
+                            {{ keyword.keyword }}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {% if latestPosition %}
+                                {% set pos = latestPosition.position %}
+                                {% if pos <= 10 %}
+                                    <span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 700;">
+                                        {{ pos|number_format(1) }}
+                                    </span>
+                                {% elseif pos <= 20 %}
+                                    <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 700;">
+                                        {{ pos|number_format(1) }}
+                                    </span>
+                                {% else %}
+                                    <span style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 700;">
+                                        {{ pos|number_format(1) }}
+                                    </span>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {% if comparison %}
+                                {% if comparison.status == 'improved' %}
+                                    <span style="color: #10b981; font-weight: 600;">
+                                        <i class="fas fa-arrow-up"></i> +{{ comparison.variation|abs|number_format(1) }}
+                                    </span>
+                                {% elseif comparison.status == 'degraded' %}
+                                    <span style="color: #ef4444; font-weight: 600;">
+                                        <i class="fas fa-arrow-down"></i> {{ comparison.variation|number_format(1) }}
+                                    </span>
+                                {% elseif comparison.status == 'stable' %}
+                                    <span style="color: #6b7280;">=</span>
+                                {% elseif comparison.status == 'new' %}
+                                    <span style="background: #dbeafe; color: #1d4ed8; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500;">Nouveau</span>
+                                {% else %}
+                                    <span style="color: #9ca3af;">-</span>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #9ca3af;">-</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            <span style="font-weight: 600; color: #991b1b;">{{ latestPosition.clicks }}</span>
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {{ latestPosition.impressions|number_format(0, '', ' ') }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- SEO Actions -->
+{% if googleOAuthConnected and (seoKeywordsTop10|length > 0 or seoKeywordsBottom10|length > 0) %}
+<div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+    <a href="{{ ea_url().setController('App\\Controller\\Admin\\SeoKeywordCrudController').setAction('index') }}" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-cog"></i> Gérer les mots-clés
+    </a>
+    <a href="{{ path('admin_google_sync_seo') }}" class="btn btn-sm btn-primary">
+        <i class="fas fa-sync-alt"></i> Synchroniser
+    </a>
 </div>
 {% elseif googleOAuthConnected %}
 <div class="stat-card info" style="margin-bottom: 1.5rem;">
@@ -478,7 +539,7 @@
 {% endif %}
 
 <!-- SEO Evolution Chart (Clics/Impressions) -->
-{% if googleOAuthConnected and seoKeywords|length > 0 %}
+{% if googleOAuthConnected and (seoKeywordsTop10|length > 0 or seoKeywordsBottom10|length > 0) %}
 <div class="chart-container" style="margin-bottom: 1.5rem;">
     <div class="chart-title">
         <i class="fas fa-chart-line" style="color: var(--info);"></i>

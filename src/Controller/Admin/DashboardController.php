@@ -349,8 +349,9 @@ class DashboardController extends AbstractDashboardController
             // SEO Sync
             'lastSeoSyncAt' => $this->seoDataImportService->getLastSyncDate(),
 
-            // SEO Keywords with positions
-            'seoKeywords' => $seoKeywordRepository->findAllWithLatestPosition(),
+            // SEO Keywords with positions (Top 10 and Bottom 10)
+            'seoKeywordsTop10' => $this->getTopSeoKeywords($seoKeywordRepository, 10),
+            'seoKeywordsBottom10' => $this->getBottomSeoKeywords($seoKeywordRepository, 10),
 
             // SEO Position comparisons (current month vs previous month)
             'seoPositionComparisons' => $this->calculateSeoPositionComparisons(
@@ -634,6 +635,84 @@ class DashboardController extends AbstractDashboardController
         $response->headers->set('Content-Disposition', 'attachment; filename="dashboard_' . $year . '_' . date('Ymd') . '.csv"');
 
         return $response;
+    }
+
+    /**
+     * Récupère les N meilleurs mots-clés (toutes pertinences) triés par clics, impressions, position.
+     *
+     * @return array<SeoKeyword>
+     */
+    private function getTopSeoKeywords(SeoKeywordRepository $repository, int $limit = 10): array
+    {
+        $keywords = $repository->findAllWithLatestPosition();
+
+        // Filtrer uniquement les actifs avec des données
+        $keywords = array_filter($keywords, function($keyword) {
+            return $keyword->isActive() && $keyword->getLatestPosition() !== null;
+        });
+
+        // Trier par clics DESC, impressions DESC, position ASC
+        usort($keywords, function($a, $b) {
+            $posA = $a->getLatestPosition();
+            $posB = $b->getLatestPosition();
+
+            // Clics DESC
+            $clicksCompare = $posB->getClicks() <=> $posA->getClicks();
+            if ($clicksCompare !== 0) {
+                return $clicksCompare;
+            }
+
+            // Impressions DESC
+            $impressionsCompare = $posB->getImpressions() <=> $posA->getImpressions();
+            if ($impressionsCompare !== 0) {
+                return $impressionsCompare;
+            }
+
+            // Position ASC (meilleure position = plus petit nombre)
+            return $posA->getPosition() <=> $posB->getPosition();
+        });
+
+        return array_slice($keywords, 0, $limit);
+    }
+
+    /**
+     * Récupère les N pires mots-clés (pertinence haute uniquement) triés par clics, impressions, position.
+     *
+     * @return array<SeoKeyword>
+     */
+    private function getBottomSeoKeywords(SeoKeywordRepository $repository, int $limit = 10): array
+    {
+        $keywords = $repository->findAllWithLatestPosition();
+
+        // Filtrer uniquement les actifs avec pertinence haute et des données
+        $keywords = array_filter($keywords, function($keyword) {
+            return $keyword->isActive()
+                && $keyword->getRelevanceLevel() === SeoKeyword::RELEVANCE_HIGH
+                && $keyword->getLatestPosition() !== null;
+        });
+
+        // Trier par clics ASC, impressions ASC, position DESC (les pires en premier)
+        usort($keywords, function($a, $b) {
+            $posA = $a->getLatestPosition();
+            $posB = $b->getLatestPosition();
+
+            // Clics ASC (moins de clics = pire)
+            $clicksCompare = $posA->getClicks() <=> $posB->getClicks();
+            if ($clicksCompare !== 0) {
+                return $clicksCompare;
+            }
+
+            // Impressions ASC (moins d'impressions = pire)
+            $impressionsCompare = $posA->getImpressions() <=> $posB->getImpressions();
+            if ($impressionsCompare !== 0) {
+                return $impressionsCompare;
+            }
+
+            // Position DESC (pire position = plus grand nombre)
+            return $posB->getPosition() <=> $posA->getPosition();
+        });
+
+        return array_slice($keywords, 0, $limit);
     }
 
     /**

@@ -8,6 +8,7 @@ use App\Repository\ProjectRepository;
 use App\Repository\TestimonialRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Annotation\Route;
 
 class HomeController extends AbstractController
@@ -17,7 +18,8 @@ class HomeController extends AbstractController
         ProjectRepository $projectRepository,
         TestimonialRepository $testimonialRepository,
         CompanyRepository $companyRepository,
-        GoogleReviewRepository $googleReviewRepository
+        GoogleReviewRepository $googleReviewRepository,
+        #[Autowire('%env(GOOGLE_PLACE_ID)%')] string $googlePlaceId = ''
     ): Response {
         $featuredProjects = $projectRepository->findFeatured(3);
         $testimonials = $testimonialRepository->findFeatured(3);
@@ -31,6 +33,7 @@ class HomeController extends AbstractController
             'company' => $company,
             'googleReviews' => $googleReviews,
             'googleReviewStats' => $googleReviewStats,
+            'googlePlaceId' => $googlePlaceId,
         ]);
     }
 }

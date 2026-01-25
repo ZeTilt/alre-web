@@ -65,8 +65,8 @@ class GooglePlacesService
             return null;
         }
 
-        $url = self::API_URL . '/' . $this->googlePlaceId;
-        $fieldMask = 'reviews.name,reviews.authorAttribution.displayName,reviews.rating,reviews.text.text,reviews.publishTime';
+        $url = self::API_URL . '/' . $this->googlePlaceId . '?languageCode=fr';
+        $fieldMask = 'reviews.name,reviews.authorAttribution.displayName,reviews.rating,reviews.originalText.text,reviews.text.text,reviews.publishTime';
 
         $result = $this->executeWithRetry($url, $fieldMask);
 
@@ -82,11 +82,16 @@ class GooglePlacesService
 
         $reviews = [];
         foreach ($result['reviews'] as $review) {
+            // Préférer le texte original (non traduit) si disponible
+            $comment = $review['originalText']['text']
+                ?? $review['text']['text']
+                ?? null;
+
             $reviews[] = [
                 'name' => $review['name'] ?? '',
                 'authorName' => $review['authorAttribution']['displayName'] ?? 'Anonyme',
                 'rating' => (int) ($review['rating'] ?? 0),
-                'comment' => $review['text']['text'] ?? null,
+                'comment' => $comment,
                 'publishTime' => $review['publishTime'] ?? '',
             ];
         }

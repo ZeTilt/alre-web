@@ -658,8 +658,8 @@ class DashboardController extends AbstractDashboardController
         fwrite($output, "\xEF\xBB\xBF");
 
         // === SECTION 1: Totaux journaliers (ce qui alimente le graphique) ===
-        fputcsv($output, ['=== TOTAUX JOURNALIERS (données du graphique) ==='], ';');
-        fputcsv($output, ['Date', 'Clics total', 'Impressions total'], ';');
+        fputcsv($output, ['TOTAUX JOURNALIERS', '', ''], ';');
+        fputcsv($output, ['Date', 'Clics', 'Impressions'], ';');
 
         // Générer toutes les dates des 30 derniers jours
         $currentDate = $since;
@@ -676,17 +676,17 @@ class DashboardController extends AbstractDashboardController
             $currentDate = $currentDate->modify('+1 day');
         }
 
-        fputcsv($output, [], ';'); // Ligne vide de séparation
+        fputcsv($output, ['', '', ''], ';'); // Ligne vide de séparation
 
         // === SECTION 2: Détail par mot-clé ===
-        fputcsv($output, ['=== DETAIL PAR MOT-CLE ==='], ';');
+        fputcsv($output, ['DETAIL PAR MOT-CLE', '', '', '', '', '', '', '', ''], ';');
         fputcsv($output, [
             'Date',
             'Mot-clé',
             'Position',
             'Clics',
             'Impressions',
-            'CTR (%)',
+            'CTR',
             'URL cible',
             'Source',
             'Pertinence',
@@ -698,10 +698,10 @@ class DashboardController extends AbstractDashboardController
             fputcsv($output, [
                 $position->getDate()?->format('Y-m-d') ?? '',
                 $keyword?->getKeyword() ?? '',
-                number_format($position->getPosition(), 1, ',', ''),
+                round($position->getPosition(), 1),
                 $position->getClicks(),
                 $position->getImpressions(),
-                number_format($position->getCtr(), 2, ',', ''),
+                round($position->getCtr(), 2),
                 $keyword?->getTargetUrl() ?? '',
                 $keyword?->getSource() ?? '',
                 $keyword?->getRelevanceLevel() ?? '',

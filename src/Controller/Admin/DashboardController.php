@@ -639,6 +639,60 @@ class DashboardController extends AbstractDashboardController
         return $response;
     }
 
+    #[Route('/saeiblauhjc/seo/export-csv', name: 'admin_seo_export_csv')]
+    public function exportSeoCsv(
+        SeoKeywordRepository $seoKeywordRepository,
+        SeoPositionRepository $seoPositionRepository
+    ): Response {
+        $since = new \DateTimeImmutable('-30 days');
+        $positions = $seoPositionRepository->findAllSince($since);
+
+        // Générer le contenu CSV (format similaire à GSC)
+        $output = fopen('php://temp', 'r+');
+
+        // BOM UTF-8 pour Excel
+        fwrite($output, "\xEF\xBB\xBF");
+
+        // Header
+        fputcsv($output, [
+            'Date',
+            'Mot-clé',
+            'Position',
+            'Clics',
+            'Impressions',
+            'CTR (%)',
+            'URL cible',
+            'Source',
+            'Pertinence',
+        ], ';');
+
+        foreach ($positions as $position) {
+            $keyword = $position->getKeyword();
+
+            fputcsv($output, [
+                $position->getDate()?->format('Y-m-d') ?? '',
+                $keyword?->getKeyword() ?? '',
+                number_format($position->getPosition(), 1, ',', ''),
+                $position->getClicks(),
+                $position->getImpressions(),
+                number_format($position->getCtr(), 2, ',', ''),
+                $keyword?->getTargetUrl() ?? '',
+                $keyword?->getSource() ?? '',
+                $keyword?->getRelevanceLevel() ?? '',
+            ], ';');
+        }
+
+        rewind($output);
+        $content = stream_get_contents($output);
+        fclose($output);
+
+        $response = new Response($content);
+        $response->headers->set('Content-Type', 'text/csv; charset=UTF-8');
+        $response->headers->set('Content-Disposition', 'attachment; filename="seo_export_' . date('Y-m-d') . '.csv"');
+
+        return $response;
+    }
+
     /**
      * Récupère les N meilleurs mots-clés (toutes pertinences) triés par clics, impressions, position.
      *

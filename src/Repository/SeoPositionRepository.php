@@ -239,4 +239,38 @@ class SeoPositionRepository extends ServiceEntityRepository
 
         return (int) $result;
     }
+
+    /**
+     * Retourne toutes les positions depuis une date donnée.
+     *
+     * @return SeoPosition[]
+     */
+    public function findAllSince(\DateTimeImmutable $since): array
+    {
+        return $this->createQueryBuilder('p')
+            ->join('p.keyword', 'k')
+            ->where('p.date >= :since')
+            ->setParameter('since', $since)
+            ->orderBy('p.date', 'DESC')
+            ->addOrderBy('k.keyword', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Retourne les positions d'un mot-clé depuis une date donnée.
+     *
+     * @return SeoPosition[]
+     */
+    public function findByKeywordSince(SeoKeyword $keyword, \DateTimeImmutable $since): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.keyword = :keyword')
+            ->andWhere('p.date >= :since')
+            ->setParameter('keyword', $keyword)
+            ->setParameter('since', $since)
+            ->orderBy('p.date', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

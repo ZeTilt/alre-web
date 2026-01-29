@@ -101,3 +101,7 @@ services:
     App\Command\ImportCitiesCommand:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    App\Command\SeoExportCommand:
+        arguments:
+            $projectDir: '%kernel.project_dir%'

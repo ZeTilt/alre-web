@@ -75,35 +75,51 @@ class SeoFullResetCommand extends Command
             $io->text('  → [dry-run] Suppression des positions et mots-clés');
         }
 
-        // Step 2: Fetch all GSC data with date dimension
-        $io->section('Étape 2/3 : Récupération des données GSC');
-        $io->text('Requête API en cours (peut prendre quelques secondes)...');
+        // Step 2a: Fetch all keywords WITHOUT date dimension (to get ALL queries)
+        $io->section('Étape 2/4 : Récupération des mots-clés GSC');
+        $io->text('Requête API (tous les mots-clés)...');
 
-        $dailyData = $this->gscService->fetchDailyKeywordsData($startDate, $endDate);
+        $allKeywordsData = $this->gscService->fetchAllKeywordsData($startDate, $endDate);
 
-        if (empty($dailyData)) {
+        if (empty($allKeywordsData)) {
             $io->error('Aucune donnée retournée par GSC');
             return Command::FAILURE;
         }
 
+        $io->text(sprintf('  → %d requêtes uniques trouvées', count($allKeywordsData)));
+
+        // Step 2b: Fetch daily data WITH date dimension (for positions)
+        $io->section('Étape 3/4 : Récupération des positions journalières');
+        $io->text('Requête API (données par jour)...');
+
+        $dailyData = $this->gscService->fetchDailyKeywordsData($startDate, $endDate);
+
+        if (empty($dailyData)) {
+            $io->warning('Aucune donnée journalière - utilisation des données agrégées');
+            $dailyData = [];
+        }
+
         $io->text(sprintf('  → %d jours de données récupérés', count($dailyData)));
 
-        // Collect all unique keywords
-        $allKeywords = [];
+        // Collect all unique keywords from BOTH sources
+        $allKeywords = $allKeywordsData; // Start with aggregated data (has all keywords)
         $totalPositions = 0;
 
         foreach ($dailyData as $dateStr => $queries) {
             foreach ($queries as $query => $data) {
-                $allKeywords[$query] = true;
+                // Add any missing keywords from daily data
+                if (!isset($allKeywords[$query])) {
+                    $allKeywords[$query] = $data;
+                }
                 $totalPositions++;
             }
         }
 
-        $io->text(sprintf('  → %d requêtes uniques trouvées', count($allKeywords)));
-        $io->text(sprintf('  → %d positions à créer', $totalPositions));
+        $io->text(sprintf('  → %d requêtes uniques (combinées)', count($allKeywords)));
+        $io->text(sprintf('  → %d positions journalières', $totalPositions));
 
-        // Step 3: Create keywords and positions
-        $io->section('Étape 3/3 : Import des données');
+        // Step 4: Create keywords and positions
+        $io->section('Étape 4/4 : Import des données');
 
         if ($dryRun) {
             $io->text('[dry-run] Création des mots-clés et positions...');
@@ -120,11 +136,13 @@ class SeoFullResetCommand extends Command
         $keywordEntities = [];
         $now = new \DateTimeImmutable();
 
-        foreach (array_keys($allKeywords) as $query) {
+        foreach ($allKeywords as $query => $aggregatedData) {
             $keyword = new SeoKeyword();
             $keyword->setKeyword($query);
             $keyword->setSource(SeoKeyword::SOURCE_AUTO_GSC);
-            $keyword->setRelevanceLevel($this->guessRelevance($query));
+            // High relevance if the keyword has clicks
+            $hasClicks = isset($aggregatedData['clicks']) && $aggregatedData['clicks'] > 0;
+            $keyword->setRelevanceLevel($hasClicks ? SeoKeyword::RELEVANCE_HIGH : $this->guessRelevance($query));
             $keyword->setLastSeenInGsc($now);
             $keyword->setLastSyncAt($now);
 

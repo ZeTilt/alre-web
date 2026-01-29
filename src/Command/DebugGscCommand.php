@@ -5,7 +5,9 @@ namespace App\Command;
 use App\Service\GoogleSearchConsoleService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -19,6 +21,14 @@ class DebugGscCommand extends Command
         private GoogleSearchConsoleService $gscService,
     ) {
         parent::__construct();
+    }
+
+    protected function configure(): void
+    {
+        $this
+            ->addArgument('date', InputArgument::OPTIONAL, 'Date spécifique (Y-m-d)', null)
+            ->addOption('search', 's', InputOption::VALUE_REQUIRED, 'Chercher un mot-clé spécifique')
+        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -35,32 +45,73 @@ class DebugGscCommand extends Command
 
         $io->success('GSC Service is available');
 
-        // Fetch all keywords data
+        // Parse date argument
+        $dateArg = $input->getArgument('date');
+        $searchTerm = $input->getOption('search');
+
+        if ($dateArg) {
+            $startDate = new \DateTimeImmutable($dateArg);
+            $endDate = $startDate;
+            $io->text(sprintf('Date : %s', $startDate->format('Y-m-d')));
+        } else {
+            $startDate = new \DateTimeImmutable('-7 days');
+            $endDate = new \DateTimeImmutable('-1 day');
+            $io->text(sprintf('Période : %s → %s', $startDate->format('Y-m-d'), $endDate->format('Y-m-d')));
+        }
+
+        // Fetch data
         $io->section('Fetching data from GSC API...');
 
-        $data = $this->gscService->fetchAllKeywordsData();
+        $data = $this->gscService->fetchAllKeywordsData($startDate, $endDate);
 
         if (empty($data)) {
             $io->warning('No data returned from GSC API');
-            $io->note('This could mean:');
-            $io->listing([
-                'GOOGLE_SITE_URL format is incorrect',
-                'No search data exists for the last 7 days',
-                'OAuth token might be invalid',
-            ]);
             return Command::FAILURE;
         }
 
-        $io->success(sprintf('Found %d queries from GSC', count($data)));
+        // Calculate totals
+        $totalClicks = 0;
+        $totalImpressions = 0;
+        foreach ($data as $metrics) {
+            $totalClicks += $metrics['clicks'];
+            $totalImpressions += $metrics['impressions'];
+        }
 
-        // Show top 20 queries
-        $io->section('Top 20 queries:');
+        $io->success(sprintf(
+            '%d requêtes | Total: %d clics, %d impressions',
+            count($data),
+            $totalClicks,
+            $totalImpressions
+        ));
+
+        // Filter by search term if provided
+        if ($searchTerm) {
+            $filtered = [];
+            foreach ($data as $query => $metrics) {
+                if (stripos($query, $searchTerm) !== false) {
+                    $filtered[$query] = $metrics;
+                }
+            }
+            $data = $filtered;
+            $io->text(sprintf('Filtré par "%s": %d résultats', $searchTerm, count($data)));
+        }
+
+        // Show queries with clicks first, then by impressions
+        uasort($data, function($a, $b) {
+            if ($a['clicks'] !== $b['clicks']) {
+                return $b['clicks'] - $a['clicks'];
+            }
+            return $b['impressions'] - $a['impressions'];
+        });
+
+        // Show top 30 queries
+        $io->section('Requêtes (triées par clics puis impressions):');
         $rows = [];
         $count = 0;
         foreach ($data as $query => $metrics) {
-            if ($count >= 20) break;
+            if ($count >= 30) break;
             $rows[] = [
-                $query,
+                substr($query, 0, 50),
                 $metrics['position'],
                 $metrics['clicks'],
                 $metrics['impressions'],
@@ -68,7 +119,47 @@ class DebugGscCommand extends Command
             $count++;
         }
 
-        $io->table(['Query', 'Position', 'Clicks', 'Impressions'], $rows);
+        $io->table(['Query', 'Pos', 'Clics', 'Impr'], $rows);
+
+        // Also test with date dimension
+        $io->section('Test avec dimension DATE...');
+        $dailyData = $this->gscService->fetchDailyKeywordsData($startDate, $endDate);
+
+        if (empty($dailyData)) {
+            $io->warning('Aucune donnée avec dimension date');
+        } else {
+            $dailyTotalClicks = 0;
+            $dailyTotalImpressions = 0;
+            $dailyTotalQueries = 0;
+
+            foreach ($dailyData as $dateStr => $queries) {
+                foreach ($queries as $metrics) {
+                    $dailyTotalClicks += $metrics['clicks'];
+                    $dailyTotalImpressions += $metrics['impressions'];
+                    $dailyTotalQueries++;
+                }
+            }
+
+            $io->text(sprintf(
+                'Avec dimension date: %d jours, %d positions, %d clics, %d impressions',
+                count($dailyData),
+                $dailyTotalQueries,
+                $dailyTotalClicks,
+                $dailyTotalImpressions
+            ));
+
+            // Compare
+            $io->newLine();
+            $io->text('Comparaison:');
+            $io->table(
+                ['Mode', 'Clics', 'Impressions'],
+                [
+                    ['Sans dimension date', $totalClicks, $totalImpressions],
+                    ['Avec dimension date', $dailyTotalClicks, $dailyTotalImpressions],
+                    ['Différence', $totalClicks - $dailyTotalClicks, $totalImpressions - $dailyTotalImpressions],
+                ]
+            );
+        }
 
         return Command::SUCCESS;
     }

@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\BlockedIp;
 use App\Entity\City;
 use App\Entity\Client;
 use App\Entity\Company;
@@ -14,6 +15,7 @@ use App\Entity\GoogleReview;
 use App\Entity\Prospect;
 use App\Entity\ProspectFollowUp;
 use App\Entity\ProspectInteraction;
+use App\Entity\SecurityLog;
 use App\Entity\SeoKeyword;
 use App\Entity\User;
 use App\Entity\Project;
@@ -1011,6 +1013,10 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Prospects', 'fas fa-building', Prospect::class);
         yield MenuItem::linkToCrud('Interactions', 'fas fa-comments', ProspectInteraction::class);
         yield MenuItem::linkToCrud('Relances', 'fas fa-bell', ProspectFollowUp::class);
+
+        yield MenuItem::section('Sécurité');
+        yield MenuItem::linkToCrud('Logs de sécurité', 'fas fa-shield-alt', SecurityLog::class);
+        yield MenuItem::linkToCrud('IPs bloquées', 'fas fa-ban', BlockedIp::class);
 
         yield MenuItem::section('Administration');
         yield MenuItem::linkToCrud('Mon Entreprise', 'fas fa-building', Company::class);

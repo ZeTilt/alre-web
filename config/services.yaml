@@ -62,6 +62,10 @@ services:
         arguments:
             $environment: '%kernel.environment%'
 
+    App\EventSubscriber\SecurityLogSubscriber:
+        arguments:
+            $environment: '%kernel.environment%'
+
     App\Service\ImageResizerService:
         arguments:
             $projectDir: '%kernel.project_dir%'

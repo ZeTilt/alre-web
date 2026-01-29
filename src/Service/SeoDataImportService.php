@@ -282,11 +282,12 @@ class SeoDataImportService
             ];
         }
 
-        // Filtrage progressif selon le volume
+        // Filtrage progressif selon le volume (seuils bas pour petits sites)
         $minImpressions = match (true) {
-            $totalKeywords < 100 => 0,
-            $totalKeywords < 1000 => 10,
-            default => 100,
+            $totalKeywords < 200 => 0,    // Petit site : tout importer
+            $totalKeywords < 500 => 3,    // Site moyen : seuil minimal
+            $totalKeywords < 2000 => 10,  // Grand site : seuil modéré
+            default => 50,                // Très grand site : seuil élevé
         };
 
         // Récupérer les mots-clés existants en base (versions normalisées pour éviter doublons accent)
@@ -297,8 +298,10 @@ class SeoDataImportService
         $now = new \DateTimeImmutable();
 
         foreach ($gscData as $keyword => $data) {
-            // Filtrage par impressions
-            if ($data['impressions'] < $minImpressions) {
+            // Toujours importer si le mot-clé a des clics (important pour le tracking)
+            // Sinon, filtrer par impressions
+            $hasClicks = ($data['clicks'] ?? 0) > 0;
+            if (!$hasClicks && $data['impressions'] < $minImpressions) {
                 continue;
             }
 
@@ -317,7 +320,8 @@ class SeoDataImportService
             $seoKeyword = new SeoKeyword();
             $seoKeyword->setKeyword($keyword);
             $seoKeyword->setSource(SeoKeyword::SOURCE_AUTO_GSC);
-            $seoKeyword->setRelevanceLevel(SeoKeyword::RELEVANCE_MEDIUM);
+            // Pertinence haute si le mot-clé a des clics
+            $seoKeyword->setRelevanceLevel($hasClicks ? SeoKeyword::RELEVANCE_HIGH : SeoKeyword::RELEVANCE_MEDIUM);
             $seoKeyword->setLastSeenInGsc($now);
 
             $this->entityManager->persist($seoKeyword);
@@ -329,6 +333,7 @@ class SeoDataImportService
 
             $this->logger->info('Auto-imported new keyword from GSC', [
                 'keyword' => $keyword,
+                'clicks' => $data['clicks'] ?? 0,
                 'impressions' => $data['impressions'],
             ]);
         }

@@ -282,13 +282,8 @@ class SeoDataImportService
             ];
         }
 
-        // Filtrage progressif selon le volume (seuils bas pour petits sites)
-        $minImpressions = match (true) {
-            $totalKeywords < 200 => 0,    // Petit site : tout importer
-            $totalKeywords < 500 => 3,    // Site moyen : seuil minimal
-            $totalKeywords < 2000 => 10,  // Grand site : seuil modéré
-            default => 50,                // Très grand site : seuil élevé
-        };
+        // Pas de filtrage : importer tous les mots-clés pour données exactes GSC
+        $minImpressions = 0;
 
         // Récupérer les mots-clés existants en base (versions normalisées pour éviter doublons accent)
         $existingKeywords = $this->keywordRepository->findAllKeywordStrings();

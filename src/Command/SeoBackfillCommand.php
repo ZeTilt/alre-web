@@ -85,25 +85,26 @@ class SeoBackfillCommand extends Command
         $io->text(sprintf('%d mot(s)-clé(s) actif(s) à traiter', count($keywords)));
         $io->newLine();
 
-        // Iterate over each day
-        $currentDate = $startDate;
+        // Fetch all GSC data for the period in one call (with date dimension for daily clicks)
+        $io->text('Récupération des données GSC...');
+        $dailyGscData = $this->gscService->fetchDailyKeywordsData($startDate, $endDate);
+
+        if (empty($dailyGscData)) {
+            $io->warning('Aucune donnée GSC pour cette période');
+            return Command::SUCCESS;
+        }
+
+        $io->text(sprintf('%d jour(s) de données récupérés', count($dailyGscData)));
+        $io->newLine();
+
         $totalCreated = 0;
         $totalSkipped = 0;
         $totalOverwritten = 0;
 
-        while ($currentDate <= $endDate) {
-            $io->section(sprintf('Date : %s', $currentDate->format('Y-m-d')));
-
-            // Fetch GSC data for this specific day
-            $gscData = $this->gscService->fetchAllKeywordsData($currentDate, $currentDate);
-
-            if (empty($gscData)) {
-                $io->warning('Aucune donnée GSC pour cette date');
-                $currentDate = $currentDate->modify('+1 day');
-                continue;
-            }
-
-            $io->text(sprintf('%d requêtes GSC récupérées', count($gscData)));
+        // Iterate over each day in the GSC response
+        foreach ($dailyGscData as $dateStr => $gscData) {
+            $currentDate = new \DateTimeImmutable($dateStr);
+            $io->section(sprintf('Date : %s (%d requêtes)', $currentDate->format('Y-m-d'), count($gscData)));
 
             $created = 0;
             $skipped = 0;
@@ -163,8 +164,6 @@ class SeoBackfillCommand extends Command
             $totalCreated += $created;
             $totalSkipped += $skipped;
             $totalOverwritten += $overwritten;
-
-            $currentDate = $currentDate->modify('+1 day');
         }
 
         $io->newLine();

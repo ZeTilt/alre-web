@@ -30,7 +30,7 @@ when@prod:
             cookie_secure: true
             cookie_samesite: strict
             cookie_httponly: true
-            gc_maxlifetime: 3600  # 1 hour session timeout
+            gc_maxlifetime: 86400  # 24 heures session timeout
 
 when@test:
     framework:

@@ -28,6 +28,11 @@
 
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" name="_remember_me" id="remember_me" class="form-check-input" checked>
+                            <label for="remember_me" class="form-check-label">Rester connecté (30 jours)</label>
+                        </div>
+
                         <div class="d-grid">
                             <button class="btn btn-primary" type="submit">Se connecter</button>
                         </div>

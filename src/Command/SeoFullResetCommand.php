@@ -75,51 +75,58 @@ class SeoFullResetCommand extends Command
             $io->text('  → [dry-run] Suppression des positions et mots-clés');
         }
 
-        // Step 2a: Fetch all keywords WITHOUT date dimension (to get ALL queries)
-        $io->section('Étape 2/4 : Récupération des mots-clés GSC');
-        $io->text('Requête API (tous les mots-clés)...');
+        // Step 2: Fetch data for EACH day individually (without date dimension = complete data)
+        $io->section('Étape 2/3 : Récupération des données GSC jour par jour');
+        $io->text('Cette méthode récupère TOUTES les requêtes pour chaque jour...');
+        $io->newLine();
 
-        $allKeywordsData = $this->gscService->fetchAllKeywordsData($startDate, $endDate);
+        $dailyData = [];
+        $allKeywords = [];
+        $totalPositions = 0;
+        $currentDate = clone $startDate;
 
-        if (empty($allKeywordsData)) {
+        $progressBar = $io->createProgressBar($days);
+        $progressBar->start();
+
+        while ($currentDate <= $endDate) {
+            $dateStr = $currentDate->format('Y-m-d');
+
+            // Fetch ALL keywords for this specific day (no date dimension = complete data)
+            $dayData = $this->gscService->fetchAllKeywordsData($currentDate, $currentDate);
+
+            if (!empty($dayData)) {
+                $dailyData[$dateStr] = $dayData;
+
+                foreach ($dayData as $query => $data) {
+                    // Track all unique keywords with their best data
+                    if (!isset($allKeywords[$query]) || $data['clicks'] > ($allKeywords[$query]['clicks'] ?? 0)) {
+                        $allKeywords[$query] = $data;
+                    }
+                    $totalPositions++;
+                }
+            }
+
+            $progressBar->advance();
+            $currentDate = $currentDate->modify('+1 day');
+
+            // Small delay to avoid rate limiting
+            usleep(100000); // 100ms
+        }
+
+        $progressBar->finish();
+        $io->newLine(2);
+
+        if (empty($dailyData)) {
             $io->error('Aucune donnée retournée par GSC');
             return Command::FAILURE;
         }
 
-        $io->text(sprintf('  → %d requêtes uniques trouvées', count($allKeywordsData)));
+        $io->text(sprintf('  → %d jours avec données', count($dailyData)));
+        $io->text(sprintf('  → %d requêtes uniques trouvées', count($allKeywords)));
+        $io->text(sprintf('  → %d positions à créer', $totalPositions));
 
-        // Step 2b: Fetch daily data WITH date dimension (for positions)
-        $io->section('Étape 3/4 : Récupération des positions journalières');
-        $io->text('Requête API (données par jour)...');
-
-        $dailyData = $this->gscService->fetchDailyKeywordsData($startDate, $endDate);
-
-        if (empty($dailyData)) {
-            $io->warning('Aucune donnée journalière - utilisation des données agrégées');
-            $dailyData = [];
-        }
-
-        $io->text(sprintf('  → %d jours de données récupérés', count($dailyData)));
-
-        // Collect all unique keywords from BOTH sources
-        $allKeywords = $allKeywordsData; // Start with aggregated data (has all keywords)
-        $totalPositions = 0;
-
-        foreach ($dailyData as $dateStr => $queries) {
-            foreach ($queries as $query => $data) {
-                // Add any missing keywords from daily data
-                if (!isset($allKeywords[$query])) {
-                    $allKeywords[$query] = $data;
-                }
-                $totalPositions++;
-            }
-        }
-
-        $io->text(sprintf('  → %d requêtes uniques (combinées)', count($allKeywords)));
-        $io->text(sprintf('  → %d positions journalières', $totalPositions));
-
-        // Step 4: Create keywords and positions
-        $io->section('Étape 4/4 : Import des données');
+        // Step 3: Create keywords and positions
+        $io->section('Étape 3/3 : Import des données');
 
         if ($dryRun) {
             $io->text('[dry-run] Création des mots-clés et positions...');

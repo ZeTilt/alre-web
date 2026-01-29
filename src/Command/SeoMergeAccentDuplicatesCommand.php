@@ -42,17 +42,17 @@ class SeoMergeAccentDuplicatesCommand extends Command
 
         $conn = $this->entityManager->getConnection();
 
-        // Récupérer tous les mots-clés
-        $keywords = $this->keywordRepository->findAll();
+        // Récupérer tous les mots-clés via SQL brut pour éviter les problèmes de buffer
+        $allKeywords = $conn->fetchAllAssociative('SELECT id, keyword, created_at FROM seo_keyword');
 
         // Grouper par version normalisée
         $groups = [];
-        foreach ($keywords as $keyword) {
-            $normalized = $this->normalizeString($keyword->getKeyword());
+        foreach ($allKeywords as $row) {
+            $normalized = $this->normalizeString($row['keyword']);
             if (!isset($groups[$normalized])) {
                 $groups[$normalized] = [];
             }
-            $groups[$normalized][] = $keyword;
+            $groups[$normalized][] = $row;
         }
 
         // Trouver les groupes avec plus d'un mot-clé (doublons)
@@ -66,74 +66,82 @@ class SeoMergeAccentDuplicatesCommand extends Command
         $io->text(sprintf('%d groupe(s) de doublons trouvé(s)', count($duplicateGroups)));
         $io->newLine();
 
-        $totalMerged = 0;
-        $totalPositionsMoved = 0;
+        // Préparer toutes les opérations à effectuer
+        $operations = [];
 
         foreach ($duplicateGroups as $normalized => $keywordGroup) {
             // Choisir le mot-clé à garder : préférer celui avec accents
             usort($keywordGroup, function ($a, $b) {
-                $aHasAccents = $this->hasAccents($a->getKeyword());
-                $bHasAccents = $this->hasAccents($b->getKeyword());
+                $aHasAccents = $this->hasAccents($a['keyword']);
+                $bHasAccents = $this->hasAccents($b['keyword']);
 
                 // Préférer celui avec accents
                 if ($aHasAccents && !$bHasAccents) return -1;
                 if (!$aHasAccents && $bHasAccents) return 1;
 
                 // Si égalité, préférer le plus ancien (créé en premier)
-                return $a->getCreatedAt() <=> $b->getCreatedAt();
+                return $a['created_at'] <=> $b['created_at'];
             });
 
-            $keepKeyword = array_shift($keywordGroup);
-            $keepId = $keepKeyword->getId();
+            $keepRow = array_shift($keywordGroup);
+            $keepId = (int) $keepRow['id'];
 
             $io->section(sprintf('Groupe "%s"', $normalized));
-            $io->text(sprintf('  Garde : #%d "%s"', $keepId, $keepKeyword->getKeyword()));
+            $io->text(sprintf('  Garde : #%d "%s"', $keepId, $keepRow['keyword']));
 
-            foreach ($keywordGroup as $duplicateKeyword) {
-                $dupId = $duplicateKeyword->getId();
-                $io->text(sprintf('  Fusionne : #%d "%s"', $dupId, $duplicateKeyword->getKeyword()));
+            foreach ($keywordGroup as $duplicateRow) {
+                $dupId = (int) $duplicateRow['id'];
+                $io->text(sprintf('  Fusionne : #%d "%s"', $dupId, $duplicateRow['keyword']));
 
-                if (!$dryRun) {
-                    // Compter les positions à déplacer
-                    $positionsCount = $conn->fetchOne(
-                        'SELECT COUNT(*) FROM seo_position WHERE keyword_id = ?',
-                        [$dupId]
-                    );
+                $operations[] = [
+                    'keepId' => $keepId,
+                    'dupId' => $dupId,
+                ];
+            }
+        }
 
-                    // Déplacer les positions vers le mot-clé à garder
-                    // (seulement celles qui n'existent pas déjà pour cette date)
-                    $conn->executeStatement('
-                        UPDATE seo_position sp1
-                        SET keyword_id = ?
-                        WHERE keyword_id = ?
-                        AND NOT EXISTS (
-                            SELECT 1 FROM (
-                                SELECT date FROM seo_position WHERE keyword_id = ?
-                            ) sp2
-                            WHERE sp2.date = sp1.date
-                        )
-                    ', [$keepId, $dupId, $keepId]);
+        $totalMerged = count($operations);
+        $totalPositionsMoved = 0;
 
-                    $movedCount = $conn->executeStatement(
-                        'SELECT ROW_COUNT()'
-                    );
+        // Exécuter les opérations si pas en dry-run
+        if (!$dryRun) {
+            foreach ($operations as $op) {
+                $keepId = $op['keepId'];
+                $dupId = $op['dupId'];
 
-                    // Supprimer les positions restantes (doublons de date)
-                    $conn->executeStatement(
-                        'DELETE FROM seo_position WHERE keyword_id = ?',
-                        [$dupId]
-                    );
+                // Compter les positions à déplacer
+                $positionsCount = (int) $conn->fetchOne(
+                    'SELECT COUNT(*) FROM seo_position WHERE keyword_id = ?',
+                    [$dupId]
+                );
 
-                    // Supprimer le mot-clé doublon
-                    $conn->executeStatement(
-                        'DELETE FROM seo_keyword WHERE id = ?',
-                        [$dupId]
-                    );
+                // Déplacer les positions vers le mot-clé à garder
+                // (seulement celles qui n'existent pas déjà pour cette date)
+                $conn->executeStatement('
+                    UPDATE seo_position sp1
+                    SET keyword_id = ?
+                    WHERE keyword_id = ?
+                    AND NOT EXISTS (
+                        SELECT 1 FROM (
+                            SELECT date FROM seo_position WHERE keyword_id = ?
+                        ) sp2
+                        WHERE sp2.date = sp1.date
+                    )
+                ', [$keepId, $dupId, $keepId]);
 
-                    $totalPositionsMoved += (int) $positionsCount;
-                }
+                // Supprimer les positions restantes (doublons de date)
+                $conn->executeStatement(
+                    'DELETE FROM seo_position WHERE keyword_id = ?',
+                    [$dupId]
+                );
 
-                $totalMerged++;
+                // Supprimer le mot-clé doublon
+                $conn->executeStatement(
+                    'DELETE FROM seo_keyword WHERE id = ?',
+                    [$dupId]
+                );
+
+                $totalPositionsMoved += $positionsCount;
             }
         }
 

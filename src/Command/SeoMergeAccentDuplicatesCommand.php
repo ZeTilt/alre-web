@@ -109,14 +109,25 @@ class SeoMergeAccentDuplicatesCommand extends Command
                 $keepId = $op['keepId'];
                 $dupId = $op['dupId'];
 
-                // Compter les positions à déplacer
+                // Compter les positions à fusionner
                 $positionsCount = (int) $conn->fetchOne(
                     'SELECT COUNT(*) FROM seo_position WHERE keyword_id = ?',
                     [$dupId]
                 );
 
-                // Déplacer les positions vers le mot-clé à garder
-                // (seulement celles qui n'existent pas déjà pour cette date)
+                // Pour chaque date où le doublon a des données, fusionner (sommer) avec le keyword gardé
+                // 1. Mettre à jour les positions existantes en ajoutant les valeurs du doublon
+                $conn->executeStatement('
+                    UPDATE seo_position sp_keep
+                    JOIN seo_position sp_dup ON sp_keep.date = sp_dup.date
+                    SET
+                        sp_keep.clicks = sp_keep.clicks + sp_dup.clicks,
+                        sp_keep.impressions = sp_keep.impressions + sp_dup.impressions
+                    WHERE sp_keep.keyword_id = ?
+                    AND sp_dup.keyword_id = ?
+                ', [$keepId, $dupId]);
+
+                // 2. Déplacer les positions sans équivalent vers le mot-clé gardé
                 $conn->executeStatement('
                     UPDATE seo_position sp1
                     SET keyword_id = ?
@@ -129,13 +140,13 @@ class SeoMergeAccentDuplicatesCommand extends Command
                     )
                 ', [$keepId, $dupId, $keepId]);
 
-                // Supprimer les positions restantes (doublons de date)
+                // 3. Supprimer les positions restantes du doublon (déjà fusionnées)
                 $conn->executeStatement(
                     'DELETE FROM seo_position WHERE keyword_id = ?',
                     [$dupId]
                 );
 
-                // Supprimer le mot-clé doublon
+                // 4. Supprimer le mot-clé doublon
                 $conn->executeStatement(
                     'DELETE FROM seo_keyword WHERE id = ?',
                     [$dupId]

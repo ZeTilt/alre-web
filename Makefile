@@ -1,4 +1,4 @@
-.PHONY: help dev dev-stop install deploy cache migrate assets db-reset test tests coverage coverage-html optimize-images admin-user dirs
+.PHONY: help dev dev-stop install deploy cache migrate assets db-reset test tests coverage coverage-html optimize-images admin-user dirs reinit-seo reinit-seo-full
 
 # Variables
 CONSOLE = php bin/console
@@ -100,6 +100,20 @@ setup: install migrate ## Setup complet du projet (install + migrate)
 
 admin-user: ## Crée un utilisateur admin de manière interactive
 	$(CONSOLE) app:create-admin-user
+
+reinit-seo: ## Reset complet des données SEO depuis GSC (90 jours par défaut)
+	@echo "🔄 Reset complet des données SEO..."
+	$(CONSOLE) app:seo-full-reset --days=90
+	@echo "🔀 Fusion des variantes accent/non-accent..."
+	$(CONSOLE) app:seo-merge-accent-duplicates
+	@echo "✅ Données SEO réinitialisées!"
+
+reinit-seo-full: ## Reset complet des données SEO depuis GSC (maximum ~480 jours)
+	@echo "🔄 Reset complet des données SEO (historique max)..."
+	$(CONSOLE) app:seo-full-reset --days=480
+	@echo "🔀 Fusion des variantes accent/non-accent..."
+	$(CONSOLE) app:seo-merge-accent-duplicates
+	@echo "✅ Données SEO réinitialisées!"
 
 chocapics: ## 🥣 Des chocapics pour le dev!
 	@echo "🥣 Mmmh des chocapics..."

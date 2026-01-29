@@ -88,6 +88,7 @@ class GoogleSearchConsoleService
 
     /**
      * Récupère les données pour tous les mots-clés actifs en une seule requête.
+     * Mode legacy sans dimension date (agrégé sur la période).
      *
      * @return array<string, array{position: float, clicks: int, impressions: int}>
      */
@@ -123,6 +124,60 @@ class GoogleSearchConsoleService
             $keyword = $row['keys'][0] ?? null;
             if ($keyword) {
                 $data[strtolower($keyword)] = [
+                    'position' => round($row['position'] ?? 0, 1),
+                    'clicks' => (int) ($row['clicks'] ?? 0),
+                    'impressions' => (int) ($row['impressions'] ?? 0),
+                ];
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Récupère les données journalières pour tous les mots-clés.
+     * Utilise la dimension date pour obtenir les clics par jour.
+     *
+     * @return array<string, array<string, array{position: float, clicks: int, impressions: int}>>
+     *         Format: [date][keyword] => {position, clicks, impressions}
+     */
+    public function fetchDailyKeywordsData(?\DateTimeImmutable $startDate = null, ?\DateTimeImmutable $endDate = null): array
+    {
+        $token = $this->googleOAuthService->getValidTokenWithRefresh();
+        if (!$token) {
+            $this->logger->error('No valid OAuth token available for GSC API call');
+            return [];
+        }
+
+        $endDate = $endDate ?? new \DateTimeImmutable('-1 day');
+        $startDate = $startDate ?? new \DateTimeImmutable('-7 days');
+
+        $encodedSiteUrl = urlencode($this->googleSiteUrl);
+        $url = self::API_URL . "/{$encodedSiteUrl}/searchAnalytics/query";
+
+        $body = [
+            'startDate' => $startDate->format('Y-m-d'),
+            'endDate' => $endDate->format('Y-m-d'),
+            'dimensions' => ['date', 'query'],
+            'rowLimit' => 25000, // Plus de lignes car on a date x query
+        ];
+
+        $result = $this->executeWithRetry($url, $body, $token->getAccessToken());
+
+        if ($result === null || !isset($result['rows'])) {
+            return [];
+        }
+
+        $data = [];
+        foreach ($result['rows'] as $row) {
+            $date = $row['keys'][0] ?? null;
+            $keyword = $row['keys'][1] ?? null;
+
+            if ($date && $keyword) {
+                if (!isset($data[$date])) {
+                    $data[$date] = [];
+                }
+                $data[$date][strtolower($keyword)] = [
                     'position' => round($row['position'] ?? 0, 1),
                     'clicks' => (int) ($row['clicks'] ?? 0),
                     'impressions' => (int) ($row['impressions'] ?? 0),

@@ -23,7 +23,7 @@ class SeoDataImportService
 
     /**
      * Synchronise les données GSC pour tous les mots-clés actifs.
-     * Récupère les données jour par jour pour les 5 derniers jours disponibles.
+     * Utilise la dimension date pour récupérer les clics journaliers.
      * (GSC a un délai de 2-3 jours, donc on récupère J-3 à J-7)
      *
      * @return array{synced: int, skipped: int, errors: int, message: string}
@@ -57,21 +57,29 @@ class SeoDataImportService
         $errors = 0;
         $now = new \DateTimeImmutable();
 
-        // Récupérer les données jour par jour (J-3 à J-7 pour éviter le délai GSC)
-        for ($daysAgo = 3; $daysAgo <= 7; $daysAgo++) {
-            $date = (new \DateTimeImmutable("-{$daysAgo} days"))->setTime(0, 0, 0);
+        // Récupérer toutes les données GSC avec dimension date (J-3 à J-7)
+        $startDate = (new \DateTimeImmutable('-7 days'))->setTime(0, 0, 0);
+        $endDate = (new \DateTimeImmutable('-3 days'))->setTime(0, 0, 0);
+
+        $dailyGscData = $this->gscService->fetchDailyKeywordsData($startDate, $endDate);
+
+        if (empty($dailyGscData)) {
+            return [
+                'synced' => 0,
+                'skipped' => 0,
+                'errors' => 0,
+                'message' => 'Aucune donnée retournée par GSC',
+            ];
+        }
+
+        // Traiter chaque jour
+        foreach ($dailyGscData as $dateStr => $gscData) {
+            $date = new \DateTimeImmutable($dateStr);
 
             // Vérifier si on a déjà des données pour cette date
             $existingCount = count($this->positionRepository->findAllForDate($date));
             if ($existingCount >= count($keywords) && !$force) {
                 continue; // Déjà complet pour cette date
-            }
-
-            // Récupérer les données GSC pour ce jour spécifique
-            $gscData = $this->gscService->fetchAllKeywordsData($date, $date);
-
-            if (empty($gscData)) {
-                continue;
             }
 
             foreach ($keywords as $keyword) {
@@ -247,6 +255,8 @@ class SeoDataImportService
      * - 100-1000 keywords : >= 10 impressions
      * - > 1000 keywords : >= 100 impressions
      *
+     * Évite les doublons accent/non-accent en normalisant la comparaison.
+     *
      * @return array{imported: int, total_gsc: int, min_impressions: int, message: string}
      */
     public function importNewKeywords(): array
@@ -279,8 +289,9 @@ class SeoDataImportService
             default => 100,
         };
 
-        // Récupérer les mots-clés existants en base
+        // Récupérer les mots-clés existants en base (versions normalisées pour éviter doublons accent)
         $existingKeywords = $this->keywordRepository->findAllKeywordStrings();
+        $existingNormalized = array_map(fn($k) => $this->normalizeString($k), $existingKeywords);
 
         $imported = 0;
         $now = new \DateTimeImmutable();
@@ -291,8 +302,14 @@ class SeoDataImportService
                 continue;
             }
 
-            // Skip si déjà en base
+            // Skip si déjà en base (comparaison exacte)
             if (in_array(strtolower($keyword), $existingKeywords, true)) {
+                continue;
+            }
+
+            // Skip si une variante accent/non-accent existe déjà
+            $keywordNormalized = $this->normalizeString($keyword);
+            if (in_array($keywordNormalized, $existingNormalized, true)) {
                 continue;
             }
 
@@ -305,6 +322,10 @@ class SeoDataImportService
 
             $this->entityManager->persist($seoKeyword);
             $imported++;
+
+            // Ajouter à la liste des existants pour éviter d'importer les 2 variantes dans la même session
+            $existingKeywords[] = strtolower($keyword);
+            $existingNormalized[] = $keywordNormalized;
 
             $this->logger->info('Auto-imported new keyword from GSC', [
                 'keyword' => $keyword,

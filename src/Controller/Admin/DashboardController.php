@@ -645,15 +645,41 @@ class DashboardController extends AbstractDashboardController
         SeoPositionRepository $seoPositionRepository
     ): Response {
         $since = new \DateTimeImmutable('-30 days');
+        $now = new \DateTimeImmutable();
         $positions = $seoPositionRepository->findAllSince($since);
 
-        // Générer le contenu CSV (format similaire à GSC)
+        // Récupérer les totaux journaliers (pour le graphique)
+        $dailyTotals = $seoPositionRepository->getDailyTotals($since, $now);
+
+        // Générer le contenu CSV
         $output = fopen('php://temp', 'r+');
 
         // BOM UTF-8 pour Excel
         fwrite($output, "\xEF\xBB\xBF");
 
-        // Header
+        // === SECTION 1: Totaux journaliers (ce qui alimente le graphique) ===
+        fputcsv($output, ['=== TOTAUX JOURNALIERS (données du graphique) ==='], ';');
+        fputcsv($output, ['Date', 'Clics total', 'Impressions total'], ';');
+
+        // Générer toutes les dates des 30 derniers jours
+        $currentDate = $since;
+        while ($currentDate <= $now) {
+            $dateKey = $currentDate->format('Y-m-d');
+            $dayData = $dailyTotals[$dateKey] ?? null;
+
+            fputcsv($output, [
+                $dateKey,
+                $dayData ? $dayData['clicks'] : 0,
+                $dayData ? $dayData['impressions'] : 0,
+            ], ';');
+
+            $currentDate = $currentDate->modify('+1 day');
+        }
+
+        fputcsv($output, [], ';'); // Ligne vide de séparation
+
+        // === SECTION 2: Détail par mot-clé ===
+        fputcsv($output, ['=== DETAIL PAR MOT-CLE ==='], ';');
         fputcsv($output, [
             'Date',
             'Mot-clé',

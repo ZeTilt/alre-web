@@ -23,7 +23,8 @@ class SeoDataImportService
 
     /**
      * Synchronise les données GSC pour tous les mots-clés actifs.
-     * Utilise la dimension date pour récupérer les clics journaliers.
+     * Requête chaque jour individuellement SANS dimension date pour obtenir
+     * TOUTES les requêtes (l'API GSC filtre les requêtes faible volume avec dimension date).
      * (GSC a un délai de 2-3 jours, donc on récupère J-3 à J-7)
      *
      * @return array{synced: int, skipped: int, errors: int, message: string}
@@ -57,11 +58,22 @@ class SeoDataImportService
         $errors = 0;
         $now = new \DateTimeImmutable();
 
-        // Récupérer toutes les données GSC avec dimension date (J-3 à J-7)
-        $startDate = (new \DateTimeImmutable('-7 days'))->setTime(0, 0, 0);
+        // Requêter chaque jour individuellement (J-3 à J-7)
         $endDate = (new \DateTimeImmutable('-3 days'))->setTime(0, 0, 0);
+        $startDate = (new \DateTimeImmutable('-7 days'))->setTime(0, 0, 0);
+        $currentDate = clone $startDate;
 
-        $dailyGscData = $this->gscService->fetchDailyKeywordsData($startDate, $endDate);
+        $dailyGscData = [];
+        while ($currentDate <= $endDate) {
+            // Récupérer TOUTES les requêtes pour ce jour (sans dimension date = données complètes)
+            $dayData = $this->gscService->fetchAllKeywordsData($currentDate, $currentDate);
+            if (!empty($dayData)) {
+                $dailyGscData[$currentDate->format('Y-m-d')] = $dayData;
+            }
+            $currentDate = $currentDate->modify('+1 day');
+            // Petit délai pour éviter le rate limiting
+            usleep(50000); // 50ms
+        }
 
         if (empty($dailyGscData)) {
             return [

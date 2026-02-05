@@ -883,10 +883,10 @@ class DashboardController extends AbstractDashboardController
     private function prepareSeoChartData(SeoDailyTotalRepository $dailyTotalRepository): array
     {
         $now = new \DateTimeImmutable();
-        $startDate = $now->modify('-29 days')->setTime(0, 0, 0);
+        $maxStartDate = $now->modify('-29 days')->setTime(0, 0, 0);
 
         // Récupérer les totaux journaliers (vrais clics, pas anonymisés)
-        $dailyTotals = $dailyTotalRepository->findByDateRange($startDate, $now);
+        $dailyTotals = $dailyTotalRepository->findByDateRange($maxStartDate, $now);
 
         if (empty($dailyTotals)) {
             return [
@@ -895,15 +895,23 @@ class DashboardController extends AbstractDashboardController
                 'impressions' => [],
                 'ctr' => [],
                 'position' => [],
+                'clicks7d' => [],
+                'impressions7d' => [],
+                'ctr7d' => [],
+                'position7d' => [],
                 'hasEnoughData' => false,
                 'daysWithData' => 0,
             ];
         }
 
-        // Trouver la dernière date avec des données (pour éviter la "chute" à la fin)
+        // Trouver la première et dernière date avec des données
+        $firstDataDate = null;
         $lastDataDate = null;
         foreach ($dailyTotals as $total) {
             $date = $total->getDate();
+            if ($firstDataDate === null || $date < $firstDataDate) {
+                $firstDataDate = $date;
+            }
             if ($lastDataDate === null || $date > $lastDataDate) {
                 $lastDataDate = $date;
             }
@@ -924,15 +932,15 @@ class DashboardController extends AbstractDashboardController
         $daysWithData = count($dailyTotals);
         $hasEnoughData = $daysWithData >= 7;
 
-        // Préparer les labels et datasets (jusqu'au dernier jour avec données)
+        // Préparer les labels et datasets (du premier au dernier jour avec données)
         $labels = [];
         $clicks = [];
         $impressions = [];
         $ctr = [];
         $position = [];
 
-        $currentDate = $startDate;
-        $endDate = $lastDataDate ?? $now;
+        $currentDate = $firstDataDate;
+        $endDate = $lastDataDate;
 
         while ($currentDate <= $endDate) {
             $dateKey = $currentDate->format('Y-m-d');

@@ -953,12 +953,57 @@ class DashboardController extends AbstractDashboardController
             $currentDate = $currentDate->modify('+1 day');
         }
 
+        // Calculer les moyennes mobiles sur 7 jours
+        $clicks7d = [];
+        $impressions7d = [];
+        $ctr7d = [];
+        $position7d = [];
+
+        for ($i = 0; $i < count($clicks); $i++) {
+            if ($i < 6) {
+                // Pas assez de données pour une moyenne 7 jours
+                $clicks7d[] = null;
+                $impressions7d[] = null;
+                $ctr7d[] = null;
+                $position7d[] = null;
+            } else {
+                $sumClicks = 0;
+                $sumImpressions = 0;
+                $sumCtr = 0;
+                $sumPosition = 0;
+                $countCtr = 0;
+                $countPosition = 0;
+
+                for ($j = $i - 6; $j <= $i; $j++) {
+                    $sumClicks += $clicks[$j];
+                    $sumImpressions += $impressions[$j];
+                    if ($ctr[$j] !== null) {
+                        $sumCtr += $ctr[$j];
+                        $countCtr++;
+                    }
+                    if ($position[$j] !== null && $position[$j] > 0) {
+                        $sumPosition += $position[$j];
+                        $countPosition++;
+                    }
+                }
+
+                $clicks7d[] = $sumClicks;
+                $impressions7d[] = $sumImpressions;
+                $ctr7d[] = $countCtr > 0 ? round($sumCtr / $countCtr, 2) : null;
+                $position7d[] = $countPosition > 0 ? round($sumPosition / $countPosition, 1) : null;
+            }
+        }
+
         return [
             'labels' => $labels,
             'clicks' => $clicks,
             'impressions' => $impressions,
             'ctr' => $ctr,
             'position' => $position,
+            'clicks7d' => $clicks7d,
+            'impressions7d' => $impressions7d,
+            'ctr7d' => $ctr7d,
+            'position7d' => $position7d,
             'hasEnoughData' => $hasEnoughData,
             'daysWithData' => $daysWithData,
         ];

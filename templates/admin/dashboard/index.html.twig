@@ -563,6 +563,22 @@
     {% endif %}
 </div>
 
+<!-- SEO 7-Day Rolling Chart -->
+<div class="chart-container" style="margin-bottom: 1.5rem;">
+    <div class="chart-title">
+        <i class="fas fa-chart-area" style="color: var(--primary);"></i>
+        Tendances SEO - Moyenne glissante 7 jours
+    </div>
+    {% if seoChartData.hasEnoughData %}
+        <canvas id="chartSeo7d" class="chart-canvas"></canvas>
+    {% else %}
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; color: #6b7280;">
+            <i class="fas fa-chart-area" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;"></i>
+            <div style="font-size: 0.875rem;">Données insuffisantes</div>
+        </div>
+    {% endif %}
+</div>
+
 <!-- SEO Performance Categories -->
 <div class="grid-2" style="margin-bottom: 1.5rem;">
     <!-- Top Performers -->
@@ -875,12 +891,17 @@ const cotisationsParMois = {{ cotisationsParMois|json_encode|raw }};
 const topClients = {{ topClients|json_encode|raw }};
 const monthLabels = {{ monthLabels|json_encode|raw }};
 
-// SEO Chart Data
+// SEO Chart Data - Daily
 const seoChartLabels = {{ seoChartData.labels|json_encode|raw }};
 const seoChartClicks = {{ seoChartData.clicks|json_encode|raw }};
 const seoChartImpressions = {{ seoChartData.impressions|json_encode|raw }};
 const seoChartCtr = {{ seoChartData.ctr|json_encode|raw }};
 const seoChartPosition = {{ seoChartData.position|json_encode|raw }};
+// SEO Chart Data - 7-day rolling
+const seoChartClicks7d = {{ seoChartData.clicks7d|json_encode|raw }};
+const seoChartImpressions7d = {{ seoChartData.impressions7d|json_encode|raw }};
+const seoChartCtr7d = {{ seoChartData.ctr7d|json_encode|raw }};
+const seoChartPosition7d = {{ seoChartData.position7d|json_encode|raw }};
 const seoHasEnoughData = {{ seoChartData.hasEnoughData ? 'true' : 'false' }};
 
 // 0. Graphique SEO Évolution (4 métriques avec échelles séparées)
@@ -997,6 +1018,137 @@ if (seoHasEnoughData && document.getElementById('chartSeoEvolution')) {
                     grid: { drawOnChartArea: false }
                 },
                 yPosition: {
+                    type: 'linear',
+                    display: false,
+                    reverse: true,
+                    min: 1,
+                    max: 100,
+                    grid: { drawOnChartArea: false }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { maxTicksLimit: 10, font: { size: 10 } }
+                }
+            }
+        }
+    });
+}
+
+// 0b. Graphique SEO 7 jours glissants (cumuls et moyennes)
+if (seoHasEnoughData && document.getElementById('chartSeo7d')) {
+    new Chart(document.getElementById('chartSeo7d'), {
+        type: 'line',
+        data: {
+            labels: seoChartLabels,
+            datasets: [
+                {
+                    label: 'Clics (cumul 7j)',
+                    data: seoChartClicks7d,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 2,
+                    pointRadius: 2,
+                    pointHoverRadius: 5,
+                    yAxisID: 'yClicks7d'
+                },
+                {
+                    label: 'Impressions (cumul 7j)',
+                    data: seoChartImpressions7d,
+                    borderColor: '#06b6d4',
+                    backgroundColor: 'rgba(6, 182, 212, 0.05)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 2,
+                    pointRadius: 2,
+                    pointHoverRadius: 5,
+                    yAxisID: 'yImpressions7d'
+                },
+                {
+                    label: 'CTR moy. 7j (%)',
+                    data: seoChartCtr7d,
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'transparent',
+                    fill: false,
+                    tension: 0.4,
+                    borderWidth: 2,
+                    borderDash: [4, 4],
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    yAxisID: 'yCtr7d'
+                },
+                {
+                    label: 'Position moy. 7j',
+                    data: seoChartPosition7d,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'transparent',
+                    fill: false,
+                    tension: 0.4,
+                    borderWidth: 2,
+                    borderDash: [2, 2],
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    yAxisID: 'yPosition7d'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: { usePointStyle: true, padding: 12, font: { size: 11 } }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: (items) => items.length > 0 ? 'Semaine se terminant le ' + items[0].label : '',
+                        label: (ctx) => {
+                            let value = ctx.parsed.y;
+                            if (value === null) return null;
+                            if (ctx.dataset.label.includes('CTR')) {
+                                return ctx.dataset.label + ': ' + value.toFixed(2) + '%';
+                            } else if (ctx.dataset.label.includes('Position')) {
+                                return ctx.dataset.label + ': ' + value.toFixed(1);
+                            }
+                            return ctx.dataset.label + ': ' + value.toLocaleString('fr-FR');
+                        }
+                    }
+                }
+            },
+            scales: {
+                yClicks7d: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    beginAtZero: true,
+                    title: { display: true, text: 'Clics (7j)', color: '#3b82f6', font: { size: 10 } },
+                    ticks: { color: '#3b82f6', font: { size: 9 } },
+                    grid: { color: 'rgba(0,0,0,0.05)' }
+                },
+                yImpressions7d: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    beginAtZero: true,
+                    title: { display: true, text: 'Impressions (7j)', color: '#06b6d4', font: { size: 10 } },
+                    ticks: { color: '#06b6d4', font: { size: 9 } },
+                    grid: { drawOnChartArea: false }
+                },
+                yCtr7d: {
+                    type: 'linear',
+                    display: false,
+                    beginAtZero: true,
+                    max: 10,
+                    grid: { drawOnChartArea: false }
+                },
+                yPosition7d: {
                     type: 'linear',
                     display: false,
                     reverse: true,

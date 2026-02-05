@@ -66,6 +66,11 @@ class SeoSyncCommand extends Command
                 [[$gscResult['synced'], $gscResult['skipped'], $gscResult['errors']]]
             );
 
+            // Sync daily totals (real clicks/impressions without anonymization)
+            $io->section('Google Search Console - Totaux journaliers');
+            $dailyResult = $this->seoImportService->syncDailyTotals($force);
+            $io->success($dailyResult['message']);
+
             // Import new keywords from GSC
             if (!$noImport) {
                 $io->section('Import automatique des nouveaux mots-clés');

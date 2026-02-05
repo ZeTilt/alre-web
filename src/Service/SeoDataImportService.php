@@ -2,8 +2,10 @@
 
 namespace App\Service;
 
+use App\Entity\SeoDailyTotal;
 use App\Entity\SeoKeyword;
 use App\Entity\SeoPosition;
+use App\Repository\SeoDailyTotalRepository;
 use App\Repository\SeoKeywordRepository;
 use App\Repository\SeoPositionRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,6 +19,7 @@ class SeoDataImportService
         private GoogleSearchConsoleService $gscService,
         private SeoKeywordRepository $keywordRepository,
         private SeoPositionRepository $positionRepository,
+        private SeoDailyTotalRepository $dailyTotalRepository,
         private EntityManagerInterface $entityManager,
         private LoggerInterface $logger,
     ) {}
@@ -169,6 +172,87 @@ class SeoDataImportService
             'skipped' => $skipped,
             'errors' => $errors,
             'message' => $message,
+        ];
+    }
+
+    /**
+     * Synchronise les totaux journaliers (clics/impressions réels sans anonymisation).
+     * Utilise la dimension date seule pour avoir les vrais chiffres.
+     *
+     * @return array{synced: int, skipped: int, message: string}
+     */
+    public function syncDailyTotals(bool $force = false): array
+    {
+        if (!$this->gscService->isAvailable()) {
+            return [
+                'synced' => 0,
+                'skipped' => 0,
+                'message' => 'Google Search Console non connecté',
+            ];
+        }
+
+        // Récupérer les totaux journaliers (J-3 à J-30 pour avoir un bon historique)
+        $endDate = (new \DateTimeImmutable('-3 days'))->setTime(0, 0, 0);
+        $startDate = (new \DateTimeImmutable('-30 days'))->setTime(0, 0, 0);
+
+        $dailyTotals = $this->gscService->fetchDailyTotals($startDate, $endDate);
+
+        if (empty($dailyTotals)) {
+            return [
+                'synced' => 0,
+                'skipped' => 0,
+                'message' => 'Aucune donnée retournée par GSC',
+            ];
+        }
+
+        $synced = 0;
+        $skipped = 0;
+
+        foreach ($dailyTotals as $dateStr => $data) {
+            $date = new \DateTimeImmutable($dateStr);
+
+            // Vérifier si on a déjà des données pour cette date
+            $existing = $this->dailyTotalRepository->findByDate($date);
+
+            if ($existing && !$force) {
+                // Vérifier si les données sont différentes (mise à jour nécessaire)
+                if ($existing->getClicks() === $data['clicks'] &&
+                    $existing->getImpressions() === $data['impressions']) {
+                    $skipped++;
+                    continue;
+                }
+            }
+
+            if ($existing) {
+                // Mettre à jour l'entrée existante
+                $existing->setClicks($data['clicks']);
+                $existing->setImpressions($data['impressions']);
+                $existing->setPosition($data['position']);
+            } else {
+                // Créer une nouvelle entrée
+                $dailyTotal = new SeoDailyTotal();
+                $dailyTotal->setDate($date);
+                $dailyTotal->setClicks($data['clicks']);
+                $dailyTotal->setImpressions($data['impressions']);
+                $dailyTotal->setPosition($data['position']);
+                $this->entityManager->persist($dailyTotal);
+            }
+
+            $synced++;
+
+            $this->logger->info('Synced daily total', [
+                'date' => $dateStr,
+                'clicks' => $data['clicks'],
+                'impressions' => $data['impressions'],
+            ]);
+        }
+
+        $this->entityManager->flush();
+
+        return [
+            'synced' => $synced,
+            'skipped' => $skipped,
+            'message' => sprintf('%d jour(s) synchronisé(s), %d inchangé(s)', $synced, $skipped),
         ];
     }
 

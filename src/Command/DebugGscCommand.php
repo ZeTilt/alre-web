@@ -26,8 +26,10 @@ class DebugGscCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('date', InputArgument::OPTIONAL, 'Date spécifique (Y-m-d)', null)
+            ->addArgument('date', InputArgument::OPTIONAL, 'Date de début (Y-m-d)', null)
+            ->addOption('to', 't', InputOption::VALUE_REQUIRED, 'Date de fin (Y-m-d) pour une plage')
             ->addOption('search', 's', InputOption::VALUE_REQUIRED, 'Chercher un mot-clé spécifique')
+            ->addOption('raw', 'r', InputOption::VALUE_NONE, 'Afficher la requête et réponse brute API')
         ;
     }
 
@@ -47,12 +49,17 @@ class DebugGscCommand extends Command
 
         // Parse date argument
         $dateArg = $input->getArgument('date');
+        $toDateArg = $input->getOption('to');
         $searchTerm = $input->getOption('search');
 
         if ($dateArg) {
             $startDate = new \DateTimeImmutable($dateArg);
-            $endDate = $startDate;
-            $io->text(sprintf('Date : %s', $startDate->format('Y-m-d')));
+            $endDate = $toDateArg ? new \DateTimeImmutable($toDateArg) : $startDate;
+            if ($startDate == $endDate) {
+                $io->text(sprintf('Date : %s', $startDate->format('Y-m-d')));
+            } else {
+                $io->text(sprintf('Période : %s → %s', $startDate->format('Y-m-d'), $endDate->format('Y-m-d')));
+            }
         } else {
             $startDate = new \DateTimeImmutable('-7 days');
             $endDate = new \DateTimeImmutable('-1 day');

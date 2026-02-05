@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Entity\SeoDailyTotal;
 use App\Entity\SeoKeyword;
 use App\Entity\SeoPosition;
 use App\Service\GoogleSearchConsoleService;
@@ -63,20 +64,22 @@ class SeoFullResetCommand extends Command
         ));
 
         // Step 1: Purge existing data
-        $io->section('Étape 1/3 : Purge des données existantes');
+        $io->section('Étape 1/4 : Purge des données existantes');
 
         if (!$dryRun) {
             $conn = $this->entityManager->getConnection();
             $deletedPositions = $conn->executeStatement('DELETE FROM seo_position');
             $deletedKeywords = $conn->executeStatement('DELETE FROM seo_keyword');
+            $deletedTotals = $conn->executeStatement('DELETE FROM seo_daily_total');
             $io->text(sprintf('  → %d positions supprimées', $deletedPositions));
             $io->text(sprintf('  → %d mots-clés supprimés', $deletedKeywords));
+            $io->text(sprintf('  → %d totaux journaliers supprimés', $deletedTotals));
         } else {
-            $io->text('  → [dry-run] Suppression des positions et mots-clés');
+            $io->text('  → [dry-run] Suppression des positions, mots-clés et totaux');
         }
 
         // Step 2: Fetch data for EACH day individually (without date dimension = complete data)
-        $io->section('Étape 2/3 : Récupération des données GSC jour par jour');
+        $io->section('Étape 2/4 : Récupération des données GSC jour par jour');
         $io->text('Cette méthode récupère TOUTES les requêtes pour chaque jour...');
         $io->newLine();
 
@@ -126,7 +129,7 @@ class SeoFullResetCommand extends Command
         $io->text(sprintf('  → %d positions à créer', $totalPositions));
 
         // Step 3: Create keywords and positions
-        $io->section('Étape 3/3 : Import des données');
+        $io->section('Étape 3/4 : Import des données');
 
         if ($dryRun) {
             $io->text('[dry-run] Création des mots-clés et positions...');
@@ -204,6 +207,32 @@ class SeoFullResetCommand extends Command
 
         $this->entityManager->flush();
         $io->text(sprintf('  → %d positions créées (total)', $positionsCreated));
+
+        // Step 4: Fetch and store daily totals (without query dimension = real clicks)
+        $io->section('Étape 4/4 : Import des totaux journaliers (vrais clics)');
+
+        if ($dryRun) {
+            $io->text('[dry-run] Import des totaux journaliers...');
+        } else {
+            $dailyTotals = $this->gscService->fetchDailyTotals($startDate, $endDate);
+            $totalsCreated = 0;
+
+            foreach ($dailyTotals as $dateStr => $data) {
+                $date = new \DateTimeImmutable($dateStr);
+
+                $dailyTotal = new SeoDailyTotal();
+                $dailyTotal->setDate($date);
+                $dailyTotal->setClicks($data['clicks']);
+                $dailyTotal->setImpressions($data['impressions']);
+                $dailyTotal->setPosition($data['position']);
+
+                $this->entityManager->persist($dailyTotal);
+                $totalsCreated++;
+            }
+
+            $this->entityManager->flush();
+            $io->text(sprintf('  → %d totaux journaliers créés', $totalsCreated));
+        }
 
         // Summary
         $io->newLine();

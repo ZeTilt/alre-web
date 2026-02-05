@@ -189,6 +189,54 @@ class GoogleSearchConsoleService
     }
 
     /**
+     * Récupère les totaux journaliers (sans dimension query pour éviter l'anonymisation).
+     * Retourne les vrais totaux de clics/impressions par jour.
+     *
+     * @return array<string, array{clicks: int, impressions: int, position: float}>
+     *         Format: [date] => {clicks, impressions, position}
+     */
+    public function fetchDailyTotals(?\DateTimeImmutable $startDate = null, ?\DateTimeImmutable $endDate = null): array
+    {
+        $token = $this->googleOAuthService->getValidTokenWithRefresh();
+        if (!$token) {
+            $this->logger->error('No valid OAuth token available for GSC API call');
+            return [];
+        }
+
+        $endDate = $endDate ?? new \DateTimeImmutable('-1 day');
+        $startDate = $startDate ?? new \DateTimeImmutable('-7 days');
+
+        $encodedSiteUrl = urlencode($this->googleSiteUrl);
+        $url = self::API_URL . "/{$encodedSiteUrl}/searchAnalytics/query";
+
+        $body = [
+            'startDate' => $startDate->format('Y-m-d'),
+            'endDate' => $endDate->format('Y-m-d'),
+            'dimensions' => ['date'], // Seulement date, pas query = pas d'anonymisation
+        ];
+
+        $result = $this->executeWithRetry($url, $body, $token->getAccessToken());
+
+        if ($result === null || !isset($result['rows'])) {
+            return [];
+        }
+
+        $data = [];
+        foreach ($result['rows'] as $row) {
+            $date = $row['keys'][0] ?? null;
+            if ($date) {
+                $data[$date] = [
+                    'clicks' => (int) ($row['clicks'] ?? 0),
+                    'impressions' => (int) ($row['impressions'] ?? 0),
+                    'position' => round($row['position'] ?? 0, 1),
+                ];
+            }
+        }
+
+        return $data;
+    }
+
+    /**
      * Exécute une requête avec retry et backoff exponentiel.
      */
     private function executeWithRetry(string $url, array $body, string $accessToken): ?array

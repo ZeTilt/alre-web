@@ -165,17 +165,26 @@ class SeoFullResetCommand extends Command
         $positionsCreated = 0;
         $batchSize = 500;
 
+        // Store keyword IDs for reference after clear
+        $keywordIds = [];
+        foreach ($keywordEntities as $query => $keyword) {
+            $keywordIds[$query] = $keyword->getId();
+        }
+
         foreach ($dailyData as $dateStr => $queries) {
             $date = new \DateTimeImmutable($dateStr);
 
             foreach ($queries as $query => $data) {
-                $keyword = $keywordEntities[$query] ?? null;
-                if (!$keyword) {
+                $keywordId = $keywordIds[$query] ?? null;
+                if (!$keywordId) {
                     continue;
                 }
 
+                // Use reference to avoid issues after clear()
+                $keywordRef = $this->entityManager->getReference(SeoKeyword::class, $keywordId);
+
                 $position = new SeoPosition();
-                $position->setKeyword($keyword);
+                $position->setKeyword($keywordRef);
                 $position->setDate($date);
                 $position->setPosition($data['position']);
                 $position->setClicks($data['clicks']);

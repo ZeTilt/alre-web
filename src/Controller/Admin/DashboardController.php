@@ -884,10 +884,30 @@ class DashboardController extends AbstractDashboardController
     {
         $now = new \DateTimeImmutable();
         $startDate = $now->modify('-29 days')->setTime(0, 0, 0);
-        $endDate = $now->setTime(23, 59, 59);
 
         // Récupérer les totaux journaliers (vrais clics, pas anonymisés)
-        $dailyTotals = $dailyTotalRepository->findByDateRange($startDate, $endDate);
+        $dailyTotals = $dailyTotalRepository->findByDateRange($startDate, $now);
+
+        if (empty($dailyTotals)) {
+            return [
+                'labels' => [],
+                'clicks' => [],
+                'impressions' => [],
+                'ctr' => [],
+                'position' => [],
+                'hasEnoughData' => false,
+                'daysWithData' => 0,
+            ];
+        }
+
+        // Trouver la dernière date avec des données (pour éviter la "chute" à la fin)
+        $lastDataDate = null;
+        foreach ($dailyTotals as $total) {
+            $date = $total->getDate();
+            if ($lastDataDate === null || $date > $lastDataDate) {
+                $lastDataDate = $date;
+            }
+        }
 
         // Indexer par date pour un accès rapide
         $dailyData = [];
@@ -896,18 +916,24 @@ class DashboardController extends AbstractDashboardController
             $dailyData[$dateKey] = [
                 'clicks' => $total->getClicks(),
                 'impressions' => $total->getImpressions(),
+                'ctr' => $total->getCtr(),
+                'position' => $total->getPosition(),
             ];
         }
 
         $daysWithData = count($dailyTotals);
         $hasEnoughData = $daysWithData >= 7;
 
-        // Préparer les labels et datasets pour les 30 jours
+        // Préparer les labels et datasets (jusqu'au dernier jour avec données)
         $labels = [];
         $clicks = [];
         $impressions = [];
+        $ctr = [];
+        $position = [];
 
         $currentDate = $startDate;
+        $endDate = $lastDataDate ?? $now;
+
         while ($currentDate <= $endDate) {
             $dateKey = $currentDate->format('Y-m-d');
             $labels[] = $currentDate->format('d/m');
@@ -915,34 +941,24 @@ class DashboardController extends AbstractDashboardController
             if (isset($dailyData[$dateKey])) {
                 $clicks[] = $dailyData[$dateKey]['clicks'];
                 $impressions[] = $dailyData[$dateKey]['impressions'];
+                $ctr[] = $dailyData[$dateKey]['ctr'];
+                $position[] = $dailyData[$dateKey]['position'];
             } else {
                 $clicks[] = 0;
                 $impressions[] = 0;
+                $ctr[] = null;
+                $position[] = null;
             }
 
             $currentDate = $currentDate->modify('+1 day');
-        }
-
-        // Calculer la moyenne mobile sur 7 jours pour les impressions
-        $impressions7d = [];
-        for ($i = 0; $i < count($impressions); $i++) {
-            if ($i < 6) {
-                // Pas assez de données pour une moyenne 7 jours
-                $impressions7d[] = null;
-            } else {
-                $sum = 0;
-                for ($j = $i - 6; $j <= $i; $j++) {
-                    $sum += $impressions[$j];
-                }
-                $impressions7d[] = $sum;
-            }
         }
 
         return [
             'labels' => $labels,
             'clicks' => $clicks,
             'impressions' => $impressions,
-            'impressions7d' => $impressions7d,
+            'ctr' => $ctr,
+            'position' => $position,
             'hasEnoughData' => $hasEnoughData,
             'daysWithData' => $daysWithData,
         ];

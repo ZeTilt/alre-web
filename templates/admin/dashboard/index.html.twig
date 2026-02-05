@@ -879,10 +879,11 @@ const monthLabels = {{ monthLabels|json_encode|raw }};
 const seoChartLabels = {{ seoChartData.labels|json_encode|raw }};
 const seoChartClicks = {{ seoChartData.clicks|json_encode|raw }};
 const seoChartImpressions = {{ seoChartData.impressions|json_encode|raw }};
-const seoChartImpressions7d = {{ seoChartData.impressions7d|json_encode|raw }};
+const seoChartCtr = {{ seoChartData.ctr|json_encode|raw }};
+const seoChartPosition = {{ seoChartData.position|json_encode|raw }};
 const seoHasEnoughData = {{ seoChartData.hasEnoughData ? 'true' : 'false' }};
 
-// 0. Graphique SEO Évolution (Clics/Impressions)
+// 0. Graphique SEO Évolution (4 métriques avec échelles séparées)
 if (seoHasEnoughData && document.getElementById('chartSeoEvolution')) {
     new Chart(document.getElementById('chartSeoEvolution'), {
         type: 'line',
@@ -897,34 +898,47 @@ if (seoHasEnoughData && document.getElementById('chartSeoEvolution')) {
                     fill: true,
                     tension: 0.4,
                     borderWidth: 2,
-                    pointRadius: 3,
+                    pointRadius: 2,
                     pointHoverRadius: 5,
-                    yAxisID: 'y'
+                    yAxisID: 'yClicks'
                 },
                 {
                     label: 'Impressions',
                     data: seoChartImpressions,
                     borderColor: '#06b6d4',
-                    backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                    backgroundColor: 'rgba(6, 182, 212, 0.05)',
                     fill: true,
                     tension: 0.4,
                     borderWidth: 2,
-                    pointRadius: 3,
+                    pointRadius: 2,
                     pointHoverRadius: 5,
-                    yAxisID: 'y1'
+                    yAxisID: 'yImpressions'
                 },
                 {
-                    label: 'Impressions (cumul 7j)',
-                    data: seoChartImpressions7d,
+                    label: 'CTR (%)',
+                    data: seoChartCtr,
                     borderColor: '#8b5cf6',
                     backgroundColor: 'transparent',
                     fill: false,
                     tension: 0.4,
-                    borderWidth: 3,
-                    borderDash: [5, 5],
+                    borderWidth: 2,
+                    borderDash: [4, 4],
                     pointRadius: 0,
                     pointHoverRadius: 4,
-                    yAxisID: 'y1'
+                    yAxisID: 'yCtr'
+                },
+                {
+                    label: 'Position',
+                    data: seoChartPosition,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'transparent',
+                    fill: false,
+                    tension: 0.4,
+                    borderWidth: 2,
+                    borderDash: [2, 2],
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    yAxisID: 'yPosition'
                 }
             ]
         },
@@ -939,59 +953,60 @@ if (seoHasEnoughData && document.getElementById('chartSeoEvolution')) {
                 legend: {
                     display: true,
                     position: 'top',
-                    labels: { usePointStyle: true, padding: 15 }
+                    labels: { usePointStyle: true, padding: 12, font: { size: 11 } }
                 },
                 tooltip: {
                     callbacks: {
-                        title: (items) => {
-                            if (items.length > 0) {
-                                return 'Date: ' + items[0].label;
-                            }
-                            return '';
-                        },
+                        title: (items) => items.length > 0 ? 'Date: ' + items[0].label : '',
                         label: (ctx) => {
-                            const value = ctx.parsed.y.toLocaleString('fr-FR');
-                            return ctx.dataset.label + ': ' + value;
+                            let value = ctx.parsed.y;
+                            if (ctx.dataset.label === 'CTR (%)') {
+                                return ctx.dataset.label + ': ' + value.toFixed(2) + '%';
+                            } else if (ctx.dataset.label === 'Position') {
+                                return ctx.dataset.label + ': ' + value.toFixed(1);
+                            }
+                            return ctx.dataset.label + ': ' + value.toLocaleString('fr-FR');
                         }
                     }
                 }
             },
             scales: {
-                y: {
+                yClicks: {
                     type: 'linear',
                     display: true,
                     position: 'left',
                     beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Clics',
-                        color: '#3b82f6'
-                    },
-                    ticks: {
-                        color: '#3b82f6'
-                    },
+                    title: { display: true, text: 'Clics', color: '#3b82f6', font: { size: 10 } },
+                    ticks: { color: '#3b82f6', font: { size: 9 } },
                     grid: { color: 'rgba(0,0,0,0.05)' }
                 },
-                y1: {
+                yImpressions: {
                     type: 'linear',
                     display: true,
                     position: 'right',
                     beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Impressions',
-                        color: '#06b6d4'
-                    },
-                    ticks: {
-                        color: '#06b6d4'
-                    },
+                    title: { display: true, text: 'Impressions', color: '#06b6d4', font: { size: 10 } },
+                    ticks: { color: '#06b6d4', font: { size: 9 } },
+                    grid: { drawOnChartArea: false }
+                },
+                yCtr: {
+                    type: 'linear',
+                    display: false,
+                    beginAtZero: true,
+                    max: 10,
+                    grid: { drawOnChartArea: false }
+                },
+                yPosition: {
+                    type: 'linear',
+                    display: false,
+                    reverse: true,
+                    min: 1,
+                    max: 100,
                     grid: { drawOnChartArea: false }
                 },
                 x: {
                     grid: { display: false },
-                    ticks: {
-                        maxTicksLimit: 10
-                    }
+                    ticks: { maxTicksLimit: 10, font: { size: 10 } }
                 }
             }
         }

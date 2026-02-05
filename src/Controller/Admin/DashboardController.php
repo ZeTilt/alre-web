@@ -29,6 +29,7 @@ use App\Repository\FactureRepository;
 use App\Repository\ProspectRepository;
 use App\Repository\ProspectFollowUpRepository;
 use App\Repository\GoogleReviewRepository;
+use App\Repository\SeoDailyTotalRepository;
 use App\Repository\SeoKeywordRepository;
 use App\Repository\SeoPositionRepository;
 use App\Service\DashboardPeriodService;
@@ -76,6 +77,7 @@ class DashboardController extends AbstractDashboardController
         DashboardPeriodService $periodService,
         SeoKeywordRepository $seoKeywordRepository,
         SeoPositionRepository $seoPositionRepository,
+        SeoDailyTotalRepository $seoDailyTotalRepository,
         GoogleReviewRepository $googleReviewRepository
     ): Response {
         // Récupérer les informations de l'entreprise
@@ -362,7 +364,7 @@ class DashboardController extends AbstractDashboardController
             ),
 
             // SEO Chart data (last 30 days)
-            'seoChartData' => $this->prepareSeoChartData($seoPositionRepository),
+            'seoChartData' => $this->prepareSeoChartData($seoDailyTotalRepository),
 
             // SEO Performance categories
             'seoPerformanceData' => $this->categorizeSeoKeywords(
@@ -878,18 +880,27 @@ class DashboardController extends AbstractDashboardController
      *
      * @return array{labels: array, clicks: array, impressions: array, hasEnoughData: bool}
      */
-    private function prepareSeoChartData(SeoPositionRepository $positionRepository): array
+    private function prepareSeoChartData(SeoDailyTotalRepository $dailyTotalRepository): array
     {
         $now = new \DateTimeImmutable();
         $startDate = $now->modify('-29 days')->setTime(0, 0, 0);
         $endDate = $now->setTime(23, 59, 59);
 
-        // Vérifier si on a assez de données (minimum 7 jours)
-        $daysWithData = $positionRepository->countDaysWithData($startDate, $endDate);
-        $hasEnoughData = $daysWithData >= 7;
+        // Récupérer les totaux journaliers (vrais clics, pas anonymisés)
+        $dailyTotals = $dailyTotalRepository->findByDateRange($startDate, $endDate);
 
-        // Récupérer les données quotidiennes
-        $dailyData = $positionRepository->getDailyTotals($startDate, $endDate);
+        // Indexer par date pour un accès rapide
+        $dailyData = [];
+        foreach ($dailyTotals as $total) {
+            $dateKey = $total->getDate()->format('Y-m-d');
+            $dailyData[$dateKey] = [
+                'clicks' => $total->getClicks(),
+                'impressions' => $total->getImpressions(),
+            ];
+        }
+
+        $daysWithData = count($dailyTotals);
+        $hasEnoughData = $daysWithData >= 7;
 
         // Préparer les labels et datasets pour les 30 jours
         $labels = [];

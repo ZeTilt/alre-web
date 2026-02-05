@@ -883,10 +883,12 @@ class DashboardController extends AbstractDashboardController
     private function prepareSeoChartData(SeoDailyTotalRepository $dailyTotalRepository): array
     {
         $now = new \DateTimeImmutable();
-        $maxStartDate = $now->modify('-29 days')->setTime(0, 0, 0);
+        $chartStartDate = $now->modify('-29 days')->setTime(0, 0, 0);
+        // Récupérer 6 jours supplémentaires pour calculer la moyenne 7j dès le début
+        $dataStartDate = $now->modify('-35 days')->setTime(0, 0, 0);
 
         // Récupérer les totaux journaliers (vrais clics, pas anonymisés)
-        $dailyTotals = $dailyTotalRepository->findByDateRange($maxStartDate, $now);
+        $dailyTotals = $dailyTotalRepository->findByDateRange($dataStartDate, $now);
 
         if (empty($dailyTotals)) {
             return [
@@ -932,45 +934,44 @@ class DashboardController extends AbstractDashboardController
         $daysWithData = count($dailyTotals);
         $hasEnoughData = $daysWithData >= 7;
 
-        // Préparer les labels et datasets (du premier au dernier jour avec données)
-        $labels = [];
-        $clicks = [];
-        $impressions = [];
-        $ctr = [];
-        $position = [];
+        // Construire les tableaux de données complets (incluant les 6 jours avant pour le calcul 7j)
+        $allLabels = [];
+        $allClicks = [];
+        $allImpressions = [];
+        $allCtr = [];
+        $allPosition = [];
 
         $currentDate = $firstDataDate;
         $endDate = $lastDataDate;
 
         while ($currentDate <= $endDate) {
             $dateKey = $currentDate->format('Y-m-d');
-            $labels[] = $currentDate->format('d/m');
+            $allLabels[] = $currentDate->format('d/m');
 
             if (isset($dailyData[$dateKey])) {
-                $clicks[] = $dailyData[$dateKey]['clicks'];
-                $impressions[] = $dailyData[$dateKey]['impressions'];
-                $ctr[] = $dailyData[$dateKey]['ctr'];
-                $position[] = $dailyData[$dateKey]['position'];
+                $allClicks[] = $dailyData[$dateKey]['clicks'];
+                $allImpressions[] = $dailyData[$dateKey]['impressions'];
+                $allCtr[] = $dailyData[$dateKey]['ctr'];
+                $allPosition[] = $dailyData[$dateKey]['position'];
             } else {
-                $clicks[] = 0;
-                $impressions[] = 0;
-                $ctr[] = null;
-                $position[] = null;
+                $allClicks[] = 0;
+                $allImpressions[] = 0;
+                $allCtr[] = null;
+                $allPosition[] = null;
             }
 
             $currentDate = $currentDate->modify('+1 day');
         }
 
-        // Calculer les moyennes mobiles sur 7 jours (ou moins au début)
-        $clicks7d = [];
-        $impressions7d = [];
-        $ctr7d = [];
-        $position7d = [];
+        // Calculer les moyennes mobiles sur 7 jours (vraies moyennes 7j)
+        $allClicks7d = [];
+        $allImpressions7d = [];
+        $allCtr7d = [];
+        $allPosition7d = [];
 
-        for ($i = 0; $i < count($clicks); $i++) {
-            // Utiliser jusqu'à 7 jours, ou moins si on est au début
+        for ($i = 0; $i < count($allClicks); $i++) {
+            // Toujours utiliser 7 jours si disponibles
             $windowStart = max(0, $i - 6);
-            $windowSize = $i - $windowStart + 1;
 
             $sumClicks = 0;
             $sumImpressions = 0;
@@ -980,23 +981,39 @@ class DashboardController extends AbstractDashboardController
             $countPosition = 0;
 
             for ($j = $windowStart; $j <= $i; $j++) {
-                $sumClicks += $clicks[$j];
-                $sumImpressions += $impressions[$j];
-                if ($ctr[$j] !== null) {
-                    $sumCtr += $ctr[$j];
+                $sumClicks += $allClicks[$j];
+                $sumImpressions += $allImpressions[$j];
+                if ($allCtr[$j] !== null) {
+                    $sumCtr += $allCtr[$j];
                     $countCtr++;
                 }
-                if ($position[$j] !== null && $position[$j] > 0) {
-                    $sumPosition += $position[$j];
+                if ($allPosition[$j] !== null && $allPosition[$j] > 0) {
+                    $sumPosition += $allPosition[$j];
                     $countPosition++;
                 }
             }
 
-            $clicks7d[] = $sumClicks;
-            $impressions7d[] = $sumImpressions;
-            $ctr7d[] = $countCtr > 0 ? round($sumCtr / $countCtr, 2) : null;
-            $position7d[] = $countPosition > 0 ? round($sumPosition / $countPosition, 1) : null;
+            $allClicks7d[] = $sumClicks;
+            $allImpressions7d[] = $sumImpressions;
+            $allCtr7d[] = $countCtr > 0 ? round($sumCtr / $countCtr, 2) : null;
+            $allPosition7d[] = $countPosition > 0 ? round($sumPosition / $countPosition, 1) : null;
         }
+
+        // Déterminer l'index de début pour l'affichage (max 30 jours)
+        $totalDays = count($allLabels);
+        $displayDays = min(30, $totalDays);
+        $startIndex = $totalDays - $displayDays;
+
+        // Extraire uniquement les données à afficher
+        $labels = array_slice($allLabels, $startIndex);
+        $clicks = array_slice($allClicks, $startIndex);
+        $impressions = array_slice($allImpressions, $startIndex);
+        $ctr = array_slice($allCtr, $startIndex);
+        $position = array_slice($allPosition, $startIndex);
+        $clicks7d = array_slice($allClicks7d, $startIndex);
+        $impressions7d = array_slice($allImpressions7d, $startIndex);
+        $ctr7d = array_slice($allCtr7d, $startIndex);
+        $position7d = array_slice($allPosition7d, $startIndex);
 
         return [
             'labels' => $labels,

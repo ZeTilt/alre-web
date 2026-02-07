@@ -568,6 +568,133 @@ a.card:hover {
     margin-right: var(--spacing-sm);
 }
 
+/* Prix barré de référence */
+.pricing-ref {
+    display: block;
+    text-align: center;
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    margin-bottom: 0.25rem;
+}
+
+.pricing-saving {
+    display: inline-block;
+    text-align: center;
+    margin: 0.25rem auto 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #28a745;
+    background-color: rgba(40, 167, 69, 0.08);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-xl);
+}
+
+/* Bannière offre de lancement */
+.launch-banner {
+    max-width: 700px;
+    margin: -1rem auto 2rem;
+    padding: 0 var(--spacing-md);
+}
+
+.launch-banner-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--bg-white);
+    border: 1px solid var(--accent-color);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+}
+
+.launch-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent-color), #1e8a99);
+    color: var(--bg-white);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-xl);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.launch-text {
+    font-size: 0.95rem;
+    color: var(--text-light);
+}
+
+.launch-text strong {
+    color: var(--primary-color);
+}
+
+/* Options à la carte - format liste compacte */
+.option-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+}
+
+.option-row:first-child {
+    border-top: 1px solid var(--border-color);
+}
+
+.option-row:hover {
+    background-color: var(--light-bg);
+}
+
+.option-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.option-info strong {
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+
+.option-info span {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.option-price {
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: 2rem;
+}
+
+@media (max-width: 768px) {
+    .launch-banner-inner {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+
+    .option-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        padding: 1rem;
+    }
+
+    .option-price {
+        margin-left: 0;
+    }
+}
+
 /* ============================================
    12. FORMULAIRE DE CONTACT
    ============================================ */

@@ -106,7 +106,7 @@ class SitemapController extends AbstractController
             $urls[] = [
                 'loc' => $this->generateUrl('app_local_page', ['slug' => $page['url']], UrlGeneratorInterface::ABSOLUTE_URL),
                 'changefreq' => 'monthly',
-                'priority' => '0.6',
+                'priority' => '0.4',
                 'lastmod' => $page['cityEntity']->getUpdatedAt()?->format('Y-m-d') ?? $page['cityEntity']->getCreatedAt()->format('Y-m-d'),
             ];
         }
@@ -116,7 +116,7 @@ class SitemapController extends AbstractController
             $urls[] = [
                 'loc' => $this->generateUrl('app_local_pages_index', [], UrlGeneratorInterface::ABSOLUTE_URL),
                 'changefreq' => 'monthly',
-                'priority' => '0.7',
+                'priority' => '0.5',
             ];
         }
 

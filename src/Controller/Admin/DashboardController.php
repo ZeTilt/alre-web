@@ -372,7 +372,7 @@ class DashboardController extends AbstractDashboardController
             ),
 
             // SEO Keywords Chart (evolution over 30 days)
-            'seoKeywordsChartData' => $this->prepareSeoKeywordsChartData($seoKeywordRepository),
+            'seoKeywordsChartData' => $this->prepareSeoKeywordsChartData($seoKeywordRepository, $seoDailyTotalRepository),
 
             // Google Reviews
             'googlePlacesConfigured' => $this->googlePlacesService->isConfigured(),
@@ -1109,9 +1109,12 @@ class DashboardController extends AbstractDashboardController
     /**
      * Prépare les données pour le graphique d'évolution des mots-clés SEO.
      * Utilise MIN(SeoPosition.date) comme date de première apparition GSC (pas createdAt).
+     * S'arrête à la dernière date avec des données (comme les autres graphiques SEO).
      */
-    private function prepareSeoKeywordsChartData(SeoKeywordRepository $repo): array
-    {
+    private function prepareSeoKeywordsChartData(
+        SeoKeywordRepository $repo,
+        SeoDailyTotalRepository $dailyTotalRepo
+    ): array {
         $days = 30;
         $firstAppearances = $repo->getKeywordFirstAppearances();
         $relevanceCounts = $repo->getRelevanceCounts();
@@ -1124,9 +1127,23 @@ class DashboardController extends AbstractDashboardController
             $currentTotal += (int) $row['cnt'];
         }
 
-        // Calculer la date seuil (début de la période de 30 jours)
+        // Trouver la dernière date avec des données (cohérent avec les autres graphiques)
         $now = new \DateTimeImmutable();
-        $sinceDate = $now->modify("-{$days} days")->format('Y-m-d');
+        $dataStartDate = $now->modify("-{$days} days")->setTime(0, 0, 0);
+        $dailyTotals = $dailyTotalRepo->findByDateRange($dataStartDate, $now);
+
+        $lastDataDate = null;
+        foreach ($dailyTotals as $total) {
+            $date = $total->getDate();
+            if ($lastDataDate === null || $date > $lastDataDate) {
+                $lastDataDate = $date;
+            }
+        }
+
+        // Si pas de données, utiliser aujourd'hui comme fallback
+        $endDate = $lastDataDate ?? $now;
+        $startDate = $endDate->modify("-" . ($days - 1) . " days");
+        $sinceDate = $startDate->format('Y-m-d');
 
         // Séparer : mots-clés apparus avant la période (base) vs dans la période (nouveaux)
         $baseCount = 0;
@@ -1145,7 +1162,7 @@ class DashboardController extends AbstractDashboardController
             }
         }
 
-        // Générer les 30 jours avec cumulatif progressif
+        // Générer les jours de startDate à endDate avec cumulatif progressif
         $labels = [];
         $newHigh = [];
         $newMedium = [];
@@ -1153,9 +1170,9 @@ class DashboardController extends AbstractDashboardController
         $totalKeywords = [];
         $cumulative = $baseCount;
 
-        for ($i = $days - 1; $i >= 0; $i--) {
-            $date = $now->modify("-{$i} days");
-            $dateKey = $date->format('Y-m-d');
+        $currentDate = $startDate;
+        while ($currentDate <= $endDate) {
+            $dateKey = $currentDate->format('Y-m-d');
 
             $dayHigh = $newByDay[$dateKey]['high'] ?? 0;
             $dayMedium = $newByDay[$dateKey]['medium'] ?? 0;
@@ -1163,11 +1180,13 @@ class DashboardController extends AbstractDashboardController
 
             $cumulative += $dayHigh + $dayMedium + $dayLow;
 
-            $labels[] = $date->format('d/m');
+            $labels[] = $currentDate->format('d/m');
             $newHigh[] = $dayHigh;
             $newMedium[] = $dayMedium;
             $newLow[] = $dayLow;
             $totalKeywords[] = $cumulative;
+
+            $currentDate = $currentDate->modify('+1 day');
         }
 
         return [

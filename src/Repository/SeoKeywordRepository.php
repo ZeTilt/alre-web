@@ -148,6 +148,51 @@ class SeoKeywordRepository extends ServiceEntityRepository
     }
 
     /**
+     * Retourne la date de première apparition GSC pour TOUS les mots-clés (actifs + inactifs).
+     *
+     * @return array<array{id: int, relevanceLevel: string, firstSeen: string}>
+     */
+    public function getKeywordFirstAppearancesAll(): array
+    {
+        return $this->createQueryBuilder('k')
+            ->select('k.id, k.relevanceLevel, SUBSTRING(MIN(p.date), 1, 10) as firstSeen')
+            ->join('k.positions', 'p')
+            ->groupBy('k.id, k.relevanceLevel')
+            ->orderBy('firstSeen', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Retourne les mots-clés désactivés avec leur date de désactivation.
+     *
+     * @return array<array{id: int, deactivatedDate: string}>
+     */
+    public function getKeywordDeactivations(): array
+    {
+        return $this->createQueryBuilder('k')
+            ->select('k.id, SUBSTRING(k.deactivatedAt, 1, 10) as deactivatedDate')
+            ->where('k.isActive = :active')
+            ->andWhere('k.deactivatedAt IS NOT NULL')
+            ->setParameter('active', false)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Retourne le nombre de mots-clés inactifs.
+     */
+    public function countInactive(): int
+    {
+        return (int) $this->createQueryBuilder('k')
+            ->select('COUNT(k.id)')
+            ->where('k.isActive = :active')
+            ->setParameter('active', false)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
      * Retourne le décompte des mots-clés actifs par niveau de pertinence.
      *
      * @return array<array{relevanceLevel: string, cnt: int}>

@@ -1116,8 +1116,11 @@ class DashboardController extends AbstractDashboardController
         SeoDailyTotalRepository $dailyTotalRepo
     ): array {
         $days = 30;
-        $firstAppearances = $repo->getKeywordFirstAppearances();
+        // Use All to include inactive keywords in the chart cumulative
+        $firstAppearances = $repo->getKeywordFirstAppearancesAll();
         $relevanceCounts = $repo->getRelevanceCounts();
+        $deactivations = $repo->getKeywordDeactivations();
+        $inactiveCount = $repo->countInactive();
 
         // Total actif actuel et badges
         $currentTotal = 0;
@@ -1162,13 +1165,26 @@ class DashboardController extends AbstractDashboardController
             }
         }
 
+        // Désactivations : avant la période (base) vs dans la période
+        $baseDeactivated = 0;
+        $deactivatedByDay = [];
+        foreach ($deactivations as $row) {
+            $deactivatedDate = $row['deactivatedDate'];
+            if ($deactivatedDate < $sinceDate) {
+                $baseDeactivated++;
+            } else {
+                $deactivatedByDay[$deactivatedDate] = ($deactivatedByDay[$deactivatedDate] ?? 0) + 1;
+            }
+        }
+
         // Générer les jours de startDate à endDate avec cumulatif progressif
         $labels = [];
         $newHigh = [];
         $newMedium = [];
         $newLow = [];
+        $deactivated = [];
         $totalKeywords = [];
-        $cumulative = $baseCount;
+        $cumulative = $baseCount - $baseDeactivated;
 
         $currentDate = $startDate;
         while ($currentDate <= $endDate) {
@@ -1177,13 +1193,15 @@ class DashboardController extends AbstractDashboardController
             $dayHigh = $newByDay[$dateKey]['high'] ?? 0;
             $dayMedium = $newByDay[$dateKey]['medium'] ?? 0;
             $dayLow = $newByDay[$dateKey]['low'] ?? 0;
+            $dayDeactivated = $deactivatedByDay[$dateKey] ?? 0;
 
-            $cumulative += $dayHigh + $dayMedium + $dayLow;
+            $cumulative += $dayHigh + $dayMedium + $dayLow - $dayDeactivated;
 
             $labels[] = $currentDate->format('d/m');
             $newHigh[] = $dayHigh;
             $newMedium[] = $dayMedium;
             $newLow[] = $dayLow;
+            $deactivated[] = $dayDeactivated > 0 ? -$dayDeactivated : 0;
             $totalKeywords[] = $cumulative;
 
             $currentDate = $currentDate->modify('+1 day');
@@ -1195,7 +1213,9 @@ class DashboardController extends AbstractDashboardController
             'newHigh' => $newHigh,
             'newMedium' => $newMedium,
             'newLow' => $newLow,
+            'deactivated' => $deactivated,
             'currentTotal' => $currentTotal,
+            'inactiveCount' => $inactiveCount,
             'relevanceCounts' => $relevanceMap,
         ];
     }

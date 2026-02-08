@@ -597,6 +597,11 @@
             <span style="background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
                 Basse: {{ seoKeywordsChartData.relevanceCounts.low }}
             </span>
+            {% if seoKeywordsChartData.inactiveCount > 0 %}
+            <span style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+                Desactives: {{ seoKeywordsChartData.inactiveCount }}
+            </span>
+            {% endif %}
         </div>
     </div>
     {% if seoKeywordsChartData.currentTotal > 0 %}
@@ -940,6 +945,7 @@ const seoKwTotalKeywords = {{ seoKeywordsChartData.totalKeywords|json_encode|raw
 const seoKwNewHigh = {{ seoKeywordsChartData.newHigh|json_encode|raw }};
 const seoKwNewMedium = {{ seoKeywordsChartData.newMedium|json_encode|raw }};
 const seoKwNewLow = {{ seoKeywordsChartData.newLow|json_encode|raw }};
+const seoKwDeactivated = {{ seoKeywordsChartData.deactivated|json_encode|raw }};
 
 // 0. Graphique SEO Évolution (4 métriques avec échelles séparées)
 if (seoHasEnoughData && document.getElementById('chartSeoEvolution')) {
@@ -1240,6 +1246,16 @@ if (document.getElementById('chartSeoKeywords')) {
                     order: 2
                 },
                 {
+                    label: 'Désactivés',
+                    data: seoKwDeactivated,
+                    backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                    borderColor: '#ef4444',
+                    borderWidth: 1,
+                    stack: 'newKeywords',
+                    yAxisID: 'yNew',
+                    order: 2
+                },
+                {
                     label: 'Total cumulé',
                     data: seoKwTotalKeywords,
                     type: 'line',
@@ -1272,6 +1288,9 @@ if (document.getElementById('chartSeoKeywords')) {
                     callbacks: {
                         label: (ctx) => {
                             if (ctx.parsed.y === 0 && ctx.dataset.type !== 'line') return null;
+                            if (ctx.dataset.label === 'Désactivés') {
+                                return ctx.dataset.label + ': ' + Math.abs(ctx.parsed.y);
+                            }
                             return ctx.dataset.label + ': ' + ctx.parsed.y;
                         }
                     }

@@ -119,9 +119,9 @@
 <section class="section section-light">
     <div class="container">
         <h2 class="text-center mb-4">Galerie</h2>
-        <div class="grid grid-2">
+        <div class="gallery-masonry">
             {% for image in galleryImages %}
-            <div>
+            <div class="gallery-masonry-item">
                 <img src="{{ asset('uploads/projects/' ~ image.imageFilename) }}"
                      alt="{{ image.altText|default(image.caption)|default(project.title ~ ' - Réalisation Alré Web') }}"
                      class="lightbox-image"

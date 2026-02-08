@@ -436,6 +436,23 @@ a.card:hover {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 }
 
+/* Gallery Masonry */
+.gallery-masonry {
+    columns: 2;
+    column-gap: var(--spacing-md);
+}
+
+.gallery-masonry-item {
+    break-inside: avoid;
+    margin-bottom: var(--spacing-md);
+}
+
+@media (max-width: 768px) {
+    .gallery-masonry {
+        columns: 1;
+    }
+}
+
 /* ============================================
    9. SERVICES SECTION
    ============================================ */

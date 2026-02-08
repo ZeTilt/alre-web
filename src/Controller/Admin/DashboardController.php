@@ -1181,12 +1181,6 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Clients');
         yield MenuItem::linkToCrud('Clients', 'fas fa-users', Client::class);
 
-        yield MenuItem::section('Prospection');
-        yield MenuItem::linkToRoute('Pipeline', 'fas fa-funnel-dollar', 'admin_prospection_pipeline');
-        yield MenuItem::linkToCrud('Prospects', 'fas fa-building', Prospect::class);
-        yield MenuItem::linkToCrud('Interactions', 'fas fa-comments', ProspectInteraction::class);
-        yield MenuItem::linkToCrud('Relances', 'fas fa-bell', ProspectFollowUp::class);
-
         yield MenuItem::section('Sécurité');
         yield MenuItem::linkToCrud('Logs de sécurité', 'fas fa-shield-alt', SecurityLog::class);
         yield MenuItem::linkToCrud('IPs bloquées', 'fas fa-ban', BlockedIp::class);

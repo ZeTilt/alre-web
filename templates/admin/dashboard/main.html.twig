@@ -1,0 +1,209 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}
+    <i class="fa fa-home"></i> Vue d'ensemble {{ year }}
+{% endblock %}
+
+{% block page_content %}
+{% include 'admin/dashboard/_partials/_styles.html.twig' %}
+{% include 'admin/dashboard/_partials/_nav_tabs.html.twig' with {active: 'main'} %}
+
+<!-- Section Finances -->
+<h5 style="color: #374151; font-weight: 600; margin-bottom: 1rem;">
+    <i class="fas fa-euro-sign" style="color: var(--primary);"></i> Finances
+</h5>
+<div class="dashboard-grid">
+    <div class="stat-card primary">
+        <div class="stat-header">
+            <span class="stat-label">CA Ce Mois</span>
+            <div class="stat-icon primary"><i class="fas fa-euro-sign"></i></div>
+        </div>
+        <div class="stat-value">{{ (caMoisEncaisse / 1000)|number_format(1) }}k&euro;</div>
+        {% if variationMoisPourcent != 0 %}
+            <div class="stat-subtitle {% if variationMoisPourcent > 0 %}positive{% else %}negative{% endif %}">
+                <i class="fas fa-arrow-{% if variationMoisPourcent > 0 %}up{% else %}down{% endif %}"></i>
+                {{ variationMoisPourcent|abs }}% vs mois dernier
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="stat-card success">
+        <div class="stat-header">
+            <span class="stat-label">CA Annee {{ year }}</span>
+            <div class="stat-icon success"><i class="fas fa-chart-line"></i></div>
+        </div>
+        <div class="stat-value">{{ (caAnneeEncaisse / 1000)|number_format(1) }}k&euro;</div>
+    </div>
+
+    <div class="stat-card {% if progressionPlafond >= 90 %}danger{% elseif progressionPlafond >= 75 %}warning{% else %}info{% endif %}">
+        <div class="stat-header">
+            <span class="stat-label">Plafond AE</span>
+            <div class="stat-icon {% if progressionPlafond >= 90 %}danger{% elseif progressionPlafond >= 75 %}warning{% else %}info{% endif %}">
+                <i class="fas fa-gauge-high"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ progressionPlafond }}%</div>
+        <div class="stat-subtitle">{{ (caAnneeEncaisse / 1000)|number_format(0) }}k&euro; / {{ (plafondCa / 1000)|number_format(0) }}k&euro;</div>
+    </div>
+
+    <div class="stat-card warning">
+        <div class="stat-header">
+            <span class="stat-label">En Attente</span>
+            <div class="stat-icon warning"><i class="fas fa-clock"></i></div>
+        </div>
+        <div class="stat-value">{{ (caEnAttente / 1000)|number_format(1) }}k&euro;</div>
+    </div>
+
+    <div class="stat-card info">
+        <div class="stat-header">
+            <span class="stat-label">Taux Conversion</span>
+            <div class="stat-icon info"><i class="fas fa-percent"></i></div>
+        </div>
+        <div class="stat-value">{{ tauxConversion }}%</div>
+        <div class="stat-subtitle">Devis &rarr; Factures</div>
+    </div>
+
+    <div class="stat-card {% if margeNetAnnee >= 30 %}success{% elseif margeNetAnnee >= 15 %}warning{% else %}danger{% endif %}">
+        <div class="stat-header">
+            <span class="stat-label">Benefice Net {{ year }}</span>
+            <div class="stat-icon {% if margeNetAnnee >= 30 %}success{% elseif margeNetAnnee >= 15 %}warning{% else %}danger{% endif %}">
+                <i class="fas fa-chart-line"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ (beneficeNetAnnee / 1000)|number_format(1) }}k&euro;</div>
+        <div class="stat-subtitle">Marge nette : {{ margeNetAnnee }}%</div>
+    </div>
+</div>
+
+<!-- Alertes -->
+{% if nbFacturesEnRetard > 0 or nbDevisARelancer > 0 %}
+<div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+    {% if nbFacturesEnRetard > 0 %}
+        <div class="alert-badge danger">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ nbFacturesEnRetard }} facture(s) en retard ({{ (montantEnRetard / 1000)|number_format(1) }}k&euro;)
+        </div>
+    {% endif %}
+    {% if nbDevisARelancer > 0 %}
+        <div class="alert-badge warning">
+            <i class="fas fa-bell"></i>
+            {{ nbDevisARelancer }} devis a relancer
+        </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<div style="margin-bottom: 2rem;">
+    <a href="{{ path('admin_finance_dashboard') }}" class="btn btn-sm btn-outline-primary">
+        <i class="fas fa-arrow-right"></i> Voir le detail Finances
+    </a>
+</div>
+
+<!-- Section SEO -->
+<h5 style="color: #374151; font-weight: 600; margin-bottom: 1rem;">
+    <i class="fas fa-search" style="color: var(--info);"></i> SEO
+</h5>
+
+<div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+    <!-- Total mots-cles -->
+    <div class="stat-card info">
+        <div class="stat-header">
+            <span class="stat-label">Mots-cles actifs</span>
+            <div class="stat-icon info"><i class="fas fa-key"></i></div>
+        </div>
+        <div class="stat-value">{{ seoSummary.totalActiveKeywords }}</div>
+        <div class="stat-subtitle">
+            {% if seoSummary.googleOAuthConnected %}
+                <span style="color: #10b981;"><i class="fas fa-check-circle"></i> GSC connecte</span>
+            {% elseif seoSummary.googleOAuthConfigured %}
+                <span style="color: #6b7280;">GSC non connecte</span>
+            {% else %}
+                <span style="color: #f59e0b;"><i class="fas fa-exclamation-triangle"></i> GSC non configure</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Top 3 Keywords -->
+    {% if seoSummary.top3|length > 0 %}
+    <div class="stat-card success" style="grid-column: span 2;">
+        <div class="stat-header">
+            <span class="stat-label">Top 3 Mots-cles</span>
+            <div class="stat-icon success"><i class="fas fa-trophy"></i></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+            {% for keyword in seoSummary.top3 %}
+                {% set latestPosition = keyword.latestPosition %}
+                {% set comparison = seoSummary.seoPositionComparisons[keyword.id] ?? null %}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: #f0fdf4; border-radius: 8px;">
+                    <div style="font-weight: 500; font-size: 0.875rem;">{{ keyword.keyword }}</div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        {% if latestPosition %}
+                            {% set pos = latestPosition.position %}
+                            <span style="background: {% if pos <= 10 %}#d1fae5; color: #065f46{% elseif pos <= 20 %}#fef3c7; color: #92400e{% else %}#fee2e2; color: #991b1b{% endif %}; padding: 0.125rem 0.5rem; border-radius: 9999px; font-weight: 700; font-size: 0.75rem;">
+                                #{{ pos|number_format(1) }}
+                            </span>
+                        {% endif %}
+                        {% if comparison and comparison.status == 'improved' %}
+                            <span style="color: #10b981; font-size: 0.75rem; font-weight: 600;">
+                                <i class="fas fa-arrow-up"></i> +{{ comparison.variation|abs|number_format(1) }}
+                            </span>
+                        {% elseif comparison and comparison.status == 'degraded' %}
+                            <span style="color: #ef4444; font-size: 0.75rem; font-weight: 600;">
+                                <i class="fas fa-arrow-down"></i> {{ comparison.variation|number_format(1) }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div style="margin-bottom: 2rem;">
+    <a href="{{ path('admin_seo_dashboard') }}" class="btn btn-sm btn-outline-primary">
+        <i class="fas fa-arrow-right"></i> Voir le detail SEO
+    </a>
+</div>
+
+<!-- Section Avis Google -->
+<h5 style="color: #374151; font-weight: 600; margin-bottom: 1rem;">
+    <i class="fas fa-star" style="color: #f59e0b;"></i> Avis Google
+</h5>
+
+{% if seoSummary.googlePlacesConfigured and seoSummary.reviewStats.total > 0 %}
+<div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+    <div class="stat-card success">
+        <div class="stat-header">
+            <span class="stat-label">Note moyenne</span>
+            <div class="stat-icon warning"><i class="fas fa-star"></i></div>
+        </div>
+        <div class="stat-value" style="color: #f59e0b;">{{ seoSummary.reviewStats.averageRating|number_format(1, ',', ' ') }}</div>
+        <div class="stat-subtitle">{{ seoSummary.reviewStats.total }} avis au total</div>
+    </div>
+
+    <div class="stat-card {% if seoSummary.pendingReviews|length > 0 %}warning{% else %}success{% endif %}">
+        <div class="stat-header">
+            <span class="stat-label">En attente</span>
+            <div class="stat-icon {% if seoSummary.pendingReviews|length > 0 %}warning{% else %}success{% endif %}">
+                <i class="fas fa-bell"></i>
+            </div>
+        </div>
+        <div class="stat-value">{{ seoSummary.pendingReviews|length }}</div>
+        <div class="stat-subtitle">avis a moderer</div>
+    </div>
+</div>
+{% elseif not seoSummary.googlePlacesConfigured %}
+<div class="stat-card warning" style="margin-bottom: 1.5rem;">
+    <div style="color: #92400e; font-size: 0.875rem;">
+        <i class="fas fa-exclamation-triangle"></i>
+        API Google Places non configuree.
+    </div>
+</div>
+{% else %}
+<div class="stat-card info" style="margin-bottom: 1.5rem;">
+    <div style="color: #6b7280; font-size: 0.875rem;">Aucun avis synchronise.</div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -29,6 +29,6 @@ class GoogleReviewController extends AbstractController
             $this->addFlash('info', $result['message']);
         }
 
-        return $this->redirectToRoute('admin_business_dashboard');
+        return $this->redirectToRoute('admin_seo_dashboard');
     }
 }

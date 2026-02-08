@@ -1,0 +1,142 @@
+<style>
+    :root {
+        --primary: #3b82f6;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --info: #06b6d4;
+        --purple: #8b5cf6;
+    }
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.25rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border-left: 4px solid var(--primary);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .stat-card.success { border-left-color: var(--success); }
+    .stat-card.warning { border-left-color: var(--warning); }
+    .stat-card.danger { border-left-color: var(--danger); }
+    .stat-card.info { border-left-color: var(--info); }
+    .stat-card.purple { border-left-color: var(--purple); }
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+    .stat-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    .stat-icon.primary { background: #eff6ff; color: var(--primary); }
+    .stat-icon.success { background: #f0fdf4; color: var(--success); }
+    .stat-icon.warning { background: #fffbeb; color: var(--warning); }
+    .stat-icon.danger { background: #fef2f2; color: var(--danger); }
+    .stat-icon.info { background: #f0fdfa; color: var(--info); }
+    .stat-icon.purple { background: #faf5ff; color: var(--purple); }
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0.5rem 0;
+    }
+    .stat-subtitle {
+        font-size: 0.875rem;
+        color: #9ca3af;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    .stat-subtitle.positive { color: var(--success); }
+    .stat-subtitle.negative { color: var(--danger); }
+    .chart-container {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+    .chart-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .chart-canvas {
+        max-height: 280px;
+    }
+    .progress-ring {
+        width: 80px;
+        height: 80px;
+        position: relative;
+    }
+    .progress-ring svg {
+        transform: rotate(-90deg);
+    }
+    .progress-ring circle {
+        fill: none;
+        stroke-width: 8;
+    }
+    .alert-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    .alert-badge.danger { background: #fef2f2; color: var(--danger); }
+    .alert-badge.warning { background: #fffbeb; color: var(--warning); }
+    .alert-badge.success { background: #f0fdf4; color: var(--success); }
+    .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+    @media (max-width: 768px) {
+        .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    {% if demoMode is defined and demoMode %}
+    /* Mode demo : flouter les donnees sensibles */
+    .stat-value,
+    .stat-subtitle,
+    .alert-badge {
+        filter: blur(4px);
+        transition: filter 0.2s;
+    }
+    .stat-card:hover .stat-value,
+    .stat-card:hover .stat-subtitle,
+    .stat-card:hover .alert-badge {
+        filter: blur(0px);
+    }
+    {% endif %}
+</style>

@@ -23,7 +23,7 @@ class GoogleOAuthController extends AbstractController
     {
         if (!$this->googleOAuthService->isConfigured()) {
             $this->addFlash('error', 'Les credentials Google ne sont pas configurés. Ajoutez GOOGLE_CLIENT_ID et GOOGLE_CLIENT_SECRET dans le fichier .env');
-            return $this->redirectToRoute('admin_business_dashboard');
+            return $this->redirectToRoute('admin_seo_dashboard');
         }
 
         $redirectUri = $this->generateUrl('admin_google_callback', [], UrlGeneratorInterface::ABSOLUTE_URL);
@@ -40,12 +40,12 @@ class GoogleOAuthController extends AbstractController
 
         if ($error) {
             $this->addFlash('error', 'Connexion Google refusée: ' . $error);
-            return $this->redirectToRoute('admin_business_dashboard');
+            return $this->redirectToRoute('admin_seo_dashboard');
         }
 
         if (!$code) {
             $this->addFlash('error', 'Code d\'autorisation manquant');
-            return $this->redirectToRoute('admin_business_dashboard');
+            return $this->redirectToRoute('admin_seo_dashboard');
         }
 
         try {
@@ -56,7 +56,7 @@ class GoogleOAuthController extends AbstractController
             $this->addFlash('error', 'Erreur lors de la connexion: ' . $e->getMessage());
         }
 
-        return $this->redirectToRoute('admin_business_dashboard');
+        return $this->redirectToRoute('admin_seo_dashboard');
     }
 
     #[Route('/disconnect', name: 'admin_google_disconnect')]
@@ -64,7 +64,7 @@ class GoogleOAuthController extends AbstractController
     {
         $this->googleOAuthService->disconnect();
         $this->addFlash('success', 'Google Search Console déconnecté');
-        return $this->redirectToRoute('admin_business_dashboard');
+        return $this->redirectToRoute('admin_seo_dashboard');
     }
 
     #[Route('/sync-seo', name: 'admin_google_sync_seo')]
@@ -72,7 +72,7 @@ class GoogleOAuthController extends AbstractController
     {
         if (!$this->googleOAuthService->isConnected()) {
             $this->addFlash('error', 'Google Search Console n\'est pas connecté');
-            return $this->redirectToRoute('admin_business_dashboard');
+            return $this->redirectToRoute('admin_seo_dashboard');
         }
 
         $force = $request->query->getBoolean('force', false);
@@ -86,6 +86,6 @@ class GoogleOAuthController extends AbstractController
             $this->addFlash('info', $result['message']);
         }
 
-        return $this->redirectToRoute('admin_business_dashboard');
+        return $this->redirectToRoute('admin_seo_dashboard');
     }
 }

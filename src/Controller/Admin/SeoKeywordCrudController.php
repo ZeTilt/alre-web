@@ -10,8 +10,14 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
+use EasyCorp\Bundle\EasyAdminBundle\Orm\EntityRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\HttpFoundation\Response;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
@@ -95,6 +101,50 @@ class SeoKeywordCrudController extends AbstractCrudController
         return $this->redirect($urlGenerator->setAction(Action::INDEX)->generateUrl());
     }
 
+    public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
+    {
+        // Mapper les champs de tri custom vers les sous-requêtes scalaires
+        $sortFieldMap = [
+            'latestPosition.position' => 'sort_position',
+            'latestPosition.clicks' => 'sort_clicks',
+            'latestPosition.impressions' => 'sort_impressions',
+        ];
+
+        $sort = $searchDto->getSort();
+        $customSort = null;
+
+        if (!empty($sort)) {
+            $sortField = array_key_first($sort);
+            if (isset($sortFieldMap[$sortField])) {
+                $customSort = [$sortFieldMap[$sortField], $sort[$sortField]];
+                // Recréer SearchDto sans le tri custom pour éviter une erreur dans le QB par défaut
+                $searchDto = new SearchDto(
+                    $searchDto->getRequest(),
+                    $searchDto->getSearchableProperties(),
+                    $searchDto->getQuery(),
+                    ['keyword' => 'ASC'],
+                    [],
+                    $searchDto->getAppliedFilters(),
+                );
+            }
+        }
+
+        $qb = $this->container->get(EntityRepository::class)
+            ->createQueryBuilder($searchDto, $entityDto, $fields, $filters);
+
+        // Sous-requêtes scalaires pour le tri : on récupère les données de la date la plus récente
+        $qb->addSelect('(SELECT lp1.position FROM App\Entity\SeoPosition lp1 WHERE lp1.keyword = entity.id AND lp1.date = (SELECT MAX(lp1b.date) FROM App\Entity\SeoPosition lp1b WHERE lp1b.keyword = entity.id)) AS HIDDEN sort_position');
+        $qb->addSelect('(SELECT lp2.clicks FROM App\Entity\SeoPosition lp2 WHERE lp2.keyword = entity.id AND lp2.date = (SELECT MAX(lp2b.date) FROM App\Entity\SeoPosition lp2b WHERE lp2b.keyword = entity.id)) AS HIDDEN sort_clicks');
+        $qb->addSelect('(SELECT lp3.impressions FROM App\Entity\SeoPosition lp3 WHERE lp3.keyword = entity.id AND lp3.date = (SELECT MAX(lp3b.date) FROM App\Entity\SeoPosition lp3b WHERE lp3b.keyword = entity.id)) AS HIDDEN sort_impressions');
+
+        if ($customSort) {
+            $qb->resetDQLPart('orderBy');
+            $qb->orderBy($customSort[0], $customSort[1]);
+        }
+
+        return $qb;
+    }
+
     public function configureFilters(Filters $filters): Filters
     {
         return $filters
@@ -132,6 +182,7 @@ class SeoKeywordCrudController extends AbstractCrudController
 
         yield TextField::new('sourceLabel', 'Source')
             ->hideOnForm()
+            ->hideOnIndex()
             ->formatValue(function ($value, $entity) {
                 $badge = $entity->isManual() ? 'primary' : 'info';
                 return sprintf('<span class="badge bg-%s">%s</span>', $badge, $value);
@@ -141,6 +192,7 @@ class SeoKeywordCrudController extends AbstractCrudController
         if ($pageName === Crud::PAGE_INDEX || $pageName === Crud::PAGE_DETAIL) {
             yield NumberField::new('latestPosition.position', 'Position')
                 ->setNumDecimals(1)
+                ->setSortable(true)
                 ->formatValue(function ($value, $entity) {
                     $latest = $entity->getLatestPosition();
                     if (!$latest) {
@@ -158,6 +210,7 @@ class SeoKeywordCrudController extends AbstractCrudController
                 ->onlyOnIndex();
 
             yield NumberField::new('latestPosition.clicks', 'Clics')
+                ->setSortable(true)
                 ->formatValue(function ($value, $entity) {
                     $latest = $entity->getLatestPosition();
                     return $latest ? $latest->getClicks() : '-';
@@ -165,6 +218,7 @@ class SeoKeywordCrudController extends AbstractCrudController
                 ->onlyOnIndex();
 
             yield NumberField::new('latestPosition.impressions', 'Impressions')
+                ->setSortable(true)
                 ->formatValue(function ($value, $entity) {
                     $latest = $entity->getLatestPosition();
                     return $latest ? number_format($latest->getImpressions(), 0, ',', ' ') : '-';

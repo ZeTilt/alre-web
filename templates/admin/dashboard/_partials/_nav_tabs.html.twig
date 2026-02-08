@@ -1,0 +1,14 @@
+<div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <a href="{{ path('admin_main_dashboard') }}"
+       class="btn btn-sm {% if active == 'main' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+        <i class="fa fa-home"></i> Vue d'ensemble
+    </a>
+    <a href="{{ path('admin_seo_dashboard') }}"
+       class="btn btn-sm {% if active == 'seo' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+        <i class="fa fa-chart-line"></i> SEO
+    </a>
+    <a href="{{ path('admin_finance_dashboard') }}"
+       class="btn btn-sm {% if active == 'finance' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+        <i class="fa fa-euro-sign"></i> Finances
+    </a>
+</div>

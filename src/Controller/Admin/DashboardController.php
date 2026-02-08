@@ -13,8 +13,6 @@ use App\Entity\EventType;
 use App\Entity\Facture;
 use App\Entity\GoogleReview;
 use App\Entity\Prospect;
-use App\Entity\ProspectFollowUp;
-use App\Entity\ProspectInteraction;
 use App\Entity\SecurityLog;
 use App\Entity\SeoKeyword;
 use App\Entity\User;
@@ -28,16 +26,11 @@ use App\Repository\EventTypeRepository;
 use App\Repository\FactureRepository;
 use App\Repository\ProspectRepository;
 use App\Repository\ProspectFollowUpRepository;
-use App\Repository\GoogleReviewRepository;
-use App\Repository\SeoDailyTotalRepository;
 use App\Repository\SeoKeywordRepository;
 use App\Repository\SeoPositionRepository;
 use App\Service\DashboardPeriodService;
-use App\Service\GoogleOAuthService;
-use App\Service\GooglePlacesService;
+use App\Service\DashboardSeoService;
 use App\Service\ProspectionEmailService;
-use App\Service\ReviewSyncService;
-use App\Service\SeoDataImportService;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
@@ -54,33 +47,120 @@ class DashboardController extends AbstractDashboardController
     public function __construct(
         private EntityManagerInterface $entityManager,
         private ParameterBagInterface $params,
-        private GoogleOAuthService $googleOAuthService,
-        private SeoDataImportService $seoDataImportService,
-        private GooglePlacesService $googlePlacesService,
-        private ReviewSyncService $reviewSyncService,
+        private DashboardSeoService $dashboardSeoService,
     ) {
     }
 
     #[Route('/saeiblauhjc', name: 'admin')]
     public function index(): Response
     {
-        // Rediriger vers le tableau de bord business
-        return $this->redirectToRoute('admin_business_dashboard');
+        return $this->redirectToRoute('admin_main_dashboard');
     }
 
     #[Route('/saeiblauhjc/business-dashboard', name: 'admin_business_dashboard')]
-    public function businessDashboard(
+    public function businessDashboard(): Response
+    {
+        return $this->redirectToRoute('admin_main_dashboard');
+    }
+
+    #[Route('/saeiblauhjc/dashboard', name: 'admin_main_dashboard')]
+    public function mainDashboard(
+        CompanyRepository $companyRepository,
+        FactureRepository $factureRepository,
+        DevisRepository $devisRepository
+    ): Response {
+        $company = $companyRepository->findOneBy([]);
+        $year = $company?->getAnneeFiscaleEnCours() ?? (int) date('Y');
+
+        $now = new \DateTimeImmutable();
+        $startOfMonth = $now->modify('first day of this month')->setTime(0, 0, 0);
+        $endOfMonth = $now->modify('last day of this month')->setTime(23, 59, 59);
+        $startOfYear = new \DateTimeImmutable($year . '-01-01 00:00:00');
+        $endOfYear = new \DateTimeImmutable($year . '-12-31 23:59:59');
+        $startOfPreviousMonth = $now->modify('first day of last month')->setTime(0, 0, 0);
+        $endOfPreviousMonth = $now->modify('last day of last month')->setTime(23, 59, 59);
+
+        // CA
+        $caMoisEncaisse = $factureRepository->getRevenueByPeriod($startOfMonth, $endOfMonth, true);
+        $caMoisPrecedentEncaisse = $factureRepository->getRevenueByPeriod($startOfPreviousMonth, $endOfPreviousMonth, true);
+        $caAnneeEncaisse = $factureRepository->getRevenueByPeriod($startOfYear, $endOfYear, true);
+
+        $variationMoisPourcent = 0;
+        if ($caMoisPrecedentEncaisse > 0) {
+            $variationMoisPourcent = round((($caMoisEncaisse - $caMoisPrecedentEncaisse) / $caMoisPrecedentEncaisse) * 100, 1);
+        }
+
+        // Plafond
+        $plafondCa = $company?->getPlafondCaAnnuel() ? ((float) $company->getPlafondCaAnnuel() / 100) : 0;
+        $progressionPlafond = $plafondCa > 0 ? round(($caAnneeEncaisse / $plafondCa) * 100, 1) : 0;
+
+        // En attente
+        $caEnAttente = $factureRepository->getPendingRevenue();
+
+        // Factures en retard
+        $facturesEnRetard = $factureRepository->findOverdueFactures();
+        $nbFacturesEnRetard = count($facturesEnRetard);
+        $montantEnRetard = array_reduce($facturesEnRetard, fn($sum, $f) => $sum + (float) $f->getTotalTtc(), 0);
+
+        // Devis
+        $tauxConversion = $devisRepository->getConversionRate($startOfYear, $endOfYear);
+        $devisARelancer = $devisRepository->getQuotesToFollowUp(7);
+        $nbDevisARelancer = count($devisARelancer);
+
+        // Cotisations / Benefice
+        $tauxCotisations = $company?->getTauxCotisationsUrssaf() ? (float) $company->getTauxCotisationsUrssaf() : 0;
+        $cotisationsEstimees = round($caAnneeEncaisse * ($tauxCotisations / 100), 2);
+        $depensesAnnee = 0;
+        $beneficeNetAnnee = $caAnneeEncaisse - $depensesAnnee - $cotisationsEstimees;
+        $margeNetAnnee = $caAnneeEncaisse > 0 ? round(($beneficeNetAnnee / $caAnneeEncaisse) * 100, 1) : 0;
+
+        // SEO Summary
+        $seoSummary = $this->dashboardSeoService->getSummaryData();
+
+        return $this->render('admin/dashboard/main.html.twig', [
+            'year' => $year,
+            'demoMode' => ($_ENV['APP_DEMO_MODE'] ?? '0') === '1',
+
+            // Finances
+            'caMoisEncaisse' => $caMoisEncaisse,
+            'caAnneeEncaisse' => $caAnneeEncaisse,
+            'variationMoisPourcent' => $variationMoisPourcent,
+            'plafondCa' => $plafondCa,
+            'progressionPlafond' => $progressionPlafond,
+            'caEnAttente' => $caEnAttente,
+
+            // Alertes
+            'nbFacturesEnRetard' => $nbFacturesEnRetard,
+            'montantEnRetard' => $montantEnRetard,
+            'nbDevisARelancer' => $nbDevisARelancer,
+            'tauxConversion' => $tauxConversion,
+            'beneficeNetAnnee' => $beneficeNetAnnee,
+            'margeNetAnnee' => $margeNetAnnee,
+
+            // SEO Summary
+            'seoSummary' => $seoSummary,
+        ]);
+    }
+
+    #[Route('/saeiblauhjc/dashboard/seo', name: 'admin_seo_dashboard')]
+    public function seoDashboard(): Response
+    {
+        $seoData = $this->dashboardSeoService->getFullData();
+
+        return $this->render('admin/dashboard/seo.html.twig', array_merge(
+            $seoData,
+            ['demoMode' => ($_ENV['APP_DEMO_MODE'] ?? '0') === '1']
+        ));
+    }
+
+    #[Route('/saeiblauhjc/dashboard/finance', name: 'admin_finance_dashboard')]
+    public function financeDashboard(
         Request $request,
         CompanyRepository $companyRepository,
         FactureRepository $factureRepository,
         DevisRepository $devisRepository,
-        DashboardPeriodService $periodService,
-        SeoKeywordRepository $seoKeywordRepository,
-        SeoPositionRepository $seoPositionRepository,
-        SeoDailyTotalRepository $seoDailyTotalRepository,
-        GoogleReviewRepository $googleReviewRepository
+        DashboardPeriodService $periodService
     ): Response {
-        // Récupérer les informations de l'entreprise
         $company = $companyRepository->findOneBy([]);
 
         // Gestion de la période sélectionnée
@@ -88,126 +168,89 @@ class DashboardController extends AbstractDashboardController
         $customStartStr = $request->query->get('startDate');
         $customEndStr = $request->query->get('endDate');
 
-        // Si période dans l'URL, sauvegarder en session
         if ($periodType) {
             $periodService->savePeriodToSession($periodType, $customStartStr, $customEndStr);
         } else {
-            // Sinon récupérer depuis la session
             $sessionData = $periodService->getPeriodFromSession();
             $periodType = $sessionData['type'];
             $customStartStr = $sessionData['customStart'];
             $customEndStr = $sessionData['customEnd'];
         }
 
-        // Convertir les dates custom si fournies
         $customStart = $customStartStr ? new \DateTimeImmutable($customStartStr . ' 00:00:00') : null;
         $customEnd = $customEndStr ? new \DateTimeImmutable($customEndStr . ' 23:59:59') : null;
 
-        // Obtenir les dates de la période
         $periodDates = $periodService->getPeriodDates($periodType, $customStart, $customEnd);
         $startOfPeriod = $periodDates['start'];
         $endOfPeriod = $periodDates['end'];
         $periodLabel = $periodDates['label'];
-        $periodYear = $periodDates['year'];
 
-        // Période de comparaison (N-1)
         $comparisonDates = $periodService->getComparisonPeriodDates($startOfPeriod, $endOfPeriod);
         $startOfComparison = $comparisonDates['start'];
         $endOfComparison = $comparisonDates['end'];
 
-        // Labels des mois pour les graphiques
         $monthLabels = $periodService->getMonthLabelsForPeriod($startOfPeriod, $endOfPeriod);
         $monthKeys = $periodService->getMonthKeysForPeriod($startOfPeriod, $endOfPeriod);
 
-        // Année fiscale en cours (pour les objectifs et plafond)
         $year = $company?->getAnneeFiscaleEnCours() ?? (int) date('Y');
 
-        // Période en cours (mois et année) - pour les KPI du mois
         $now = new \DateTimeImmutable();
         $startOfMonth = $now->modify('first day of this month')->setTime(0, 0, 0);
         $endOfMonth = $now->modify('last day of this month')->setTime(23, 59, 59);
         $startOfYear = new \DateTimeImmutable($year . '-01-01 00:00:00');
         $endOfYear = new \DateTimeImmutable($year . '-12-31 23:59:59');
-
-        // Période précédente pour comparaison du mois
         $startOfPreviousMonth = $now->modify('first day of last month')->setTime(0, 0, 0);
         $endOfPreviousMonth = $now->modify('last day of last month')->setTime(23, 59, 59);
 
         // ===== FINANCES =====
-
-        // CA encaissé
         $caMoisEncaisse = $factureRepository->getRevenueByPeriod($startOfMonth, $endOfMonth, true);
         $caMoisPrecedentEncaisse = $factureRepository->getRevenueByPeriod($startOfPreviousMonth, $endOfPreviousMonth, true);
         $caAnneeEncaisse = $factureRepository->getRevenueByPeriod($startOfYear, $endOfYear, true);
 
-        // Variation mois vs mois précédent
         $variationMoisPourcent = 0;
         if ($caMoisPrecedentEncaisse > 0) {
             $variationMoisPourcent = round((($caMoisEncaisse - $caMoisPrecedentEncaisse) / $caMoisPrecedentEncaisse) * 100, 1);
         }
 
-        // Progression vs objectifs (MoneyField stocke en centimes, donc diviser par 100)
         $objectifMensuel = $company?->getObjectifCaMensuel() ? ((float) $company->getObjectifCaMensuel() / 100) : 0;
         $objectifAnnuel = $company?->getObjectifCaAnnuel() ? ((float) $company->getObjectifCaAnnuel() / 100) : 0;
-        $progressionObjectifMensuel = $objectifMensuel > 0 ? round(($caMoisEncaisse / $objectifMensuel) * 100, 1) : 0;
         $progressionObjectifAnnuel = $objectifAnnuel > 0 ? round(($caAnneeEncaisse / $objectifAnnuel) * 100, 1) : 0;
 
-        // Progression vs plafond auto-entrepreneur (MoneyField stocke en centimes, donc diviser par 100)
         $plafondCa = $company?->getPlafondCaAnnuel() ? ((float) $company->getPlafondCaAnnuel() / 100) : 0;
         $progressionPlafond = $plafondCa > 0 ? round(($caAnneeEncaisse / $plafondCa) * 100, 1) : 0;
 
-        // Cotisations URSSAF estimées
         $tauxCotisations = $company?->getTauxCotisationsUrssaf() ? (float) $company->getTauxCotisationsUrssaf() : 0;
         $cotisationsEstimees = round($caAnneeEncaisse * ($tauxCotisations / 100), 2);
         $cotisationsMois = round($caMoisEncaisse * ($tauxCotisations / 100), 2);
 
-        // En attente d'encaissement
         $caEnAttente = $factureRepository->getPendingRevenue();
 
-        // ===== FACTURES =====
-
+        // Factures
         $facturesEnRetard = $factureRepository->findOverdueFactures();
         $nbFacturesEnRetard = count($facturesEnRetard);
         $montantEnRetard = array_reduce($facturesEnRetard, fn($sum, $f) => $sum + (float) $f->getTotalTtc(), 0);
 
-        $delaiMoyenPaiement = $factureRepository->getAveragePaymentDelay();
-
-        // ===== DEVIS =====
-
+        // Devis
         $devisPending = $devisRepository->findPendingDevis();
         $nbDevisPending = count($devisPending);
-        $montantDevisPending = $devisRepository->getPendingQuotesTotal();
-
         $tauxConversion = $devisRepository->getConversionRate($startOfYear, $endOfYear);
-
         $devisARelancer = $devisRepository->getQuotesToFollowUp(7);
         $nbDevisARelancer = count($devisARelancer);
 
-        // ===== DÉPENSES (fonctionnalité désactivée) =====
-
+        // Depenses / Benefice
         $depensesMois = 0;
         $depensesAnnee = 0;
-
-        // Bénéfice net (CA - dépenses - cotisations URSSAF)
         $beneficeNetMois = $caMoisEncaisse - $depensesMois - $cotisationsMois;
         $beneficeNetAnnee = $caAnneeEncaisse - $depensesAnnee - $cotisationsEstimees;
-
-        // Marge bénéficiaire (en pourcentage)
-        $margeNetMois = $caMoisEncaisse > 0 ? round(($beneficeNetMois / $caMoisEncaisse) * 100, 1) : 0;
         $margeNetAnnee = $caAnneeEncaisse > 0 ? round(($beneficeNetAnnee / $caAnneeEncaisse) * 100, 1) : 0;
 
-        // ===== DONNÉES POUR GRAPHIQUES (basé sur la période sélectionnée) =====
-
-        // CA mensuel encaissé (pour graphique ligne) - période sélectionnée
+        // ===== GRAPHIQUES =====
         $caParMoisData = $factureRepository->getMonthlyPaidRevenueForPeriod($startOfPeriod, $endOfPeriod);
-
-        // Convertir les données en tableau indexé par ordre des mois
         $caParMois = [];
         foreach ($monthKeys as $key) {
             $caParMois[] = $caParMoisData[$key] ?? 0;
         }
 
-        // CA période de comparaison N-1
         $caParMoisComparisonData = $factureRepository->getMonthlyPaidRevenueForPeriod($startOfComparison, $endOfComparison);
         $caParMoisComparison = [];
         $comparisonKeys = $periodService->getMonthKeysForPeriod($startOfComparison, $endOfComparison);
@@ -215,7 +258,6 @@ class DashboardController extends AbstractDashboardController
             $caParMoisComparison[] = $caParMoisComparisonData[$key] ?? 0;
         }
 
-        // Total CA période vs comparaison
         $caPeriode = $factureRepository->getRevenueByPeriod($startOfPeriod, $endOfPeriod, true);
         $caPeriodeComparison = $factureRepository->getRevenueByPeriod($startOfComparison, $endOfComparison, true);
         $variationPeriodePourcent = 0;
@@ -223,22 +265,15 @@ class DashboardController extends AbstractDashboardController
             $variationPeriodePourcent = round((($caPeriode - $caPeriodeComparison) / $caPeriodeComparison) * 100, 1);
         }
 
-        // Top clients (pour camembert) - basé sur la période sélectionnée
         $topClients = $factureRepository->getRevenueByClientForPeriod($startOfPeriod, $endOfPeriod);
-        $topClients = array_slice($topClients, 0, 5); // Top 5 clients
+        $topClients = array_slice($topClients, 0, 5);
 
-        // Dépenses mensuelles (fonctionnalité désactivée)
-        $depensesParMois = [];
-
-        // Cotisations URSSAF mensuelles (pour graphique)
         $cotisationsParMois = [];
         foreach ($caParMois as $ca) {
             $cotisationsParMois[] = round($ca * ($tauxCotisations / 100), 2);
         }
 
-        // ===== PRÉVISIONS =====
-
-        // Calculer la moyenne des 3 derniers mois pour projection
+        // ===== PREVISIONS =====
         $currentMonth = (int) $now->format('m');
         $lastThreeMonths = [];
         for ($i = 2; $i >= 0; $i--) {
@@ -250,7 +285,6 @@ class DashboardController extends AbstractDashboardController
 
         $avgLastThreeMonths = count($lastThreeMonths) > 0 ? array_sum($lastThreeMonths) / count($lastThreeMonths) : 0;
 
-        // Projections pour les 3 prochains mois
         $projections = [];
         for ($i = 1; $i <= 3; $i++) {
             $futureMonth = $currentMonth + $i;
@@ -263,123 +297,61 @@ class DashboardController extends AbstractDashboardController
             }
         }
 
-        // Calculer la tendance (évolution mois actuel vs moyenne 3 derniers)
         $tendance = 0;
         if ($avgLastThreeMonths > 0 && $caMoisEncaisse > 0) {
             $tendance = round((($caMoisEncaisse - $avgLastThreeMonths) / $avgLastThreeMonths) * 100, 1);
         }
 
-        return $this->render('admin/dashboard/index.html.twig', [
+        return $this->render('admin/dashboard/finance.html.twig', [
             'company' => $company,
             'year' => $year,
+            'demoMode' => ($_ENV['APP_DEMO_MODE'] ?? '0') === '1',
 
-            // Sélecteur de période
+            // Période
             'periodType' => $periodType,
             'periodLabel' => $periodLabel,
             'periodChoices' => DashboardPeriodService::getPeriodChoices(),
             'customStartDate' => $customStartStr,
             'customEndDate' => $customEndStr,
-            'startOfPeriod' => $startOfPeriod,
-            'endOfPeriod' => $endOfPeriod,
 
-            // CA période sélectionnée
+            // CA période
             'caPeriode' => $caPeriode,
             'caPeriodeComparison' => $caPeriodeComparison,
             'variationPeriodePourcent' => $variationPeriodePourcent,
 
-            // CA mois (KPI fixes)
+            // KPIs
             'caMoisEncaisse' => $caMoisEncaisse,
             'caAnneeEncaisse' => $caAnneeEncaisse,
             'variationMoisPourcent' => $variationMoisPourcent,
-
-            // Objectifs
-            'objectifMensuel' => $objectifMensuel,
             'objectifAnnuel' => $objectifAnnuel,
-            'progressionObjectifMensuel' => $progressionObjectifMensuel,
             'progressionObjectifAnnuel' => $progressionObjectifAnnuel,
-
-            // Plafond
             'plafondCa' => $plafondCa,
             'progressionPlafond' => $progressionPlafond,
-
-            // Cotisations
             'cotisationsEstimees' => $cotisationsEstimees,
             'tauxCotisations' => $tauxCotisations,
-
-            // En attente
             'caEnAttente' => $caEnAttente,
 
-            // Factures
+            // Factures / Devis
             'nbFacturesEnRetard' => $nbFacturesEnRetard,
             'montantEnRetard' => $montantEnRetard,
-            'facturesEnRetard' => array_slice($facturesEnRetard, 0, 5), // Top 5
-            'delaiMoyenPaiement' => $delaiMoyenPaiement,
-
-            // Devis
             'nbDevisPending' => $nbDevisPending,
-            'montantDevisPending' => $montantDevisPending,
             'tauxConversion' => $tauxConversion,
             'nbDevisARelancer' => $nbDevisARelancer,
-            'devisARelancer' => array_slice($devisARelancer, 0, 5), // Top 5
 
-            // Dépenses
-            'depensesMois' => $depensesMois,
-            'depensesAnnee' => $depensesAnnee,
-            'beneficeNetMois' => $beneficeNetMois,
+            // Benefice
             'beneficeNetAnnee' => $beneficeNetAnnee,
-            'margeNetMois' => $margeNetMois,
             'margeNetAnnee' => $margeNetAnnee,
 
-            // Données graphiques
+            // Graphiques
             'caParMois' => $caParMois,
             'caParMoisComparison' => $caParMoisComparison,
             'monthLabels' => $monthLabels,
             'topClients' => $topClients,
-            'depensesParMois' => $depensesParMois,
             'cotisationsParMois' => $cotisationsParMois,
 
             // Prévisions
             'projections' => $projections,
             'tendance' => $tendance,
-
-            // Mode démo
-            'demoMode' => ($_ENV['APP_DEMO_MODE'] ?? '0') === '1',
-
-            // Google OAuth
-            'googleOAuthConfigured' => $this->googleOAuthService->isConfigured(),
-            'googleOAuthConnected' => $this->googleOAuthService->isConnected(),
-            'googleOAuthToken' => $this->googleOAuthService->getValidToken(),
-
-            // SEO Sync
-            'lastSeoSyncAt' => $this->seoDataImportService->getLastSyncDate(),
-
-            // SEO Keywords with positions (Top 10 and Bottom 10)
-            'seoKeywordsTop10' => $this->getTopSeoKeywords($seoKeywordRepository, 10),
-            'seoKeywordsBottom10' => $this->getBottomSeoKeywords($seoKeywordRepository, 10),
-
-            // SEO Position comparisons (current month vs previous month)
-            'seoPositionComparisons' => $this->calculateSeoPositionComparisons(
-                $seoKeywordRepository,
-                $seoPositionRepository
-            ),
-
-            // SEO Chart data (last 30 days)
-            'seoChartData' => $this->prepareSeoChartData($seoDailyTotalRepository),
-
-            // SEO Performance categories
-            'seoPerformanceData' => $this->categorizeSeoKeywords(
-                $seoKeywordRepository->findAllWithLatestPosition()
-            ),
-
-            // SEO Keywords Chart (evolution over 30 days)
-            'seoKeywordsChartData' => $this->prepareSeoKeywordsChartData($seoKeywordRepository, $seoDailyTotalRepository),
-
-            // Google Reviews
-            'googlePlacesConfigured' => $this->googlePlacesService->isConfigured(),
-            'reviewStats' => $googleReviewRepository->getStats(),
-            'reviewsDataFresh' => $this->reviewSyncService->isDataFresh(),
-            'pendingReviews' => $googleReviewRepository->findPending(),
-            'reviewsApiError' => $this->googlePlacesService->getLastError(),
         ]);
     }
 
@@ -724,502 +696,6 @@ class DashboardController extends AbstractDashboardController
         return $response;
     }
 
-    /**
-     * Récupère les N meilleurs mots-clés (toutes pertinences) triés par clics, impressions, position.
-     *
-     * @return array<SeoKeyword>
-     */
-    private function getTopSeoKeywords(SeoKeywordRepository $repository, int $limit = 10): array
-    {
-        $keywords = $repository->findAllWithLatestPosition();
-
-        // Filtrer uniquement les actifs avec des données
-        $keywords = array_filter($keywords, function($keyword) {
-            return $keyword->isActive() && $keyword->getLatestPosition() !== null;
-        });
-
-        // Trier par clics DESC, impressions DESC, position ASC
-        usort($keywords, function($a, $b) {
-            $posA = $a->getLatestPosition();
-            $posB = $b->getLatestPosition();
-
-            // Clics DESC
-            $clicksCompare = $posB->getClicks() <=> $posA->getClicks();
-            if ($clicksCompare !== 0) {
-                return $clicksCompare;
-            }
-
-            // Impressions DESC
-            $impressionsCompare = $posB->getImpressions() <=> $posA->getImpressions();
-            if ($impressionsCompare !== 0) {
-                return $impressionsCompare;
-            }
-
-            // Position ASC (meilleure position = plus petit nombre)
-            return $posA->getPosition() <=> $posB->getPosition();
-        });
-
-        return array_slice($keywords, 0, $limit);
-    }
-
-    /**
-     * Récupère les N pires mots-clés (pertinence haute uniquement) triés par clics, impressions, position.
-     *
-     * @return array<SeoKeyword>
-     */
-    private function getBottomSeoKeywords(SeoKeywordRepository $repository, int $limit = 10): array
-    {
-        $keywords = $repository->findAllWithLatestPosition();
-
-        // Filtrer uniquement les actifs avec pertinence haute et des données
-        $keywords = array_filter($keywords, function($keyword) {
-            return $keyword->isActive()
-                && $keyword->getRelevanceLevel() === SeoKeyword::RELEVANCE_HIGH
-                && $keyword->getLatestPosition() !== null;
-        });
-
-        // Trier par clics ASC, impressions ASC, position DESC (les pires en premier)
-        usort($keywords, function($a, $b) {
-            $posA = $a->getLatestPosition();
-            $posB = $b->getLatestPosition();
-
-            // Clics ASC (moins de clics = pire)
-            $clicksCompare = $posA->getClicks() <=> $posB->getClicks();
-            if ($clicksCompare !== 0) {
-                return $clicksCompare;
-            }
-
-            // Impressions ASC (moins d'impressions = pire)
-            $impressionsCompare = $posA->getImpressions() <=> $posB->getImpressions();
-            if ($impressionsCompare !== 0) {
-                return $impressionsCompare;
-            }
-
-            // Position DESC (pire position = plus grand nombre)
-            return $posB->getPosition() <=> $posA->getPosition();
-        });
-
-        return array_slice($keywords, 0, $limit);
-    }
-
-    /**
-     * Catégorise les mots-clés SEO en Top Performers, À améliorer, et Opportunités CTR.
-     *
-     * @param array $keywords Liste des mots-clés avec leurs positions
-     * @return array{topPerformers: array, toImprove: array, ctrOpportunities: array}
-     */
-    private function categorizeSeoKeywords(array $keywords): array
-    {
-        $topPerformers = [];
-        $toImprove = [];
-        $ctrOpportunities = [];
-
-        foreach ($keywords as $keyword) {
-            if (!$keyword->isActive()) {
-                continue;
-            }
-
-            $latestPosition = $keyword->getLatestPosition();
-            if (!$latestPosition) {
-                continue;
-            }
-
-            $position = $latestPosition->getPosition();
-            $clicks = $latestPosition->getClicks();
-            $impressions = $latestPosition->getImpressions();
-            $ctr = $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0;
-
-            $keywordData = [
-                'keyword' => $keyword->getKeyword(),
-                'position' => $position,
-                'clicks' => $clicks,
-                'impressions' => $impressions,
-                'ctr' => $ctr,
-                'relevanceLevel' => $keyword->getRelevanceLevel(),
-                'source' => $keyword->getSource(),
-            ];
-
-            // Top Performers: position <= 10 (première page)
-            if ($position <= 10) {
-                $topPerformers[] = $keywordData;
-            }
-
-            // À améliorer: position > 20 ET pertinence != low
-            // Les mots-clés "low" ne sont pas prioritaires à améliorer
-            if ($position > 20 && $keyword->getRelevanceLevel() !== SeoKeyword::RELEVANCE_LOW) {
-                $toImprove[] = $keywordData;
-            }
-
-            // Opportunités CTR: beaucoup d'impressions (>= 100) mais CTR < 2%
-            if ($impressions >= 100 && $ctr < 2) {
-                $ctrOpportunities[] = $keywordData;
-            }
-        }
-
-        // Trier par position (meilleure en premier pour top performers)
-        usort($topPerformers, fn($a, $b) => $a['position'] <=> $b['position']);
-        // Trier par pertinence (high > medium) puis par position (pire en premier)
-        usort($toImprove, function($a, $b) {
-            $relevanceOrder = [SeoKeyword::RELEVANCE_HIGH => 0, SeoKeyword::RELEVANCE_MEDIUM => 1, SeoKeyword::RELEVANCE_LOW => 2];
-            $relevanceA = $relevanceOrder[$a['relevanceLevel']] ?? 2;
-            $relevanceB = $relevanceOrder[$b['relevanceLevel']] ?? 2;
-            if ($relevanceA !== $relevanceB) {
-                return $relevanceA <=> $relevanceB;
-            }
-            return $b['position'] <=> $a['position'];
-        });
-        // Trier par impressions (plus d'impressions = plus grande opportunité)
-        usort($ctrOpportunities, fn($a, $b) => $b['impressions'] <=> $a['impressions']);
-
-        return [
-            'topPerformers' => array_slice($topPerformers, 0, 5),
-            'toImprove' => array_slice($toImprove, 0, 5),
-            'ctrOpportunities' => array_slice($ctrOpportunities, 0, 5),
-        ];
-    }
-
-    /**
-     * Prépare les données pour le graphique SEO (clics/impressions sur 30 jours).
-     *
-     * @return array{labels: array, clicks: array, impressions: array, hasEnoughData: bool}
-     */
-    private function prepareSeoChartData(SeoDailyTotalRepository $dailyTotalRepository): array
-    {
-        $now = new \DateTimeImmutable();
-        $chartStartDate = $now->modify('-29 days')->setTime(0, 0, 0);
-        // Récupérer 6 jours supplémentaires pour calculer la moyenne 7j dès le début
-        $dataStartDate = $now->modify('-35 days')->setTime(0, 0, 0);
-
-        // Récupérer les totaux journaliers (vrais clics, pas anonymisés)
-        $dailyTotals = $dailyTotalRepository->findByDateRange($dataStartDate, $now);
-
-        if (empty($dailyTotals)) {
-            return [
-                'labels' => [],
-                'clicks' => [],
-                'impressions' => [],
-                'ctr' => [],
-                'position' => [],
-                'clicks7d' => [],
-                'impressions7d' => [],
-                'ctr7d' => [],
-                'position7d' => [],
-                'hasEnoughData' => false,
-                'daysWithData' => 0,
-            ];
-        }
-
-        // Trouver la première et dernière date avec des données
-        $firstDataDate = null;
-        $lastDataDate = null;
-        foreach ($dailyTotals as $total) {
-            $date = $total->getDate();
-            if ($firstDataDate === null || $date < $firstDataDate) {
-                $firstDataDate = $date;
-            }
-            if ($lastDataDate === null || $date > $lastDataDate) {
-                $lastDataDate = $date;
-            }
-        }
-
-        // Indexer par date pour un accès rapide
-        $dailyData = [];
-        foreach ($dailyTotals as $total) {
-            $dateKey = $total->getDate()->format('Y-m-d');
-            $dailyData[$dateKey] = [
-                'clicks' => $total->getClicks(),
-                'impressions' => $total->getImpressions(),
-                'ctr' => $total->getCtr(),
-                'position' => $total->getPosition(),
-            ];
-        }
-
-        $daysWithData = count($dailyTotals);
-        $hasEnoughData = $daysWithData >= 7;
-
-        // Construire les tableaux de données complets (incluant les 6 jours avant pour le calcul 7j)
-        $allLabels = [];
-        $allClicks = [];
-        $allImpressions = [];
-        $allCtr = [];
-        $allPosition = [];
-
-        $currentDate = $firstDataDate;
-        $endDate = $lastDataDate;
-
-        while ($currentDate <= $endDate) {
-            $dateKey = $currentDate->format('Y-m-d');
-            $allLabels[] = $currentDate->format('d/m');
-
-            if (isset($dailyData[$dateKey])) {
-                $allClicks[] = $dailyData[$dateKey]['clicks'];
-                $allImpressions[] = $dailyData[$dateKey]['impressions'];
-                $allCtr[] = $dailyData[$dateKey]['ctr'];
-                $allPosition[] = $dailyData[$dateKey]['position'];
-            } else {
-                $allClicks[] = 0;
-                $allImpressions[] = 0;
-                $allCtr[] = null;
-                $allPosition[] = null;
-            }
-
-            $currentDate = $currentDate->modify('+1 day');
-        }
-
-        // Calculer les moyennes mobiles sur 7 jours (vraies moyennes 7j)
-        $allClicks7d = [];
-        $allImpressions7d = [];
-        $allCtr7d = [];
-        $allPosition7d = [];
-
-        for ($i = 0; $i < count($allClicks); $i++) {
-            // Toujours utiliser 7 jours si disponibles
-            $windowStart = max(0, $i - 6);
-
-            $sumClicks = 0;
-            $sumImpressions = 0;
-            $sumCtr = 0;
-            $sumPosition = 0;
-            $countCtr = 0;
-            $countPosition = 0;
-
-            for ($j = $windowStart; $j <= $i; $j++) {
-                $sumClicks += $allClicks[$j];
-                $sumImpressions += $allImpressions[$j];
-                if ($allCtr[$j] !== null) {
-                    $sumCtr += $allCtr[$j];
-                    $countCtr++;
-                }
-                if ($allPosition[$j] !== null && $allPosition[$j] > 0) {
-                    $sumPosition += $allPosition[$j];
-                    $countPosition++;
-                }
-            }
-
-            $allClicks7d[] = $sumClicks;
-            $allImpressions7d[] = $sumImpressions;
-            $allCtr7d[] = $countCtr > 0 ? round($sumCtr / $countCtr, 2) : null;
-            $allPosition7d[] = $countPosition > 0 ? round($sumPosition / $countPosition, 1) : null;
-        }
-
-        // Déterminer l'index de début pour l'affichage (max 30 jours)
-        $totalDays = count($allLabels);
-        $displayDays = min(30, $totalDays);
-        $startIndex = $totalDays - $displayDays;
-
-        // Extraire uniquement les données à afficher
-        $labels = array_slice($allLabels, $startIndex);
-        $clicks = array_slice($allClicks, $startIndex);
-        $impressions = array_slice($allImpressions, $startIndex);
-        $ctr = array_slice($allCtr, $startIndex);
-        $position = array_slice($allPosition, $startIndex);
-        $clicks7d = array_slice($allClicks7d, $startIndex);
-        $impressions7d = array_slice($allImpressions7d, $startIndex);
-        $ctr7d = array_slice($allCtr7d, $startIndex);
-        $position7d = array_slice($allPosition7d, $startIndex);
-
-        return [
-            'labels' => $labels,
-            'clicks' => $clicks,
-            'impressions' => $impressions,
-            'ctr' => $ctr,
-            'position' => $position,
-            'clicks7d' => $clicks7d,
-            'impressions7d' => $impressions7d,
-            'ctr7d' => $ctr7d,
-            'position7d' => $position7d,
-            'hasEnoughData' => $hasEnoughData,
-            'daysWithData' => $daysWithData,
-        ];
-    }
-
-    /**
-     * Calcule les comparaisons de positions SEO entre le mois courant et le mois précédent.
-     *
-     * @return array<int, array{currentPosition: ?float, previousPosition: ?float, variation: ?float, status: string}>
-     */
-    private function calculateSeoPositionComparisons(
-        SeoKeywordRepository $keywordRepository,
-        SeoPositionRepository $positionRepository
-    ): array {
-        $now = new \DateTimeImmutable();
-
-        // Période du mois courant
-        $currentMonthStart = $now->modify('first day of this month')->setTime(0, 0, 0);
-        $currentMonthEnd = $now->setTime(23, 59, 59);
-
-        // Période du mois précédent
-        $previousMonthStart = $now->modify('first day of last month')->setTime(0, 0, 0);
-        $previousMonthEnd = $now->modify('last day of last month')->setTime(23, 59, 59);
-
-        // Récupérer les positions moyennes pour chaque période
-        $currentPositions = $positionRepository->getAveragePositionsForAllKeywords(
-            $currentMonthStart,
-            $currentMonthEnd
-        );
-        $previousPositions = $positionRepository->getAveragePositionsForAllKeywords(
-            $previousMonthStart,
-            $previousMonthEnd
-        );
-
-        // Récupérer tous les mots-clés actifs
-        $keywords = $keywordRepository->findActiveKeywords();
-
-        $comparisons = [];
-        foreach ($keywords as $keyword) {
-            $keywordId = $keyword->getId();
-            $currentData = $currentPositions[$keywordId] ?? null;
-            $previousData = $previousPositions[$keywordId] ?? null;
-
-            $currentPosition = $currentData['avgPosition'] ?? null;
-            $previousPosition = $previousData['avgPosition'] ?? null;
-
-            // Calculer la variation
-            $variation = null;
-            $status = 'no_data';
-
-            if ($currentPosition !== null && $previousPosition !== null) {
-                // Variation = position précédente - position actuelle
-                // Positif = amélioration (on monte dans le classement)
-                // Négatif = dégradation (on descend dans le classement)
-                $variation = round($previousPosition - $currentPosition, 1);
-
-                if ($variation > 0) {
-                    $status = 'improved';
-                } elseif ($variation < 0) {
-                    $status = 'degraded';
-                } else {
-                    $status = 'stable';
-                }
-            } elseif ($currentPosition !== null && $previousPosition === null) {
-                $status = 'new';
-            }
-
-            $comparisons[$keywordId] = [
-                'currentPosition' => $currentPosition,
-                'previousPosition' => $previousPosition,
-                'variation' => $variation,
-                'status' => $status,
-            ];
-        }
-
-        return $comparisons;
-    }
-
-    /**
-     * Prépare les données pour le graphique d'évolution des mots-clés SEO.
-     * Utilise MIN(SeoPosition.date) comme date de première apparition GSC (pas createdAt).
-     * S'arrête à la dernière date avec des données (comme les autres graphiques SEO).
-     */
-    private function prepareSeoKeywordsChartData(
-        SeoKeywordRepository $repo,
-        SeoDailyTotalRepository $dailyTotalRepo
-    ): array {
-        $days = 30;
-        // Use All to include inactive keywords in the chart cumulative
-        $firstAppearances = $repo->getKeywordFirstAppearancesAll();
-        $relevanceCounts = $repo->getRelevanceCounts();
-        $deactivations = $repo->getKeywordDeactivations();
-        $inactiveCount = $repo->countInactive();
-
-        // Total actif actuel et badges
-        $currentTotal = 0;
-        $relevanceMap = ['high' => 0, 'medium' => 0, 'low' => 0];
-        foreach ($relevanceCounts as $row) {
-            $relevanceMap[$row['relevanceLevel']] = (int) $row['cnt'];
-            $currentTotal += (int) $row['cnt'];
-        }
-
-        // Trouver la dernière date avec des données (cohérent avec les autres graphiques)
-        $now = new \DateTimeImmutable();
-        $dataStartDate = $now->modify("-{$days} days")->setTime(0, 0, 0);
-        $dailyTotals = $dailyTotalRepo->findByDateRange($dataStartDate, $now);
-
-        $lastDataDate = null;
-        foreach ($dailyTotals as $total) {
-            $date = $total->getDate();
-            if ($lastDataDate === null || $date > $lastDataDate) {
-                $lastDataDate = $date;
-            }
-        }
-
-        // Si pas de données, utiliser aujourd'hui comme fallback
-        $endDate = $lastDataDate ?? $now;
-        $startDate = $endDate->modify("-" . ($days - 1) . " days");
-        $sinceDate = $startDate->format('Y-m-d');
-
-        // Séparer : mots-clés apparus avant la période (base) vs dans la période (nouveaux)
-        $baseCount = 0;
-        $newByDay = [];
-        foreach ($firstAppearances as $row) {
-            $firstSeen = $row['firstSeen'];
-            $level = $row['relevanceLevel'];
-
-            if ($firstSeen < $sinceDate) {
-                $baseCount++;
-            } else {
-                if (!isset($newByDay[$firstSeen])) {
-                    $newByDay[$firstSeen] = ['high' => 0, 'medium' => 0, 'low' => 0];
-                }
-                $newByDay[$firstSeen][$level]++;
-            }
-        }
-
-        // Désactivations : avant la période (base) vs dans la période
-        $baseDeactivated = 0;
-        $deactivatedByDay = [];
-        foreach ($deactivations as $row) {
-            $deactivatedDate = $row['deactivatedDate'];
-            if ($deactivatedDate < $sinceDate) {
-                $baseDeactivated++;
-            } else {
-                $deactivatedByDay[$deactivatedDate] = ($deactivatedByDay[$deactivatedDate] ?? 0) + 1;
-            }
-        }
-
-        // Générer les jours de startDate à endDate avec cumulatif progressif
-        $labels = [];
-        $newHigh = [];
-        $newMedium = [];
-        $newLow = [];
-        $deactivated = [];
-        $totalKeywords = [];
-        $cumulative = $baseCount - $baseDeactivated;
-
-        $currentDate = $startDate;
-        while ($currentDate <= $endDate) {
-            $dateKey = $currentDate->format('Y-m-d');
-
-            $dayHigh = $newByDay[$dateKey]['high'] ?? 0;
-            $dayMedium = $newByDay[$dateKey]['medium'] ?? 0;
-            $dayLow = $newByDay[$dateKey]['low'] ?? 0;
-            $dayDeactivated = $deactivatedByDay[$dateKey] ?? 0;
-
-            $cumulative += $dayHigh + $dayMedium + $dayLow - $dayDeactivated;
-
-            $labels[] = $currentDate->format('d/m');
-            $newHigh[] = $dayHigh;
-            $newMedium[] = $dayMedium;
-            $newLow[] = $dayLow;
-            $deactivated[] = $dayDeactivated > 0 ? -$dayDeactivated : 0;
-            $totalKeywords[] = $cumulative;
-
-            $currentDate = $currentDate->modify('+1 day');
-        }
-
-        return [
-            'labels' => $labels,
-            'totalKeywords' => $totalKeywords,
-            'newHigh' => $newHigh,
-            'newMedium' => $newMedium,
-            'newLow' => $newLow,
-            'deactivated' => $deactivated,
-            'currentTotal' => $currentTotal,
-            'inactiveCount' => $inactiveCount,
-            'relevanceCounts' => $relevanceMap,
-        ];
-    }
-
     private function formatEventDate(Event $event): string
     {
         $start = $event->getStartAt();
@@ -1275,7 +751,10 @@ class DashboardController extends AbstractDashboardController
 
     public function configureMenuItems(): iterable
     {
-        yield MenuItem::linkToRoute('Tableau de bord', 'fa fa-home', 'admin_business_dashboard');
+        yield MenuItem::section('Tableaux de bord');
+        yield MenuItem::linkToRoute('Vue d\'ensemble', 'fa fa-home', 'admin_main_dashboard');
+        yield MenuItem::linkToRoute('SEO', 'fa fa-chart-line', 'admin_seo_dashboard');
+        yield MenuItem::linkToRoute('Finances', 'fa fa-euro-sign', 'admin_finance_dashboard');
         yield MenuItem::linkToRoute('Calendrier', 'fa fa-calendar-alt', 'admin_calendar');
 
         yield MenuItem::section('Site Public');

@@ -1,176 +1,12 @@
 {% extends '@EasyAdmin/page/content.html.twig' %}
 
 {% block content_title %}
-    <i class="fa fa-chart-line"></i> Tableau de Bord {{ year }}
-{% endblock %}
-
-{% block content_header_wrapper %}
-    {{ parent() }}
-    <div style="margin-top: -40px; display: flex; justify-content: flex-end; gap: 1rem; align-items: center; flex-wrap: wrap;">
-        <form id="periodForm" method="GET" action="{{ path('admin_business_dashboard') }}" style="display: flex; gap: 0.5rem; align-items: center;">
-            <select name="period" id="periodSelect" class="form-select form-select-sm" style="width: auto;" onchange="handlePeriodChange()">
-                {% for label, value in periodChoices %}
-                    <option value="{{ value }}" {% if periodType == value %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-            <div id="customDateFields" style="display: {{ periodType == 'custom' ? 'flex' : 'none' }}; gap: 0.5rem; align-items: center;">
-                <input type="date" name="startDate" id="startDate" class="form-control form-control-sm" value="{{ customStartDate }}" style="width: auto;">
-                <span>→</span>
-                <input type="date" name="endDate" id="endDate" class="form-control form-control-sm" value="{{ customEndDate }}" style="width: auto;">
-            </div>
-            <button type="submit" class="btn btn-sm btn-primary">
-                <i class="fas fa-sync"></i>
-            </button>
-        </form>
-        <a href="{{ path('admin_dashboard_export_csv') }}" class="btn btn-sm btn-success">
-            <i class="fas fa-file-csv"></i> Exporter CSV
-        </a>
-    </div>
+    <i class="fa fa-chart-line"></i> Dashboard SEO
 {% endblock %}
 
 {% block page_content %}
-<style>
-    :root {
-        --primary: #3b82f6;
-        --success: #10b981;
-        --warning: #f59e0b;
-        --danger: #ef4444;
-        --info: #06b6d4;
-        --purple: #8b5cf6;
-    }
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    .stat-card {
-        background: white;
-        border-radius: 12px;
-        padding: 1.25rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        border-left: 4px solid var(--primary);
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    .stat-card.success { border-left-color: var(--success); }
-    .stat-card.warning { border-left-color: var(--warning); }
-    .stat-card.danger { border-left-color: var(--danger); }
-    .stat-card.info { border-left-color: var(--info); }
-    .stat-card.purple { border-left-color: var(--purple); }
-    .stat-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.75rem;
-    }
-    .stat-label {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #6b7280;
-        text-transform: uppercase;
-        letter-spacing: 0.025em;
-    }
-    .stat-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-    }
-    .stat-icon.primary { background: #eff6ff; color: var(--primary); }
-    .stat-icon.success { background: #f0fdf4; color: var(--success); }
-    .stat-icon.warning { background: #fffbeb; color: var(--warning); }
-    .stat-icon.danger { background: #fef2f2; color: var(--danger); }
-    .stat-icon.info { background: #f0fdfa; color: var(--info); }
-    .stat-icon.purple { background: #faf5ff; color: var(--purple); }
-    .stat-value {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #111827;
-        margin: 0.5rem 0;
-    }
-    .stat-subtitle {
-        font-size: 0.875rem;
-        color: #9ca3af;
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-    }
-    .stat-subtitle.positive { color: var(--success); }
-    .stat-subtitle.negative { color: var(--danger); }
-    .chart-container {
-        background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        margin-bottom: 1.5rem;
-    }
-    .chart-title {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: #111827;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .chart-canvas {
-        max-height: 280px;
-    }
-    .progress-ring {
-        width: 80px;
-        height: 80px;
-        position: relative;
-    }
-    .progress-ring svg {
-        transform: rotate(-90deg);
-    }
-    .progress-ring circle {
-        fill: none;
-        stroke-width: 8;
-    }
-    .alert-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        font-size: 0.875rem;
-        font-weight: 600;
-    }
-    .alert-badge.danger { background: #fef2f2; color: var(--danger); }
-    .alert-badge.warning { background: #fffbeb; color: var(--warning); }
-    .alert-badge.success { background: #f0fdf4; color: var(--success); }
-    .grid-2 {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1.5rem;
-    }
-    @media (max-width: 768px) {
-        .grid-2 { grid-template-columns: 1fr; }
-    }
-
-    {% if demoMode %}
-    /* Mode démo : flouter les données sensibles */
-    .stat-value,
-    .stat-subtitle,
-    .alert-badge {
-        filter: blur(4px);
-        transition: filter 0.2s;
-    }
-    .stat-card:hover .stat-value,
-    .stat-card:hover .stat-subtitle,
-    .stat-card:hover .alert-badge {
-        filter: blur(0px);
-    }
-    {% endif %}
-</style>
+{% include 'admin/dashboard/_partials/_styles.html.twig' %}
+{% include 'admin/dashboard/_partials/_nav_tabs.html.twig' with {active: 'seo'} %}
 
 <!-- Google Search Console Status -->
 <div class="stat-card {% if googleOAuthConnected %}success{% elseif googleOAuthConfigured %}info{% else %}warning{% endif %}" style="margin-bottom: 1.5rem;">
@@ -183,25 +19,25 @@
     {% if not googleOAuthConfigured %}
         <div style="color: #92400e; font-size: 0.875rem;">
             <i class="fas fa-exclamation-triangle"></i>
-            Credentials non configurés. Ajoutez <code>GOOGLE_CLIENT_ID</code> et <code>GOOGLE_CLIENT_SECRET</code> dans le fichier <code>.env.local</code>
+            Credentials non configures. Ajoutez <code>GOOGLE_CLIENT_ID</code> et <code>GOOGLE_CLIENT_SECRET</code> dans le fichier <code>.env.local</code>
         </div>
     {% elseif googleOAuthConnected %}
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
                 <span style="color: #065f46; font-weight: 600;">
-                    <i class="fas fa-check-circle"></i> Connecté
+                    <i class="fas fa-check-circle"></i> Connecte
                 </span>
                 {% if googleOAuthToken %}
                     <div style="font-size: 0.75rem; margin-top: 0.25rem;">
                         {% if googleOAuthToken.isExpiringSoon(5) %}
                             <span style="color: #f59e0b;">
                                 <i class="fas fa-exclamation-triangle"></i>
-                                Token expire bientôt (sera rafraîchi automatiquement)
+                                Token expire bientot (sera rafraichi automatiquement)
                             </span>
                         {% elseif googleOAuthToken.isExpired %}
                             <span style="color: #ef4444;">
                                 <i class="fas fa-times-circle"></i>
-                                Token expiré - sera rafraîchi au prochain appel API
+                                Token expire - sera rafraichi au prochain appel API
                             </span>
                         {% else %}
                             <span style="color: #6b7280;">
@@ -212,7 +48,7 @@
                 {% endif %}
                 {% if lastSeoSyncAt %}
                     <div style="font-size: 0.75rem; margin-top: 0.25rem; color: #6b7280;">
-                        <i class="fas fa-sync-alt"></i> Dernière sync SEO: {{ lastSeoSyncAt|date('d/m/Y à H:i') }}
+                        <i class="fas fa-sync-alt"></i> Derniere sync SEO: {{ lastSeoSyncAt|date('d/m/Y à H:i') }}
                     </div>
                 {% endif %}
             </div>
@@ -221,13 +57,13 @@
                     <i class="fas fa-sync-alt"></i> Sync SEO
                 </a>
                 <a href="{{ path('admin_google_disconnect') }}" class="btn btn-sm btn-outline-secondary">
-                    <i class="fas fa-unlink"></i> Déconnecter
+                    <i class="fas fa-unlink"></i> Deconnecter
                 </a>
             </div>
         </div>
     {% else %}
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div style="color: #6b7280;">Non connecté</div>
+            <div style="color: #6b7280;">Non connecte</div>
             <a href="{{ path('admin_google_connect') }}" class="btn btn-sm btn-primary">
                 <i class="fab fa-google"></i> Connecter Google Search Console
             </a>
@@ -246,7 +82,7 @@
     {% if not googlePlacesConfigured %}
         <div style="color: #92400e; font-size: 0.875rem;">
             <i class="fas fa-exclamation-triangle"></i>
-            API non configurée. Ajoutez <code>GOOGLE_PLACES_API_KEY</code> et <code>GOOGLE_PLACE_ID</code> dans le fichier <code>.env.local</code>
+            API non configuree. Ajoutez <code>GOOGLE_PLACES_API_KEY</code> et <code>GOOGLE_PLACE_ID</code> dans le fichier <code>.env.local</code>
         </div>
     {% elseif reviewStats.total > 0 %}
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
@@ -263,7 +99,7 @@
                 <div style="display: flex; gap: 1.5rem;">
                     <div style="text-align: center;">
                         <div style="font-size: 1.25rem; font-weight: 700; color: #10b981;">{{ reviewStats.approved }}</div>
-                        <div style="font-size: 0.75rem; color: #6b7280;">Approuvés</div>
+                        <div style="font-size: 0.75rem; color: #6b7280;">Approuves</div>
                     </div>
                     <div style="text-align: center;">
                         <div style="font-size: 1.25rem; font-weight: 700; color: #f59e0b;">{{ reviewStats.pending }}</div>
@@ -278,13 +114,13 @@
             <div style="display: flex; gap: 0.5rem; align-items: center;">
                 {% if not reviewsDataFresh %}
                     <span style="font-size: 0.75rem; color: #6b7280;">
-                        <i class="fas fa-clock"></i> Données &gt; 12h
+                        <i class="fas fa-clock"></i> Donnees &gt; 12h
                     </span>
                 {% endif %}
                 <a href="{{ path('admin_reviews_sync') }}" class="btn btn-sm btn-primary" title="Synchroniser les avis Google">
                     <i class="fas fa-sync-alt"></i> Sync Avis
                 </a>
-                <a href="{{ ea_url().setController('App\\Controller\\Admin\\GoogleReviewCrudController').setAction('index') }}" class="btn btn-sm btn-outline-secondary" title="Gérer les avis">
+                <a href="{{ ea_url().setController('App\\Controller\\Admin\\GoogleReviewCrudController').setAction('index') }}" class="btn btn-sm btn-outline-secondary" title="Gerer les avis">
                     <i class="fas fa-cog"></i>
                 </a>
             </div>
@@ -292,13 +128,13 @@
         {% if reviewsApiError %}
             <div style="margin-top: 1rem; padding: 0.75rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #991b1b; font-size: 0.875rem;">
                 <i class="fas fa-exclamation-circle"></i>
-                <strong>Dernière erreur API :</strong> {{ reviewsApiError }}
+                <strong>Derniere erreur API :</strong> {{ reviewsApiError }}
             </div>
         {% endif %}
         {% if pendingReviews|length > 0 %}
             <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
                 <div style="font-size: 0.875rem; font-weight: 600; color: #92400e; margin-bottom: 0.5rem;">
-                    <i class="fas fa-bell"></i> {{ pendingReviews|length }} avis en attente de modération
+                    <i class="fas fa-bell"></i> {{ pendingReviews|length }} avis en attente de moderation
                 </div>
                 {% for review in pendingReviews|slice(0, 3) %}
                     <div style="background: #fffbeb; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem;">
@@ -324,7 +160,7 @@
         {% endif %}
     {% else %}
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div style="color: #6b7280;">Aucun avis synchronisé</div>
+            <div style="color: #6b7280;">Aucun avis synchronise</div>
             <a href="{{ path('admin_reviews_sync') }}" class="btn btn-sm btn-primary">
                 <i class="fas fa-sync-alt"></i> Synchroniser les avis
             </a>
@@ -345,14 +181,14 @@
         <i class="fas fa-trophy" style="color: #10b981;"></i>
         Top 10 - Meilleures performances
         <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">
-            (par score de visibilité)
+            (par score de visibilite)
         </span>
     </div>
     <div style="overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
             <thead>
                 <tr style="border-bottom: 2px solid #10b981;">
-                    <th style="text-align: left; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Mot-clé</th>
+                    <th style="text-align: left; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Mot-cle</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Position</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">vs M-1</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Clics</th>
@@ -420,7 +256,7 @@
 </div>
 {% endif %}
 
-<!-- SEO Positions Widget - À travailler (next 10 by score) -->
+<!-- SEO Positions Widget - A travailler -->
 {% if googleOAuthConnected and seoKeywordsRanked.toImprove|length > 0 %}
 <div class="chart-container" style="padding: 1rem 1.5rem; margin-bottom: 1.5rem;">
     <div class="chart-title" style="margin-bottom: 1rem;">
@@ -434,7 +270,7 @@
         <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
             <thead>
                 <tr style="border-bottom: 2px solid #f59e0b;">
-                    <th style="text-align: left; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Mot-clé</th>
+                    <th style="text-align: left; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Mot-cle</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Position</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">vs M-1</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Clics</th>
@@ -506,7 +342,7 @@
 {% if googleOAuthConnected and (seoKeywordsRanked.top10|length > 0 or seoKeywordsRanked.toImprove|length > 0) %}
 <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
     <a href="{{ ea_url().setController('App\\Controller\\Admin\\SeoKeywordCrudController').setAction('index') }}" class="btn btn-sm btn-outline-secondary">
-        <i class="fas fa-cog"></i> Gérer les mots-clés
+        <i class="fas fa-cog"></i> Gerer les mots-cles
     </a>
     <div style="display: flex; gap: 0.5rem;">
         <a href="{{ path('admin_seo_export_csv') }}" class="btn btn-sm btn-success">
@@ -524,9 +360,9 @@
         <div class="stat-icon info"><i class="fas fa-search"></i></div>
     </div>
     <div style="color: #6b7280; font-size: 0.875rem;">
-        Aucun mot-clé configuré.
+        Aucun mot-cle configure.
         <a href="{{ ea_url().setController('App\\Controller\\Admin\\SeoKeywordCrudController').setAction('new') }}" style="color: var(--primary); text-decoration: underline;">
-            Ajouter des mots-clés
+            Ajouter des mots-cles
         </a>
         pour commencer le suivi SEO.
     </div>
@@ -538,7 +374,7 @@
 <div class="chart-container" style="margin-bottom: 1.5rem;">
     <div class="chart-title">
         <i class="fas fa-chart-line" style="color: var(--info);"></i>
-        Évolution SEO - 30 derniers jours
+        Evolution SEO - 30 derniers jours
     </div>
     {% if seoChartData.hasEnoughData %}
         <canvas id="chartSeoEvolution" class="chart-canvas"></canvas>
@@ -546,8 +382,8 @@
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; color: #6b7280;">
             <i class="fas fa-chart-line" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;"></i>
             <div style="font-size: 0.875rem; text-align: center;">
-                Données insuffisantes pour afficher les tendances<br>
-                <span style="font-size: 0.75rem; opacity: 0.7;">({{ seoChartData.daysWithData }} jour{% if seoChartData.daysWithData > 1 %}s{% endif %} de données, minimum 7 requis)</span>
+                Donnees insuffisantes pour afficher les tendances<br>
+                <span style="font-size: 0.75rem; opacity: 0.7;">({{ seoChartData.daysWithData }} jour{% if seoChartData.daysWithData > 1 %}s{% endif %} de donnees, minimum 7 requis)</span>
             </div>
         </div>
     {% endif %}
@@ -564,7 +400,7 @@
     {% else %}
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; color: #6b7280;">
             <i class="fas fa-chart-area" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;"></i>
-            <div style="font-size: 0.875rem;">Données insuffisantes</div>
+            <div style="font-size: 0.875rem;">Donnees insuffisantes</div>
         </div>
     {% endif %}
 </div>
@@ -574,7 +410,7 @@
     <div class="chart-title" style="justify-content: space-between; flex-wrap: wrap;">
         <div style="display: flex; align-items: center; gap: 0.5rem;">
             <i class="fas fa-key" style="color: var(--purple);"></i>
-            Évolution des mots-clés SEO
+            Evolution des mots-cles SEO
             <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280;">({{ seoKeywordsChartData.currentTotal }} actifs)</span>
         </div>
         <div style="display: flex; gap: 0.5rem;">
@@ -599,7 +435,7 @@
     {% else %}
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; color: #6b7280;">
             <i class="fas fa-key" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;"></i>
-            <div style="font-size: 0.875rem;">Aucun mot-clé actif</div>
+            <div style="font-size: 0.875rem;">Aucun mot-cle actif</div>
         </div>
     {% endif %}
 </div>
@@ -611,7 +447,7 @@
         <div class="chart-title" style="margin-bottom: 1rem;">
             <i class="fas fa-trophy" style="color: var(--success);"></i>
             Top Performers
-            <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">(visibilité × position × clics)</span>
+            <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">(visibilite x position x clics)</span>
         </div>
         {% if seoPerformanceData.topPerformers|length > 0 %}
             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
@@ -634,16 +470,16 @@
         {% else %}
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; color: #6b7280;">
                 <i class="fas fa-trophy" style="font-size: 2rem; opacity: 0.3; margin-bottom: 0.5rem;"></i>
-                <div style="font-size: 0.875rem; text-align: center;">Aucun mot-clé en première page encore</div>
+                <div style="font-size: 0.875rem; text-align: center;">Aucun mot-cle en premiere page encore</div>
             </div>
         {% endif %}
     </div>
 
-    <!-- À travailler -->
+    <!-- A travailler -->
     <div class="chart-container" style="height: auto; padding: 1.25rem;">
         <div class="chart-title" style="margin-bottom: 1rem;">
             <i class="fas fa-wrench" style="color: #f59e0b;"></i>
-            À travailler
+            A travailler
             <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">(prochain potentiel par score)</span>
         </div>
         {% if seoPerformanceData.toImprove|length > 0 %}
@@ -667,18 +503,18 @@
         {% else %}
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; color: #6b7280;">
                 <i class="fas fa-check-circle" style="font-size: 2rem; opacity: 0.3; color: #10b981; margin-bottom: 0.5rem;"></i>
-                <div style="font-size: 0.875rem; text-align: center;">Pas assez de données pour identifier des mots-clés à travailler</div>
+                <div style="font-size: 0.875rem; text-align: center;">Pas assez de donnees pour identifier des mots-cles a travailler</div>
             </div>
         {% endif %}
     </div>
 </div>
 
-<!-- Opportunités CTR -->
+<!-- Opportunites CTR -->
 {% if seoPerformanceData.ctrOpportunities|length > 0 %}
 <div class="chart-container" style="height: auto; padding: 1.25rem; margin-bottom: 1.5rem;">
     <div class="chart-title" style="margin-bottom: 1rem;">
         <i class="fas fa-lightbulb" style="color: var(--warning);"></i>
-        Opportunités CTR
+        Opportunites CTR
         <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">(Beaucoup d'impressions, peu de clics)</span>
     </div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0.75rem;">
@@ -702,220 +538,22 @@
         {% endfor %}
     </div>
     <div style="margin-top: 0.75rem; font-size: 0.75rem; color: #6b7280;">
-        <i class="fas fa-info-circle"></i> Ces mots-clés génèrent des impressions mais peu de clics. Améliorez vos meta descriptions et titres pour augmenter le CTR.
+        <i class="fas fa-info-circle"></i> Ces mots-cles generent des impressions mais peu de clics. Ameliorez vos meta descriptions et titres pour augmenter le CTR.
     </div>
 </div>
 {% endif %}
 {% endif %}
 
-<!-- KPI Période sélectionnée -->
-<div class="chart-container" style="padding: 1rem 1.5rem; margin-bottom: 1.5rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-        <div>
-            <div class="chart-title" style="margin-bottom: 0.25rem;">
-                <i class="fas fa-calendar-alt" style="color: var(--primary);"></i>
-                CA {{ periodLabel }}
-            </div>
-            <div style="font-size: 2rem; font-weight: 700; color: #111827;">
-                {{ caPeriode|number_format(2, ',', ' ') }} €
-            </div>
-        </div>
-        <div style="text-align: right;">
-            <div style="font-size: 0.875rem; color: #6b7280; font-weight: 600;">vs N-1</div>
-            {% if caPeriodeComparison > 0 %}
-                <div style="font-size: 1.5rem; font-weight: 700; color: {% if variationPeriodePourcent >= 0 %}#10b981{% else %}#ef4444{% endif %};">
-                    <i class="fas fa-arrow-{% if variationPeriodePourcent >= 0 %}up{% else %}down{% endif %}"></i>
-                    {{ variationPeriodePourcent|abs }}%
-                </div>
-                <div style="font-size: 0.875rem; color: #9ca3af;">
-                    {{ caPeriodeComparison|number_format(2, ',', ' ') }} € N-1
-                </div>
-            {% else %}
-                <div style="font-size: 1rem; color: #9ca3af;">Pas de données N-1</div>
-            {% endif %}
-        </div>
-    </div>
-</div>
-
-<!-- KPIs Principaux -->
-<div class="dashboard-grid">
-    <div class="stat-card primary">
-        <div class="stat-header">
-            <span class="stat-label">CA Ce Mois</span>
-            <div class="stat-icon primary"><i class="fas fa-euro-sign"></i></div>
-        </div>
-        <div class="stat-value">{{ (caMoisEncaisse / 1000)|number_format(1) }}k€</div>
-        {% if variationMoisPourcent != 0 %}
-            <div class="stat-subtitle {% if variationMoisPourcent > 0 %}positive{% else %}negative{% endif %}">
-                <i class="fas fa-arrow-{% if variationMoisPourcent > 0 %}up{% else %}down{% endif %}"></i>
-                {{ variationMoisPourcent|abs }}% vs mois dernier
-            </div>
-        {% endif %}
-    </div>
-
-    <div class="stat-card success">
-        <div class="stat-header">
-            <span class="stat-label">CA Année {{ year }}</span>
-            <div class="stat-icon success"><i class="fas fa-chart-line"></i></div>
-        </div>
-        <div class="stat-value">{{ (caAnneeEncaisse / 1000)|number_format(1) }}k€</div>
-        {% if objectifAnnuel > 0 %}
-            <div class="stat-subtitle">{{ progressionObjectifAnnuel }}% de l'objectif</div>
-        {% endif %}
-    </div>
-
-    <div class="stat-card {% if progressionPlafond >= 90 %}danger{% elseif progressionPlafond >= 75 %}warning{% else %}info{% endif %}">
-        <div class="stat-header">
-            <span class="stat-label">Plafond AE</span>
-            <div class="stat-icon {% if progressionPlafond >= 90 %}danger{% elseif progressionPlafond >= 75 %}warning{% else %}info{% endif %}">
-                <i class="fas fa-gauge-high"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ progressionPlafond }}%</div>
-        <div class="stat-subtitle">{{ (caAnneeEncaisse / 1000)|number_format(0) }}k€ / {{ (plafondCa / 1000)|number_format(0) }}k€</div>
-    </div>
-
-    <div class="stat-card warning">
-        <div class="stat-header">
-            <span class="stat-label">En Attente</span>
-            <div class="stat-icon warning"><i class="fas fa-clock"></i></div>
-        </div>
-        <div class="stat-value">{{ (caEnAttente / 1000)|number_format(1) }}k€</div>
-        <div class="stat-subtitle">{{ nbFacturesEnRetard + nbDevisPending }} factures/devis</div>
-    </div>
-
-    {% if tauxCotisations > 0 %}
-    <div class="stat-card purple">
-        <div class="stat-header">
-            <span class="stat-label">Cotisations URSSAF</span>
-            <div class="stat-icon purple"><i class="fas fa-landmark"></i></div>
-        </div>
-        <div class="stat-value">{{ (cotisationsEstimees / 1000)|number_format(1) }}k€</div>
-        <div class="stat-subtitle">{{ tauxCotisations }}% du CA</div>
-    </div>
-    {% endif %}
-
-    <div class="stat-card info">
-        <div class="stat-header">
-            <span class="stat-label">Taux Conversion</span>
-            <div class="stat-icon info"><i class="fas fa-percent"></i></div>
-        </div>
-        <div class="stat-value">{{ tauxConversion }}%</div>
-        <div class="stat-subtitle">Devis → Factures</div>
-    </div>
-
-    <div class="stat-card {% if margeNetAnnee >= 30 %}success{% elseif margeNetAnnee >= 15 %}warning{% else %}danger{% endif %}">
-        <div class="stat-header">
-            <span class="stat-label">Bénéfice Net {{ year }}</span>
-            <div class="stat-icon {% if margeNetAnnee >= 30 %}success{% elseif margeNetAnnee >= 15 %}warning{% else %}danger{% endif %}">
-                <i class="fas fa-chart-line"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ (beneficeNetAnnee / 1000)|number_format(1) }}k€</div>
-        <div class="stat-subtitle">Après cotisations URSSAF : {{ margeNetAnnee }}%</div>
-    </div>
-</div>
-
-<!-- Alertes -->
-{% if nbFacturesEnRetard > 0 or nbDevisARelancer > 0 %}
-<div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-    {% if nbFacturesEnRetard > 0 %}
-        <div class="alert-badge danger">
-            <i class="fas fa-exclamation-circle"></i>
-            {{ nbFacturesEnRetard }} facture(s) en retard ({{ (montantEnRetard / 1000)|number_format(1) }}k€)
-        </div>
-    {% endif %}
-    {% if nbDevisARelancer > 0 %}
-        <div class="alert-badge warning">
-            <i class="fas fa-bell"></i>
-            {{ nbDevisARelancer }} devis à relancer
-        </div>
-    {% endif %}
-</div>
-{% endif %}
-
-<!-- Prévisions -->
-{% if projections is not empty %}
-<div class="chart-container" style="padding: 1rem 1.5rem;">
-    <div class="chart-title" style="margin-bottom: 0.5rem;">
-        <i class="fas fa-crystal-ball" style="color: var(--purple);"></i>
-        Prévisions CA (moyenne 3 derniers mois)
-    </div>
-    <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
-        {% for proj in projections %}
-            <div style="flex: 1; min-width: 150px;">
-                <div style="font-size: 0.875rem; color: #6b7280; font-weight: 600;">{{ proj.month }}</div>
-                <div style="font-size: 1.25rem; font-weight: 700; color: #3b82f6;">{{ (proj.amount / 1000)|number_format(1) }}k€</div>
-            </div>
-        {% endfor %}
-        {% if tendance != 0 %}
-            <div style="flex: 1; min-width: 150px; padding: 0.75rem; background: {% if tendance > 0 %}#f0fdf4{% else %}#fef2f2{% endif %}; border-radius: 8px;">
-                <div style="font-size: 0.875rem; color: #6b7280; font-weight: 600;">Tendance</div>
-                <div style="font-size: 1.25rem; font-weight: 700; color: {% if tendance > 0 %}#10b981{% else %}#ef4444{% endif %};">
-                    <i class="fas fa-arrow-{% if tendance > 0 %}up{% else %}down{% endif %}"></i> {{ tendance|abs }}%
-                </div>
-            </div>
-        {% endif %}
-    </div>
-</div>
-{% endif %}
-
-<!-- Graphiques -->
-<div class="grid-2">
-    <!-- Évolution CA Mensuel -->
-    <div class="chart-container">
-        <div class="chart-title">
-            <i class="fas fa-chart-area" style="color: var(--primary);"></i>
-            Évolution CA - {{ periodLabel }}
-        </div>
-        <canvas id="chartCAMensuel" class="chart-canvas"></canvas>
-    </div>
-
-    <!-- Top Clients -->
-    <div class="chart-container">
-        <div class="chart-title">
-            <i class="fas fa-chart-pie" style="color: var(--success);"></i>
-            Top 5 Clients - {{ periodLabel }}
-        </div>
-        <canvas id="chartClients" class="chart-canvas"></canvas>
-    </div>
-</div>
-
-<!-- CA, Cotisations et Bénéfice -->
-<div class="chart-container">
-    <div class="chart-title">
-        <i class="fas fa-chart-bar" style="color: var(--info);"></i>
-        CA, Cotisations URSSAF et Bénéfice Net - {{ periodLabel }}
-    </div>
-    <canvas id="chartComparaison" class="chart-canvas"></canvas>
-</div>
-
+<!-- Chart.js Scripts -->
+{% if googleOAuthConnected and (seoKeywordsRanked.top10|length > 0 or seoKeywordsRanked.toImprove|length > 0) %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-// Toggle custom date fields
-function handlePeriodChange() {
-    const select = document.getElementById('periodSelect');
-    const customFields = document.getElementById('customDateFields');
-    if (select.value === 'custom') {
-        customFields.style.display = 'flex';
-    } else {
-        customFields.style.display = 'none';
-    }
-}
-
 // Configuration commune
 Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 Chart.defaults.plugins.legend.display = true;
 Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(17, 24, 39, 0.95)';
 Chart.defaults.plugins.tooltip.padding = 12;
 Chart.defaults.plugins.tooltip.cornerRadius = 8;
-
-// Données PHP → JS
-const caParMois = {{ caParMois|json_encode|raw }};
-const caParMoisComparison = {{ caParMoisComparison|json_encode|raw }};
-const cotisationsParMois = {{ cotisationsParMois|json_encode|raw }};
-const topClients = {{ topClients|json_encode|raw }};
-const monthLabels = {{ monthLabels|json_encode|raw }};
 
 // SEO Chart Data - Daily
 const seoChartLabels = {{ seoChartData.labels|json_encode|raw }};
@@ -938,7 +576,7 @@ const seoKwNewMedium = {{ seoKeywordsChartData.newMedium|json_encode|raw }};
 const seoKwNewLow = {{ seoKeywordsChartData.newLow|json_encode|raw }};
 const seoKwDeactivated = {{ seoKeywordsChartData.deactivated|json_encode|raw }};
 
-// 0. Graphique SEO Évolution (4 métriques avec échelles séparées)
+// Graphique SEO Evolution
 if (seoHasEnoughData && document.getElementById('chartSeoEvolution')) {
     new Chart(document.getElementById('chartSeoEvolution'), {
         type: 'line',
@@ -1000,75 +638,33 @@ if (seoHasEnoughData && document.getElementById('chartSeoEvolution')) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
+            interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: {
-                    display: true,
-                    position: 'top',
-                    labels: { usePointStyle: true, padding: 12, font: { size: 11 } }
-                },
+                legend: { display: true, position: 'top', labels: { usePointStyle: true, padding: 12, font: { size: 11 } } },
                 tooltip: {
                     callbacks: {
                         title: (items) => items.length > 0 ? 'Date: ' + items[0].label : '',
                         label: (ctx) => {
                             let value = ctx.parsed.y;
-                            if (ctx.dataset.label === 'CTR (%)') {
-                                return ctx.dataset.label + ': ' + value.toFixed(2) + '%';
-                            } else if (ctx.dataset.label === 'Position') {
-                                return ctx.dataset.label + ': ' + value.toFixed(1);
-                            }
+                            if (ctx.dataset.label === 'CTR (%)') return ctx.dataset.label + ': ' + value.toFixed(2) + '%';
+                            if (ctx.dataset.label === 'Position') return ctx.dataset.label + ': ' + value.toFixed(1);
                             return ctx.dataset.label + ': ' + value.toLocaleString('fr-FR');
                         }
                     }
                 }
             },
             scales: {
-                yClicks: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                    beginAtZero: true,
-                    title: { display: true, text: 'Clics', color: '#3b82f6', font: { size: 10 } },
-                    ticks: { color: '#3b82f6', font: { size: 9 } },
-                    grid: { color: 'rgba(0,0,0,0.05)' }
-                },
-                yImpressions: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    beginAtZero: true,
-                    title: { display: true, text: 'Impressions', color: '#06b6d4', font: { size: 10 } },
-                    ticks: { color: '#06b6d4', font: { size: 9 } },
-                    grid: { drawOnChartArea: false }
-                },
-                yCtr: {
-                    type: 'linear',
-                    display: false,
-                    beginAtZero: true,
-                    max: 10,
-                    grid: { drawOnChartArea: false }
-                },
-                yPosition: {
-                    type: 'linear',
-                    display: false,
-                    reverse: true,
-                    min: 1,
-                    max: 100,
-                    grid: { drawOnChartArea: false }
-                },
-                x: {
-                    grid: { display: false },
-                    ticks: { maxTicksLimit: 10, font: { size: 10 } }
-                }
+                yClicks: { type: 'linear', display: true, position: 'left', beginAtZero: true, title: { display: true, text: 'Clics', color: '#3b82f6', font: { size: 10 } }, ticks: { color: '#3b82f6', font: { size: 9 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                yImpressions: { type: 'linear', display: true, position: 'right', beginAtZero: true, title: { display: true, text: 'Impressions', color: '#06b6d4', font: { size: 10 } }, ticks: { color: '#06b6d4', font: { size: 9 } }, grid: { drawOnChartArea: false } },
+                yCtr: { type: 'linear', display: false, beginAtZero: true, max: 10, grid: { drawOnChartArea: false } },
+                yPosition: { type: 'linear', display: false, reverse: true, min: 1, max: 100, grid: { drawOnChartArea: false } },
+                x: { grid: { display: false }, ticks: { maxTicksLimit: 10, font: { size: 10 } } }
             }
         }
     });
 }
 
-// 0b. Graphique SEO 7 jours glissants (cumuls et moyennes)
+// Graphique SEO 7 jours glissants
 if (seoHasEnoughData && document.getElementById('chartSeo7d')) {
     new Chart(document.getElementById('chartSeo7d'), {
         type: 'line',
@@ -1080,11 +676,7 @@ if (seoHasEnoughData && document.getElementById('chartSeo7d')) {
                     data: seoChartClicks7d,
                     borderColor: '#3b82f6',
                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    borderWidth: 2,
-                    pointRadius: 2,
-                    pointHoverRadius: 5,
+                    fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5,
                     yAxisID: 'yClicks7d'
                 },
                 {
@@ -1092,11 +684,7 @@ if (seoHasEnoughData && document.getElementById('chartSeo7d')) {
                     data: seoChartImpressions7d,
                     borderColor: '#06b6d4',
                     backgroundColor: 'rgba(6, 182, 212, 0.05)',
-                    fill: true,
-                    tension: 0.4,
-                    borderWidth: 2,
-                    pointRadius: 2,
-                    pointHoverRadius: 5,
+                    fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5,
                     yAxisID: 'yImpressions7d'
                 },
                 {
@@ -1104,12 +692,7 @@ if (seoHasEnoughData && document.getElementById('chartSeo7d')) {
                     data: seoChartCtr7d,
                     borderColor: '#8b5cf6',
                     backgroundColor: 'transparent',
-                    fill: false,
-                    tension: 0.4,
-                    borderWidth: 2,
-                    borderDash: [4, 4],
-                    pointRadius: 0,
-                    pointHoverRadius: 4,
+                    fill: false, tension: 0.4, borderWidth: 2, borderDash: [4, 4], pointRadius: 0, pointHoverRadius: 4,
                     yAxisID: 'yCtr7d'
                 },
                 {
@@ -1117,12 +700,7 @@ if (seoHasEnoughData && document.getElementById('chartSeo7d')) {
                     data: seoChartPosition7d,
                     borderColor: '#f59e0b',
                     backgroundColor: 'transparent',
-                    fill: false,
-                    tension: 0.4,
-                    borderWidth: 2,
-                    borderDash: [2, 2],
-                    pointRadius: 0,
-                    pointHoverRadius: 4,
+                    fill: false, tension: 0.4, borderWidth: 2, borderDash: [2, 2], pointRadius: 0, pointHoverRadius: 4,
                     yAxisID: 'yPosition7d'
                 }
             ]
@@ -1130,345 +708,79 @@ if (seoHasEnoughData && document.getElementById('chartSeo7d')) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
+            interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: {
-                    display: true,
-                    position: 'top',
-                    labels: { usePointStyle: true, padding: 12, font: { size: 11 } }
-                },
+                legend: { display: true, position: 'top', labels: { usePointStyle: true, padding: 12, font: { size: 11 } } },
                 tooltip: {
                     callbacks: {
                         title: (items) => items.length > 0 ? 'Semaine se terminant le ' + items[0].label : '',
                         label: (ctx) => {
                             let value = ctx.parsed.y;
                             if (value === null) return null;
-                            if (ctx.dataset.label.includes('CTR')) {
-                                return ctx.dataset.label + ': ' + value.toFixed(2) + '%';
-                            } else if (ctx.dataset.label.includes('Position')) {
-                                return ctx.dataset.label + ': ' + value.toFixed(1);
-                            }
+                            if (ctx.dataset.label.includes('CTR')) return ctx.dataset.label + ': ' + value.toFixed(2) + '%';
+                            if (ctx.dataset.label.includes('Position')) return ctx.dataset.label + ': ' + value.toFixed(1);
                             return ctx.dataset.label + ': ' + value.toLocaleString('fr-FR');
                         }
                     }
                 }
             },
             scales: {
-                yClicks7d: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                    beginAtZero: true,
-                    title: { display: true, text: 'Clics (7j)', color: '#3b82f6', font: { size: 10 } },
-                    ticks: { color: '#3b82f6', font: { size: 9 } },
-                    grid: { color: 'rgba(0,0,0,0.05)' }
-                },
-                yImpressions7d: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    beginAtZero: true,
-                    title: { display: true, text: 'Impressions (7j)', color: '#06b6d4', font: { size: 10 } },
-                    ticks: { color: '#06b6d4', font: { size: 9 } },
-                    grid: { drawOnChartArea: false }
-                },
-                yCtr7d: {
-                    type: 'linear',
-                    display: false,
-                    beginAtZero: true,
-                    max: 10,
-                    grid: { drawOnChartArea: false }
-                },
-                yPosition7d: {
-                    type: 'linear',
-                    display: false,
-                    reverse: true,
-                    min: 1,
-                    max: 100,
-                    grid: { drawOnChartArea: false }
-                },
-                x: {
-                    grid: { display: false },
-                    ticks: { maxTicksLimit: 10, font: { size: 10 } }
-                }
+                yClicks7d: { type: 'linear', display: true, position: 'left', beginAtZero: true, title: { display: true, text: 'Clics (7j)', color: '#3b82f6', font: { size: 10 } }, ticks: { color: '#3b82f6', font: { size: 9 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                yImpressions7d: { type: 'linear', display: true, position: 'right', beginAtZero: true, title: { display: true, text: 'Impressions (7j)', color: '#06b6d4', font: { size: 10 } }, ticks: { color: '#06b6d4', font: { size: 9 } }, grid: { drawOnChartArea: false } },
+                yCtr7d: { type: 'linear', display: false, beginAtZero: true, max: 10, grid: { drawOnChartArea: false } },
+                yPosition7d: { type: 'linear', display: false, reverse: true, min: 1, max: 100, grid: { drawOnChartArea: false } },
+                x: { grid: { display: false }, ticks: { maxTicksLimit: 10, font: { size: 10 } } }
             }
         }
     });
 }
 
-// 0c. Graphique Évolution Mots-clés SEO (barres empilées + ligne cumulatif)
+// Graphique Evolution Mots-cles SEO
 if (document.getElementById('chartSeoKeywords')) {
     new Chart(document.getElementById('chartSeoKeywords'), {
         type: 'bar',
         data: {
             labels: seoKwLabels,
             datasets: [
+                { label: 'Nouveaux (haute)', data: seoKwNewHigh, backgroundColor: 'rgba(34, 197, 94, 0.8)', borderColor: '#22c55e', borderWidth: 1, stack: 'newKeywords', yAxisID: 'yNew', order: 2 },
+                { label: 'Nouveaux (moyenne)', data: seoKwNewMedium, backgroundColor: 'rgba(245, 158, 11, 0.8)', borderColor: '#f59e0b', borderWidth: 1, stack: 'newKeywords', yAxisID: 'yNew', order: 2 },
+                { label: 'Nouveaux (basse)', data: seoKwNewLow, backgroundColor: 'rgba(156, 163, 175, 0.8)', borderColor: '#9ca3af', borderWidth: 1, stack: 'newKeywords', yAxisID: 'yNew', order: 2 },
+                { label: 'Desactives', data: seoKwDeactivated, backgroundColor: 'rgba(239, 68, 68, 0.8)', borderColor: '#ef4444', borderWidth: 1, stack: 'newKeywords', yAxisID: 'yNew', order: 2 },
                 {
-                    label: 'Nouveaux (haute)',
-                    data: seoKwNewHigh,
-                    backgroundColor: 'rgba(34, 197, 94, 0.8)',
-                    borderColor: '#22c55e',
-                    borderWidth: 1,
-                    stack: 'newKeywords',
-                    yAxisID: 'yNew',
-                    order: 2
-                },
-                {
-                    label: 'Nouveaux (moyenne)',
-                    data: seoKwNewMedium,
-                    backgroundColor: 'rgba(245, 158, 11, 0.8)',
-                    borderColor: '#f59e0b',
-                    borderWidth: 1,
-                    stack: 'newKeywords',
-                    yAxisID: 'yNew',
-                    order: 2
-                },
-                {
-                    label: 'Nouveaux (basse)',
-                    data: seoKwNewLow,
-                    backgroundColor: 'rgba(156, 163, 175, 0.8)',
-                    borderColor: '#9ca3af',
-                    borderWidth: 1,
-                    stack: 'newKeywords',
-                    yAxisID: 'yNew',
-                    order: 2
-                },
-                {
-                    label: 'Désactivés',
-                    data: seoKwDeactivated,
-                    backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                    borderColor: '#ef4444',
-                    borderWidth: 1,
-                    stack: 'newKeywords',
-                    yAxisID: 'yNew',
-                    order: 2
-                },
-                {
-                    label: 'Total cumulé',
+                    label: 'Total cumule',
                     data: seoKwTotalKeywords,
                     type: 'line',
                     borderColor: '#8b5cf6',
                     backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    borderWidth: 2,
-                    pointRadius: 2,
-                    pointHoverRadius: 5,
-                    yAxisID: 'yTotal',
-                    order: 1
+                    fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5,
+                    yAxisID: 'yTotal', order: 1
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
+            interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: {
-                    display: true,
-                    position: 'top',
-                    labels: { usePointStyle: true, padding: 12, font: { size: 11 } }
-                },
+                legend: { display: true, position: 'top', labels: { usePointStyle: true, padding: 12, font: { size: 11 } } },
                 tooltip: {
                     callbacks: {
                         label: (ctx) => {
                             if (ctx.parsed.y === 0 && ctx.dataset.type !== 'line') return null;
-                            if (ctx.dataset.label === 'Désactivés') {
-                                return ctx.dataset.label + ': ' + Math.abs(ctx.parsed.y);
-                            }
+                            if (ctx.dataset.label === 'Desactives') return ctx.dataset.label + ': ' + Math.abs(ctx.parsed.y);
                             return ctx.dataset.label + ': ' + ctx.parsed.y;
                         }
                     }
                 }
             },
             scales: {
-                yNew: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                    beginAtZero: true,
-                    stacked: true,
-                    title: { display: true, text: 'Nouveaux / jour', color: '#22c55e', font: { size: 10 } },
-                    ticks: { color: '#22c55e', font: { size: 9 }, stepSize: 1 },
-                    grid: { color: 'rgba(0,0,0,0.05)' }
-                },
-                yTotal: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    beginAtZero: true,
-                    title: { display: true, text: 'Total mots-clés', color: '#8b5cf6', font: { size: 10 } },
-                    ticks: { color: '#8b5cf6', font: { size: 9 } },
-                    grid: { drawOnChartArea: false }
-                },
-                x: {
-                    stacked: true,
-                    grid: { display: false },
-                    ticks: { maxTicksLimit: 10, font: { size: 10 } }
-                }
+                yNew: { type: 'linear', display: true, position: 'left', beginAtZero: true, stacked: true, title: { display: true, text: 'Nouveaux / jour', color: '#22c55e', font: { size: 10 } }, ticks: { color: '#22c55e', font: { size: 9 }, stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                yTotal: { type: 'linear', display: true, position: 'right', beginAtZero: true, title: { display: true, text: 'Total mots-cles', color: '#8b5cf6', font: { size: 10 } }, ticks: { color: '#8b5cf6', font: { size: 9 } }, grid: { drawOnChartArea: false } },
+                x: { stacked: true, grid: { display: false }, ticks: { maxTicksLimit: 10, font: { size: 10 } } }
             }
         }
     });
 }
-
-// 1. Graphique Évolution CA Mensuel (Ligne) avec comparaison N-1
-const hasComparisonData = caParMoisComparison.some(v => v > 0);
-
-new Chart(document.getElementById('chartCAMensuel'), {
-    type: 'line',
-    data: {
-        labels: monthLabels,
-        datasets: [
-            {
-                label: 'CA Encaissé',
-                data: caParMois,
-                borderColor: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                fill: true,
-                tension: 0.4,
-                borderWidth: 3,
-                pointRadius: 4,
-                pointHoverRadius: 6
-            },
-            ...(hasComparisonData ? [{
-                label: 'N-1',
-                data: caParMoisComparison,
-                borderColor: '#9ca3af',
-                backgroundColor: 'transparent',
-                borderDash: [5, 5],
-                fill: false,
-                tension: 0.4,
-                borderWidth: 2,
-                pointRadius: 2,
-                pointHoverRadius: 4
-            }] : [])
-        ]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: hasComparisonData },
-            tooltip: {
-                callbacks: {
-                    label: (ctx) => ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })
-                }
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    callback: (value) => (value / 1000) + 'k€'
-                },
-                grid: { color: 'rgba(0,0,0,0.05)' }
-            },
-            x: {
-                grid: { display: false }
-            }
-        }
-    }
-});
-
-// 2. Graphique Top Clients (Camembert)
-const clientColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-new Chart(document.getElementById('chartClients'), {
-    type: 'doughnut',
-    data: {
-        labels: topClients.map(c => c.clientName),
-        datasets: [{
-            data: topClients.map(c => parseFloat(c.total)),
-            backgroundColor: clientColors,
-            borderWidth: 2,
-            borderColor: '#fff'
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: { padding: 15, font: { size: 11 } }
-            },
-            tooltip: {
-                callbacks: {
-                    label: (ctx) => {
-                        const total = topClients.reduce((sum, c) => sum + parseFloat(c.total), 0);
-                        const percent = Math.round((ctx.parsed / total) * 100);
-                        return ctx.label + ': ' + ctx.parsed.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }) + ' (' + percent + '%)';
-                    }
-                }
-            }
-        }
-    }
-});
-
-// 3. Graphique CA vs Cotisations (Barres)
-new Chart(document.getElementById('chartComparaison'), {
-    type: 'bar',
-    data: {
-        labels: monthLabels,
-        datasets: [
-            {
-                label: 'CA Encaissé',
-                data: caParMois,
-                backgroundColor: 'rgba(16, 185, 129, 0.7)',
-                borderColor: '#10b981',
-                borderWidth: 1
-            },
-            {
-                label: 'Cotisations URSSAF',
-                data: cotisationsParMois,
-                backgroundColor: 'rgba(245, 158, 11, 0.7)',
-                borderColor: '#f59e0b',
-                borderWidth: 1
-            },
-            {
-                label: 'Bénéfice Net',
-                data: caParMois.map((ca, index) => {
-                    const cotisations = cotisationsParMois[index] || 0;
-                    return ca - cotisations;
-                }),
-                backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                borderColor: '#3b82f6',
-                borderWidth: 1
-            }
-        ]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'top',
-                labels: { padding: 15, usePointStyle: true }
-            },
-            tooltip: {
-                callbacks: {
-                    label: (ctx) => ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })
-                }
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    callback: (value) => (value / 1000) + 'k€'
-                },
-                grid: { color: 'rgba(0,0,0,0.05)' }
-            },
-            x: {
-                grid: { display: false }
-            }
-        }
-    }
-});
 </script>
+{% endif %}
 {% endblock %}

@@ -1,0 +1,99 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}
+    <i class="fa fa-history"></i> Historique imports - {{ site.name }}
+{% endblock %}
+
+{% block page_content %}
+{% include 'admin/dashboard/_partials/_styles.html.twig' %}
+
+<div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <a href="{{ path('admin_client_seo_dashboard', {id: site.id}) }}" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Retour au dashboard
+    </a>
+    <a href="{{ path('admin_client_seo_import', {id: site.id}) }}" class="btn btn-sm btn-primary">
+        <i class="fas fa-file-upload"></i> Nouvel import
+    </a>
+</div>
+
+{% if imports|length == 0 %}
+<div class="stat-card info" style="text-align: center; padding: 3rem;">
+    <i class="fas fa-history" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem; display: block;"></i>
+    <div style="font-size: 1.125rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Aucun import effectue</div>
+    <div style="color: #6b7280; margin-bottom: 1.5rem;">Les imports CSV de Google Search Console apparaitront ici.</div>
+    <a href="{{ path('admin_client_seo_import', {id: site.id}) }}" class="btn btn-primary">
+        <i class="fas fa-file-upload"></i> Premier import
+    </a>
+</div>
+{% else %}
+<div class="chart-container" style="padding: 1rem 1.5rem;">
+    <div class="chart-title" style="margin-bottom: 1rem;">
+        <i class="fas fa-history" style="color: var(--purple);"></i>
+        {{ imports|length }} import{{ imports|length > 1 ? 's' : '' }}
+    </div>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid #e5e7eb;">
+                    <th style="text-align: left; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Date</th>
+                    <th style="text-align: left; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Type</th>
+                    <th style="text-align: left; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Fichier</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Periode</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Importes</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Ignores</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for import in imports %}
+                    <tr style="border-bottom: 1px solid #f3f4f6;">
+                        <td style="padding: 0.75rem 0.5rem;">
+                            {{ import.importedAt|date('d/m/Y a H:i') }}
+                        </td>
+                        <td style="padding: 0.75rem 0.5rem;">
+                            <span style="background: #eff6ff; color: #1d4ed8; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500;">
+                                {{ import.typeLabel }}
+                            </span>
+                        </td>
+                        <td style="padding: 0.75rem 0.5rem; color: #6b7280; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ import.originalFilename }}">
+                            {{ import.originalFilename }}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem; font-size: 0.8rem; color: #6b7280;">
+                            {% if import.periodStart and import.periodEnd %}
+                                {{ import.periodStart|date('d/m/Y') }} - {{ import.periodEnd|date('d/m/Y') }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem; font-weight: 600; color: #065f46;">
+                            {{ import.rowsImported }}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem; color: #9ca3af;">
+                            {{ import.rowsSkipped }}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {% if import.status == 'success' %}
+                                <span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">
+                                    <i class="fas fa-check"></i> Succes
+                                </span>
+                            {% else %}
+                                <span style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">
+                                    <i class="fas fa-times"></i> Erreur
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% if import.errorMessage %}
+                        <tr>
+                            <td colspan="7" style="padding: 0.5rem 0.75rem; background: #fef2f2; color: #991b1b; font-size: 0.8rem;">
+                                <i class="fas fa-exclamation-circle"></i> {{ import.errorMessage }}
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

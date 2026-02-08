@@ -1,0 +1,61 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}
+    <i class="fa fa-plus-circle"></i> {% if site is defined and site.id %}Modifier le site{% else %}Ajouter un site client{% endif %}
+{% endblock %}
+
+{% block page_content %}
+{% include 'admin/dashboard/_partials/_styles.html.twig' %}
+
+<div style="margin-bottom: 1.5rem;">
+    <a href="{{ path('admin_client_seo_list') }}" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Retour a la liste
+    </a>
+</div>
+
+{% for message in app.flashes('success') %}
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; color: #166534;">
+        <i class="fas fa-check-circle"></i> {{ message }}
+    </div>
+{% endfor %}
+
+<div class="chart-container" style="padding: 1.5rem; max-width: 600px;">
+    <div class="chart-title" style="margin-bottom: 1.5rem;">
+        <i class="fas fa-globe" style="color: var(--primary);"></i>
+        {% if site is defined and site.id %}Modifier les informations du site{% else %}Nouveau site a suivre{% endif %}
+    </div>
+
+    {{ form_start(form) }}
+        <div style="margin-bottom: 1.25rem;">
+            {{ form_label(form.client) }}
+            {{ form_widget(form.client) }}
+            {{ form_errors(form.client) }}
+        </div>
+
+        <div style="margin-bottom: 1.25rem;">
+            {{ form_label(form.name) }}
+            {{ form_widget(form.name) }}
+            {{ form_errors(form.name) }}
+            <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                Nom descriptif pour identifier ce site (ex: "Site vitrine principal")
+            </div>
+        </div>
+
+        <div style="margin-bottom: 1.25rem;">
+            {{ form_label(form.url) }}
+            {{ form_widget(form.url) }}
+            {{ form_errors(form.url) }}
+            <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                URL complete du site web (ex: https://www.example.com)
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> {% if site is defined and site.id %}Enregistrer{% else %}Ajouter le site{% endif %}
+            </button>
+            <a href="{{ path('admin_client_seo_list') }}" class="btn btn-outline-secondary">Annuler</a>
+        </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

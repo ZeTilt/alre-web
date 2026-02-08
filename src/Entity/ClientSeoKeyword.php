@@ -1,0 +1,133 @@
+<?php
+
+namespace App\Entity;
+
+use App\Repository\ClientSeoKeywordRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity(repositoryClass: ClientSeoKeywordRepository::class)]
+#[ORM\UniqueConstraint(name: 'unique_client_seo_keyword', columns: ['client_site_id', 'keyword'])]
+class ClientSeoKeyword
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\ManyToOne(targetEntity: ClientSite::class, inversedBy: 'keywords')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ?ClientSite $clientSite = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $keyword = null;
+
+    #[ORM\Column]
+    private bool $isActive = true;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    /**
+     * @var Collection<int, ClientSeoPosition>
+     */
+    #[ORM\OneToMany(targetEntity: ClientSeoPosition::class, mappedBy: 'clientSeoKeyword', orphanRemoval: true)]
+    #[ORM\OrderBy(['date' => 'DESC'])]
+    private Collection $positions;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+        $this->positions = new ArrayCollection();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getClientSite(): ?ClientSite
+    {
+        return $this->clientSite;
+    }
+
+    public function setClientSite(?ClientSite $clientSite): static
+    {
+        $this->clientSite = $clientSite;
+        return $this;
+    }
+
+    public function getKeyword(): ?string
+    {
+        return $this->keyword;
+    }
+
+    public function setKeyword(string $keyword): static
+    {
+        $this->keyword = $keyword;
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ClientSeoPosition>
+     */
+    public function getPositions(): Collection
+    {
+        return $this->positions;
+    }
+
+    public function addPosition(ClientSeoPosition $position): static
+    {
+        if (!$this->positions->contains($position)) {
+            $this->positions->add($position);
+            $position->setClientSeoKeyword($this);
+        }
+        return $this;
+    }
+
+    public function removePosition(ClientSeoPosition $position): static
+    {
+        if ($this->positions->removeElement($position)) {
+            if ($position->getClientSeoKeyword() === $this) {
+                $position->setClientSeoKeyword(null);
+            }
+        }
+        return $this;
+    }
+
+    public function getLatestPosition(): ?ClientSeoPosition
+    {
+        if ($this->positions->isEmpty()) {
+            return null;
+        }
+        return $this->positions->first();
+    }
+
+    public function __toString(): string
+    {
+        return $this->keyword ?? 'Nouveau mot-cle';
+    }
+}

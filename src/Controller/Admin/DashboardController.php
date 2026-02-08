@@ -26,11 +26,18 @@ use App\Repository\EventTypeRepository;
 use App\Repository\FactureRepository;
 use App\Repository\ProspectRepository;
 use App\Repository\ProspectFollowUpRepository;
+use App\Repository\ClientSeoImportRepository;
+use App\Repository\ClientSiteRepository;
 use App\Repository\SeoKeywordRepository;
 use App\Repository\SeoPositionRepository;
+use App\Service\ClientSeoCsvImportService;
+use App\Service\ClientSeoDashboardService;
 use App\Service\DashboardPeriodService;
 use App\Service\DashboardSeoService;
 use App\Service\ProspectionEmailService;
+use App\Entity\ClientSite;
+use App\Form\ClientSeoImportType;
+use App\Form\ClientSiteType;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
@@ -696,6 +703,172 @@ class DashboardController extends AbstractDashboardController
         return $response;
     }
 
+    // ===== CLIENT SEO =====
+
+    #[Route('/saeiblauhjc/client-seo', name: 'admin_client_seo_list')]
+    public function clientSeoList(
+        ClientSiteRepository $clientSiteRepository,
+        ClientSeoDashboardService $clientSeoDashboardService
+    ): Response {
+        $sites = $clientSiteRepository->findAllActive();
+
+        $summaries = [];
+        foreach ($sites as $site) {
+            $summaries[$site->getId()] = $clientSeoDashboardService->getSummaryData($site);
+        }
+
+        return $this->render('admin/client_seo/list.html.twig', [
+            'sites' => $sites,
+            'summaries' => $summaries,
+        ]);
+    }
+
+    #[Route('/saeiblauhjc/client-seo/add-site', name: 'admin_client_seo_add_site')]
+    public function clientSeoAddSite(Request $request): Response
+    {
+        $site = new ClientSite();
+        $form = $this->createForm(ClientSiteType::class, $site);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->persist($site);
+            $this->entityManager->flush();
+
+            $this->addFlash('success', sprintf('Site "%s" ajoute avec succes.', $site->getName()));
+            return $this->redirectToRoute('admin_client_seo_list');
+        }
+
+        return $this->render('admin/client_seo/add_site.html.twig', [
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/saeiblauhjc/client-seo/{id}/dashboard', name: 'admin_client_seo_dashboard')]
+    public function clientSeoDashboard(ClientSite $site, ClientSeoDashboardService $clientSeoDashboardService): Response
+    {
+        $data = $clientSeoDashboardService->getFullData($site);
+
+        return $this->render('admin/client_seo/dashboard.html.twig', array_merge(
+            $data,
+            ['site' => $site]
+        ));
+    }
+
+    #[Route('/saeiblauhjc/client-seo/{id}/import', name: 'admin_client_seo_import')]
+    public function clientSeoImport(
+        Request $request,
+        ClientSite $site,
+        ClientSeoCsvImportService $importService
+    ): Response {
+        $form = $this->createForm(ClientSeoImportType::class);
+        $form->handleRequest($request);
+
+        $result = null;
+        $error = null;
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $file = $form->get('file')->getData();
+            try {
+                $result = $importService->importFromFile($site, $file);
+                $this->addFlash('success', $result['message']);
+                return $this->redirectToRoute('admin_client_seo_dashboard', ['id' => $site->getId()]);
+            } catch (\Exception $e) {
+                $error = $e->getMessage();
+                $this->addFlash('danger', 'Erreur lors de l\'import : ' . $error);
+            }
+        }
+
+        return $this->render('admin/client_seo/import.html.twig', [
+            'site' => $site,
+            'form' => $form,
+            'result' => $result,
+            'error' => $error,
+        ]);
+    }
+
+    #[Route('/saeiblauhjc/client-seo/{id}/imports', name: 'admin_client_seo_import_history')]
+    public function clientSeoImportHistory(ClientSite $site, ClientSeoImportRepository $importRepository): Response
+    {
+        $imports = $importRepository->findByClientSite($site);
+
+        return $this->render('admin/client_seo/import_history.html.twig', [
+            'site' => $site,
+            'imports' => $imports,
+        ]);
+    }
+
+    #[Route('/saeiblauhjc/client-seo/{id}/edit', name: 'admin_client_seo_edit_site')]
+    public function clientSeoEditSite(Request $request, ClientSite $site): Response
+    {
+        $form = $this->createForm(ClientSiteType::class, $site);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $site->setUpdatedAt(new \DateTimeImmutable());
+            $this->entityManager->flush();
+
+            $this->addFlash('success', sprintf('Site "%s" mis a jour.', $site->getName()));
+            return $this->redirectToRoute('admin_client_seo_dashboard', ['id' => $site->getId()]);
+        }
+
+        return $this->render('admin/client_seo/add_site.html.twig', [
+            'form' => $form,
+            'site' => $site,
+        ]);
+    }
+
+    #[Route('/saeiblauhjc/client-seo/{id}/export-csv', name: 'admin_client_seo_export_csv')]
+    public function clientSeoExportCsv(ClientSite $site, ClientSeoDashboardService $clientSeoDashboardService): Response
+    {
+        $data = $clientSeoDashboardService->getFullData($site);
+
+        $output = fopen('php://temp', 'r+');
+        fwrite($output, "\xEF\xBB\xBF");
+
+        fputcsv($output, ['TOTAUX JOURNALIERS - ' . $site->getName()], ';');
+        fputcsv($output, ['Date', 'Clics', 'Impressions', 'Position', 'CTR'], ';');
+
+        if (!empty($data['chartData']['labels'])) {
+            for ($i = 0; $i < count($data['chartData']['labels']); $i++) {
+                fputcsv($output, [
+                    $data['chartData']['labels'][$i],
+                    $data['chartData']['clicks'][$i] ?? 0,
+                    $data['chartData']['impressions'][$i] ?? 0,
+                    $data['chartData']['position'][$i] ?? '',
+                    $data['chartData']['ctr'][$i] ?? '',
+                ], ';');
+            }
+        }
+
+        fputcsv($output, [], ';');
+
+        fputcsv($output, ['TOP PAGES'], ';');
+        fputcsv($output, ['URL', 'Clics', 'Impressions', 'Position moy.', 'CTR moy.'], ';');
+        foreach ($data['topPages'] as $page) {
+            fputcsv($output, [
+                $page['url'],
+                $page['totalClicks'],
+                $page['totalImpressions'],
+                round($page['avgPosition'], 1),
+                round($page['avgCtr'], 2) . '%',
+            ], ';');
+        }
+
+        rewind($output);
+        $content = stream_get_contents($output);
+        fclose($output);
+
+        $response = new Response($content);
+        $response->headers->set('Content-Type', 'text/csv; charset=UTF-8');
+        $response->headers->set('Content-Disposition', sprintf(
+            'attachment; filename="seo_client_%s_%s.csv"',
+            preg_replace('/[^a-z0-9]/', '_', strtolower($site->getName())),
+            date('Y-m-d')
+        ));
+
+        return $response;
+    }
+
     private function formatEventDate(Event $event): string
     {
         $start = $event->getStartAt();
@@ -767,6 +940,9 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('SEO');
         yield MenuItem::linkToCrud('Mots-clés SEO', 'fas fa-search', SeoKeyword::class);
         yield MenuItem::linkToCrud('Villes (SEO Local)', 'fas fa-map-marker-alt', City::class);
+
+        yield MenuItem::section('SEO Clients');
+        yield MenuItem::linkToRoute('Suivi SEO', 'fa fa-users-cog', 'admin_client_seo_list');
 
         yield MenuItem::section('Gestion commerciale');
         yield MenuItem::linkToCrud('Devis', 'fas fa-file-invoice', Devis::class);

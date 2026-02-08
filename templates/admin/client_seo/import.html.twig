@@ -1,0 +1,98 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}
+    <i class="fa fa-file-upload"></i> Import CSV - {{ site.name }}
+{% endblock %}
+
+{% block page_content %}
+{% include 'admin/dashboard/_partials/_styles.html.twig' %}
+
+<div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <a href="{{ path('admin_client_seo_dashboard', {id: site.id}) }}" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Retour au dashboard
+    </a>
+    <a href="{{ path('admin_client_seo_import_history', {id: site.id}) }}" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-history"></i> Historique imports
+    </a>
+</div>
+
+{% for message in app.flashes('success') %}
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; color: #166534;">
+        <i class="fas fa-check-circle"></i> {{ message }}
+    </div>
+{% endfor %}
+
+{% for message in app.flashes('danger') %}
+    <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; color: #991b1b;">
+        <i class="fas fa-exclamation-circle"></i> {{ message }}
+    </div>
+{% endfor %}
+
+<div class="chart-container" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+    <div class="chart-title" style="margin-bottom: 1.5rem;">
+        <i class="fas fa-file-upload" style="color: var(--primary);"></i>
+        Importer un export Google Search Console
+    </div>
+
+    {{ form_start(form, {'attr': {'style': 'max-width: 600px;'}}) }}
+        <div style="margin-bottom: 1.5rem;">
+            {{ form_label(form.file) }}
+            {{ form_widget(form.file) }}
+            {{ form_errors(form.file) }}
+            <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.5rem;">
+                Formats acceptes : CSV (.csv) ou ZIP (.zip). Taille max : 10 Mo.
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-upload"></i> Importer
+        </button>
+    {{ form_end(form) }}
+</div>
+
+<div class="chart-container" style="padding: 1.5rem;">
+    <div class="chart-title" style="margin-bottom: 1rem;">
+        <i class="fas fa-info-circle" style="color: var(--info);"></i>
+        Guide d'export Google Search Console
+    </div>
+
+    <div style="font-size: 0.875rem; color: #374151; line-height: 1.8;">
+        <h4 style="color: #111827; margin-bottom: 0.5rem;">Export Performance (Requetes)</h4>
+        <ol style="margin: 0 0 1.5rem; padding-left: 1.5rem;">
+            <li>Connectez-vous a <strong>Google Search Console</strong></li>
+            <li>Allez dans <strong>Performances</strong> > <strong>Resultats de recherche</strong></li>
+            <li>Selectionnez la periode souhaitee (3 derniers mois recommandes)</li>
+            <li><strong>Important :</strong> Cliquez sur <strong>+ Nouveau</strong> > <strong>Date</strong> pour ajouter la dimension Date</li>
+            <li>Onglet <strong>Requetes</strong> : cliquez sur <strong>Exporter</strong> (icone en haut a droite)</li>
+            <li>Choisissez le format <strong>CSV</strong> ou <strong>Feuille de calcul</strong></li>
+        </ol>
+
+        <h4 style="color: #111827; margin-bottom: 0.5rem;">Export Performance (Pages)</h4>
+        <ol style="margin: 0 0 1.5rem; padding-left: 1.5rem;">
+            <li>Meme procedure que ci-dessus</li>
+            <li>Selectionnez l'onglet <strong>Pages</strong> au lieu de Requetes</li>
+            <li>Exportez en CSV</li>
+        </ol>
+
+        <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+            <div style="font-weight: 600; color: #92400e; margin-bottom: 0.25rem;">
+                <i class="fas fa-exclamation-triangle"></i> Point important
+            </div>
+            <div style="color: #92400e; font-size: 0.875rem;">
+                Pour un suivi precis, <strong>ajoutez toujours la dimension Date</strong> dans l'export.
+                Sans cette dimension, les donnees quotidiennes ne pourront pas etre importees et seuls les mots-cles seront references.
+            </div>
+        </div>
+
+        <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+            <div style="font-weight: 600; color: #0369a1; margin-bottom: 0.25rem;">
+                <i class="fas fa-sync-alt"></i> Detection automatique
+            </div>
+            <div style="color: #0369a1; font-size: 0.875rem;">
+                Le systeme detecte automatiquement le type d'export (Requetes ou Pages) en fonction des en-tetes du fichier CSV.
+                Vous pouvez aussi importer directement le fichier ZIP telecharge depuis GSC.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

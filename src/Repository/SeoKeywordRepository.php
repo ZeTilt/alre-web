@@ -142,7 +142,7 @@ class SeoKeywordRepository extends ServiceEntityRepository
         $since = new \DateTimeImmutable("-{$days} days");
 
         return $this->createQueryBuilder('k')
-            ->select("DATE(k.createdAt) as day, k.relevanceLevel, COUNT(k.id) as cnt")
+            ->select("SUBSTRING(k.createdAt, 1, 10) as day, k.relevanceLevel, COUNT(k.id) as cnt")
             ->where('k.createdAt >= :since')
             ->setParameter('since', $since)
             ->groupBy('day, k.relevanceLevel')

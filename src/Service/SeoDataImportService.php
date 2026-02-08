@@ -345,21 +345,17 @@ class SeoDataImportService
     }
 
     /**
-     * Importe automatiquement les nouveaux mots-clés depuis GSC.
-     * Filtrage progressif selon le volume :
-     * - < 100 keywords : tout importer
-     * - 100-1000 keywords : >= 10 impressions
-     * - > 1000 keywords : >= 100 impressions
+     * Importe automatiquement les nouveaux mots-clés depuis GSC
+     * et réactive les mots-clés inactifs réapparus dans GSC.
      *
-     * Évite les doublons accent/non-accent en normalisant la comparaison.
-     *
-     * @return array{imported: int, total_gsc: int, min_impressions: int, message: string}
+     * @return array{imported: int, reactivated: int, total_gsc: int, min_impressions: int, message: string}
      */
     public function importNewKeywords(): array
     {
         if (!$this->gscService->isAvailable()) {
             return [
                 'imported' => 0,
+                'reactivated' => 0,
                 'total_gsc' => 0,
                 'min_impressions' => 0,
                 'message' => 'Google Search Console non connecté',
@@ -372,6 +368,7 @@ class SeoDataImportService
         if ($totalKeywords === 0) {
             return [
                 'imported' => 0,
+                'reactivated' => 0,
                 'total_gsc' => 0,
                 'min_impressions' => 0,
                 'message' => 'Aucune donnée retournée par GSC',
@@ -429,25 +426,59 @@ class SeoDataImportService
             ]);
         }
 
-        if ($imported > 0) {
+        // Réactiver les mots-clés inactifs réapparus dans GSC
+        $reactivated = 0;
+        $inactiveKeywords = $this->keywordRepository->findBy(['isActive' => false]);
+
+        // Indexer les données GSC par clé normalisée
+        $gscNormalized = [];
+        foreach ($gscData as $query => $data) {
+            $gscNormalized[$this->normalizeString($query)] = $data;
+        }
+
+        foreach ($inactiveKeywords as $keyword) {
+            $keywordNormalized = $this->normalizeString($keyword->getKeyword());
+
+            if (isset($gscNormalized[$keywordNormalized])) {
+                $keyword->setIsActive(true);
+                $keyword->setDeactivatedAt(null);
+                $keyword->setLastSeenInGsc($now);
+                $reactivated++;
+
+                $this->logger->info('Reactivated keyword from GSC', [
+                    'keyword' => $keyword->getKeyword(),
+                    'relevanceLevel' => $keyword->getRelevanceLevel(),
+                ]);
+            }
+        }
+
+        if ($imported > 0 || $reactivated > 0) {
             $this->entityManager->flush();
+        }
+
+        $message = sprintf(
+            '%d nouveau(x) mot(s)-clé(s) importé(s) (seuil: %d impressions, %d requêtes GSC)',
+            $imported,
+            $minImpressions,
+            $totalKeywords
+        );
+
+        if ($reactivated > 0) {
+            $message .= sprintf(', %d réactivé(s)', $reactivated);
         }
 
         return [
             'imported' => $imported,
+            'reactivated' => $reactivated,
             'total_gsc' => $totalKeywords,
             'min_impressions' => $minImpressions,
-            'message' => sprintf(
-                '%d nouveau(x) mot(s)-clé(s) importé(s) (seuil: %d impressions, %d requêtes GSC)',
-                $imported,
-                $minImpressions,
-                $totalKeywords
-            ),
+            'message' => $message,
         ];
     }
 
     /**
-     * Désactive les mots-clés auto-importés absents de GSC depuis 30 jours.
+     * Désactive les mots-clés absents de GSC depuis 30 jours.
+     * Enregistre deactivatedAt = lastSeenInGsc + 30 jours.
      *
      * @return array{deactivated: int, message: string}
      */
@@ -455,9 +486,18 @@ class SeoDataImportService
     {
         $threshold = new \DateTimeImmutable("-{$daysThreshold} days");
 
-        $deactivated = $this->keywordRepository->deactivateAutoKeywordsNotSeenSince($threshold);
+        $keywords = $this->keywordRepository->findKeywordsToDeactivate($threshold);
+        $deactivated = count($keywords);
+
+        foreach ($keywords as $keyword) {
+            $keyword->setIsActive(false);
+            $keyword->setDeactivatedAt(
+                $keyword->getLastSeenInGsc()->modify("+{$daysThreshold} days")
+            );
+        }
 
         if ($deactivated > 0) {
+            $this->entityManager->flush();
             $this->logger->info('Deactivated missing keywords', [
                 'count' => $deactivated,
                 'threshold_days' => $daysThreshold,

@@ -77,12 +77,19 @@ class SeoSyncCommand extends Command
                 $importResult = $this->seoImportService->importNewKeywords();
                 $io->success($importResult['message']);
 
-                if ($importResult['imported'] > 0) {
+                if ($importResult['imported'] > 0 || $importResult['reactivated'] > 0) {
                     $io->text(sprintf(
                         'Seuil appliqué: %d impressions minimum (%d requêtes GSC analysées)',
                         $importResult['min_impressions'],
                         $importResult['total_gsc']
                     ));
+
+                    if ($importResult['reactivated'] > 0) {
+                        $io->text(sprintf(
+                            '%d mot(s)-clé(s) réactivé(s) (réapparus dans GSC)',
+                            $importResult['reactivated']
+                        ));
+                    }
                 }
             }
 

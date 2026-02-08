@@ -95,24 +95,20 @@ class SeoKeywordRepository extends ServiceEntityRepository
     }
 
     /**
-     * Désactive les mots-clés auto-importés non vus dans GSC depuis $threshold.
+     * Retourne les mots-clés actifs non vus dans GSC depuis $threshold.
      *
-     * @return int Nombre de mots-clés désactivés
+     * @return SeoKeyword[]
      */
-    public function deactivateAutoKeywordsNotSeenSince(\DateTimeImmutable $threshold): int
+    public function findKeywordsToDeactivate(\DateTimeImmutable $threshold): array
     {
         return $this->createQueryBuilder('k')
-            ->update()
-            ->set('k.isActive', ':inactive')
-            ->where('k.source = :source')
+            ->where('k.isActive = :active')
+            ->andWhere('k.lastSeenInGsc IS NOT NULL')
             ->andWhere('k.lastSeenInGsc < :threshold')
-            ->andWhere('k.isActive = :active')
-            ->setParameter('inactive', false)
-            ->setParameter('source', SeoKeyword::SOURCE_AUTO_GSC)
-            ->setParameter('threshold', $threshold)
             ->setParameter('active', true)
+            ->setParameter('threshold', $threshold)
             ->getQuery()
-            ->execute();
+            ->getResult();
     }
 
     /**

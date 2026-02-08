@@ -132,7 +132,7 @@ class SeoDataImportService
 
                     // Mettre à jour lastSyncAt et lastSeenInGsc
                     $keyword->setLastSyncAt($now);
-                    $keyword->setLastSeenInGsc($now);
+                    $keyword->setLastSeenInGsc($date);
 
                     $this->logger->info('Synced keyword position', [
                         'keyword' => $keyword->getKeyword(),

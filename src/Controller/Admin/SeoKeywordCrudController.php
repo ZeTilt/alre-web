@@ -173,7 +173,7 @@ class SeoKeywordCrudController extends AbstractCrudController
         }
 
         yield DateTimeField::new('lastSeenInGsc', 'Dernière impression')
-            ->setFormat('dd/MM/yyyy HH:mm')
+            ->setFormat('dd/MM/yyyy')
             ->hideOnForm();
 
         yield DateTimeField::new('createdAt', 'Créé le')

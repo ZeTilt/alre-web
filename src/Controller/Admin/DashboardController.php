@@ -911,6 +911,7 @@ class DashboardController extends AbstractDashboardController
     {
         $assets = Assets::new()
             ->addCssFile('css/admin.css')
+            ->addJsFile('js/admin-trix-headings.js')
             ->addJsFile('js/admin-project-partners.js')
             ->addJsFile('js/admin-toggles.js');
 

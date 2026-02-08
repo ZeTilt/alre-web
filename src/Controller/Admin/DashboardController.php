@@ -1108,14 +1108,15 @@ class DashboardController extends AbstractDashboardController
 
     /**
      * Prépare les données pour le graphique d'évolution des mots-clés SEO.
+     * Utilise MIN(SeoPosition.date) comme date de première apparition GSC (pas createdAt).
      */
     private function prepareSeoKeywordsChartData(SeoKeywordRepository $repo): array
     {
         $days = 30;
-        $dailyCounts = $repo->getKeywordCountsByDate($days);
+        $firstAppearances = $repo->getKeywordFirstAppearances();
         $relevanceCounts = $repo->getRelevanceCounts();
 
-        // Total actif actuel
+        // Total actif actuel et badges
         $currentTotal = 0;
         $relevanceMap = ['high' => 0, 'medium' => 0, 'low' => 0];
         foreach ($relevanceCounts as $row) {
@@ -1123,65 +1124,50 @@ class DashboardController extends AbstractDashboardController
             $currentTotal += (int) $row['cnt'];
         }
 
-        // Indexer les nouveaux mots-clés par jour et pertinence
+        // Calculer la date seuil (début de la période de 30 jours)
+        $now = new \DateTimeImmutable();
+        $sinceDate = $now->modify("-{$days} days")->format('Y-m-d');
+
+        // Séparer : mots-clés apparus avant la période (base) vs dans la période (nouveaux)
+        $baseCount = 0;
         $newByDay = [];
-        foreach ($dailyCounts as $row) {
-            $day = $row['day'];
+        foreach ($firstAppearances as $row) {
+            $firstSeen = $row['firstSeen'];
             $level = $row['relevanceLevel'];
-            if (!isset($newByDay[$day])) {
-                $newByDay[$day] = ['high' => 0, 'medium' => 0, 'low' => 0];
+
+            if ($firstSeen < $sinceDate) {
+                $baseCount++;
+            } else {
+                if (!isset($newByDay[$firstSeen])) {
+                    $newByDay[$firstSeen] = ['high' => 0, 'medium' => 0, 'low' => 0];
+                }
+                $newByDay[$firstSeen][$level]++;
             }
-            $newByDay[$day][$level] = (int) $row['cnt'];
         }
 
-        // Générer les 30 jours
+        // Générer les 30 jours avec cumulatif progressif
         $labels = [];
         $newHigh = [];
         $newMedium = [];
         $newLow = [];
         $totalKeywords = [];
+        $cumulative = $baseCount;
 
-        $now = new \DateTimeImmutable();
-
-        // Calculer le total de nouveaux mots-clés sur les 30 jours
-        $totalNewInPeriod = 0;
-        foreach ($newByDay as $dayCounts) {
-            $totalNewInPeriod += $dayCounts['high'] + $dayCounts['medium'] + $dayCounts['low'];
-        }
-
-        // Reconstruire le cumulatif en remontant depuis le total actuel
-        // Le total au dernier jour = currentTotal
-        // Le total la veille = currentTotal - nouveaux du dernier jour, etc.
-        $dailyData = [];
         for ($i = $days - 1; $i >= 0; $i--) {
             $date = $now->modify("-{$i} days");
             $dateKey = $date->format('Y-m-d');
-            $dailyData[] = [
-                'label' => $date->format('d/m'),
-                'dateKey' => $dateKey,
-                'newHigh' => $newByDay[$dateKey]['high'] ?? 0,
-                'newMedium' => $newByDay[$dateKey]['medium'] ?? 0,
-                'newLow' => $newByDay[$dateKey]['low'] ?? 0,
-            ];
-        }
 
-        // Calculer le cumulatif : commencer par le total actuel et remonter
-        $cumulatives = array_fill(0, count($dailyData), 0);
-        $runningTotal = $currentTotal;
+            $dayHigh = $newByDay[$dateKey]['high'] ?? 0;
+            $dayMedium = $newByDay[$dateKey]['medium'] ?? 0;
+            $dayLow = $newByDay[$dateKey]['low'] ?? 0;
 
-        // Le dernier jour a le total actuel
-        for ($i = count($dailyData) - 1; $i >= 0; $i--) {
-            $cumulatives[$i] = $runningTotal;
-            $dayNew = $dailyData[$i]['newHigh'] + $dailyData[$i]['newMedium'] + $dailyData[$i]['newLow'];
-            $runningTotal -= $dayNew;
-        }
+            $cumulative += $dayHigh + $dayMedium + $dayLow;
 
-        foreach ($dailyData as $idx => $d) {
-            $labels[] = $d['label'];
-            $newHigh[] = $d['newHigh'];
-            $newMedium[] = $d['newMedium'];
-            $newLow[] = $d['newLow'];
-            $totalKeywords[] = $cumulatives[$idx];
+            $labels[] = $date->format('d/m');
+            $newHigh[] = $dayHigh;
+            $newMedium[] = $dayMedium;
+            $newLow[] = $dayLow;
+            $totalKeywords[] = $cumulative;
         }
 
         return [

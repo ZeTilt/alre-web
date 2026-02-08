@@ -133,20 +133,20 @@ class SeoKeywordRepository extends ServiceEntityRepository
     }
 
     /**
-     * Retourne le nombre de nouveaux mots-clés par jour et par niveau de pertinence.
+     * Retourne la date de première apparition GSC (MIN de SeoPosition.date) par mot-clé actif,
+     * avec le niveau de pertinence.
      *
-     * @return array<array{day: string, relevanceLevel: string, cnt: int}>
+     * @return array<array{id: int, relevanceLevel: string, firstSeen: string}>
      */
-    public function getKeywordCountsByDate(int $days = 30): array
+    public function getKeywordFirstAppearances(): array
     {
-        $since = new \DateTimeImmutable("-{$days} days");
-
         return $this->createQueryBuilder('k')
-            ->select("SUBSTRING(k.createdAt, 1, 10) as day, k.relevanceLevel, COUNT(k.id) as cnt")
-            ->where('k.createdAt >= :since')
-            ->setParameter('since', $since)
-            ->groupBy('day, k.relevanceLevel')
-            ->orderBy('day', 'ASC')
+            ->select('k.id, k.relevanceLevel, SUBSTRING(MIN(p.date), 1, 10) as firstSeen')
+            ->join('k.positions', 'p')
+            ->where('k.isActive = :active')
+            ->setParameter('active', true)
+            ->groupBy('k.id, k.relevanceLevel')
+            ->orderBy('firstSeen', 'ASC')
             ->getQuery()
             ->getResult();
     }

@@ -79,7 +79,7 @@ class SecurityHeadersSubscriber implements EventSubscriberInterface
             "default-src 'self'",
 
             // Scripts: self + CDNs + inline (needed for EasyAdmin and analytics)
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://matomo.alre-web.bzh",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://matomo.alre-web.bzh https://connect.facebook.net",
 
             // Styles: self + CDNs + inline (needed for EasyAdmin)
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
@@ -87,11 +87,11 @@ class SecurityHeadersSubscriber implements EventSubscriberInterface
             // Fonts: self + Google Fonts (FontAwesome now hosted locally)
             "font-src 'self' https://fonts.gstatic.com data:",
 
-            // Images: self + data URIs (for inline images) + EcoIndex badge
-            "img-src 'self' data: https://matomo.alre-web.bzh https://bff.ecoindex.fr",
+            // Images: self + data URIs (for inline images) + EcoIndex badge + Facebook Pixel
+            "img-src 'self' data: https://matomo.alre-web.bzh https://bff.ecoindex.fr https://www.facebook.com",
 
-            // Connections (AJAX, WebSocket)
-            "connect-src 'self' https://matomo.alre-web.bzh",
+            // Connections (AJAX, WebSocket, Facebook Pixel)
+            "connect-src 'self' https://matomo.alre-web.bzh https://www.facebook.com",
 
             // Forms can only submit to same origin
             "form-action 'self'",

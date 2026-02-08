@@ -12,20 +12,6 @@
         <meta name="author" content="Fabrice Dhuicque - Alré Web">
         <meta name="robots" content="index, follow">
 
-        {# Facebook Pixel - uniquement en production #}
-        {% if app.environment == 'prod' %}
-        <script>
-          !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-          n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-          n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-          t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
-          document,'script','https://connect.facebook.net/en_US/fbevents.js');
-          fbq('init', '3996839117272647');
-          fbq('track', 'PageView');
-        </script>
-        <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=3996839117272647&ev=PageView&noscript=1"/></noscript>
-        {% endif %}
-
         {# Canonical URL - Force HTTPS version #}
         <link rel="canonical" href="https://alre-web.bzh{{ app.request.pathinfo }}">
 
@@ -212,6 +198,45 @@
         {% block javascripts %}
         {# Page-specific scripts #}
         {% endblock %}
+
+        {# Cookie consent banner + Facebook Pixel - production only #}
+        {% if app.environment == 'prod' %}
+        <div id="cookie-banner" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:9999; background:var(--primary-dark); color:#fff; box-shadow:0 -4px 20px rgba(0,0,0,.3);">
+            <div style="max-width:1200px; margin:0 auto; padding:1rem 2rem; display:flex; align-items:center; justify-content:space-between; gap:1.5rem; flex-wrap:wrap;">
+                <p style="margin:0; font-size:.9rem; color:rgba(255,255,255,.9); flex:1; min-width:250px;">
+                    Ce site utilise des cookies publicitaires (Facebook) pour mesurer l'efficacité de nos campagnes.
+                    <a href="{{ path('app_legal_privacy') }}#cookies" style="color:var(--accent-light); text-decoration:underline;">En savoir plus</a>
+                </p>
+                <div style="display:flex; gap:.75rem; flex-shrink:0;">
+                    <button onclick="cookieConsent('refused')" style="padding:.5rem 1.25rem; border:1px solid rgba(255,255,255,.4); background:transparent; color:#fff; border-radius:var(--radius-md); cursor:pointer; font-size:.9rem;">Refuser</button>
+                    <button onclick="cookieConsent('accepted')" style="padding:.5rem 1.25rem; border:none; background:var(--accent-color); color:#fff; border-radius:var(--radius-md); cursor:pointer; font-weight:600; font-size:.9rem;">Accepter</button>
+                </div>
+            </div>
+        </div>
+        <script>
+        function getCookie(n){var m=document.cookie.match('(^|;)\\s*'+n+'=([^;]*)');return m?m[2]:null}
+        function cookieConsent(v){
+            var d=new Date();d.setMonth(d.getMonth()+13);
+            document.cookie='cookie_marketing='+v+';expires='+d.toUTCString()+';path=/;SameSite=Lax';
+            document.getElementById('cookie-banner').style.display='none';
+            if(v==='accepted')loadFbPixel();
+        }
+        function loadFbPixel(){
+            !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+            n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+            document,'script','https://connect.facebook.net/en_US/fbevents.js');
+            fbq('init','3996839117272647');
+            fbq('track','PageView');
+        }
+        (function(){
+            var c=getCookie('cookie_marketing');
+            if(!c)document.getElementById('cookie-banner').style.display='block';
+            else if(c==='accepted')loadFbPixel();
+        })();
+        </script>
+        {% endif %}
 
         {# Matomo Analytics - uniquement en production #}
         {% if app.environment == 'prod' %}

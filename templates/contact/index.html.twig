@@ -79,6 +79,9 @@
                     {% if label == 'success' %}<i class="fas fa-check-circle"></i>{% else %}<i class="fas fa-exclamation-triangle"></i>{% endif %}
                     {{ message }}
                 </div>
+                {% if label == 'success' and app.environment == 'prod' %}
+                <script>if (typeof fbq !== 'undefined') { fbq('track', 'Lead'); }</script>
+                {% endif %}
             {% endfor %}
         {% endfor %}
 
@@ -294,3 +297,4 @@
 </section>
 
 {% endblock %}
+

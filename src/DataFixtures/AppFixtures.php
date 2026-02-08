@@ -51,6 +51,13 @@ class AppFixtures extends Fixture
 
         $manager->flush();
 
+        // Add references for DemoFixtures
+        $this->addReference('user-admin', $user);
+        $this->addReference('company', $company);
+        foreach ($clients as $i => $client) {
+            $this->addReference('client-' . $i, $client);
+        }
+
         $stats = $this->getStats($manager);
 
         echo "\n✓ Fixtures loaded successfully!\n";
@@ -70,15 +77,20 @@ class AppFixtures extends Fixture
         $company->setName('Alré Web');
         $company->setOwnerName('Fabrice Dhuicque');
         $company->setTitle('Développeur Web Freelance');
-        $company->setAddress('123 Rue de la Tech');
-        $company->setPostalCode('59000');
-        $company->setCity('Lille');
+        $company->setAddress('12 Rue du Port');
+        $company->setPostalCode('56000');
+        $company->setCity('Vannes');
         $company->setPhone('06 12 34 56 78');
         $company->setEmail('contact@alre-web.bzh');
         $company->setSiret('12345678900012');
         $company->setWebsite('https://alre-web.bzh');
         $company->setLegalStatus('Auto-entrepreneur');
         $company->setLegalMentions('TVA non applicable, article 293 B du CGI');
+        $company->setPlafondCaAnnuel('7770000');
+        $company->setTauxCotisationsUrssaf('21.20');
+        $company->setObjectifCaMensuel('450000');
+        $company->setObjectifCaAnnuel('5400000');
+        $company->setAnneeFiscaleEnCours(2026);
 
         $manager->persist($company);
 
@@ -109,8 +121,8 @@ class AppFixtures extends Fixture
                 'email' => 'contact@techstart.fr',
                 'phone' => '01 23 45 67 89',
                 'address' => '15 Avenue de l\'Innovation',
-                'postalCode' => '75001',
-                'city' => 'Paris',
+                'postalCode' => '35000',
+                'city' => 'Rennes',
                 'siret' => '88877766600011',
                 'url' => 'https://techstart.fr',
             ],
@@ -119,10 +131,10 @@ class AppFixtures extends Fixture
                 'contactFirstName' => 'Marie',
                 'contactLastName' => 'Dupont',
                 'email' => 'marie@bioboutique.com',
-                'phone' => '02 34 56 78 90',
+                'phone' => '02 97 34 56 78',
                 'address' => '8 Rue du Commerce',
-                'postalCode' => '44000',
-                'city' => 'Nantes',
+                'postalCode' => '56000',
+                'city' => 'Vannes',
                 'siret' => '77766655500022',
                 'url' => 'https://bioboutique.com',
             ],
@@ -131,10 +143,10 @@ class AppFixtures extends Fixture
                 'contactFirstName' => 'Thomas',
                 'contactLastName' => 'Legrand',
                 'email' => 'thomas@architectstudio.fr',
-                'phone' => '03 45 67 89 01',
-                'address' => '42 Boulevard Haussmann',
-                'postalCode' => '69001',
-                'city' => 'Lyon',
+                'phone' => '02 97 45 67 89',
+                'address' => '42 Quai des Indes',
+                'postalCode' => '56100',
+                'city' => 'Lorient',
                 'siret' => '66655544400033',
                 'url' => 'https://architectstudio.fr',
             ],
@@ -143,10 +155,10 @@ class AppFixtures extends Fixture
                 'contactFirstName' => 'Pierre',
                 'contactLastName' => 'Rousseau',
                 'email' => 'contact@legourmet-restaurant.fr',
-                'phone' => '04 56 78 90 12',
+                'phone' => '02 97 56 78 90',
                 'address' => '27 Place du Marché',
-                'postalCode' => '33000',
-                'city' => 'Bordeaux',
+                'postalCode' => '56400',
+                'city' => 'Auray',
                 'siret' => '55544433300044',
                 'url' => null,
             ],
@@ -155,10 +167,10 @@ class AppFixtures extends Fixture
                 'contactFirstName' => 'Julie',
                 'contactLastName' => 'Bernard',
                 'email' => 'julie@fitnessplus.com',
-                'phone' => '05 67 89 01 23',
+                'phone' => '02 97 67 89 01',
                 'address' => '10 Rue du Sport',
-                'postalCode' => '59000',
-                'city' => 'Lille',
+                'postalCode' => '56000',
+                'city' => 'Vannes',
                 'siret' => '44433322200055',
                 'url' => 'https://fitnessplus.com',
             ],
@@ -167,10 +179,10 @@ class AppFixtures extends Fixture
                 'contactFirstName' => 'Laurent',
                 'contactLastName' => 'Petit',
                 'email' => 'l.petit@prestige-immo.fr',
-                'phone' => '06 78 90 12 34',
-                'address' => '5 Avenue de la République',
-                'postalCode' => '13001',
-                'city' => 'Marseille',
+                'phone' => '02 97 78 90 12',
+                'address' => '5 Place de la République',
+                'postalCode' => '56340',
+                'city' => 'Carnac',
                 'siret' => '33322211100066',
                 'url' => 'https://prestige-immo.fr',
             ],
@@ -179,10 +191,10 @@ class AppFixtures extends Fixture
                 'contactFirstName' => 'Isabelle',
                 'contactLastName' => 'Moreau',
                 'email' => 'contact@boutique-elegance.fr',
-                'phone' => '01 45 67 89 12',
+                'phone' => '02 99 45 67 89',
                 'address' => '32 Rue de la Mode',
-                'postalCode' => '75008',
-                'city' => 'Paris',
+                'postalCode' => '35000',
+                'city' => 'Rennes',
                 'siret' => '22211100099977',
                 'url' => 'https://boutique-elegance.fr',
             ],
@@ -193,8 +205,8 @@ class AppFixtures extends Fixture
                 'email' => 'contact@cabinet-juridis.fr',
                 'phone' => '02 98 76 54 32',
                 'address' => '18 Boulevard des Avocats',
-                'postalCode' => '35000',
-                'city' => 'Rennes',
+                'postalCode' => '29200',
+                'city' => 'Brest',
                 'siret' => '11100099988877',
                 'url' => 'https://cabinet-juridis.fr',
             ],
@@ -203,22 +215,23 @@ class AppFixtures extends Fixture
                 'contactFirstName' => 'Céline',
                 'contactLastName' => 'Leroy',
                 'email' => 'contact@ecole-harmony.fr',
-                'phone' => '03 20 45 67 89',
+                'phone' => '02 97 20 45 67',
                 'address' => '7 Rue des Arts',
-                'postalCode' => '59800',
-                'city' => 'Lille',
+                'postalCode' => '56170',
+                'city' => 'Quiberon',
                 'siret' => '99988877766655',
                 'url' => null,
+                'type' => Client::TYPE_ASSOCIATION,
             ],
             [
                 'name' => 'Garage Auto+ Services',
                 'contactFirstName' => 'David',
                 'contactLastName' => 'Mercier',
                 'email' => 'd.mercier@autoplus-services.fr',
-                'phone' => '04 91 23 45 67',
-                'address' => '45 Route Nationale',
-                'postalCode' => '13015',
-                'city' => 'Marseille',
+                'phone' => '02 44 91 23 45',
+                'address' => '45 Route de Nantes',
+                'postalCode' => '44000',
+                'city' => 'Nantes',
                 'siret' => '88877766655544',
                 'url' => 'https://autoplus-services.fr',
             ],
@@ -227,10 +240,10 @@ class AppFixtures extends Fixture
                 'contactFirstName' => 'Nathalie',
                 'contactLastName' => 'Garnier',
                 'email' => 'contact@roses-blanches.fr',
-                'phone' => '05 56 78 90 12',
-                'address' => '12 Place des Fleurs',
-                'postalCode' => '33200',
-                'city' => 'Bordeaux',
+                'phone' => '02 97 56 78 90',
+                'address' => '12 Place des Lices',
+                'postalCode' => '56000',
+                'city' => 'Vannes',
                 'siret' => '77766655544433',
                 'url' => null,
             ],
@@ -239,12 +252,13 @@ class AppFixtures extends Fixture
                 'contactFirstName' => 'Marc',
                 'contactLastName' => 'Fontaine',
                 'email' => 'contact@aide-solidarite.org',
-                'phone' => '01 42 34 56 78',
-                'address' => '28 Avenue de la Fraternité',
-                'postalCode' => '75013',
-                'city' => 'Paris',
+                'phone' => '02 97 42 34 56',
+                'address' => '28 Rue de la Fraternité',
+                'postalCode' => '56100',
+                'city' => 'Lorient',
                 'siret' => '66655544433322',
                 'url' => null,
+                'type' => Client::TYPE_ASSOCIATION,
             ],
         ];
 
@@ -261,6 +275,9 @@ class AppFixtures extends Fixture
             $client->setCity($data['city']);
             $client->setSiret($data['siret']);
             $client->setUrl($data['url']);
+            if (isset($data['type'])) {
+                $client->setType($data['type']);
+            }
 
             $manager->persist($client);
             $clients[] = $client;
@@ -509,583 +526,178 @@ class AppFixtures extends Fixture
 
     private function createDevisAndFactures(ObjectManager $manager, User $user, array $clients): void
     {
-        // ============================================
-        // ANNÉE 2023 - Archives
-        // ============================================
+        // Service templates (tarifs page pricing)
+        $sv = [ // Site Vitrine 1193€
+            ['description' => 'Design moderne responsive', 'quantity' => 1, 'unitPrice' => 400],
+            ['description' => 'Développement 5 pages personnalisées', 'quantity' => 5, 'unitPrice' => 99],
+            ['description' => 'Formulaire de contact et SEO de base', 'quantity' => 1, 'unitPrice' => 148],
+            ['description' => 'Formation gestion contenus', 'quantity' => 1, 'unitPrice' => 150],
+        ];
+        $pu = [ // Page Unique 493€
+            ['description' => 'Création page unique responsive', 'quantity' => 1, 'unitPrice' => 393],
+            ['description' => 'Formulaire contact et optimisation SEO', 'quantity' => 1, 'unitPrice' => 100],
+        ];
+        $ec = [ // E-commerce 2497€
+            ['description' => 'Design boutique en ligne', 'quantity' => 1, 'unitPrice' => 500],
+            ['description' => 'Développement catalogue et panier', 'quantity' => 1, 'unitPrice' => 997],
+            ['description' => 'Paiement sécurisé et gestion stocks', 'quantity' => 1, 'unitPrice' => 500],
+            ['description' => 'Espace client et emails transactionnels', 'quantity' => 1, 'unitPrice' => 300],
+            ['description' => 'Formation complète', 'quantity' => 1, 'unitPrice' => 200],
+        ];
+        $hm = [['description' => 'Hébergement + Maintenance mensuel', 'quantity' => 12, 'unitPrice' => 53]]; // 636€
+        $se = [['description' => 'Audit SEO complet et plan d\'action priorisé', 'quantity' => 1, 'unitPrice' => 247]]; // 247€
+        $sv6 = [['description' => 'Pack SEO Visibilité mensuel', 'quantity' => 6, 'unitPrice' => 143]]; // 858€
+        $sp6 = [['description' => 'Pack SEO Performance mensuel', 'quantity' => 6, 'unitPrice' => 227]]; // 1362€
 
-        // Jan 2023 : Site vitrine TechStart - Accepté et facturé payé
-        $devis2023_01 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[0], // TechStart
-            'DEV-2023-001',
-            'Site Vitrine Corporate',
-            'Création site vitrine 5 pages',
-            Devis::STATUS_ACCEPTE,
-            [
-                ['description' => 'Maquette et design', 'quantity' => 1, 'unitPrice' => 800],
-                ['description' => 'Développement 5 pages', 'quantity' => 5, 'unitPrice' => 300],
-                ['description' => 'Formulaire de contact', 'quantity' => 1, 'unitPrice' => 200],
-                ['description' => 'Formation client', 'quantity' => 2, 'unitPrice' => 150],
-            ],
-            new \DateTimeImmutable('2023-01-10')
-        );
-        $devis2023_01->setDateEnvoi(new \DateTimeImmutable('2023-01-12'));
-        $devis2023_01->setDateValidite(new \DateTimeImmutable('2023-02-11')); // 30 jours
-        $devis2023_01->setDateReponse(new \DateTimeImmutable('2023-01-20'));
+        // [clientIdx, title, desc, items, status, devisDate, factStatus, factDate, payDate]
+        // CA mensuel cible : 2500-4500€
+        $entries = [
+            // === Payés JANVIER 2025 (1193+493+247+493+247 = 2673€) ===
+            [0, 'Site Vitrine Corporate', 'Site vitrine 5 pages startup', $sv, 'accepte', '2025-01-02', 'paye', '2025-01-15', '2025-01-28'],
+            [1, 'Page Unique Promotions Bio', 'Landing page promotions', $pu, 'accepte', '2025-01-06', 'paye', '2025-01-17', '2025-01-29'],
+            [3, 'Audit SEO Restaurant', 'Audit SEO site existant', $se, 'accepte', '2025-01-07', 'paye', '2025-01-16', '2025-01-28'],
+            [2, 'Page Unique Architecture', 'Landing page projets', $pu, 'accepte', '2025-01-08', 'paye', '2025-01-18', '2025-01-30'],
+            [4, 'Audit SEO Fitness', 'Audit SEO et recommandations', $se, 'accepte', '2025-01-10', 'paye', '2025-01-20', '2025-01-31'],
 
-        $this->createFacture(
-            $manager,
-            $user,
-            $clients[0],
-            $devis2023_01,
-            'FACT-2023-001',
-            'paye',
-            new \DateTimeImmutable('2023-02-15'),
-            new \DateTimeImmutable('2023-03-10')
-        );
+            // === Payés FÉVRIER 2025 (493+493+493+636+247+493 = 2855€) ===
+            [5, 'Page Unique Immobilier', 'Landing page biens à la une', $pu, 'accepte', '2025-01-13', 'paye', '2025-02-03', '2025-02-15'],
+            [7, 'Page Unique Cabinet Juridique', 'Landing page services', $pu, 'accepte', '2025-01-15', 'paye', '2025-02-05', '2025-02-18'],
+            [9, 'Page Unique Garage Auto', 'Page vitrine services auto', $pu, 'accepte', '2025-01-17', 'paye', '2025-02-07', '2025-02-20'],
+            [0, 'Hébergement Maintenance TechStart', 'Pack héb+maint 12 mois', $hm, 'accepte', '2025-01-20', 'paye', '2025-02-10', '2025-02-22'],
+            [10, 'Audit SEO Fleuriste', 'Audit référencement', $se, 'accepte', '2025-01-22', 'paye', '2025-02-12', '2025-02-25'],
+            [6, 'Page Unique Mode Élégance', 'Landing page collection', $pu, 'accepte', '2025-01-24', 'paye', '2025-02-14', '2025-02-27'],
 
-        // Mars 2023 : Refonte Restaurant - Refusé (trop cher)
-        $devis2023_02 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[3], // Restaurant
-            'DEV-2023-002',
-            'Refonte complète site restaurant',
-            'Refonte totale avec réservation en ligne',
-            Devis::STATUS_REFUSE,
-            [
-                ['description' => 'Audit et analyse', 'quantity' => 1, 'unitPrice' => 1200],
-                ['description' => 'Refonte design', 'quantity' => 1, 'unitPrice' => 2500],
-                ['description' => 'Développement', 'quantity' => 30, 'unitPrice' => 400],
-            ],
-            new \DateTimeImmutable('2023-03-05')
-        );
-        $devis2023_02->setDateEnvoi(new \DateTimeImmutable('2023-03-08'));
-        $devis2023_02->setDateValidite(new \DateTimeImmutable('2023-04-07')); // 30 jours
-        $devis2023_02->setDateReponse(new \DateTimeImmutable('2023-03-22'));
+            // === Payés MARS 2025 (1193+1193+636 = 3022€) ===
+            [3, 'Site Vitrine Restaurant', 'Site complet menu et réservation', $sv, 'accepte', '2025-02-03', 'paye', '2025-03-03', '2025-03-15'],
+            [2, 'Site Vitrine Architecture', 'Site portfolio projets', $sv, 'accepte', '2025-02-10', 'paye', '2025-03-10', '2025-03-22'],
+            [1, 'Hébergement Maintenance BioBoutique', 'Pack héb+maint 12 mois', $hm, 'accepte', '2025-02-17', 'paye', '2025-03-12', '2025-03-25'],
 
-        // Mai 2023 : Plateforme Fitness - Accepté et facturé payé
-        $devis2023_03 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[4], // Fitness Plus
-            'DEV-2023-003',
-            'Plateforme Cours en Ligne',
-            'Développement plateforme streaming + abonnements',
-            Devis::STATUS_ACCEPTE,
-            [
-                ['description' => 'Architecture et conception', 'quantity' => 1, 'unitPrice' => 1500],
-                ['description' => 'Développement API + Front-end React', 'quantity' => 30, 'unitPrice' => 400],
-                ['description' => 'Intégration vidéo et Stripe', 'quantity' => 1, 'unitPrice' => 1200],
-                ['description' => 'Tests et optimisations', 'quantity' => 1, 'unitPrice' => 800],
-            ],
-            new \DateTimeImmutable('2023-05-02')
-        );
-        $devis2023_03->setDateEnvoi(new \DateTimeImmutable('2023-05-05'));
-        $devis2023_03->setDateValidite(new \DateTimeImmutable('2023-06-04')); // 30 jours
-        $devis2023_03->setDateReponse(new \DateTimeImmutable('2023-05-15'));
+            // === Payés AVRIL 2025 (1193+1193+493 = 2879€) ===
+            [4, 'Site Vitrine Salle de Sport', 'Site avec planning cours', $sv, 'accepte', '2025-03-03', 'paye', '2025-04-01', '2025-04-14'],
+            [6, 'Site Vitrine Boutique Mode', 'Site vitrine avec catalogue', $sv, 'accepte', '2025-03-10', 'paye', '2025-04-08', '2025-04-21'],
+            [8, 'Page Unique École Musique', 'Page vitrine cours', $pu, 'accepte', '2025-03-17', 'paye', '2025-04-10', '2025-04-23'],
 
-        $this->createFacture(
-            $manager,
-            $user,
-            $clients[4],
-            $devis2023_03,
-            'FACT-2023-002',
-            'paye',
-            new \DateTimeImmutable('2023-08-20'),
-            new \DateTimeImmutable('2023-09-15')
-        );
+            // === Payés MAI 2025 (1193+1193+636 = 3022€) ===
+            [7, 'Site Vitrine Cabinet Avocat', 'Site professionnel juridique', $sv, 'accepte', '2025-04-07', 'paye', '2025-05-05', '2025-05-18'],
+            [5, 'Site Vitrine Agence Immobilière', 'Site avec listings biens', $sv, 'accepte', '2025-04-14', 'paye', '2025-05-12', '2025-05-25'],
+            [2, 'Hébergement Maintenance Architecture', 'Pack héb+maint 12 mois', $hm, 'accepte', '2025-04-21', 'paye', '2025-05-15', '2025-05-28'],
 
-        // Juillet 2023 : Logo École de Musique - Expiré (pas répondu)
-        $devis2023_04 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[8], // École Harmony
-            'DEV-2023-004',
-            'Logo et Identité Visuelle',
-            'Création logo et charte graphique',
-            Devis::STATUS_EXPIRE,
-            [
-                ['description' => 'Recherches et croquis', 'quantity' => 1, 'unitPrice' => 400],
-                ['description' => 'Créations finales (3 propositions)', 'quantity' => 1, 'unitPrice' => 800],
-                ['description' => 'Déclinaisons et charte', 'quantity' => 1, 'unitPrice' => 500],
-            ],
-            new \DateTimeImmutable('2023-07-03')
-        );
-        $devis2023_04->setDateEnvoi(new \DateTimeImmutable('2023-07-06'));
-        $devis2023_04->setDateValidite(new \DateTimeImmutable('2023-08-05')); // 30 jours
+            // === Refusé MAI (pas de CA) ===
+            [8, 'Site Vitrine École Musique', 'Site complet inscriptions', $sv, 'refuse', '2025-05-05', null, null, null],
 
-        // Octobre 2023 : Site Architect Studio - Accepté et facturé payé
-        $devis2023_05 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[2], // Architect Studio
-            'DEV-2023-005',
-            'Site Vitrine Architecture',
-            'Création d\'un site vitrine avec portfolio',
-            Devis::STATUS_ACCEPTE,
-            [
-                ['description' => 'Conception graphique et UX', 'quantity' => 1, 'unitPrice' => 1200],
-                ['description' => 'Développement du site', 'quantity' => 15, 'unitPrice' => 400],
-                ['description' => 'Galerie photos interactive', 'quantity' => 1, 'unitPrice' => 800],
-                ['description' => 'Formation client', 'quantity' => 1, 'unitPrice' => 400],
-            ],
-            new \DateTimeImmutable('2023-09-25')
-        );
-        $devis2023_05->setDateEnvoi(new \DateTimeImmutable('2023-09-28'));
-        $devis2023_05->setDateValidite(new \DateTimeImmutable('2023-10-28')); // 30 jours
-        $devis2023_05->setDateReponse(new \DateTimeImmutable('2023-10-05'));
+            // === Payés JUIN 2025 (1193+493+636+636 = 2958€) ===
+            [9, 'Site Vitrine Garage Auto', 'Site avec prise de RDV', $sv, 'accepte', '2025-05-05', 'paye', '2025-06-02', '2025-06-15'],
+            [10, 'Page Unique Bouquets', 'Landing page collections florales', $pu, 'accepte', '2025-05-12', 'paye', '2025-06-05', '2025-06-18'],
+            [4, 'Hébergement Maintenance Fitness', 'Pack héb+maint 12 mois', $hm, 'accepte', '2025-05-19', 'paye', '2025-06-09', '2025-06-22'],
+            [3, 'Hébergement Maintenance Restaurant', 'Pack héb+maint 12 mois', $hm, 'accepte', '2025-05-26', 'paye', '2025-06-16', '2025-06-28'],
 
-        $this->createFacture(
-            $manager,
-            $user,
-            $clients[2],
-            $devis2023_05,
-            'FACT-2023-003',
-            'paye',
-            new \DateTimeImmutable('2023-12-10'),
-            new \DateTimeImmutable('2024-01-08')
-        );
+            // === Payés JUILLET 2025 (2497+247+493 = 3237€) ===
+            [6, 'Boutique en Ligne Mode', 'E-commerce catalogue produits', $ec, 'accepte', '2025-05-19', 'paye', '2025-07-01', '2025-07-15'],
+            [1, 'Audit SEO BioBoutique', 'Audit SEO et plan action', $se, 'accepte', '2025-06-16', 'paye', '2025-07-07', '2025-07-18'],
+            [0, 'Page Unique Campagne TechStart', 'Landing page marketing', $pu, 'accepte', '2025-06-23', 'paye', '2025-07-10', '2025-07-22'],
 
-        // ============================================
-        // ANNÉE 2024
-        // ============================================
+            // === Payés AOÛT 2025 (1193+858+636+636 = 3323€) ===
+            [10, 'Site Vitrine Fleuriste', 'Site galerie créations florales', $sv, 'accepte', '2025-06-23', 'paye', '2025-08-04', '2025-08-18'],
+            [1, 'Pack SEO Visibilité BioBoutique', 'SEO local 6 mois', $sv6, 'accepte', '2025-07-07', 'paye', '2025-08-01', '2025-08-15'],
+            [7, 'Hébergement Maintenance Cabinet', 'Pack héb+maint 12 mois', $hm, 'accepte', '2025-07-14', 'paye', '2025-08-08', '2025-08-22'],
+            [5, 'Hébergement Maintenance Immobilier', 'Pack héb+maint 12 mois', $hm, 'accepte', '2025-07-21', 'paye', '2025-08-15', '2025-08-28'],
 
-        // Janvier 2024 : E-commerce BioBoutique - Accepté et facturé payé
-        $devis2024_01 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[1], // BioBoutique
-            'DEV-2024-001',
-            'Site E-commerce Bio',
-            'Développement complet d\'une boutique en ligne',
-            Devis::STATUS_ACCEPTE,
-            [
-                ['description' => 'Analyse et conception', 'quantity' => 1, 'unitPrice' => 800],
-                ['description' => 'Développement front-end et back-end', 'quantity' => 25, 'unitPrice' => 400],
-                ['description' => 'Intégration Stripe', 'quantity' => 1, 'unitPrice' => 600],
-                ['description' => 'Tests et mise en ligne', 'quantity' => 1, 'unitPrice' => 500],
-            ],
-            new \DateTimeImmutable('2024-01-08')
-        );
-        $devis2024_01->setDateEnvoi(new \DateTimeImmutable('2024-01-10'));
-        $devis2024_01->setDateValidite(new \DateTimeImmutable('2024-02-09')); // 30 jours
-        $devis2024_01->setDateReponse(new \DateTimeImmutable('2024-01-18'));
+            // === Payés SEPTEMBRE 2025 (1193+858+493 = 2544€) ===
+            [8, 'Site Vitrine École Harmony', 'Site cours et inscriptions', $sv, 'accepte', '2025-07-28', 'paye', '2025-09-01', '2025-09-15'],
+            [4, 'Pack SEO Visibilité Fitness', 'SEO local 6 mois', $sv6, 'accepte', '2025-08-11', 'paye', '2025-09-05', '2025-09-18'],
+            [11, 'Page Unique Association', 'Page présentation activités', $pu, 'accepte', '2025-08-18', 'paye', '2025-09-08', '2025-09-22'],
 
-        $this->createFacture(
-            $manager,
-            $user,
-            $clients[1],
-            $devis2024_01,
-            'FACT-2024-001',
-            'paye',
-            new \DateTimeImmutable('2024-04-22'),
-            new \DateTimeImmutable('2024-05-15')
-        );
+            // === Payés OCTOBRE 2025 (1362+636+636+636 = 3270€) ===
+            [0, 'Pack SEO Performance TechStart', 'SEO complet 6 mois', $sp6, 'accepte', '2025-09-01', 'paye', '2025-10-01', '2025-10-15'],
+            [9, 'Hébergement Maintenance Garage', 'Pack héb+maint 12 mois', $hm, 'accepte', '2025-09-08', 'paye', '2025-10-03', '2025-10-16'],
+            [10, 'Hébergement Maintenance Fleuriste', 'Pack héb+maint 12 mois', $hm, 'accepte', '2025-09-15', 'paye', '2025-10-08', '2025-10-22'],
+            [6, 'Hébergement Maintenance Boutique', 'Pack héb+maint 12 mois', $hm, 'accepte', '2025-09-22', 'paye', '2025-10-15', '2025-10-28'],
 
-        // Février 2024 : Menu Digital Restaurant - Accepté et facturé payé
-        $devis2024_02 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[3], // Restaurant
-            'DEV-2024-002',
-            'Site Menu Digital',
-            'Création menu digital QR code',
-            Devis::STATUS_ACCEPTE,
-            [
-                ['description' => 'Design menu digital', 'quantity' => 1, 'unitPrice' => 500],
-                ['description' => 'Développement responsive', 'quantity' => 1, 'unitPrice' => 800],
-                ['description' => 'QR codes personnalisés', 'quantity' => 1, 'unitPrice' => 200],
-            ],
-            new \DateTimeImmutable('2024-02-12')
-        );
-        $devis2024_02->setDateEnvoi(new \DateTimeImmutable('2024-02-14'));
-        $devis2024_02->setDateValidite(new \DateTimeImmutable('2024-03-15')); // 30 jours
-        $devis2024_02->setDateReponse(new \DateTimeImmutable('2024-02-20'));
+            // === Payés NOVEMBRE 2025 (1193+858+247+858 = 3156€) ===
+            [11, 'Site Vitrine Association', 'Site espace adhérents', $sv, 'accepte', '2025-09-29', 'paye', '2025-11-03', '2025-11-17'],
+            [7, 'Pack SEO Visibilité Cabinet', 'SEO local 6 mois', $sv6, 'accepte', '2025-10-06', 'paye', '2025-11-05', '2025-11-18'],
+            [9, 'Audit SEO Garage Auto', 'Audit référencement', $se, 'accepte', '2025-10-13', 'paye', '2025-11-07', '2025-11-20'],
+            [3, 'Pack SEO Visibilité Restaurant', 'SEO local 6 mois', $sv6, 'accepte', '2025-10-20', 'paye', '2025-11-10', '2025-11-22'],
 
-        $this->createFacture(
-            $manager,
-            $user,
-            $clients[3],
-            $devis2024_02,
-            'FACT-2024-002',
-            'paye',
-            new \DateTimeImmutable('2024-03-05'),
-            new \DateTimeImmutable('2024-03-28')
-        );
+            // === Payés DÉCEMBRE 2025 (858+636+636+493 = 2623€) ===
+            [2, 'Pack SEO Visibilité Architecture', 'SEO local 6 mois', $sv6, 'accepte', '2025-11-03', 'paye', '2025-12-01', '2025-12-12'],
+            [8, 'Hébergement Maintenance École', 'Pack héb+maint 12 mois', $hm, 'accepte', '2025-11-10', 'paye', '2025-12-05', '2025-12-18'],
+            [11, 'Hébergement Maintenance Association', 'Pack héb+maint 12 mois', $hm, 'accepte', '2025-11-17', 'paye', '2025-12-10', '2025-12-22'],
+            [1, 'Page Unique Catalogue Bio', 'Landing page nouveau catalogue', $pu, 'accepte', '2025-11-24', 'paye', '2025-12-15', '2025-12-28'],
 
-        // Mars 2024 : Portail Immobilier - Accepté et facturé en attente paiement
-        $devis2024_03 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[5], // Prestige Immo
-            'DEV-2024-003',
-            'Portail Immobilier',
-            'Site d\'annonces avec recherche avancée',
-            Devis::STATUS_ACCEPTE,
-            [
-                ['description' => 'Analyse fonctionnelle et UX', 'quantity' => 1, 'unitPrice' => 1000],
-                ['description' => 'Développement moteur de recherche', 'quantity' => 20, 'unitPrice' => 400],
-                ['description' => 'Intégration Elasticsearch et Maps', 'quantity' => 1, 'unitPrice' => 1500],
-                ['description' => 'Tests et déploiement', 'quantity' => 1, 'unitPrice' => 600],
-            ],
-            new \DateTimeImmutable('2024-02-26')
-        );
-        $devis2024_03->setDateEnvoi(new \DateTimeImmutable('2024-02-28'));
-        $devis2024_03->setDateValidite(new \DateTimeImmutable('2024-03-29')); // 30 jours
-        $devis2024_03->setDateReponse(new \DateTimeImmutable('2024-03-08'));
+            // === Expiré / Envoyé fin 2025 ===
+            [2, 'Pack SEO Performance Architecture', 'SEO complet 6 mois', $sp6, 'expire', '2025-12-01', null, null, null],
+            [7, 'Pack SEO Performance Cabinet', 'SEO complet 6 mois', $sp6, 'envoye', '2025-12-08', null, null, null],
 
-        $this->createFacture(
-            $manager,
-            $user,
-            $clients[5],
-            $devis2024_03,
-            'FACT-2024-003',
-            'envoye',
-            new \DateTimeImmutable('2024-06-12')
-        );
+            // === Payés JANVIER 2026 (1362+493+493+247+247 = 2842€) ===
+            [5, 'Pack SEO Performance Immobilier', 'SEO complet 6 mois', $sp6, 'accepte', '2025-12-01', 'paye', '2026-01-06', '2026-01-18'],
+            [9, 'Page Unique Promotions Garage', 'Landing page promos', $pu, 'accepte', '2025-12-08', 'paye', '2026-01-08', '2026-01-20'],
+            [4, 'Page Unique Planning Fitness', 'Landing page nouveau planning', $pu, 'accepte', '2025-12-15', 'paye', '2026-01-12', '2026-01-25'],
+            [3, 'Audit SEO Restaurant 2026', 'Audit SEO annuel', $se, 'accepte', '2025-12-22', 'paye', '2026-01-15', '2026-01-28'],
+            [11, 'Audit SEO Association', 'Audit SEO et recommandations', $se, 'accepte', '2026-01-06', 'paye', '2026-01-20', '2026-01-31'],
 
-        // Avril 2024 : Site Boutique Mode - Accepté et facturé payé
-        $devis2024_04 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[6], // Boutique Élégance
-            'DEV-2024-004',
-            'Site Vitrine Boutique Mode',
-            'Site élégant avec catalogue produits',
-            Devis::STATUS_ACCEPTE,
-            [
-                ['description' => 'Design haut de gamme', 'quantity' => 1, 'unitPrice' => 1500],
-                ['description' => 'Développement site + catalogue', 'quantity' => 12, 'unitPrice' => 400],
-                ['description' => 'Optimisation images et SEO', 'quantity' => 1, 'unitPrice' => 600],
-            ],
-            new \DateTimeImmutable('2024-03-18')
-        );
-        $devis2024_04->setDateEnvoi(new \DateTimeImmutable('2024-03-20'));
-        $devis2024_04->setDateValidite(new \DateTimeImmutable('2024-04-19')); // 30 jours
-        $devis2024_04->setDateReponse(new \DateTimeImmutable('2024-03-28'));
+            // === 2026 en cours ===
+            [5, 'Site E-commerce Immobilier', 'Boutique en ligne visites virtuelles', $ec, 'accepte', '2025-12-20', 'envoye', '2026-02-03', null],
+            [4, 'Pack SEO Performance Fitness', 'SEO complet 6 mois', $sp6, 'envoye', '2026-01-28', null, null, null],
+            [9, 'Boutique en Ligne Pièces Auto', 'E-commerce pièces et accessoires', $ec, 'brouillon', '2026-02-05', null, null, null],
+        ];
 
-        $this->createFacture(
-            $manager,
-            $user,
-            $clients[6],
-            $devis2024_04,
-            'FACT-2024-004',
-            'paye',
-            new \DateTimeImmutable('2024-05-25'),
-            new \DateTimeImmutable('2024-06-12')
-        );
+        // Status mapping
+        $statusMap = [
+            'accepte' => Devis::STATUS_ACCEPTE,
+            'refuse' => Devis::STATUS_REFUSE,
+            'expire' => Devis::STATUS_EXPIRE,
+            'envoye' => Devis::STATUS_ENVOYE,
+            'brouillon' => Devis::STATUS_BROUILLON,
+        ];
 
-        // Juin 2024 : Site Cabinet Avocat - Accepté et facturé payé
-        $devis2024_05 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[7], // Cabinet Juridis
-            'DEV-2024-005',
-            'Site Cabinet d\'Avocat',
-            'Site professionnel avec présentation des services',
-            Devis::STATUS_ACCEPTE,
-            [
-                ['description' => 'Design sobre et professionnel', 'quantity' => 1, 'unitPrice' => 900],
-                ['description' => 'Développement 8 pages', 'quantity' => 8, 'unitPrice' => 350],
-                ['description' => 'Formulaire prise de contact', 'quantity' => 1, 'unitPrice' => 400],
-                ['description' => 'Mentions légales conformes', 'quantity' => 1, 'unitPrice' => 200],
-            ],
-            new \DateTimeImmutable('2024-05-27')
-        );
-        $devis2024_05->setDateEnvoi(new \DateTimeImmutable('2024-05-29'));
-        $devis2024_05->setDateValidite(new \DateTimeImmutable('2024-06-28')); // 30 jours
-        $devis2024_05->setDateReponse(new \DateTimeImmutable('2024-06-05'));
+        // Pass 1: Create all devis
+        $devisNum = ['2025' => 0, '2026' => 0];
+        $createdDevis = [];
+        foreach ($entries as $idx => $e) {
+            [$ci, $title, $desc, $items, $status, $dDate, $fStatus, $fDate, $pDate] = $e;
+            $devisDate = new \DateTimeImmutable($dDate);
+            $year = $devisDate->format('Y');
 
-        $this->createFacture(
-            $manager,
-            $user,
-            $clients[7],
-            $devis2024_05,
-            'FACT-2024-005',
-            'paye',
-            new \DateTimeImmutable('2024-07-20'),
-            new \DateTimeImmutable('2024-08-10')
-        );
+            if ($status === 'brouillon') {
+                $devisNumber = null;
+            } else {
+                $devisNum[$year] = ($devisNum[$year] ?? 0) + 1;
+                $devisNumber = sprintf('DEV-%s-%03d', $year, $devisNum[$year]);
+            }
 
-        // Août 2024 : Site Garage - Accepté et facturé payé
-        $devis2024_06 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[9], // Garage Auto+
-            'DEV-2024-006',
-            'Site Vitrine Garage Auto',
-            'Site avec prise de RDV en ligne',
-            Devis::STATUS_ACCEPTE,
-            [
-                ['description' => 'Design et maquette', 'quantity' => 1, 'unitPrice' => 700],
-                ['description' => 'Développement site vitrine', 'quantity' => 10, 'unitPrice' => 350],
-                ['description' => 'Module prise de RDV', 'quantity' => 1, 'unitPrice' => 1200],
-            ],
-            new \DateTimeImmutable('2024-07-15')
-        );
-        $devis2024_06->setDateEnvoi(new \DateTimeImmutable('2024-07-17'));
-        $devis2024_06->setDateValidite(new \DateTimeImmutable('2024-08-16')); // 30 jours
-        $devis2024_06->setDateReponse(new \DateTimeImmutable('2024-07-25'));
+            $d = $this->createDevis($manager, $user, $clients[$ci], $devisNumber,
+                $title, $desc, $statusMap[$status], $items, $devisDate);
+            $d->setDateEnvoi($devisDate->modify('+2 days'));
+            $d->setDateValidite($devisDate->modify('+32 days'));
+            if (in_array($status, ['accepte', 'refuse'])) {
+                $d->setDateReponse($devisDate->modify('+8 days'));
+            }
 
-        $this->createFacture(
-            $manager,
-            $user,
-            $clients[9],
-            $devis2024_06,
-            'FACT-2024-006',
-            'paye',
-            new \DateTimeImmutable('2024-09-10'),
-            new \DateTimeImmutable('2024-10-02')
-        );
+            $createdDevis[$idx] = ['devis' => $d, 'clientIdx' => $ci];
+        }
 
-        // Septembre 2024 : Corrections BioBoutique - Accepté et facturé payé
-        $devis2024_07 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[1], // BioBoutique
-            'DEV-2024-007',
-            'Corrections et améliorations',
-            'Corrections diverses et optimisations',
-            Devis::STATUS_ACCEPTE,
-            [
-                ['description' => 'Correction formulaire contact', 'quantity' => 1, 'unitPrice' => 200],
-                ['description' => 'Mise à jour images produits', 'quantity' => 1, 'unitPrice' => 150],
-                ['description' => 'Optimisation vitesse', 'quantity' => 1, 'unitPrice' => 300],
-                ['description' => 'Ajout filtres produits', 'quantity' => 1, 'unitPrice' => 500],
-            ],
-            new \DateTimeImmutable('2024-09-02')
-        );
-        $devis2024_07->setDateEnvoi(new \DateTimeImmutable('2024-09-04'));
-        $devis2024_07->setDateValidite(new \DateTimeImmutable('2024-10-04')); // 30 jours
-        $devis2024_07->setDateReponse(new \DateTimeImmutable('2024-09-06'));
+        // Pass 2: Create factures sorted by factureDate
+        $facData = [];
+        foreach ($entries as $idx => $e) {
+            if ($e[6] !== null) {
+                $facData[] = ['idx' => $idx, 'fStatus' => $e[6], 'fDate' => $e[7], 'pDate' => $e[8]];
+            }
+        }
+        usort($facData, fn($a, $b) => $a['fDate'] <=> $b['fDate']);
 
-        $this->createFacture(
-            $manager,
-            $user,
-            $clients[1],
-            $devis2024_07,
-            'FACT-2024-007',
-            'paye',
-            new \DateTimeImmutable('2024-09-18'),
-            new \DateTimeImmutable('2024-10-05')
-        );
+        $factNum = ['2025' => 0, '2026' => 0];
+        foreach ($facData as $fd) {
+            $factureDate = $fd['fDate'] ? new \DateTimeImmutable($fd['fDate']) : null;
+            $paymentDate = $fd['pDate'] ? new \DateTimeImmutable($fd['pDate']) : null;
+            $year = $factureDate ? $factureDate->format('Y') : '2025';
+            $factNum[$year] = ($factNum[$year] ?? 0) + 1;
+            $factNumber = sprintf('FACT-%s-%03d', $year, $factNum[$year]);
 
-        // Octobre 2024 : Site Fleuriste - Envoyé en attente
-        $devis2024_08 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[10], // Fleuriste
-            'DEV-2024-008',
-            'Site Vitrine Fleuriste',
-            'Site avec galerie et commande en ligne',
-            Devis::STATUS_ENVOYE,
-            [
-                ['description' => 'Design fleuri et élégant', 'quantity' => 1, 'unitPrice' => 800],
-                ['description' => 'Développement site + galerie', 'quantity' => 8, 'unitPrice' => 350],
-                ['description' => 'Formulaire commande personnalisée', 'quantity' => 1, 'unitPrice' => 600],
-            ],
-            new \DateTimeImmutable('2024-10-07')
-        );
-        $devis2024_08->setDateEnvoi(new \DateTimeImmutable('2024-10-09'));
-        $devis2024_08->setDateValidite(new \DateTimeImmutable('2024-11-08')); // 30 jours
-
-        // Septembre 2024 : Site École de Musique - Accepté et facturé RELANCE
-        $devis2024_09 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[8], // École Harmony
-            'DEV-2024-009',
-            'Site Vitrine École de Musique',
-            'Site avec présentation des cours et inscriptions',
-            Devis::STATUS_ACCEPTE,
-            [
-                ['description' => 'Design musical et coloré', 'quantity' => 1, 'unitPrice' => 700],
-                ['description' => 'Développement site 6 pages', 'quantity' => 6, 'unitPrice' => 350],
-                ['description' => 'Formulaire inscription en ligne', 'quantity' => 1, 'unitPrice' => 600],
-                ['description' => 'Présentation professeurs et cours', 'quantity' => 1, 'unitPrice' => 400],
-            ],
-            new \DateTimeImmutable('2024-09-16')
-        );
-        $devis2024_09->setDateEnvoi(new \DateTimeImmutable('2024-09-18'));
-        $devis2024_09->setDateValidite(new \DateTimeImmutable('2024-10-18')); // 30 jours
-        $devis2024_09->setDateReponse(new \DateTimeImmutable('2024-09-25'));
-
-        $this->createFacture(
-            $manager,
-            $user,
-            $clients[8],
-            $devis2024_09,
-            'FACT-2024-008',
-            'relance',
-            new \DateTimeImmutable('2024-10-05')
-        );
-
-        // Octobre 2024 : Maintenance Cabinet Avocat - Accepté et facturé EN RETARD
-        $devis2024_10 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[7], // Cabinet Juridis
-            'DEV-2024-010',
-            'Maintenance Annuelle Cabinet',
-            'Contrat de maintenance pour 12 mois',
-            Devis::STATUS_ACCEPTE,
-            [
-                ['description' => 'Maintenance mensuelle (12 mois)', 'quantity' => 12, 'unitPrice' => 120],
-                ['description' => 'Mises à jour de sécurité', 'quantity' => 1, 'unitPrice' => 400],
-                ['description' => 'Support technique prioritaire', 'quantity' => 1, 'unitPrice' => 300],
-            ],
-            new \DateTimeImmutable('2024-10-01')
-        );
-        $devis2024_10->setDateEnvoi(new \DateTimeImmutable('2024-10-03'));
-        $devis2024_10->setDateValidite(new \DateTimeImmutable('2024-11-02')); // 30 jours
-        $devis2024_10->setDateReponse(new \DateTimeImmutable('2024-10-08'));
-
-        $this->createFacture(
-            $manager,
-            $user,
-            $clients[7],
-            $devis2024_10,
-            'FACT-2024-009',
-            'en_retard',
-            new \DateTimeImmutable('2024-10-15') // Échéance 14/11 - dépassée il y a 3 jours
-        );
-
-        // Novembre 2024 : Évolutions Boutique Mode - Accepté et facturé ENVOYE (récent)
-        $devis2024_11 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[6], // Boutique Élégance
-            'DEV-2024-011',
-            'Évolutions Site Boutique',
-            'Ajout fonctionnalités et améliorations',
-            Devis::STATUS_ACCEPTE,
-            [
-                ['description' => 'Module newsletter', 'quantity' => 1, 'unitPrice' => 600],
-                ['description' => 'Filtres avancés produits', 'quantity' => 1, 'unitPrice' => 800],
-                ['description' => 'Intégration Instagram', 'quantity' => 1, 'unitPrice' => 400],
-            ],
-            new \DateTimeImmutable('2024-10-28')
-        );
-        $devis2024_11->setDateEnvoi(new \DateTimeImmutable('2024-10-30'));
-        $devis2024_11->setDateValidite(new \DateTimeImmutable('2024-11-29')); // 30 jours
-        $devis2024_11->setDateReponse(new \DateTimeImmutable('2024-11-05'));
-
-        $this->createFacture(
-            $manager,
-            $user,
-            $clients[6],
-            $devis2024_11,
-            'FACT-2024-010',
-            'envoye',
-            new \DateTimeImmutable('2024-11-06')
-        );
-
-        // Novembre 2024 : Logo Fleuriste - Accepté et facturé ENVOYE (très récent)
-        $devis2024_12 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[10], // Fleuriste
-            'DEV-2024-012',
-            'Logo et Carte de Visite',
-            'Création identité visuelle fleuriste',
-            Devis::STATUS_ACCEPTE,
-            [
-                ['description' => 'Création logo', 'quantity' => 1, 'unitPrice' => 600],
-                ['description' => 'Déclinaisons (carte visite, en-tête)', 'quantity' => 1, 'unitPrice' => 300],
-            ],
-            new \DateTimeImmutable('2024-11-04')
-        );
-        $devis2024_12->setDateEnvoi(new \DateTimeImmutable('2024-11-06'));
-        $devis2024_12->setDateValidite(new \DateTimeImmutable('2024-12-06')); // 30 jours
-        $devis2024_12->setDateReponse(new \DateTimeImmutable('2024-11-08'));
-
-        $this->createFacture(
-            $manager,
-            $user,
-            $clients[10],
-            $devis2024_12,
-            'FACT-2024-011',
-            'envoye',
-            new \DateTimeImmutable('2024-11-12')
-        );
-
-        // ============================================
-        // ANNÉE 2025 - En cours
-        // ============================================
-
-        // Relance récente (il y a 2 semaines)
-        $devis2025_01 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[11], // Association
-            'DEV-2025-001',
-            'Site Associatif',
-            'Site pour association avec espace membres',
-            Devis::STATUS_RELANCE,
-            [
-                ['description' => 'Design et ergonomie', 'quantity' => 1, 'unitPrice' => 700],
-                ['description' => 'Développement site + espace membre', 'quantity' => 15, 'unitPrice' => 350],
-                ['description' => 'Système d\'adhésion en ligne', 'quantity' => 1, 'unitPrice' => 800],
-            ],
-            new \DateTimeImmutable('2024-10-28')
-        );
-        $devis2025_01->setDateEnvoi(new \DateTimeImmutable('2024-10-30'));
-        $devis2025_01->setDateValidite(new \DateTimeImmutable('2024-11-29')); // 30 jours
-
-        // Envoyé récemment (il y a 1 semaine)
-        $devis2025_02 = $this->createDevis(
-            $manager,
-            $user,
-            $clients[0], // TechStart
-            'DEV-2025-002',
-            'Refonte Site Corporate',
-            'Modernisation du site web institutionnel',
-            Devis::STATUS_ENVOYE,
-            [
-                ['description' => 'Audit et recommandations', 'quantity' => 1, 'unitPrice' => 600],
-                ['description' => 'Refonte design moderne', 'quantity' => 1, 'unitPrice' => 1200],
-                ['description' => 'Développement responsive', 'quantity' => 18, 'unitPrice' => 400],
-                ['description' => 'Migration contenu et SEO', 'quantity' => 1, 'unitPrice' => 800],
-            ],
-            new \DateTimeImmutable('2024-11-04')
-        );
-        $devis2025_02->setDateEnvoi(new \DateTimeImmutable('2024-11-06'));
-        $devis2025_02->setDateValidite(new \DateTimeImmutable('2024-12-06')); // 30 jours
-
-        // Brouillons en préparation
-        $this->createDevis(
-            $manager,
-            $user,
-            $clients[2], // Architect Studio
-            null,
-            'Application Mobile',
-            'Étude de faisabilité application mobile',
-            Devis::STATUS_BROUILLON,
-            [
-                ['description' => 'Audit et recommandations', 'quantity' => 1, 'unitPrice' => 1500],
-                ['description' => 'Maquettes UI/UX', 'quantity' => 1, 'unitPrice' => 2000],
-                ['description' => 'Prototype interactif', 'quantity' => 1, 'unitPrice' => 1200],
-            ],
-            new \DateTimeImmutable('2024-11-11')
-        );
-
-        $this->createDevis(
-            $manager,
-            $user,
-            $clients[3], // Restaurant
-            null,
-            'Maintenance Annuelle',
-            'Contrat de maintenance et évolutions',
-            Devis::STATUS_BROUILLON,
-            [
-                ['description' => 'Maintenance mensuelle (12 mois)', 'quantity' => 12, 'unitPrice' => 150],
-                ['description' => 'Module avis clients', 'quantity' => 1, 'unitPrice' => 800],
-                ['description' => 'Optimisation performances', 'quantity' => 1, 'unitPrice' => 600],
-            ],
-            new \DateTimeImmutable('2024-11-13')
-        );
+            $cd = $createdDevis[$fd['idx']];
+            $this->createFacture($manager, $user, $clients[$cd['clientIdx']],
+                $cd['devis'], $factNumber, $fd['fStatus'], $factureDate, $paymentDate);
+        }
     }
 
     private function createDevis(
@@ -1120,12 +732,13 @@ class AppFixtures extends Fixture
             $item->setDescription($itemData['description']);
             $item->setQuantity($itemData['quantity']);
             $item->setUnitPrice($itemData['unitPrice']);
-            $item->setVatRate(20.00);
+            $item->setVatRate(0.00);
 
             $devis->addItem($item);
             $manager->persist($item);
         }
 
+        $devis->setVatRate('0.00');
         $devis->calculateTotals();
 
         $manager->persist($devis);
@@ -1150,6 +763,7 @@ class AppFixtures extends Fixture
         $facture->setDevis($devis);
         $facture->setStatus($status);
         $facture->setCreatedBy($user);
+        $facture->setVatRate('0.00');
         $facture->setConditions('TVA non applicable, article 293 B du CGI. Paiement à 30 jours.');
 
         if ($dateFacture) {

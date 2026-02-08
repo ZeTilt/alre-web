@@ -127,6 +127,13 @@ class ProjectCrudController extends AbstractCrudController
                 $imageIndex++;
             }
         }
+
+        // Retirer les images sans fichier (ajoutées dans le formulaire sans upload)
+        foreach ($project->getImages() as $image) {
+            if ($image->getImageFilename() === null) {
+                $project->removeImage($image);
+            }
+        }
     }
 
     public function configureFields(string $pageName): iterable

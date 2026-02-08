@@ -438,18 +438,23 @@ a.card:hover {
 
 /* Gallery Masonry */
 .gallery-masonry {
-    columns: 2;
+    column-count: 2;
     column-gap: var(--spacing-md);
+    max-width: 900px;
+    margin: 0 auto;
 }
 
 .gallery-masonry-item {
     break-inside: avoid;
     margin-bottom: var(--spacing-md);
+    display: inline-block;
+    width: 100%;
 }
 
 @media (max-width: 768px) {
     .gallery-masonry {
-        columns: 1;
+        column-count: 1;
+        max-width: 100%;
     }
 }
 

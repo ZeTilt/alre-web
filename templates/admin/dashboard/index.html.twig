@@ -579,6 +579,36 @@
     {% endif %}
 </div>
 
+<!-- SEO Keywords Evolution Chart -->
+<div class="chart-container" style="margin-bottom: 1.5rem;">
+    <div class="chart-title" style="justify-content: space-between; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-key" style="color: var(--purple);"></i>
+            Évolution des mots-clés SEO
+            <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280;">({{ seoKeywordsChartData.currentTotal }} actifs)</span>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+                Haute: {{ seoKeywordsChartData.relevanceCounts.high }}
+            </span>
+            <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+                Moyenne: {{ seoKeywordsChartData.relevanceCounts.medium }}
+            </span>
+            <span style="background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+                Basse: {{ seoKeywordsChartData.relevanceCounts.low }}
+            </span>
+        </div>
+    </div>
+    {% if seoKeywordsChartData.currentTotal > 0 %}
+        <canvas id="chartSeoKeywords" class="chart-canvas"></canvas>
+    {% else %}
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; color: #6b7280;">
+            <i class="fas fa-key" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;"></i>
+            <div style="font-size: 0.875rem;">Aucun mot-clé actif</div>
+        </div>
+    {% endif %}
+</div>
+
 <!-- SEO Performance Categories -->
 <div class="grid-2" style="margin-bottom: 1.5rem;">
     <!-- Top Performers -->
@@ -904,6 +934,13 @@ const seoChartCtr7d = {{ seoChartData.ctr7d|json_encode|raw }};
 const seoChartPosition7d = {{ seoChartData.position7d|json_encode|raw }};
 const seoHasEnoughData = {{ seoChartData.hasEnoughData ? 'true' : 'false' }};
 
+// SEO Keywords Chart Data
+const seoKwLabels = {{ seoKeywordsChartData.labels|json_encode|raw }};
+const seoKwTotalKeywords = {{ seoKeywordsChartData.totalKeywords|json_encode|raw }};
+const seoKwNewHigh = {{ seoKeywordsChartData.newHigh|json_encode|raw }};
+const seoKwNewMedium = {{ seoKeywordsChartData.newMedium|json_encode|raw }};
+const seoKwNewLow = {{ seoKeywordsChartData.newLow|json_encode|raw }};
+
 // 0. Graphique SEO Évolution (4 métriques avec échelles séparées)
 if (seoHasEnoughData && document.getElementById('chartSeoEvolution')) {
     new Chart(document.getElementById('chartSeoEvolution'), {
@@ -1157,6 +1194,111 @@ if (seoHasEnoughData && document.getElementById('chartSeo7d')) {
                     grid: { drawOnChartArea: false }
                 },
                 x: {
+                    grid: { display: false },
+                    ticks: { maxTicksLimit: 10, font: { size: 10 } }
+                }
+            }
+        }
+    });
+}
+
+// 0c. Graphique Évolution Mots-clés SEO (barres empilées + ligne cumulatif)
+if (document.getElementById('chartSeoKeywords')) {
+    new Chart(document.getElementById('chartSeoKeywords'), {
+        type: 'bar',
+        data: {
+            labels: seoKwLabels,
+            datasets: [
+                {
+                    label: 'Nouveaux (haute)',
+                    data: seoKwNewHigh,
+                    backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                    borderColor: '#22c55e',
+                    borderWidth: 1,
+                    stack: 'newKeywords',
+                    yAxisID: 'yNew',
+                    order: 2
+                },
+                {
+                    label: 'Nouveaux (moyenne)',
+                    data: seoKwNewMedium,
+                    backgroundColor: 'rgba(245, 158, 11, 0.8)',
+                    borderColor: '#f59e0b',
+                    borderWidth: 1,
+                    stack: 'newKeywords',
+                    yAxisID: 'yNew',
+                    order: 2
+                },
+                {
+                    label: 'Nouveaux (basse)',
+                    data: seoKwNewLow,
+                    backgroundColor: 'rgba(156, 163, 175, 0.8)',
+                    borderColor: '#9ca3af',
+                    borderWidth: 1,
+                    stack: 'newKeywords',
+                    yAxisID: 'yNew',
+                    order: 2
+                },
+                {
+                    label: 'Total cumulé',
+                    data: seoKwTotalKeywords,
+                    type: 'line',
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 2,
+                    pointRadius: 2,
+                    pointHoverRadius: 5,
+                    yAxisID: 'yTotal',
+                    order: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: { usePointStyle: true, padding: 12, font: { size: 11 } }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => {
+                            if (ctx.parsed.y === 0 && ctx.dataset.type !== 'line') return null;
+                            return ctx.dataset.label + ': ' + ctx.parsed.y;
+                        }
+                    }
+                }
+            },
+            scales: {
+                yNew: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    beginAtZero: true,
+                    stacked: true,
+                    title: { display: true, text: 'Nouveaux / jour', color: '#22c55e', font: { size: 10 } },
+                    ticks: { color: '#22c55e', font: { size: 9 }, stepSize: 1 },
+                    grid: { color: 'rgba(0,0,0,0.05)' }
+                },
+                yTotal: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    beginAtZero: true,
+                    title: { display: true, text: 'Total mots-clés', color: '#8b5cf6', font: { size: 10 } },
+                    ticks: { color: '#8b5cf6', font: { size: 9 } },
+                    grid: { drawOnChartArea: false }
+                },
+                x: {
+                    stacked: true,
                     grid: { display: false },
                     ticks: { maxTicksLimit: 10, font: { size: 10 } }
                 }

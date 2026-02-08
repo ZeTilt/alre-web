@@ -131,4 +131,39 @@ class SeoKeywordRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Retourne le nombre de nouveaux mots-clés par jour et par niveau de pertinence.
+     *
+     * @return array<array{day: string, relevanceLevel: string, cnt: int}>
+     */
+    public function getKeywordCountsByDate(int $days = 30): array
+    {
+        $since = new \DateTimeImmutable("-{$days} days");
+
+        return $this->createQueryBuilder('k')
+            ->select("DATE(k.createdAt) as day, k.relevanceLevel, COUNT(k.id) as cnt")
+            ->where('k.createdAt >= :since')
+            ->setParameter('since', $since)
+            ->groupBy('day, k.relevanceLevel')
+            ->orderBy('day', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Retourne le décompte des mots-clés actifs par niveau de pertinence.
+     *
+     * @return array<array{relevanceLevel: string, cnt: int}>
+     */
+    public function getRelevanceCounts(): array
+    {
+        return $this->createQueryBuilder('k')
+            ->select("k.relevanceLevel, COUNT(k.id) as cnt")
+            ->where('k.isActive = :active')
+            ->setParameter('active', true)
+            ->groupBy('k.relevanceLevel')
+            ->getQuery()
+            ->getResult();
+    }
 }

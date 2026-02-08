@@ -371,6 +371,9 @@ class DashboardController extends AbstractDashboardController
                 $seoKeywordRepository->findAllWithLatestPosition()
             ),
 
+            // SEO Keywords Chart (evolution over 30 days)
+            'seoKeywordsChartData' => $this->prepareSeoKeywordsChartData($seoKeywordRepository),
+
             // Google Reviews
             'googlePlacesConfigured' => $this->googlePlacesService->isConfigured(),
             'reviewStats' => $googleReviewRepository->getStats(),
@@ -1101,6 +1104,95 @@ class DashboardController extends AbstractDashboardController
         }
 
         return $comparisons;
+    }
+
+    /**
+     * Prépare les données pour le graphique d'évolution des mots-clés SEO.
+     */
+    private function prepareSeoKeywordsChartData(SeoKeywordRepository $repo): array
+    {
+        $days = 30;
+        $dailyCounts = $repo->getKeywordCountsByDate($days);
+        $relevanceCounts = $repo->getRelevanceCounts();
+
+        // Total actif actuel
+        $currentTotal = 0;
+        $relevanceMap = ['high' => 0, 'medium' => 0, 'low' => 0];
+        foreach ($relevanceCounts as $row) {
+            $relevanceMap[$row['relevanceLevel']] = (int) $row['cnt'];
+            $currentTotal += (int) $row['cnt'];
+        }
+
+        // Indexer les nouveaux mots-clés par jour et pertinence
+        $newByDay = [];
+        foreach ($dailyCounts as $row) {
+            $day = $row['day'];
+            $level = $row['relevanceLevel'];
+            if (!isset($newByDay[$day])) {
+                $newByDay[$day] = ['high' => 0, 'medium' => 0, 'low' => 0];
+            }
+            $newByDay[$day][$level] = (int) $row['cnt'];
+        }
+
+        // Générer les 30 jours
+        $labels = [];
+        $newHigh = [];
+        $newMedium = [];
+        $newLow = [];
+        $totalKeywords = [];
+
+        $now = new \DateTimeImmutable();
+
+        // Calculer le total de nouveaux mots-clés sur les 30 jours
+        $totalNewInPeriod = 0;
+        foreach ($newByDay as $dayCounts) {
+            $totalNewInPeriod += $dayCounts['high'] + $dayCounts['medium'] + $dayCounts['low'];
+        }
+
+        // Reconstruire le cumulatif en remontant depuis le total actuel
+        // Le total au dernier jour = currentTotal
+        // Le total la veille = currentTotal - nouveaux du dernier jour, etc.
+        $dailyData = [];
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $date = $now->modify("-{$i} days");
+            $dateKey = $date->format('Y-m-d');
+            $dailyData[] = [
+                'label' => $date->format('d/m'),
+                'dateKey' => $dateKey,
+                'newHigh' => $newByDay[$dateKey]['high'] ?? 0,
+                'newMedium' => $newByDay[$dateKey]['medium'] ?? 0,
+                'newLow' => $newByDay[$dateKey]['low'] ?? 0,
+            ];
+        }
+
+        // Calculer le cumulatif : commencer par le total actuel et remonter
+        $cumulatives = array_fill(0, count($dailyData), 0);
+        $runningTotal = $currentTotal;
+
+        // Le dernier jour a le total actuel
+        for ($i = count($dailyData) - 1; $i >= 0; $i--) {
+            $cumulatives[$i] = $runningTotal;
+            $dayNew = $dailyData[$i]['newHigh'] + $dailyData[$i]['newMedium'] + $dailyData[$i]['newLow'];
+            $runningTotal -= $dayNew;
+        }
+
+        foreach ($dailyData as $idx => $d) {
+            $labels[] = $d['label'];
+            $newHigh[] = $d['newHigh'];
+            $newMedium[] = $d['newMedium'];
+            $newLow[] = $d['newLow'];
+            $totalKeywords[] = $cumulatives[$idx];
+        }
+
+        return [
+            'labels' => $labels,
+            'totalKeywords' => $totalKeywords,
+            'newHigh' => $newHigh,
+            'newMedium' => $newMedium,
+            'newLow' => $newLow,
+            'currentTotal' => $currentTotal,
+            'relevanceCounts' => $relevanceMap,
+        ];
     }
 
     private function formatEventDate(Event $event): string

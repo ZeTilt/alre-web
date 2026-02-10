@@ -241,6 +241,27 @@ class SeoPositionRepository extends ServiceEntityRepository
     }
 
     /**
+     * Retourne les N dernières dates distinctes ayant des données de position.
+     *
+     * @return \DateTimeImmutable[]
+     */
+    public function findLatestDatesWithData(int $limit = 2): array
+    {
+        $results = $this->createQueryBuilder('p')
+            ->select('p.date')
+            ->join('p.keyword', 'k')
+            ->where('k.isActive = :active')
+            ->setParameter('active', true)
+            ->groupBy('p.date')
+            ->orderBy('p.date', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return array_map(fn(array $row) => $row['date'], $results);
+    }
+
+    /**
      * Retourne toutes les positions depuis une date donnée.
      *
      * @return SeoPosition[]

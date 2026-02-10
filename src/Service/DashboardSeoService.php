@@ -432,29 +432,44 @@ class DashboardSeoService
     }
 
     /**
-     * Calcule les comparaisons de positions SEO entre hier et avant-hier (J-1).
+     * Calcule les comparaisons de positions SEO entre les 2 derniers jours avec des données.
      *
-     * @return array<int, array{yesterdayPosition: ?float, dayBeforePosition: ?float, variation: ?float, status: string}>
+     * @return array<int, array{latestPosition: ?float, previousPosition: ?float, variation: ?float, status: string}>
      */
     private function calculateSeoDailyComparisons(): array
     {
-        $now = new \DateTimeImmutable();
+        $latestDates = $this->seoPositionRepository->findLatestDatesWithData(2);
 
-        $yesterday = $now->modify('-1 day');
-        $yesterdayStart = $yesterday->setTime(0, 0, 0);
-        $yesterdayEnd = $yesterday->setTime(23, 59, 59);
+        if (\count($latestDates) < 2) {
+            // Pas assez de données pour comparer
+            $keywords = $this->seoKeywordRepository->findActiveKeywords();
+            $comparisons = [];
+            foreach ($keywords as $keyword) {
+                $comparisons[$keyword->getId()] = [
+                    'latestPosition' => null,
+                    'previousPosition' => null,
+                    'variation' => null,
+                    'status' => 'no_data',
+                ];
+            }
+            return $comparisons;
+        }
 
-        $dayBefore = $now->modify('-2 days');
-        $dayBeforeStart = $dayBefore->setTime(0, 0, 0);
-        $dayBeforeEnd = $dayBefore->setTime(23, 59, 59);
+        $latestDate = $latestDates[0];
+        $previousDate = $latestDates[1];
 
-        $yesterdayPositions = $this->seoPositionRepository->getAveragePositionsForAllKeywords(
-            $yesterdayStart,
-            $yesterdayEnd
+        $latestStart = $latestDate->setTime(0, 0, 0);
+        $latestEnd = $latestDate->setTime(23, 59, 59);
+        $previousStart = $previousDate->setTime(0, 0, 0);
+        $previousEnd = $previousDate->setTime(23, 59, 59);
+
+        $latestPositions = $this->seoPositionRepository->getAveragePositionsForAllKeywords(
+            $latestStart,
+            $latestEnd
         );
-        $dayBeforePositions = $this->seoPositionRepository->getAveragePositionsForAllKeywords(
-            $dayBeforeStart,
-            $dayBeforeEnd
+        $previousPositions = $this->seoPositionRepository->getAveragePositionsForAllKeywords(
+            $previousStart,
+            $previousEnd
         );
 
         $keywords = $this->seoKeywordRepository->findActiveKeywords();
@@ -462,17 +477,17 @@ class DashboardSeoService
         $comparisons = [];
         foreach ($keywords as $keyword) {
             $keywordId = $keyword->getId();
-            $yesterdayData = $yesterdayPositions[$keywordId] ?? null;
-            $dayBeforeData = $dayBeforePositions[$keywordId] ?? null;
+            $latestData = $latestPositions[$keywordId] ?? null;
+            $previousData = $previousPositions[$keywordId] ?? null;
 
-            $yesterdayPosition = $yesterdayData['avgPosition'] ?? null;
-            $dayBeforePosition = $dayBeforeData['avgPosition'] ?? null;
+            $latestPos = $latestData['avgPosition'] ?? null;
+            $previousPos = $previousData['avgPosition'] ?? null;
 
             $variation = null;
             $status = 'no_data';
 
-            if ($yesterdayPosition !== null && $dayBeforePosition !== null) {
-                $variation = round($dayBeforePosition - $yesterdayPosition, 1);
+            if ($latestPos !== null && $previousPos !== null) {
+                $variation = round($previousPos - $latestPos, 1);
 
                 if ($variation > 0) {
                     $status = 'improved';
@@ -481,13 +496,13 @@ class DashboardSeoService
                 } else {
                     $status = 'stable';
                 }
-            } elseif ($yesterdayPosition !== null && $dayBeforePosition === null) {
+            } elseif ($latestPos !== null && $previousPos === null) {
                 $status = 'new';
             }
 
             $comparisons[$keywordId] = [
-                'yesterdayPosition' => $yesterdayPosition,
-                'dayBeforePosition' => $dayBeforePosition,
+                'latestPosition' => $latestPos,
+                'previousPosition' => $previousPos,
                 'variation' => $variation,
                 'status' => $status,
             ];

@@ -79,9 +79,24 @@ class CityCrudController extends AbstractCrudController
             ->setRequired(true)
             ->setHelp('Ex: Morbihan, Finistère');
 
-        yield TextareaField::new('description', 'Description')
+        yield TextareaField::new('description', 'Description (par defaut)')
             ->setRequired(true)
-            ->setHelp('Texte personnalisé pour cette ville (utilisé dans le contenu SEO)')
+            ->setHelp('Texte par defaut utilise si les descriptions specifiques ci-dessous sont vides')
+            ->hideOnIndex();
+
+        yield TextareaField::new('descriptionDeveloppeur', 'Description - Developpeur Web')
+            ->setRequired(false)
+            ->setHelp('Texte specifique pour la page /developpeur-web-{slug}. Vide = utilise la description par defaut.')
+            ->hideOnIndex();
+
+        yield TextareaField::new('descriptionCreation', 'Description - Creation Site Internet')
+            ->setRequired(false)
+            ->setHelp('Texte specifique pour la page /creation-site-internet-{slug}. Vide = utilise la description par defaut.')
+            ->hideOnIndex();
+
+        yield TextareaField::new('descriptionAgence', 'Description - Agence Web')
+            ->setRequired(false)
+            ->setHelp('Texte specifique pour la page /agence-web-{slug}. Vide = utilise la description par defaut.')
             ->hideOnIndex();
 
         yield ArrayField::new('nearby', 'Villes proches')

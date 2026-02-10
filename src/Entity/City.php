@@ -38,6 +38,15 @@ class City
     #[Assert\NotBlank(message: 'La description est obligatoire')]
     private ?string $description = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $descriptionDeveloppeur = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $descriptionCreation = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $descriptionAgence = null;
+
     #[ORM\Column(type: Types::JSON)]
     private array $nearby = [];
 
@@ -107,6 +116,49 @@ class City
     public function setDescription(string $description): static
     {
         $this->description = $description;
+        return $this;
+    }
+
+    public function getDescriptionForService(string $serviceSlug): string
+    {
+        return match ($serviceSlug) {
+            'developpeur-web' => $this->descriptionDeveloppeur ?? $this->description,
+            'creation-site-internet' => $this->descriptionCreation ?? $this->description,
+            'agence-web' => $this->descriptionAgence ?? $this->description,
+            default => $this->description,
+        };
+    }
+
+    public function getDescriptionDeveloppeur(): ?string
+    {
+        return $this->descriptionDeveloppeur;
+    }
+
+    public function setDescriptionDeveloppeur(?string $descriptionDeveloppeur): static
+    {
+        $this->descriptionDeveloppeur = $descriptionDeveloppeur;
+        return $this;
+    }
+
+    public function getDescriptionCreation(): ?string
+    {
+        return $this->descriptionCreation;
+    }
+
+    public function setDescriptionCreation(?string $descriptionCreation): static
+    {
+        $this->descriptionCreation = $descriptionCreation;
+        return $this;
+    }
+
+    public function getDescriptionAgence(): ?string
+    {
+        return $this->descriptionAgence;
+    }
+
+    public function setDescriptionAgence(?string $descriptionAgence): static
+    {
+        $this->descriptionAgence = $descriptionAgence;
         return $this;
     }
 

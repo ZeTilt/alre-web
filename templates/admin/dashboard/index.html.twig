@@ -427,22 +427,24 @@
         <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
         A travailler
         <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">
-            (prochain potentiel par score)
+            (potentiel de clics inexploite)
         </span>
     </div>
     <div style="overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
             <thead>
                 <tr style="border-bottom: 2px solid #f59e0b;">
-                    <th style="text-align: left; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Mot-clé</th>
+                    <th style="text-align: left; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Mot-cle</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Position</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">vs M-1</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Clics</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Impressions</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Impr.</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Raison</th>
                 </tr>
             </thead>
             <tbody>
-                {% for keyword in seoKeywordsRanked.toImprove %}
+                {% for item in seoKeywordsRanked.toImprove %}
+                    {% set keyword = item.keyword %}
                     {% set latestPosition = keyword.latestPosition %}
                     {% set comparison = seoPositionComparisons[keyword.id] ?? null %}
                     <tr style="border-bottom: 1px solid #fef3c7;">
@@ -493,6 +495,11 @@
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
                             {{ latestPosition.impressions|number_format(0, '', ' ') }}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            <span title="{{ item.action }}" style="cursor: help; color: #92400e; font-size: 0.8rem; white-space: nowrap;">
+                                {{ item.reason }} <i class="fas fa-info-circle" style="color: #d97706; font-size: 0.7rem;"></i>
+                            </span>
                         </td>
                     </tr>
                 {% endfor %}

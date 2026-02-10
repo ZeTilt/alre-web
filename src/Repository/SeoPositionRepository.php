@@ -262,6 +262,43 @@ class SeoPositionRepository extends ServiceEntityRepository
     }
 
     /**
+     * Retourne les positions quotidiennes de tous les mots-clés actifs sur les N dernières dates avec données.
+     * Résultat groupé par keywordId.
+     *
+     * @return array<int, float[]> keywordId => [position1, position2, ...]
+     */
+    public function getPositionHistoryByKeyword(int $days = 7): array
+    {
+        $latestDates = $this->findLatestDatesWithData($days);
+        if (empty($latestDates)) {
+            return [];
+        }
+
+        $startDate = end($latestDates)->setTime(0, 0, 0);
+        $endDate = $latestDates[0]->setTime(23, 59, 59);
+
+        $results = $this->createQueryBuilder('p')
+            ->select('IDENTITY(p.keyword) as keywordId', 'p.position')
+            ->join('p.keyword', 'k')
+            ->where('k.isActive = :active')
+            ->andWhere('p.date >= :startDate')
+            ->andWhere('p.date <= :endDate')
+            ->setParameter('active', true)
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->orderBy('p.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $data = [];
+        foreach ($results as $row) {
+            $data[(int) $row['keywordId']][] = (float) $row['position'];
+        }
+
+        return $data;
+    }
+
+    /**
      * Retourne toutes les positions depuis une date donnée.
      *
      * @return SeoPosition[]

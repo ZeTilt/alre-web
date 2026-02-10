@@ -194,16 +194,40 @@ class DashboardSeoService
     }
 
     /**
+     * Calcule l'écart-type de position sur les 7 derniers jours avec données.
+     *
+     * @return array<int, float> keywordId => stddev (bas = stable)
+     */
+    private function calculatePositionStability(): array
+    {
+        $history = $this->seoPositionRepository->getPositionHistoryByKeyword(7);
+
+        $stability = [];
+        foreach ($history as $keywordId => $positions) {
+            if (\count($positions) < 3) {
+                $stability[$keywordId] = 99.0; // Pas assez de données = instable
+                continue;
+            }
+            $mean = array_sum($positions) / \count($positions);
+            $variance = array_sum(array_map(fn($p) => ($p - $mean) ** 2, $positions)) / \count($positions);
+            $stability[$keywordId] = round(sqrt($variance), 1);
+        }
+
+        return $stability;
+    }
+
+    /**
      * Classe tous les mots-cles actifs par score composite et filtre le bruit.
      *
      * Top 10 : score = baseValue × ctrFactor × momentum × monthlyVelocity
-     * A travailler : score = potentielPerdu × momentum × urgency
+     * A travailler : score basé sur le critère déclencheur + raison + action
      *
-     * @return array{top10: array<SeoKeyword>, toImprove: array<SeoKeyword>}
+     * @return array{top10: array<SeoKeyword>, toImprove: array<array{keyword: SeoKeyword, reason: string, action: string}>}
      */
     private function rankSeoKeywords(array $comparisons, array $dailyComparisons, array $momentum): array
     {
         $keywords = $this->seoKeywordRepository->findAllWithLatestPosition();
+        $stability = $this->calculatePositionStability();
 
         $top10Scored = [];
         $improveCandidates = [];
@@ -233,17 +257,11 @@ class DashboardSeoService
 
             $ctr = ($clicks / $impressions) * 100;
             $expectedCtr = $this->getExpectedCtr($position);
+            $ctrRatio = $expectedCtr > 0 ? $ctr / $expectedCtr : 1.0;
 
             // --- Facteurs communs ---
-
-            // CTR factor : actual vs benchmark, borné entre 0.75 et 1.25
-            $ctrRatio = $expectedCtr > 0 ? min(2.0, max(0.5, $ctr / $expectedCtr)) : 1.0;
-            $ctrFactor = 0.75 + ($ctrRatio - 0.5) * (0.5 / 1.5); // 0.75 à 1.08
-
-            // Momentum 7 jours
+            $ctrFactor = 0.75 + (min(2.0, max(0.5, $ctrRatio)) - 0.5) * (0.5 / 1.5);
             $momentumFactor = ($momentum[$keywordId] ?? ['factor' => 1.0])['factor'];
-
-            // Vélocité mensuelle (légère pour top10)
             $monthlyVar = $comparisons[$keywordId]['variation'] ?? 0;
             $monthlyVelocity = match (true) {
                 $monthlyVar >= 10 => 1.15,
@@ -251,61 +269,71 @@ class DashboardSeoService
                 $monthlyVar <= -5 => 0.92,
                 default => 1.0,
             };
+            $stddev = $stability[$keywordId] ?? 99.0;
 
             // --- Score Top 10 ---
             $pageBonus = $position <= 10 ? 1.5 : ($position <= 20 ? 1.25 : 1.0);
             $baseScore = ($impressions / $position) * (1 + 2 * $clicks) * $pageBonus;
             $top10Score = $baseScore * $ctrFactor * $momentumFactor * $monthlyVelocity;
-
             $top10Scored[] = ['keyword' => $keyword, 'score' => $top10Score];
 
-            // --- Score "A travailler" ---
-            // Exclure les positions > 20 sauf si en déclin significatif
-            if ($position > 20 && $monthlyVar > -5) {
-                continue;
-            }
+            // --- "A travailler" : identification du critère déclencheur ---
 
-            // CTR gap : pertinent seulement en page 1-2
-            $ctrGapScore = 0;
-            if ($impressions >= 30) {
+            // Position instable (stddev >= 3) = mot-clé en mouvement, on attend
+            $isStable = $stddev < 3;
+
+            // Momentum en hausse = le mot-clé se débrouille
+            $isRising = $momentumFactor >= 1.15;
+
+            $reason = null;
+            $action = null;
+            $improveScore = 0;
+
+            // Critère 1 : CTR faible en page 1, position stable, pas en hausse
+            if ($position <= 10 && $ctrRatio < 0.5 && $impressions >= 30 && $isStable && !$isRising) {
                 $expectedClicks = $impressions * ($expectedCtr / 100);
-                $ctrGapScore = max(0, $expectedClicks - $clicks);
-                // Pondérer par proximité au top 10
-                $ctrGapScore *= match (true) {
-                    $position <= 10 => 3.0,   // Page 1 : snippet à optimiser, impact immédiat
-                    $position <= 15 => 1.5,   // Porte du top 10
-                    $position <= 20 => 0.8,   // Page 2
-                    default => 0.3,           // Pages lointaines (déclin uniquement)
-                };
+                $improveScore = max(0, $expectedClicks - $clicks) * 3.0;
+                $reason = 'CTR faible en page 1';
+                $action = 'Optimiser title et meta description';
+            }
+            // Critère 2 : Porte du top 10 (position 11-15), stable, pas en hausse
+            elseif ($position > 10 && $position <= 15 && $impressions >= 50 && $isStable && !$isRising) {
+                $expectedClicks = $impressions * ($expectedCtr / 100);
+                $improveScore = max(0, $expectedClicks - $clicks) * 1.5;
+                $reason = 'Proche du top 10';
+                $action = 'Enrichir le contenu pour passer en page 1';
+            }
+            // Critère 3 : En déclin significatif (M-1 <= -5), quelle que soit la position ≤ 20
+            elseif ($position <= 20 && $monthlyVar <= -5) {
+                $improveScore = abs($monthlyVar) * $impressions * 0.1;
+                $reason = 'En déclin (M-1 : ' . round($monthlyVar, 1) . ')';
+                $action = 'Analyser la concurrence et rafraichir le contenu';
+            }
+            // Critère 4 : Page 2 (16-20) fort volume, stable, pas en hausse
+            elseif ($position > 15 && $position <= 20 && $impressions >= 100 && $isStable && !$isRising) {
+                $expectedClicks = $impressions * ($expectedCtr / 100);
+                $improveScore = max(0, $expectedClicks - $clicks) * 0.8;
+                $reason = 'Fort volume en page 2';
+                $action = 'Backlinks et contenu approfondi';
             }
 
-            // Urgence déclin : mot-clé qui perd des positions = prioritaire
-            $declineUrgency = match (true) {
-                $monthlyVar <= -10 => 2.5,
-                $monthlyVar <= -5 => 1.8,
-                $monthlyVar <= -2 => 1.3,
-                default => 1.0,
-            };
+            if ($reason !== null && $improveScore > 0) {
+                // Pondération volume
+                $volumeMultiplier = match (true) {
+                    $impressions >= 500 => 1.5,
+                    $impressions >= 200 => 1.2,
+                    $impressions >= 100 => 1.0,
+                    default => 0.8,
+                };
+                $improveScore *= $volumeMultiplier;
 
-            // Momentum inversé : un mot-clé qui monte = MOINS prioritaire
-            $momentumAdjust = match (true) {
-                $momentumFactor >= 1.3 => 0.5,   // Monte fort → pas besoin d'agir
-                $momentumFactor >= 1.15 => 0.7,  // Monte → moins urgent
-                $momentumFactor <= 0.7 => 1.4,   // Chute → urgent
-                $momentumFactor <= 0.9 => 1.2,   // Décline → à surveiller
-                default => 1.0,
-            };
-
-            // Volume : les mots-clés à fort volume méritent plus d'attention
-            $volumeMultiplier = match (true) {
-                $impressions >= 500 => 1.5,
-                $impressions >= 200 => 1.2,
-                $impressions >= 100 => 1.0,
-                default => 0.8,
-            };
-
-            $improveScore = $ctrGapScore * $declineUrgency * $momentumAdjust * $volumeMultiplier;
-            $improveCandidates[] = ['keyword' => $keyword, 'score' => $improveScore];
+                $improveCandidates[] = [
+                    'keyword' => $keyword,
+                    'score' => $improveScore,
+                    'reason' => $reason,
+                    'action' => $action,
+                ];
+            }
         }
 
         // Top 10 : meilleurs scores de visibilité
@@ -313,13 +341,16 @@ class DashboardSeoService
         $top10 = array_map(fn($item) => $item['keyword'], array_slice($top10Scored, 0, 10));
         $top10Ids = array_map(fn($kw) => $kw->getId(), $top10);
 
-        // A travailler : exclure le top 10, trier par potentiel perdu
+        // A travailler : exclure le top 10, trier par score, garder raison + action
         $toImproveFiltered = array_filter(
             $improveCandidates,
             fn($item) => !\in_array($item['keyword']->getId(), $top10Ids)
         );
         usort($toImproveFiltered, fn($a, $b) => $b['score'] <=> $a['score']);
-        $toImprove = array_map(fn($item) => $item['keyword'], array_slice(array_values($toImproveFiltered), 0, 10));
+        $toImprove = array_map(
+            fn($item) => ['keyword' => $item['keyword'], 'reason' => $item['reason'], 'action' => $item['action']],
+            array_slice(array_values($toImproveFiltered), 0, 10)
+        );
 
         return ['top10' => $top10, 'toImprove' => $toImprove];
     }

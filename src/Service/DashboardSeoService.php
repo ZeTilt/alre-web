@@ -76,7 +76,8 @@ class DashboardSeoService
     public function getSummaryData(): array
     {
         $seoPositionComparisons = $this->calculateSeoPositionComparisons();
-        $ranked = $this->rankSeoKeywords($seoPositionComparisons);
+        $seoDailyComparisons = $this->calculateSeoDailyComparisons();
+        $ranked = $this->rankSeoKeywords($seoPositionComparisons, $seoDailyComparisons);
 
         // Count active keywords
         $relevanceCounts = $this->seoKeywordRepository->getRelevanceCounts();

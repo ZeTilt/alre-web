@@ -32,6 +32,7 @@ class DashboardSeoService
     public function getFullData(): array
     {
         $seoPositionComparisons = $this->calculateSeoPositionComparisons();
+        $seoDailyComparisons = $this->calculateSeoDailyComparisons();
 
         return [
             // Google OAuth
@@ -42,8 +43,9 @@ class DashboardSeoService
             // SEO Sync
             'lastSeoSyncAt' => $this->seoDataImportService->getLastSyncDate(),
 
-            // SEO Position comparisons
+            // SEO Position comparisons (monthly + daily)
             'seoPositionComparisons' => $seoPositionComparisons,
+            'seoDailyComparisons' => $seoDailyComparisons,
 
             // SEO Keywords ranked by score
             'seoKeywordsRanked' => $this->rankSeoKeywords($seoPositionComparisons),
@@ -421,6 +423,71 @@ class DashboardSeoService
             $comparisons[$keywordId] = [
                 'currentPosition' => $currentPosition,
                 'previousPosition' => $previousPosition,
+                'variation' => $variation,
+                'status' => $status,
+            ];
+        }
+
+        return $comparisons;
+    }
+
+    /**
+     * Calcule les comparaisons de positions SEO entre hier et avant-hier (J-1).
+     *
+     * @return array<int, array{yesterdayPosition: ?float, dayBeforePosition: ?float, variation: ?float, status: string}>
+     */
+    private function calculateSeoDailyComparisons(): array
+    {
+        $now = new \DateTimeImmutable();
+
+        $yesterday = $now->modify('-1 day');
+        $yesterdayStart = $yesterday->setTime(0, 0, 0);
+        $yesterdayEnd = $yesterday->setTime(23, 59, 59);
+
+        $dayBefore = $now->modify('-2 days');
+        $dayBeforeStart = $dayBefore->setTime(0, 0, 0);
+        $dayBeforeEnd = $dayBefore->setTime(23, 59, 59);
+
+        $yesterdayPositions = $this->seoPositionRepository->getAveragePositionsForAllKeywords(
+            $yesterdayStart,
+            $yesterdayEnd
+        );
+        $dayBeforePositions = $this->seoPositionRepository->getAveragePositionsForAllKeywords(
+            $dayBeforeStart,
+            $dayBeforeEnd
+        );
+
+        $keywords = $this->seoKeywordRepository->findActiveKeywords();
+
+        $comparisons = [];
+        foreach ($keywords as $keyword) {
+            $keywordId = $keyword->getId();
+            $yesterdayData = $yesterdayPositions[$keywordId] ?? null;
+            $dayBeforeData = $dayBeforePositions[$keywordId] ?? null;
+
+            $yesterdayPosition = $yesterdayData['avgPosition'] ?? null;
+            $dayBeforePosition = $dayBeforeData['avgPosition'] ?? null;
+
+            $variation = null;
+            $status = 'no_data';
+
+            if ($yesterdayPosition !== null && $dayBeforePosition !== null) {
+                $variation = round($dayBeforePosition - $yesterdayPosition, 1);
+
+                if ($variation > 0) {
+                    $status = 'improved';
+                } elseif ($variation < 0) {
+                    $status = 'degraded';
+                } else {
+                    $status = 'stable';
+                }
+            } elseif ($yesterdayPosition !== null && $dayBeforePosition === null) {
+                $status = 'new';
+            }
+
+            $comparisons[$keywordId] = [
+                'yesterdayPosition' => $yesterdayPosition,
+                'dayBeforePosition' => $dayBeforePosition,
                 'variation' => $variation,
                 'status' => $status,
             ];

@@ -190,7 +190,7 @@
                 <tr style="border-bottom: 2px solid #10b981;">
                     <th style="text-align: left; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Mot-cle</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Position</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">vs J-1</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Tend. 7j</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">vs M-1</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Clics</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Impressions</th>
@@ -200,7 +200,7 @@
                 {% for keyword in seoKeywordsRanked.top10 %}
                     {% set latestPosition = keyword.latestPosition %}
                     {% set comparison = seoPositionComparisons[keyword.id] ?? null %}
-                    {% set dailyComparison = seoDailyComparisons[keyword.id] ?? null %}
+                    {% set mom = seoMomentum[keyword.id] ?? null %}
                     <tr style="border-bottom: 1px solid #d1fae5;">
                         <td style="padding: 0.75rem 0.5rem; font-weight: 500;">
                             {{ keyword.keyword }}
@@ -224,21 +224,19 @@
                             {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
-                            {% if dailyComparison %}
-                                {% if dailyComparison.status == 'improved' %}
+                            {% if mom %}
+                                {% if mom.status == 'improved' %}
                                     <span style="color: #10b981; font-weight: 600;">
-                                        <i class="fas fa-arrow-up"></i> +{{ dailyComparison.variation|abs|number_format(1) }}
+                                        <i class="fas fa-arrow-up"></i> +{{ mom.trend|abs|number_format(1) }}
                                     </span>
-                                {% elseif dailyComparison.status == 'degraded' %}
+                                {% elseif mom.status == 'degraded' %}
                                     <span style="color: #ef4444; font-weight: 600;">
-                                        <i class="fas fa-arrow-down"></i> {{ dailyComparison.variation|number_format(1) }}
+                                        <i class="fas fa-arrow-down"></i> {{ mom.trend|number_format(1) }}
                                     </span>
-                                {% elseif dailyComparison.status == 'stable' %}
-                                    <span style="color: #6b7280;">=</span>
-                                {% elseif dailyComparison.status == 'new' %}
+                                {% elseif mom.status == 'new' %}
                                     <span style="background: #dbeafe; color: #1d4ed8; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500;">Nouveau</span>
                                 {% else %}
-                                    <span style="color: #9ca3af;">-</span>
+                                    <span style="color: #6b7280;">=</span>
                                 {% endif %}
                             {% else %}
                                 <span style="color: #9ca3af;">-</span>
@@ -286,7 +284,7 @@
         <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
         A travailler
         <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">
-            (prochain potentiel par score)
+            (potentiel de clics inexploite)
         </span>
     </div>
     <div style="overflow-x: auto;">
@@ -295,7 +293,7 @@
                 <tr style="border-bottom: 2px solid #f59e0b;">
                     <th style="text-align: left; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Mot-cle</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Position</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">vs J-1</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Tend. 7j</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">vs M-1</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Clics</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Impressions</th>
@@ -305,7 +303,7 @@
                 {% for keyword in seoKeywordsRanked.toImprove %}
                     {% set latestPosition = keyword.latestPosition %}
                     {% set comparison = seoPositionComparisons[keyword.id] ?? null %}
-                    {% set dailyComparison = seoDailyComparisons[keyword.id] ?? null %}
+                    {% set mom = seoMomentum[keyword.id] ?? null %}
                     <tr style="border-bottom: 1px solid #fef3c7;">
                         <td style="padding: 0.75rem 0.5rem; font-weight: 500;">
                             {{ keyword.keyword }}
@@ -329,21 +327,19 @@
                             {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
-                            {% if dailyComparison %}
-                                {% if dailyComparison.status == 'improved' %}
+                            {% if mom %}
+                                {% if mom.status == 'improved' %}
                                     <span style="color: #10b981; font-weight: 600;">
-                                        <i class="fas fa-arrow-up"></i> +{{ dailyComparison.variation|abs|number_format(1) }}
+                                        <i class="fas fa-arrow-up"></i> +{{ mom.trend|abs|number_format(1) }}
                                     </span>
-                                {% elseif dailyComparison.status == 'degraded' %}
+                                {% elseif mom.status == 'degraded' %}
                                     <span style="color: #ef4444; font-weight: 600;">
-                                        <i class="fas fa-arrow-down"></i> {{ dailyComparison.variation|number_format(1) }}
+                                        <i class="fas fa-arrow-down"></i> {{ mom.trend|number_format(1) }}
                                     </span>
-                                {% elseif dailyComparison.status == 'stable' %}
-                                    <span style="color: #6b7280;">=</span>
-                                {% elseif dailyComparison.status == 'new' %}
+                                {% elseif mom.status == 'new' %}
                                     <span style="background: #dbeafe; color: #1d4ed8; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500;">Nouveau</span>
                                 {% else %}
-                                    <span style="color: #9ca3af;">-</span>
+                                    <span style="color: #6b7280;">=</span>
                                 {% endif %}
                             {% else %}
                                 <span style="color: #9ca3af;">-</span>

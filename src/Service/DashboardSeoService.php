@@ -33,6 +33,7 @@ class DashboardSeoService
     {
         $seoPositionComparisons = $this->calculateSeoPositionComparisons();
         $seoDailyComparisons = $this->calculateSeoDailyComparisons();
+        $seoMomentum = $this->calculate7DayMomentum();
 
         return [
             // Google OAuth
@@ -43,12 +44,12 @@ class DashboardSeoService
             // SEO Sync
             'lastSeoSyncAt' => $this->seoDataImportService->getLastSyncDate(),
 
-            // SEO Position comparisons (monthly + daily)
+            // SEO Position comparisons (monthly + momentum)
             'seoPositionComparisons' => $seoPositionComparisons,
-            'seoDailyComparisons' => $seoDailyComparisons,
+            'seoMomentum' => $seoMomentum,
 
             // SEO Keywords ranked by score
-            'seoKeywordsRanked' => $this->rankSeoKeywords($seoPositionComparisons, $seoDailyComparisons),
+            'seoKeywordsRanked' => $this->rankSeoKeywords($seoPositionComparisons, $seoDailyComparisons, $seoMomentum),
 
             // SEO Chart data (last 30 days)
             'seoChartData' => $this->prepareSeoChartData(),
@@ -77,7 +78,8 @@ class DashboardSeoService
     {
         $seoPositionComparisons = $this->calculateSeoPositionComparisons();
         $seoDailyComparisons = $this->calculateSeoDailyComparisons();
-        $ranked = $this->rankSeoKeywords($seoPositionComparisons, $seoDailyComparisons);
+        $seoMomentum = $this->calculate7DayMomentum();
+        $ranked = $this->rankSeoKeywords($seoPositionComparisons, $seoDailyComparisons, $seoMomentum);
 
         // Count active keywords
         $relevanceCounts = $this->seoKeywordRepository->getRelevanceCounts();
@@ -142,7 +144,7 @@ class DashboardSeoService
      * Calcule le momentum 7 jours : compare la position moyenne des 3 derniers jours
      * avec données vs les 3 jours précédents.
      *
-     * @return array<int, float> keywordId => momentum factor (0.7 à 1.3)
+     * @return array<int, array{factor: float, trend: float, status: string}> keywordId => momentum data
      */
     private function calculate7DayMomentum(): array
     {
@@ -168,18 +170,24 @@ class DashboardSeoService
         foreach ($recentPositions as $keywordId => $recentData) {
             $olderData = $olderPositions[$keywordId] ?? null;
             if ($olderData === null) {
-                $momentum[$keywordId] = 1.0;
+                $momentum[$keywordId] = ['factor' => 1.0, 'trend' => 0.0, 'status' => 'new'];
                 continue;
             }
             // Positif = amélioration (position descend)
-            $trend = $olderData['avgPosition'] - $recentData['avgPosition'];
-            $momentum[$keywordId] = match (true) {
+            $trend = round($olderData['avgPosition'] - $recentData['avgPosition'], 1);
+            $factor = match (true) {
                 $trend >= 5 => 1.3,
                 $trend >= 2 => 1.15,
                 $trend >= -1 => 1.0,
                 $trend >= -4 => 0.9,
                 default => 0.7,
             };
+            $status = match (true) {
+                $trend > 0 => 'improved',
+                $trend < 0 => 'degraded',
+                default => 'stable',
+            };
+            $momentum[$keywordId] = ['factor' => $factor, 'trend' => $trend, 'status' => $status];
         }
 
         return $momentum;
@@ -193,10 +201,9 @@ class DashboardSeoService
      *
      * @return array{top10: array<SeoKeyword>, toImprove: array<SeoKeyword>}
      */
-    private function rankSeoKeywords(array $comparisons, array $dailyComparisons): array
+    private function rankSeoKeywords(array $comparisons, array $dailyComparisons, array $momentum): array
     {
         $keywords = $this->seoKeywordRepository->findAllWithLatestPosition();
-        $momentum = $this->calculate7DayMomentum();
 
         $top10Scored = [];
         $improveCandidates = [];
@@ -234,7 +241,7 @@ class DashboardSeoService
             $ctrFactor = 0.75 + ($ctrRatio - 0.5) * (0.5 / 1.5); // 0.75 à 1.08
 
             // Momentum 7 jours
-            $momentumFactor = $momentum[$keywordId] ?? 1.0;
+            $momentumFactor = ($momentum[$keywordId] ?? ['factor' => 1.0])['factor'];
 
             // Vélocité mensuelle (légère pour top10)
             $monthlyVar = $comparisons[$keywordId]['variation'] ?? 0;

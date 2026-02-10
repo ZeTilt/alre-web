@@ -103,15 +103,104 @@ class DashboardSeoService
     }
 
     /**
+     * Benchmarks CTR par position (moyennes sectorielles).
+     */
+    private const CTR_BENCHMARKS = [
+        1 => 28.0, 2 => 22.0, 3 => 18.0, 4 => 15.0, 5 => 12.0,
+        6 => 10.0, 7 => 9.0, 8 => 8.0, 9 => 7.0, 10 => 6.0,
+        15 => 3.0, 20 => 2.0, 30 => 0.8, 50 => 0.2,
+    ];
+
+    private function getExpectedCtr(float $position): float
+    {
+        $pos = (int) floor($position);
+        if ($pos <= 0) {
+            return 0.1;
+        }
+        // Cherche la valeur exacte ou interpole entre les bornes connues
+        if (isset(self::CTR_BENCHMARKS[$pos])) {
+            return self::CTR_BENCHMARKS[$pos];
+        }
+        $lower = 1;
+        $upper = 50;
+        foreach (array_keys(self::CTR_BENCHMARKS) as $p) {
+            if ($p <= $pos && $p > $lower) {
+                $lower = $p;
+            }
+            if ($p >= $pos && $p < $upper) {
+                $upper = $p;
+            }
+        }
+        if ($lower === $upper) {
+            return self::CTR_BENCHMARKS[$lower];
+        }
+        $ratio = ($pos - $lower) / ($upper - $lower);
+        return self::CTR_BENCHMARKS[$lower] + $ratio * (self::CTR_BENCHMARKS[$upper] - self::CTR_BENCHMARKS[$lower]);
+    }
+
+    /**
+     * Calcule le momentum 7 jours : compare la position moyenne des 3 derniers jours
+     * avec données vs les 3 jours précédents.
+     *
+     * @return array<int, float> keywordId => momentum factor (0.7 à 1.3)
+     */
+    private function calculate7DayMomentum(): array
+    {
+        $latestDates = $this->seoPositionRepository->findLatestDatesWithData(7);
+
+        if (\count($latestDates) < 4) {
+            return []; // Pas assez de données
+        }
+
+        // Les 3 jours les plus récents vs les jours restants (max 4)
+        $recentDates = \array_slice($latestDates, 0, 3);
+        $olderDates = \array_slice($latestDates, 3);
+
+        $recentStart = end($recentDates)->setTime(0, 0, 0);
+        $recentEnd = $recentDates[0]->setTime(23, 59, 59);
+        $olderStart = end($olderDates)->setTime(0, 0, 0);
+        $olderEnd = $olderDates[0]->setTime(23, 59, 59);
+
+        $recentPositions = $this->seoPositionRepository->getAveragePositionsForAllKeywords($recentStart, $recentEnd);
+        $olderPositions = $this->seoPositionRepository->getAveragePositionsForAllKeywords($olderStart, $olderEnd);
+
+        $momentum = [];
+        foreach ($recentPositions as $keywordId => $recentData) {
+            $olderData = $olderPositions[$keywordId] ?? null;
+            if ($olderData === null) {
+                $momentum[$keywordId] = 1.0;
+                continue;
+            }
+            // Positif = amélioration (position descend)
+            $trend = $olderData['avgPosition'] - $recentData['avgPosition'];
+            $momentum[$keywordId] = match (true) {
+                $trend >= 5 => 1.3,
+                $trend >= 2 => 1.15,
+                $trend >= -1 => 1.0,
+                $trend >= -4 => 0.9,
+                default => 0.7,
+            };
+        }
+
+        return $momentum;
+    }
+
+    /**
      * Classe tous les mots-cles actifs par score composite et filtre le bruit.
+     *
+     * Top 10 : score = baseValue × ctrFactor × momentum × monthlyVelocity
+     * A travailler : score = potentielPerdu × momentum × urgency
      *
      * @return array{top10: array<SeoKeyword>, toImprove: array<SeoKeyword>}
      */
     private function rankSeoKeywords(array $comparisons, array $dailyComparisons): array
     {
         $keywords = $this->seoKeywordRepository->findAllWithLatestPosition();
+        $momentum = $this->calculate7DayMomentum();
 
-        $scored = [];
+        $top10Scored = [];
+        $improveCandidates = [];
+
         foreach ($keywords as $keyword) {
             if (!$keyword->isActive() || $keyword->getRelevanceLevel() !== SeoKeyword::RELEVANCE_HIGH) {
                 continue;
@@ -122,43 +211,78 @@ class DashboardSeoService
             }
 
             // Exclure les mots-clés avec 0 impressions sur l'un des 2 derniers jours
-            $daily = $dailyComparisons[$keyword->getId()] ?? null;
+            $keywordId = $keyword->getId();
+            $daily = $dailyComparisons[$keywordId] ?? null;
             if ($daily === null || $daily['latestImpressions'] === 0 || $daily['previousImpressions'] === 0) {
                 continue;
             }
 
-            $impressions = $latest->getImpressions();
-
             $position = $latest->getPosition();
             $clicks = $latest->getClicks();
+            $impressions = $latest->getImpressions();
+            if ($position <= 0 || $impressions <= 0) {
+                continue;
+            }
+
+            $ctr = ($clicks / $impressions) * 100;
+            $expectedCtr = $this->getExpectedCtr($position);
+
+            // --- Facteurs communs ---
+
+            // CTR factor : actual vs benchmark, borné entre 0.75 et 1.25
+            $ctrRatio = $expectedCtr > 0 ? min(2.0, max(0.5, $ctr / $expectedCtr)) : 1.0;
+            $ctrFactor = 0.75 + ($ctrRatio - 0.5) * (0.5 / 1.5); // 0.75 à 1.08
+
+            // Momentum 7 jours
+            $momentumFactor = $momentum[$keywordId] ?? 1.0;
+
+            // Vélocité mensuelle (légère pour top10)
+            $monthlyVar = $comparisons[$keywordId]['variation'] ?? 0;
+            $monthlyVelocity = match (true) {
+                $monthlyVar >= 10 => 1.15,
+                $monthlyVar >= 5 => 1.08,
+                $monthlyVar <= -5 => 0.92,
+                default => 1.0,
+            };
+
+            // --- Score Top 10 ---
             $pageBonus = $position <= 10 ? 1.5 : ($position <= 20 ? 1.25 : 1.0);
-            $score = $position > 0 ? ($impressions / $position) * (1 + 2 * $clicks) * $pageBonus : 0;
+            $baseScore = ($impressions / $position) * (1 + 2 * $clicks) * $pageBonus;
+            $top10Score = $baseScore * $ctrFactor * $momentumFactor * $monthlyVelocity;
 
-            $scored[] = ['keyword' => $keyword, 'score' => $score];
+            $top10Scored[] = ['keyword' => $keyword, 'score' => $top10Score];
+
+            // --- Score "A travailler" (potentiel perdu) ---
+            // Clics attendus au benchmark CTR - clics réels
+            $expectedClicks = $impressions * ($expectedCtr / 100);
+            $potentielPerdu = max(0, $expectedClicks - $clicks);
+
+            // Bonus pour les mots-clés proches du top 10 (position 11-20 = forte opportunité)
+            $positionOpportunity = $position <= 20 ? (21 - $position) / 10 : max(0.1, 10 / $position);
+
+            // Urgence : mot-clé en déclin = prioritaire à travailler
+            $urgencyFactor = match (true) {
+                $monthlyVar <= -5 => 1.4,
+                $monthlyVar <= -2 => 1.2,
+                default => 1.0,
+            };
+
+            $improveScore = $potentielPerdu * $positionOpportunity * $momentumFactor * $urgencyFactor;
+            $improveCandidates[] = ['keyword' => $keyword, 'score' => $improveScore, 'top10Score' => $top10Score];
         }
 
-        usort($scored, fn($a, $b) => $b['score'] <=> $a['score']);
-
-        $top10 = array_map(fn($item) => $item['keyword'], array_slice($scored, 0, 10));
-
+        // Top 10 : meilleurs scores de visibilité
+        usort($top10Scored, fn($a, $b) => $b['score'] <=> $a['score']);
+        $top10 = array_map(fn($item) => $item['keyword'], array_slice($top10Scored, 0, 10));
         $top10Ids = array_map(fn($kw) => $kw->getId(), $top10);
-        $toImproveScored = [];
-        foreach ($scored as $item) {
-            $id = $item['keyword']->getId();
-            if (in_array($id, $top10Ids)) {
-                continue;
-            }
-            $comparison = $comparisons[$id] ?? null;
-            if ($comparison === null || $comparison['status'] === 'new') {
-                continue;
-            }
-            $variation = $comparison['variation'] ?? 0;
-            $velocityFactor = $variation > 10 ? 0.5 : ($variation < -3 ? 1.5 : 1.0);
-            $item['adjustedScore'] = $item['score'] * $velocityFactor;
-            $toImproveScored[] = $item;
-        }
-        usort($toImproveScored, fn($a, $b) => $b['adjustedScore'] <=> $a['adjustedScore']);
-        $toImprove = array_map(fn($item) => $item['keyword'], array_slice($toImproveScored, 0, 10));
+
+        // A travailler : exclure le top 10, trier par potentiel perdu
+        $toImproveFiltered = array_filter(
+            $improveCandidates,
+            fn($item) => !\in_array($item['keyword']->getId(), $top10Ids)
+        );
+        usort($toImproveFiltered, fn($a, $b) => $b['score'] <=> $a['score']);
+        $toImprove = array_map(fn($item) => $item['keyword'], array_slice(array_values($toImproveFiltered), 0, 10));
 
         return ['top10' => $top10, 'toImprove' => $toImprove];
     }

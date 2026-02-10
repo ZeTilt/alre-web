@@ -48,7 +48,7 @@ class DashboardSeoService
             'seoDailyComparisons' => $seoDailyComparisons,
 
             // SEO Keywords ranked by score
-            'seoKeywordsRanked' => $this->rankSeoKeywords($seoPositionComparisons),
+            'seoKeywordsRanked' => $this->rankSeoKeywords($seoPositionComparisons, $seoDailyComparisons),
 
             // SEO Chart data (last 30 days)
             'seoChartData' => $this->prepareSeoChartData(),
@@ -106,15 +106,9 @@ class DashboardSeoService
      *
      * @return array{top10: array<SeoKeyword>, toImprove: array<SeoKeyword>}
      */
-    private function rankSeoKeywords(array $comparisons): array
+    private function rankSeoKeywords(array $comparisons, array $dailyComparisons): array
     {
         $keywords = $this->seoKeywordRepository->findAllWithLatestPosition();
-
-        $totals = $this->seoDailyTotalRepository->getAggregatedTotals(
-            new \DateTimeImmutable('-7 days'),
-            new \DateTimeImmutable('today')
-        );
-        $minImpressions = max(1, $totals['impressions'] * 0.001);
 
         $scored = [];
         foreach ($keywords as $keyword) {
@@ -125,10 +119,14 @@ class DashboardSeoService
             if (!$latest) {
                 continue;
             }
-            $impressions = $latest->getImpressions();
-            if ($impressions < $minImpressions) {
+
+            // Exclure les mots-clés avec 0 impressions sur l'un des 2 derniers jours
+            $daily = $dailyComparisons[$keyword->getId()] ?? null;
+            if ($daily === null || $daily['latestImpressions'] === 0 || $daily['previousImpressions'] === 0) {
                 continue;
             }
+
+            $impressions = $latest->getImpressions();
 
             $position = $latest->getPosition();
             $clicks = $latest->getClicks();
@@ -450,6 +448,8 @@ class DashboardSeoService
                     'previousPosition' => null,
                     'variation' => null,
                     'status' => 'no_data',
+                    'latestImpressions' => 0,
+                    'previousImpressions' => 0,
                 ];
             }
             return $comparisons;
@@ -505,6 +505,8 @@ class DashboardSeoService
                 'previousPosition' => $previousPos,
                 'variation' => $variation,
                 'status' => $status,
+                'latestImpressions' => (int) ($latestData['totalImpressions'] ?? 0),
+                'previousImpressions' => (int) ($previousData['totalImpressions'] ?? 0),
             ];
         }
 

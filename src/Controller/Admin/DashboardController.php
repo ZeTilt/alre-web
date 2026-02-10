@@ -160,6 +160,22 @@ class DashboardController extends AbstractDashboardController
         ));
     }
 
+    #[Route('/saeiblauhjc/seo-keyword/{id}/mark-optimized', name: 'admin_seo_keyword_mark_optimized', methods: ['POST'])]
+    public function markKeywordOptimized(SeoKeyword $keyword, Request $request): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid('seo-optimize-' . $keyword->getId(), $request->request->get('_token'))) {
+            return new JsonResponse(['error' => 'Token CSRF invalide'], 403);
+        }
+
+        $keyword->setLastOptimizedAt(new \DateTimeImmutable());
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'date' => $keyword->getLastOptimizedAt()->format('d/m/Y'),
+        ]);
+    }
+
     #[Route('/saeiblauhjc/dashboard/finance', name: 'admin_finance_dashboard')]
     public function financeDashboard(
         Request $request,

@@ -298,6 +298,7 @@
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Clics</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Impr.</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Raison</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;"></th>
                 </tr>
             </thead>
             <tbody>
@@ -306,7 +307,7 @@
                     {% set latestPosition = keyword.latestPosition %}
                     {% set comparison = seoPositionComparisons[keyword.id] ?? null %}
                     {% set mom = seoMomentum[keyword.id] ?? null %}
-                    <tr style="border-bottom: 1px solid #fef3c7;">
+                    <tr style="border-bottom: 1px solid #fef3c7;" id="seo-improve-row-{{ keyword.id }}">
                         <td style="padding: 0.75rem 0.5rem; font-weight: 500;">
                             {{ keyword.keyword }}
                         </td>
@@ -378,6 +379,17 @@
                             <span title="{{ item.action }}" style="cursor: help; color: #92400e; font-size: 0.8rem; white-space: nowrap;">
                                 {{ item.reason }} <i class="fas fa-info-circle" style="color: #d97706; font-size: 0.7rem;"></i>
                             </span>
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            <button type="button"
+                                class="btn btn-sm btn-outline-success seo-mark-done"
+                                data-keyword-id="{{ keyword.id }}"
+                                data-url="{{ path('admin_seo_keyword_mark_optimized', {id: keyword.id}) }}"
+                                data-token="{{ csrf_token('seo-optimize-' ~ keyword.id) }}"
+                                title="Marquer comme optimise aujourd'hui"
+                                style="font-size: 0.75rem; padding: 0.15rem 0.5rem;">
+                                <i class="fas fa-check"></i> Fait
+                            </button>
                         </td>
                     </tr>
                 {% endfor %}
@@ -830,6 +842,40 @@ if (document.getElementById('chartSeoKeywords')) {
         }
     });
 }
+// Bouton "Fait" - marquer un mot-clé comme optimisé
+document.querySelectorAll('.seo-mark-done').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var url = this.dataset.url;
+        var token = this.dataset.token;
+        var keywordId = this.dataset.keywordId;
+        var row = document.getElementById('seo-improve-row-' + keywordId);
+        var button = this;
+
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: '_token=' + encodeURIComponent(token)
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                row.style.transition = 'opacity 0.3s';
+                row.style.opacity = '0';
+                setTimeout(function() { row.remove(); }, 300);
+            } else {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-check"></i> Fait';
+            }
+        })
+        .catch(function() {
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-check"></i> Fait';
+        });
+    });
+});
 </script>
 {% endif %}
 {% endblock %}

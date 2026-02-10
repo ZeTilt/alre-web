@@ -28,10 +28,11 @@ Un mot-cle doit passer TOUS ces filtres pour apparaitre :
 
 1. **Relevance HIGH** uniquement
 2. **Impressions > 0** sur les 2 derniers jours avec donnees
-3. **Position <= 20** (sauf si declin M-1 <= -5, alors jusqu'a position > 20)
-4. **Position stable** : ecart-type de position sur 7 jours < 3
-5. **Pas en hausse forte** : momentum < 1.15 (sauf critere declin)
-6. **Impressions minimum** selon le critere (30 a 100)
+3. **Non optimise recemment** : `lastOptimizedAt` null ou > 30 jours (bouton "Fait" dans le tableau)
+4. **Position <= 20** (sauf si declin M-1 <= -5, alors jusqu'a position > 20)
+5. **Position stable** : ecart-type de position sur 7 jours < 3
+6. **Pas en hausse forte** : momentum < 1.15 (sauf critere declin)
+7. **Impressions minimum** selon le critere (30 a 100)
 
 ### Definition de "zone stable"
 
@@ -49,7 +50,7 @@ Exemple :
 |---|---------|------------|-------|--------------------|
 | 1 | CTR faible en page 1 | pos <= 10, CTR < 50% benchmark, impr >= 30, stable, pas en hausse | ctrGap x 3.0 | Optimiser title et meta description |
 | 2 | Proche du top 10 | pos 11-15, impr >= 50, stable, pas en hausse | ctrGap x 1.5 | Enrichir le contenu pour passer en page 1 |
-| 3 | En declin | pos <= 20, M-1 <= -5 (quelle que soit la stabilite) | declin x impr x 0.1 | Analyser la concurrence et rafraichir le contenu |
+| 3 | En declin | pos <= 20, M-1 <= -5, pas en hausse (quelle que soit la stabilite) | declin x impr x 0.1 | Analyser la concurrence et rafraichir le contenu |
 | 4 | Fort volume en page 2 | pos 16-20, impr >= 100, stable, pas en hausse | ctrGap x 0.8 | Backlinks et contenu approfondi |
 
 ### Multiplicateur volume

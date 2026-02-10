@@ -279,6 +279,12 @@ class DashboardSeoService
 
             // --- "A travailler" : identification du critère déclencheur ---
 
+            // Mot-clé optimisé dans les 30 derniers jours = on attend
+            $lastOptimized = $keyword->getLastOptimizedAt();
+            if ($lastOptimized !== null && $lastOptimized > (new \DateTimeImmutable())->modify('-30 days')) {
+                continue; // Pas dans "A travailler", mais reste dans Top 10
+            }
+
             // Position instable (stddev >= 3) = mot-clé en mouvement, on attend
             $isStable = $stddev < 3;
 
@@ -303,8 +309,8 @@ class DashboardSeoService
                 $reason = 'Proche du top 10';
                 $action = 'Enrichir le contenu pour passer en page 1';
             }
-            // Critère 3 : En déclin significatif (M-1 <= -5), quelle que soit la position ≤ 20
-            elseif ($position <= 20 && $monthlyVar <= -5) {
+            // Critère 3 : En déclin significatif (M-1 <= -5) ET pas en train de remonter
+            elseif ($position <= 20 && $monthlyVar <= -5 && !$isRising) {
                 $improveScore = abs($monthlyVar) * $impressions * 0.1;
                 $reason = 'En déclin (M-1 : ' . round($monthlyVar, 1) . ')';
                 $action = 'Analyser la concurrence et rafraichir le contenu';

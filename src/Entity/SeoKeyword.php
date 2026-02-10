@@ -46,6 +46,9 @@ class SeoKeyword
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $deactivatedAt = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastOptimizedAt = null;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -119,6 +122,17 @@ class SeoKeyword
     public function setDeactivatedAt(?\DateTimeImmutable $deactivatedAt): static
     {
         $this->deactivatedAt = $deactivatedAt;
+        return $this;
+    }
+
+    public function getLastOptimizedAt(): ?\DateTimeImmutable
+    {
+        return $this->lastOptimizedAt;
+    }
+
+    public function setLastOptimizedAt(?\DateTimeImmutable $lastOptimizedAt): static
+    {
+        $this->lastOptimizedAt = $lastOptimizedAt;
         return $this;
     }
 

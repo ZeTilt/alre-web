@@ -229,8 +229,9 @@ class DashboardSeoService
         $keywords = $this->seoKeywordRepository->findAllWithLatestPosition();
         $stability = $this->calculatePositionStability();
 
-        $top10Scored = [];
-        $improveCandidates = [];
+        // Pré-filtrer et collecter les données pour calculer le seuil d'impressions relatif
+        $eligible = [];
+        $maxImpressions = 0;
 
         foreach ($keywords as $keyword) {
             if (!$keyword->isActive() || $keyword->getRelevanceLevel() !== SeoKeyword::RELEVANCE_HIGH) {
@@ -240,20 +241,38 @@ class DashboardSeoService
             if (!$latest) {
                 continue;
             }
-
-            // Exclure les mots-clés avec 0 impressions sur l'un des 2 derniers jours
             $keywordId = $keyword->getId();
             $daily = $dailyComparisons[$keywordId] ?? null;
             if ($daily === null || $daily['latestImpressions'] === 0 || $daily['previousImpressions'] === 0) {
                 continue;
             }
-
             $position = $latest->getPosition();
-            $clicks = $latest->getClicks();
             $impressions = $latest->getImpressions();
             if ($position <= 0 || $impressions <= 0) {
                 continue;
             }
+            $maxImpressions = max($maxImpressions, $impressions);
+            $eligible[] = $keyword;
+        }
+
+        // Seuils d'impressions relatifs au max (s'adapte à la taille du site)
+        // Critère 1 (page 1, CTR) : 10% du max
+        // Critère 2 (porte top 10) : 15% du max
+        // Critère 4 (fort volume page 2) : 30% du max
+        $minImprC1 = max(1, (int) round($maxImpressions * 0.10));
+        $minImprC2 = max(1, (int) round($maxImpressions * 0.15));
+        $minImprC4 = max(1, (int) round($maxImpressions * 0.30));
+
+        $top10Scored = [];
+        $improveCandidates = [];
+
+        foreach ($eligible as $keyword) {
+            $latest = $keyword->getLatestPosition();
+            $keywordId = $keyword->getId();
+
+            $position = $latest->getPosition();
+            $clicks = $latest->getClicks();
+            $impressions = $latest->getImpressions();
 
             $ctr = ($clicks / $impressions) * 100;
             $expectedCtr = $this->getExpectedCtr($position);
@@ -282,7 +301,7 @@ class DashboardSeoService
             // Mot-clé optimisé dans les 30 derniers jours = on attend
             $lastOptimized = $keyword->getLastOptimizedAt();
             if ($lastOptimized !== null && $lastOptimized > (new \DateTimeImmutable())->modify('-30 days')) {
-                continue; // Pas dans "A travailler", mais reste dans Top 10
+                continue;
             }
 
             // Position instable (stddev >= 3) = mot-clé en mouvement, on attend
@@ -296,14 +315,14 @@ class DashboardSeoService
             $improveScore = 0;
 
             // Critère 1 : CTR faible en page 1, position stable, pas en hausse
-            if ($position <= 10 && $ctrRatio < 0.5 && $impressions >= 30 && $isStable && !$isRising) {
+            if ($position <= 10 && $ctrRatio < 0.5 && $impressions >= $minImprC1 && $isStable && !$isRising) {
                 $expectedClicks = $impressions * ($expectedCtr / 100);
                 $improveScore = max(0, $expectedClicks - $clicks) * 3.0;
                 $reason = 'CTR faible en page 1';
                 $action = 'Optimiser title et meta description';
             }
             // Critère 2 : Porte du top 10 (position 11-15), stable, pas en hausse
-            elseif ($position > 10 && $position <= 15 && $impressions >= 50 && $isStable && !$isRising) {
+            elseif ($position > 10 && $position <= 15 && $impressions >= $minImprC2 && $isStable && !$isRising) {
                 $expectedClicks = $impressions * ($expectedCtr / 100);
                 $improveScore = max(0, $expectedClicks - $clicks) * 1.5;
                 $reason = 'Proche du top 10';
@@ -315,8 +334,8 @@ class DashboardSeoService
                 $reason = 'En déclin (M-1 : ' . round($monthlyVar, 1) . ')';
                 $action = 'Analyser la concurrence et rafraichir le contenu';
             }
-            // Critère 4 : Page 2 (16-20) fort volume, stable, pas en hausse
-            elseif ($position > 15 && $position <= 20 && $impressions >= 100 && $isStable && !$isRising) {
+            // Critère 4 : Page 2 (16-20) fort volume relatif, stable, pas en hausse
+            elseif ($position > 15 && $position <= 20 && $impressions >= $minImprC4 && $isStable && !$isRising) {
                 $expectedClicks = $impressions * ($expectedCtr / 100);
                 $improveScore = max(0, $expectedClicks - $clicks) * 0.8;
                 $reason = 'Fort volume en page 2';
@@ -324,11 +343,12 @@ class DashboardSeoService
             }
 
             if ($reason !== null && $improveScore > 0) {
-                // Pondération volume
+                // Pondération volume (ratio par rapport au max)
+                $volumeRatio = $maxImpressions > 0 ? $impressions / $maxImpressions : 0;
                 $volumeMultiplier = match (true) {
-                    $impressions >= 500 => 1.5,
-                    $impressions >= 200 => 1.2,
-                    $impressions >= 100 => 1.0,
+                    $volumeRatio >= 0.75 => 1.5,
+                    $volumeRatio >= 0.40 => 1.2,
+                    $volumeRatio >= 0.15 => 1.0,
                     default => 0.8,
                 };
                 $improveScore *= $volumeMultiplier;

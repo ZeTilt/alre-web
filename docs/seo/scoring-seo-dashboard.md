@@ -48,18 +48,20 @@ Exemple :
 
 | # | Critere | Conditions | Score | Action recommandee |
 |---|---------|------------|-------|--------------------|
-| 1 | CTR faible en page 1 | pos <= 10, CTR < 50% benchmark, impr >= 30, stable, pas en hausse | ctrGap x 3.0 | Optimiser title et meta description |
-| 2 | Proche du top 10 | pos 11-15, impr >= 50, stable, pas en hausse | ctrGap x 1.5 | Enrichir le contenu pour passer en page 1 |
+| 1 | CTR faible en page 1 | pos <= 10, CTR < 50% benchmark, impr >= 10% du max, stable, pas en hausse | ctrGap x 3.0 | Optimiser title et meta description |
+| 2 | Proche du top 10 | pos 11-15, impr >= 15% du max, stable, pas en hausse | ctrGap x 1.5 | Enrichir le contenu pour passer en page 1 |
 | 3 | En declin | pos <= 20, M-1 <= -5, pas en hausse (quelle que soit la stabilite) | declin x impr x 0.1 | Analyser la concurrence et rafraichir le contenu |
-| 4 | Fort volume en page 2 | pos 16-20, impr >= 100, stable, pas en hausse | ctrGap x 0.8 | Backlinks et contenu approfondi |
+| 4 | Fort volume en page 2 | pos 16-20, impr >= 30% du max, stable, pas en hausse | ctrGap x 0.8 | Backlinks et contenu approfondi |
+
+**Note :** "max" = impressions du mot-cle le plus visible parmi les eligibles (HIGH, actifs, impr > 0 sur les 2 derniers jours). Les seuils relatifs s'adaptent automatiquement a la taille du site.
 
 ### Multiplicateur volume
 
-Apres le score du critere, on applique :
-- impr >= 500 : x 1.5
-- impr >= 200 : x 1.2
-- impr >= 100 : x 1.0
-- impr < 100 : x 0.8
+Apres le score du critere, on applique (ratio = impressions / max impressions) :
+- ratio >= 75% : x 1.5
+- ratio >= 40% : x 1.2
+- ratio >= 15% : x 1.0
+- ratio < 15% : x 0.8
 
 ---
 
@@ -110,18 +112,15 @@ Necessite au minimum 4 jours avec donnees (sinon momentum = 1.0).
 
 Fichier : `src/Service/DashboardSeoService.php`, methode `rankSeoKeywords()`
 
-#### 1. Seuils d'impressions minimum
+#### 1. Seuils d'impressions (actuellement relatifs)
 
-Actuellement conservateurs pour un site jeune :
+Les seuils sont calcules en pourcentage du max d'impressions des mots-cles eligibles.
+Quand le site aura suffisamment de trafic (> 25 requetes a 50+ impressions),
+repasser a des seuils absolus :
 ```php
-// Critere 1 : CTR faible page 1
-$impressions >= 30  // -> passer a 50 quand suffisamment de requetes
-
-// Critere 2 : Porte du top 10
-$impressions >= 50  // -> passer a 80-100
-
-// Critere 4 : Fort volume page 2
-$impressions >= 100 // -> passer a 200
+// Critere 1 : 10% du max -> passer a $impressions >= 50
+// Critere 2 : 15% du max -> passer a $impressions >= 100
+// Critere 4 : 30% du max -> passer a $impressions >= 200
 ```
 
 #### 2. Seuil CTR ratio
@@ -150,12 +149,13 @@ $isStable = $stddev < 2;
 
 #### 4. Multiplicateur volume
 
-Avec plus de trafic, ajuster les paliers :
+Actuellement base sur le ratio impressions/max (75%, 40%, 15%).
+Avec plus de trafic, repasser a des seuils absolus :
 ```php
-// Actuel           -> Futur (trafic > 500 clics/mois)
-$impressions >= 500 // -> 1000
-$impressions >= 200 // -> 500
-$impressions >= 100 // -> 200
+// Actuel (ratio)    -> Futur (trafic > 500 clics/mois)
+// ratio >= 75%      -> $impressions >= 1000
+// ratio >= 40%      -> $impressions >= 500
+// ratio >= 15%      -> $impressions >= 200
 ```
 
 ### Signaux non encore implementes (a envisager plus tard)

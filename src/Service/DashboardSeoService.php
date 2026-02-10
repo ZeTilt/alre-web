@@ -259,23 +259,53 @@ class DashboardSeoService
 
             $top10Scored[] = ['keyword' => $keyword, 'score' => $top10Score];
 
-            // --- Score "A travailler" (potentiel perdu) ---
-            // Clics attendus au benchmark CTR - clics réels
-            $expectedClicks = $impressions * ($expectedCtr / 100);
-            $potentielPerdu = max(0, $expectedClicks - $clicks);
+            // --- Score "A travailler" ---
+            // Exclure les positions > 20 sauf si en déclin significatif
+            if ($position > 20 && $monthlyVar > -5) {
+                continue;
+            }
 
-            // Bonus pour les mots-clés proches du top 10 (position 11-20 = forte opportunité)
-            $positionOpportunity = $position <= 20 ? (21 - $position) / 10 : max(0.1, 10 / $position);
+            // CTR gap : pertinent seulement en page 1-2
+            $ctrGapScore = 0;
+            if ($impressions >= 30) {
+                $expectedClicks = $impressions * ($expectedCtr / 100);
+                $ctrGapScore = max(0, $expectedClicks - $clicks);
+                // Pondérer par proximité au top 10
+                $ctrGapScore *= match (true) {
+                    $position <= 10 => 3.0,   // Page 1 : snippet à optimiser, impact immédiat
+                    $position <= 15 => 1.5,   // Porte du top 10
+                    $position <= 20 => 0.8,   // Page 2
+                    default => 0.3,           // Pages lointaines (déclin uniquement)
+                };
+            }
 
-            // Urgence : mot-clé en déclin = prioritaire à travailler
-            $urgencyFactor = match (true) {
-                $monthlyVar <= -5 => 1.4,
-                $monthlyVar <= -2 => 1.2,
+            // Urgence déclin : mot-clé qui perd des positions = prioritaire
+            $declineUrgency = match (true) {
+                $monthlyVar <= -10 => 2.5,
+                $monthlyVar <= -5 => 1.8,
+                $monthlyVar <= -2 => 1.3,
                 default => 1.0,
             };
 
-            $improveScore = $potentielPerdu * $positionOpportunity * $momentumFactor * $urgencyFactor;
-            $improveCandidates[] = ['keyword' => $keyword, 'score' => $improveScore, 'top10Score' => $top10Score];
+            // Momentum inversé : un mot-clé qui monte = MOINS prioritaire
+            $momentumAdjust = match (true) {
+                $momentumFactor >= 1.3 => 0.5,   // Monte fort → pas besoin d'agir
+                $momentumFactor >= 1.15 => 0.7,  // Monte → moins urgent
+                $momentumFactor <= 0.7 => 1.4,   // Chute → urgent
+                $momentumFactor <= 0.9 => 1.2,   // Décline → à surveiller
+                default => 1.0,
+            };
+
+            // Volume : les mots-clés à fort volume méritent plus d'attention
+            $volumeMultiplier = match (true) {
+                $impressions >= 500 => 1.5,
+                $impressions >= 200 => 1.2,
+                $impressions >= 100 => 1.0,
+                default => 0.8,
+            };
+
+            $improveScore = $ctrGapScore * $declineUrgency * $momentumAdjust * $volumeMultiplier;
+            $improveCandidates[] = ['keyword' => $keyword, 'score' => $improveScore];
         }
 
         // Top 10 : meilleurs scores de visibilité

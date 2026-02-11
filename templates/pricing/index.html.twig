@@ -48,7 +48,7 @@
             "name": "Combien coûtent les packs SEO ?",
             "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Le Pack Essentiel (audit SEO complet) coûte 247€. Le Pack Visibilité (SEO local mensuel) est à 143€/mois. Le Pack Performance (accompagnement SEO complet) est à 227€/mois. Engagement minimum de 6 mois pour les packs mensuels."
+                "text": "Le Pack Essentiel (audit SEO complet) coûte 247€. Le Pack Visibilité (SEO local mensuel) est à 143€/mois pendant la durée de l'engagement (puis 197€/mois). Le Pack Performance (accompagnement SEO complet) est à 227€/mois pendant la durée de l'engagement (puis 397€/mois). Engagement minimum de 6 mois pour les packs mensuels."
             }
         }
     ]
@@ -137,6 +137,9 @@
             Des prix transparents et adaptés à votre projet<br>
             Devis personnalisé gratuit
         </p>
+        <p class="fade-in-delay-2" style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem;">
+            Prix HT — TVA non applicable, art. 293 B du CGI
+        </p>
     </div>
 </section>
 
@@ -145,7 +148,7 @@
     <div class="launch-banner-inner">
         <span class="launch-badge">Offre de lancement</span>
         <span class="launch-text">
-            Tarifs préférentiels jusqu'au <strong>31 mars 2026</strong>
+            Tarifs préférentiels pour toute <strong>signature de devis avant le 31 mars 2026</strong>
         </span>
     </div>
 </div>
@@ -365,6 +368,9 @@
                             53 €
                             <span>/mois</span>
                         </div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
+                            pendant la durée de l'engagement, puis 77 €/mois
+                        </div>
                         <div class="pricing-saving">Recommandé</div>
                         <a href="{{ path('app_contact') }}" class="btn btn-primary" style="margin-top: 1rem;">
                             Souscrire
@@ -394,6 +400,9 @@
                             13 €
                             <span>/mois</span>
                         </div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
+                            pendant la durée de l'engagement, puis 23 €/mois
+                        </div>
                         <a href="{{ path('app_contact') }}" class="btn btn-outline" style="margin-top: 1rem;">
                             Souscrire
                         </a>
@@ -421,6 +430,9 @@
                         <div class="pricing-price" style="margin: 0;">
                             47 €
                             <span>/mois</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
+                            pendant la durée de l'engagement, puis 63 €/mois
                         </div>
                         <a href="{{ path('app_contact') }}" class="btn btn-outline" style="margin-top: 1rem;">
                             Souscrire
@@ -484,7 +496,8 @@
                     <span>/mois</span>
                 </div>
                 <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
-                    SEO local, engagement 6 mois
+                    SEO local, engagement 6 mois min.<br>
+                    <span style="font-size: 0.85rem;">puis 197 €/mois si reconduction</span>
                 </p>
                 <ul class="pricing-features">
                     <li>Audit SEO initial offert (valeur 397 €)</li>
@@ -518,7 +531,8 @@
                     <span>/mois</span>
                 </div>
                 <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
-                    SEO complet, engagement 6 mois
+                    SEO complet, engagement 6 mois min.<br>
+                    <span style="font-size: 0.85rem;">puis 397 €/mois si reconduction</span>
                 </p>
                 <ul class="pricing-features">
                     <li>Tout le Pack Visibilité inclus</li>
@@ -546,6 +560,12 @@
         <div class="text-center mt-4">
             <p style="color: var(--text-muted); font-style: italic;">
                 <i class="fas fa-info-circle"></i> Le SEO est un travail de fond : les premiers résultats apparaissent généralement après 3 à 6 mois.
+            </p>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.75rem;">
+                Engagement 6 mois minimum au tarif préférentiel.
+                Au-delà, libre d'arrêter à tout moment avec un préavis de 15 jours.
+                Reconduction au tarif de référence.
+                <a href="{{ path('app_legal_cgv') }}" style="color: var(--accent-dark);">Voir les CGV</a>
             </p>
         </div>
     </div>
@@ -665,7 +685,7 @@
             <i class="fas fa-paper-plane"></i> Demander mon devis gratuit
         </a>
         <p class="mt-4" style="color: var(--text-muted);">
-            <i class="fas fa-clock"></i> Réponse sous 24h garantie
+            <i class="fas fa-clock"></i> Réponse sous 24h en jour ouvré, 48h le week-end
         </p>
     </div>
 </section>

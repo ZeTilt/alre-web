@@ -4,23 +4,12 @@
 
 {% block meta_description %}Mentions légales du site Alré Web - Développeur web freelance Fabrice Dhuicque, auto-entrepreneur basé à Auray (Morbihan) en Bretagne.{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        /* Désactiver toutes les animations et transitions sur les pages légales */
-        * {
-            animation: none !important;
-            transition: none !important;
-        }
-    </style>
-{% endblock %}
-
 {% block body %}
 <section class="section section-light">
     <div class="container">
         <h1 class="text-center mb-4">Mentions Légales</h1>
 
-        <div class="card" style="max-width: 900px; margin: 0 auto;">
+        <div class="legal-content">
             <h2>1. Éditeur du site</h2>
             <p>
                 Le site <strong>alre-web.bzh</strong> est édité par :
@@ -32,7 +21,7 @@
                 <li><strong>Adresse :</strong> Bretagne, France</li>
                 <li><strong>Email :</strong> <a href="mailto:contact@alre-web.bzh">contact@alre-web.bzh</a></li>
                 <li><strong>Téléphone :</strong> <a href="tel:+33695786984">06 95 78 69 84</a></li>
-                <li><strong>SIRET :</strong>9 030 867 670 0022</li>
+                <li><strong>SIRET :</strong> 930 867 670 0022</li>
             </ul>
 
             <h2>2. Directeur de la publication</h2>
@@ -42,9 +31,7 @@
             </p>
 
             <h2>3. Hébergement</h2>
-            <p>
-                Le site est hébergé par :
-            </p>
+            <p>Le site est hébergé par :</p>
             <ul>
                 <li><strong>Hébergeur :</strong> o2switch</li>
                 <li><strong>Adresse :</strong> Chemin des Pardiaux, 63000 Clermont-Ferrand, France</li>
@@ -66,9 +53,7 @@
             </p>
 
             <h2>5. Protection des données personnelles</h2>
-            <p>
-                Les informations recueillies sur ce site font l'objet d'un traitement informatique destiné à :
-            </p>
+            <p>Les informations recueillies sur ce site font l'objet d'un traitement informatique destiné à :</p>
             <ul>
                 <li>La gestion des demandes de contact</li>
                 <li>L'établissement de devis et factures</li>
@@ -108,9 +93,7 @@
                 L'éditeur s'efforce d'assurer l'exactitude et la mise à jour des informations diffusées
                 sur ce site, mais ne peut garantir l'exactitude, la précision ou l'exhaustivité de ces informations.
             </p>
-            <p>
-                L'éditeur décline toute responsabilité :
-            </p>
+            <p>L'éditeur décline toute responsabilité :</p>
             <ul>
                 <li>Pour toute imprécision, inexactitude ou omission portant sur des informations disponibles sur le site</li>
                 <li>Pour tous dommages résultant d'une intrusion frauduleuse d'un tiers ayant entraîné une modification des informations</li>
@@ -137,13 +120,11 @@
                 <strong>Hébergement :</strong> o2switch
             </p>
 
-            <div style="margin-top: 2rem; padding: 1rem; background-color: #f8f9fa; border-left: 4px solid var(--primary-color);">
-                <p style="margin: 0; font-size: 0.9rem;">
-                    <strong>Dernière mise à jour :</strong> {{ "now"|date("d/m/Y") }}
-                </p>
+            <div class="legal-meta">
+                <p><strong>Dernière mise à jour :</strong> {{ "now"|date("d/m/Y") }}</p>
             </div>
 
-            <div class="text-center" style="margin-top: 2rem;">
+            <div class="legal-actions">
                 <a href="{{ path('app_home') }}" class="btn btn-outline">
                     <i class="fas fa-arrow-left"></i> Retour à l'accueil
                 </a>

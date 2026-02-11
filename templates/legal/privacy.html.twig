@@ -4,26 +4,15 @@
 
 {% block meta_description %}Politique de confidentialité et protection des données personnelles - Alré Web respecte votre vie privée et est conforme au RGPD.{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        /* Désactiver toutes les animations et transitions sur les pages légales */
-        * {
-            animation: none !important;
-            transition: none !important;
-        }
-    </style>
-{% endblock %}
-
 {% block body %}
 <section class="section section-light">
     <div class="container">
         <h1 class="text-center mb-4">Politique de Confidentialité</h1>
 
-        <div class="card" style="max-width: 900px; margin: 0 auto;">
-            <div style="padding: 1rem; background-color: #e8f4f8; border-radius: 8px; margin-bottom: 2rem;">
-                <p style="margin: 0; font-size: 0.95rem;">
-                    <i class="fas fa-shield-alt" style="color: var(--primary-color);"></i>
+        <div class="legal-content">
+            <div class="legal-intro">
+                <i class="fas fa-shield-alt"></i>
+                <p>
                     <strong>Votre vie privée est importante pour nous.</strong> Cette politique de confidentialité
                     explique comment nous collectons, utilisons et protégeons vos données personnelles conformément
                     au Règlement Général sur la Protection des Données (RGPD).
@@ -31,9 +20,7 @@
             </div>
 
             <h2>1. Responsable du traitement</h2>
-            <p>
-                Le responsable du traitement des données personnelles est :
-            </p>
+            <p>Le responsable du traitement des données personnelles est :</p>
             <ul>
                 <li><strong>Nom :</strong> Fabrice Dhuicque</li>
                 <li><strong>Activité :</strong> Alré Web - Développeur web freelance</li>
@@ -103,9 +90,9 @@
                 <li><strong>Fabrice Dhuicque</strong> (développeur et gérant)</li>
                 <li><strong>Notre hébergeur</strong> : o2switch (France) - dans le cadre de l'hébergement technique</li>
             </ul>
-            <p>
-                <strong>Aucune donnée n'est vendue, louée ou partagée avec des tiers à des fins commerciales.</strong>
-            </p>
+            <div class="legal-callout">
+                <p><strong>Aucune donnée n'est vendue, louée ou partagée avec des tiers à des fins commerciales.</strong></p>
+            </div>
 
             <h2>6. Durée de conservation</h2>
             <p>Nous conservons vos données pendant les durées suivantes :</p>
@@ -115,9 +102,7 @@
                 <li><strong>Factures et documents comptables</strong> : 10 ans (obligation légale)</li>
                 <li><strong>Données Analytics</strong> : 13 mois maximum</li>
             </ul>
-            <p>
-                Passé ces délais, vos données sont supprimées ou anonymisées de manière irréversible.
-            </p>
+            <p>Passé ces délais, vos données sont supprimées ou anonymisées de manière irréversible.</p>
 
             <h2>7. Vos droits RGPD</h2>
             <p>Conformément au RGPD, vous disposez des droits suivants :</p>
@@ -141,18 +126,19 @@
             <p>Vous pouvez vous opposer au traitement de vos données pour des raisons légitimes.</p>
 
             <h3>Comment exercer vos droits ?</h3>
-            <div style="padding: 1rem; background-color: #f8f9fa; border-left: 4px solid var(--primary-color); margin: 1rem 0;">
-                <p style="margin: 0;">
+            <div class="legal-callout">
+                <p>
                     Pour exercer l'un de ces droits, contactez-nous par email à :
                     <strong><a href="mailto:contact@alre-web.bzh">contact@alre-web.bzh</a></strong>
-                    <br><br>
+                </p>
+                <p style="margin-top: 0.5rem;">
                     Nous vous répondrons dans un délai d'un mois maximum.
                     Une pièce d'identité pourra vous être demandée pour vérifier votre identité.
                 </p>
             </div>
 
             <h2>8. Sécurité des données</h2>
-            <p>Nous mettons en œuvre des mesures techniques et organisationnelles pour protéger vos données :</p>
+            <p>Nous mettons en oeuvre des mesures techniques et organisationnelles pour protéger vos données :</p>
             <ul>
                 <li><strong>Chiffrement HTTPS</strong> : toutes les communications sont sécurisées</li>
                 <li><strong>Hébergement sécurisé</strong> : serveurs en France avec sauvegardes régulières</li>
@@ -166,13 +152,13 @@
             <h3>Cookies strictement nécessaires (sans consentement)</h3>
             <ul>
                 <li><strong>Cookie de session Symfony</strong> : fonctionnement technique du site (durée : session)</li>
-                <li><strong>Cookie Matomo</strong> : analyse du trafic, hébergé sur nos serveurs, données anonymisées (durée : 13 mois). Exempté de consentement selon la CNIL (recommandation « cookies analytics »).</li>
+                <li><strong>Cookie Matomo</strong> : analyse du trafic, hébergé sur nos serveurs, données anonymisées (durée : 13 mois). Exempté de consentement selon la CNIL.</li>
                 <li><strong>cookie_marketing</strong> : enregistre votre choix d'acceptation ou de refus des cookies publicitaires (durée : 13 mois)</li>
             </ul>
 
             <h3>Cookies soumis à consentement</h3>
             <ul>
-                <li><strong>Pixel Facebook (Meta)</strong> : ce cookie publicitaire permet de mesurer l'efficacité de nos campagnes publicitaires sur Facebook et Instagram. Il est déposé par Meta Platforms Ireland Ltd. Il n'est activé que si vous cliquez sur « Accepter » dans le bandeau cookies.</li>
+                <li><strong>Pixel Facebook (Meta)</strong> : cookie publicitaire permettant de mesurer l'efficacité de nos campagnes sur Facebook et Instagram. Déposé par Meta Platforms Ireland Ltd. Activé uniquement si vous acceptez les cookies publicitaires via le bandeau.</li>
             </ul>
             <p>
                 Vous pouvez modifier votre choix à tout moment en cliquant sur le lien
@@ -210,17 +196,15 @@
                 La date de dernière mise à jour est indiquée ci-dessous.
             </p>
 
-            <div style="margin-top: 2rem; padding: 1rem; background-color: #f8f9fa; border-left: 4px solid var(--primary-color);">
-                <p style="margin: 0; font-size: 0.9rem;">
-                    <strong>Dernière mise à jour :</strong> {{ "now"|date("d/m/Y") }}
-                </p>
+            <div class="legal-meta">
+                <p><strong>Dernière mise à jour :</strong> {{ "now"|date("d/m/Y") }}</p>
             </div>
 
-            <div class="text-center" style="margin-top: 2rem;">
+            <div class="legal-actions">
                 <a href="{{ path('app_home') }}" class="btn btn-outline">
                     <i class="fas fa-arrow-left"></i> Retour à l'accueil
                 </a>
-                <a href="{{ path('app_contact') }}" class="btn btn-primary" style="margin-left: 1rem;">
+                <a href="{{ path('app_contact') }}" class="btn btn-primary">
                     <i class="fas fa-envelope"></i> Nous contacter
                 </a>
             </div>

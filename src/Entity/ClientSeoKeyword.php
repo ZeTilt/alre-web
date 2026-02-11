@@ -11,6 +11,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\UniqueConstraint(name: 'unique_client_seo_keyword', columns: ['client_site_id', 'keyword'])]
 class ClientSeoKeyword
 {
+    public const RELEVANCE_HIGH = 'high';
+    public const RELEVANCE_MEDIUM = 'medium';
+    public const RELEVANCE_LOW = 'low';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -28,6 +32,12 @@ class ClientSeoKeyword
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastOptimizedAt = null;
+
+    #[ORM\Column(length: 10, options: ['default' => 'medium'])]
+    private string $relevanceLevel = 'medium';
 
     /**
      * @var Collection<int, ClientSeoPosition>
@@ -124,6 +134,28 @@ class ClientSeoKeyword
             return null;
         }
         return $this->positions->first();
+    }
+
+    public function getLastOptimizedAt(): ?\DateTimeImmutable
+    {
+        return $this->lastOptimizedAt;
+    }
+
+    public function setLastOptimizedAt(?\DateTimeImmutable $lastOptimizedAt): static
+    {
+        $this->lastOptimizedAt = $lastOptimizedAt;
+        return $this;
+    }
+
+    public function getRelevanceLevel(): string
+    {
+        return $this->relevanceLevel;
+    }
+
+    public function setRelevanceLevel(string $relevanceLevel): static
+    {
+        $this->relevanceLevel = $relevanceLevel;
+        return $this;
     }
 
     public function __toString(): string

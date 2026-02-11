@@ -91,4 +91,70 @@ class ClientSeoPositionRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return \DateTimeImmutable[]
+     */
+    public function findLatestDatesWithData(ClientSite $site, int $limit = 4): array
+    {
+        $results = $this->createQueryBuilder('p')
+            ->select('p.date')
+            ->join('p.clientSeoKeyword', 'k')
+            ->where('k.clientSite = :site')
+            ->andWhere('k.isActive = :active')
+            ->setParameter('site', $site)
+            ->setParameter('active', true)
+            ->groupBy('p.date')
+            ->orderBy('p.date', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return array_map(fn(array $row) => $row['date'], $results);
+    }
+
+    /**
+     * Returns weekly average positions grouped by keyword ID.
+     * Each week is identified by its ISO week number.
+     *
+     * @return array<int, array<string, float>> keywordId => ['2026-W06' => avgPos, ...]
+     */
+    public function getPositionHistoryByKeyword(ClientSite $site, int $weeks = 4): array
+    {
+        $startDate = (new \DateTimeImmutable())->modify("-{$weeks} weeks")->setTime(0, 0, 0);
+
+        $results = $this->createQueryBuilder('p')
+            ->select(
+                'IDENTITY(p.clientSeoKeyword) as keywordId',
+                'p.position',
+                'p.date'
+            )
+            ->join('p.clientSeoKeyword', 'k')
+            ->where('k.clientSite = :site')
+            ->andWhere('k.isActive = :active')
+            ->andWhere('p.date >= :startDate')
+            ->setParameter('site', $site)
+            ->setParameter('active', true)
+            ->setParameter('startDate', $startDate)
+            ->orderBy('p.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        // Group by keyword then by ISO week, compute weekly averages
+        $raw = [];
+        foreach ($results as $row) {
+            $keywordId = (int) $row['keywordId'];
+            $weekKey = $row['date']->format('o-\\WW'); // ISO year + week
+            $raw[$keywordId][$weekKey][] = (float) $row['position'];
+        }
+
+        $data = [];
+        foreach ($raw as $keywordId => $weeks) {
+            foreach ($weeks as $weekKey => $positions) {
+                $data[$keywordId][$weekKey] = round(array_sum($positions) / \count($positions), 1);
+            }
+        }
+
+        return $data;
+    }
 }

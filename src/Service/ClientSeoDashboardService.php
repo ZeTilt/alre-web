@@ -11,6 +11,12 @@ use App\Repository\ClientSeoPositionRepository;
 
 class ClientSeoDashboardService
 {
+    private const CTR_BENCHMARKS = [
+        1 => 28.0, 2 => 22.0, 3 => 18.0, 4 => 15.0, 5 => 12.0,
+        6 => 10.0, 7 => 9.0, 8 => 8.0, 9 => 7.0, 10 => 6.0,
+        15 => 3.0, 20 => 2.0, 30 => 0.8, 50 => 0.2,
+    ];
+
     public function __construct(
         private ClientSeoKeywordRepository $keywordRepository,
         private ClientSeoPositionRepository $positionRepository,
@@ -26,10 +32,12 @@ class ClientSeoDashboardService
     public function getFullData(ClientSite $site): array
     {
         $positionComparisons = $this->calculatePositionComparisons($site);
+        $seoMomentum = $this->calculate4WeekMomentum($site);
 
         return [
             'positionComparisons' => $positionComparisons,
-            'keywordsRanked' => $this->rankKeywords($site, $positionComparisons),
+            'seoMomentum' => $seoMomentum,
+            'keywordsRanked' => $this->rankKeywords($site, $positionComparisons, $seoMomentum),
             'chartData' => $this->prepareChartData($site),
             'performanceData' => $this->categorizeKeywords($site),
             'topPages' => $this->pageRepository->findTopPages($site, 20),
@@ -44,7 +52,8 @@ class ClientSeoDashboardService
     public function getSummaryData(ClientSite $site): array
     {
         $positionComparisons = $this->calculatePositionComparisons($site);
-        $ranked = $this->rankKeywords($site, $positionComparisons);
+        $seoMomentum = $this->calculate4WeekMomentum($site);
+        $ranked = $this->rankKeywords($site, $positionComparisons, $seoMomentum);
 
         $totalActive = $this->keywordRepository->getActiveCount($site);
 
@@ -53,24 +62,27 @@ class ClientSeoDashboardService
             'top3' => array_slice($ranked['top10'], 0, 3),
             'positionComparisons' => $positionComparisons,
             'lastImportDate' => $this->importRepository->getLastImportDate($site),
+            'toImproveCount' => \count($ranked['toImprove']),
+            'importDue' => $site->isImportDue(),
+            'reportDue' => $site->isReportDue(),
         ];
     }
 
     /**
-     * Classe les mots-cles par score composite (miroir de DashboardSeoService::rankSeoKeywords).
+     * Classe les mots-cles par score composite avec CTR benchmarks, momentum 4 semaines,
+     * stabilite hebdomadaire, et 4 criteres "A travailler" avec raison/action.
+     *
+     * @return array{top10: array, toImprove: array<array{keyword: \App\Entity\ClientSeoKeyword, reason: string, action: string}>}
      */
-    private function rankKeywords(ClientSite $site, array $comparisons): array
+    private function rankKeywords(ClientSite $site, array $comparisons, array $momentum): array
     {
         $keywords = $this->keywordRepository->findAllWithLatestPosition($site);
+        $stability = $this->calculateWeeklyPositionStability($site);
 
-        $totals = $this->dailyTotalRepository->getAggregatedTotals(
-            $site,
-            new \DateTimeImmutable('-7 days'),
-            new \DateTimeImmutable('today')
-        );
-        $minImpressions = max(1, $totals['impressions'] * 0.001);
+        // Pre-filter and collect data for relative impression thresholds
+        $eligible = [];
+        $maxImpressions = 0;
 
-        $scored = [];
         foreach ($keywords as $keyword) {
             if (!$keyword->isActive()) {
                 continue;
@@ -79,41 +91,133 @@ class ClientSeoDashboardService
             if (!$latest) {
                 continue;
             }
+            $position = $latest->getPosition();
             $impressions = $latest->getImpressions();
-            if ($impressions < $minImpressions) {
+            if ($position <= 0 || $impressions <= 0) {
                 continue;
             }
+            $maxImpressions = max($maxImpressions, $impressions);
+            $eligible[] = $keyword;
+        }
+
+        // Relative impression thresholds (adapts to site size)
+        $minImprC1 = max(1, (int) round($maxImpressions * 0.10));
+        $minImprC2 = max(1, (int) round($maxImpressions * 0.15));
+        $minImprC4 = max(1, (int) round($maxImpressions * 0.30));
+
+        $top10Scored = [];
+        $improveCandidates = [];
+
+        foreach ($eligible as $keyword) {
+            $latest = $keyword->getLatestPosition();
+            $keywordId = $keyword->getId();
 
             $position = $latest->getPosition();
             $clicks = $latest->getClicks();
+            $impressions = $latest->getImpressions();
+
+            $ctr = $impressions > 0 ? ($clicks / $impressions) * 100 : 0;
+            $expectedCtr = $this->getExpectedCtr($position);
+            $ctrRatio = $expectedCtr > 0 ? $ctr / $expectedCtr : 1.0;
+
+            // --- Common factors ---
+            $ctrFactor = 0.75 + (min(2.0, max(0.5, $ctrRatio)) - 0.5) * (0.5 / 1.5);
+            $momentumFactor = ($momentum[$keywordId] ?? ['factor' => 1.0])['factor'];
+            $monthlyVar = $comparisons[$keywordId]['variation'] ?? 0;
+            $monthlyVelocity = match (true) {
+                $monthlyVar >= 10 => 1.15,
+                $monthlyVar >= 5 => 1.08,
+                $monthlyVar <= -5 => 0.92,
+                default => 1.0,
+            };
+            $stddev = $stability[$keywordId] ?? 99.0;
+
+            // --- Top 10 Score ---
             $pageBonus = $position <= 10 ? 1.5 : ($position <= 20 ? 1.25 : 1.0);
-            $score = $position > 0 ? ($impressions / $position) * (1 + 2 * $clicks) * $pageBonus : 0;
+            $baseScore = ($impressions / $position) * (1 + 2 * $clicks) * $pageBonus;
+            $top10Score = $baseScore * $ctrFactor * $momentumFactor * $monthlyVelocity;
+            $top10Scored[] = ['keyword' => $keyword, 'score' => $top10Score];
 
-            $scored[] = ['keyword' => $keyword, 'score' => $score];
+            // --- "A travailler" criteria ---
+
+            // Skip if optimized in last 30 days
+            $lastOptimized = $keyword->getLastOptimizedAt();
+            if ($lastOptimized !== null && $lastOptimized > (new \DateTimeImmutable())->modify('-30 days')) {
+                continue;
+            }
+
+            // Position stability (stddev < 2 for weekly averages)
+            $isStable = $stddev < 2;
+            // Momentum rising = keyword is improving on its own
+            $isRising = $momentumFactor >= 1.15;
+
+            $reason = null;
+            $action = null;
+            $improveScore = 0;
+
+            // Criterion 1: Low CTR on page 1, stable, not rising
+            if ($position <= 10 && $ctrRatio < 0.5 && $impressions >= $minImprC1 && $isStable && !$isRising) {
+                $expectedClicks = $impressions * ($expectedCtr / 100);
+                $improveScore = max(0, $expectedClicks - $clicks) * 3.0;
+                $reason = 'CTR faible en page 1';
+                $action = 'Optimiser title et meta description';
+            }
+            // Criterion 2: Near top 10 (position 11-15), stable, not rising
+            elseif ($position > 10 && $position <= 15 && $impressions >= $minImprC2 && $isStable && !$isRising) {
+                $expectedClicks = $impressions * ($expectedCtr / 100);
+                $improveScore = max(0, $expectedClicks - $clicks) * 1.5;
+                $reason = 'Proche du top 10';
+                $action = 'Enrichir le contenu pour passer en page 1';
+            }
+            // Criterion 3: Declining (M-1 <= -5), not rising
+            elseif ($position <= 20 && $monthlyVar <= -5 && !$isRising) {
+                $improveScore = abs($monthlyVar) * $impressions * 0.1;
+                $reason = 'En declin (M-1 : ' . round($monthlyVar, 1) . ')';
+                $action = 'Analyser la concurrence et rafraichir le contenu';
+            }
+            // Criterion 4: Page 2 (16-20) high volume, stable, not rising
+            elseif ($position > 15 && $position <= 20 && $impressions >= $minImprC4 && $isStable && !$isRising) {
+                $expectedClicks = $impressions * ($expectedCtr / 100);
+                $improveScore = max(0, $expectedClicks - $clicks) * 0.8;
+                $reason = 'Fort volume en page 2';
+                $action = 'Backlinks et contenu approfondi';
+            }
+
+            if ($reason !== null && $improveScore > 0) {
+                // Volume multiplier
+                $volumeRatio = $maxImpressions > 0 ? $impressions / $maxImpressions : 0;
+                $volumeMultiplier = match (true) {
+                    $volumeRatio >= 0.75 => 1.5,
+                    $volumeRatio >= 0.40 => 1.2,
+                    $volumeRatio >= 0.15 => 1.0,
+                    default => 0.8,
+                };
+                $improveScore *= $volumeMultiplier;
+
+                $improveCandidates[] = [
+                    'keyword' => $keyword,
+                    'score' => $improveScore,
+                    'reason' => $reason,
+                    'action' => $action,
+                ];
+            }
         }
 
-        usort($scored, fn($a, $b) => $b['score'] <=> $a['score']);
-
-        $top10 = array_map(fn($item) => $item['keyword'], array_slice($scored, 0, 10));
-
+        // Top 10: best visibility scores
+        usort($top10Scored, fn($a, $b) => $b['score'] <=> $a['score']);
+        $top10 = array_map(fn($item) => $item['keyword'], array_slice($top10Scored, 0, 10));
         $top10Ids = array_map(fn($kw) => $kw->getId(), $top10);
-        $toImproveScored = [];
-        foreach ($scored as $item) {
-            $id = $item['keyword']->getId();
-            if (in_array($id, $top10Ids)) {
-                continue;
-            }
-            $comparison = $comparisons[$id] ?? null;
-            if ($comparison === null || $comparison['status'] === 'new') {
-                continue;
-            }
-            $variation = $comparison['variation'] ?? 0;
-            $velocityFactor = $variation > 10 ? 0.5 : ($variation < -3 ? 1.5 : 1.0);
-            $item['adjustedScore'] = $item['score'] * $velocityFactor;
-            $toImproveScored[] = $item;
-        }
-        usort($toImproveScored, fn($a, $b) => $b['adjustedScore'] <=> $a['adjustedScore']);
-        $toImprove = array_map(fn($item) => $item['keyword'], array_slice($toImproveScored, 0, 10));
+
+        // To improve: exclude top 10, sort by score, keep reason + action
+        $toImproveFiltered = array_filter(
+            $improveCandidates,
+            fn($item) => !\in_array($item['keyword']->getId(), $top10Ids)
+        );
+        usort($toImproveFiltered, fn($a, $b) => $b['score'] <=> $a['score']);
+        $toImprove = array_map(
+            fn($item) => ['keyword' => $item['keyword'], 'reason' => $item['reason'], 'action' => $item['action']],
+            array_slice(array_values($toImproveFiltered), 0, 10)
+        );
 
         return ['top10' => $top10, 'toImprove' => $toImprove];
     }
@@ -307,6 +411,104 @@ class ClientSeoDashboardService
             'hasEnoughData' => $hasEnoughData,
             'daysWithData' => $daysWithData,
         ];
+    }
+
+    private function getExpectedCtr(float $position): float
+    {
+        $pos = (int) floor($position);
+        if ($pos <= 0) {
+            return 0.1;
+        }
+        if (isset(self::CTR_BENCHMARKS[$pos])) {
+            return self::CTR_BENCHMARKS[$pos];
+        }
+        $lower = 1;
+        $upper = 50;
+        foreach (array_keys(self::CTR_BENCHMARKS) as $p) {
+            if ($p <= $pos && $p > $lower) {
+                $lower = $p;
+            }
+            if ($p >= $pos && $p < $upper) {
+                $upper = $p;
+            }
+        }
+        if ($lower === $upper) {
+            return self::CTR_BENCHMARKS[$lower];
+        }
+        $ratio = ($pos - $lower) / ($upper - $lower);
+        return self::CTR_BENCHMARKS[$lower] + $ratio * (self::CTR_BENCHMARKS[$upper] - self::CTR_BENCHMARKS[$lower]);
+    }
+
+    /**
+     * Calcule le momentum 4 semaines : compare la position moyenne des 2 dernieres semaines
+     * vs les 2 semaines precedentes (adaptation hebdomadaire du momentum 7 jours perso).
+     *
+     * @return array<int, array{factor: float, trend: float, status: string}>
+     */
+    private function calculate4WeekMomentum(ClientSite $site): array
+    {
+        $weeklyHistory = $this->positionRepository->getPositionHistoryByKeyword($site, 4);
+
+        $momentum = [];
+        foreach ($weeklyHistory as $keywordId => $weeklyAverages) {
+            $weeks = array_values($weeklyAverages);
+            if (\count($weeks) < 3) {
+                $momentum[$keywordId] = ['factor' => 1.0, 'trend' => 0.0, 'status' => 'stable'];
+                continue;
+            }
+
+            // Split: recent 2 weeks vs older weeks
+            $totalWeeks = \count($weeks);
+            $splitAt = max(1, $totalWeeks - 2);
+            $recentWeeks = \array_slice($weeks, $splitAt);
+            $olderWeeks = \array_slice($weeks, 0, $splitAt);
+
+            $recentAvg = array_sum($recentWeeks) / \count($recentWeeks);
+            $olderAvg = array_sum($olderWeeks) / \count($olderWeeks);
+
+            // Positive = improvement (position goes down)
+            $trend = round($olderAvg - $recentAvg, 1);
+            $factor = match (true) {
+                $trend >= 5 => 1.3,
+                $trend >= 2 => 1.15,
+                $trend >= -1 => 1.0,
+                $trend >= -4 => 0.9,
+                default => 0.7,
+            };
+            $status = match (true) {
+                $trend > 0 => 'improved',
+                $trend < 0 => 'degraded',
+                default => 'stable',
+            };
+            $momentum[$keywordId] = ['factor' => $factor, 'trend' => $trend, 'status' => $status];
+        }
+
+        return $momentum;
+    }
+
+    /**
+     * Calcule l'ecart-type des positions moyennes hebdomadaires.
+     * Seuil : stddev < 2 = stable (les moyennes hebdomadaires sont plus lisses que les quotidiennes).
+     *
+     * @return array<int, float> keywordId => stddev
+     */
+    private function calculateWeeklyPositionStability(ClientSite $site): array
+    {
+        $weeklyHistory = $this->positionRepository->getPositionHistoryByKeyword($site, 4);
+
+        $stability = [];
+        foreach ($weeklyHistory as $keywordId => $weeklyAverages) {
+            $positions = array_values($weeklyAverages);
+            if (\count($positions) < 3) {
+                $stability[$keywordId] = 99.0;
+                continue;
+            }
+            $mean = array_sum($positions) / \count($positions);
+            $variance = array_sum(array_map(fn($p) => ($p - $mean) ** 2, $positions)) / \count($positions);
+            $stability[$keywordId] = round(sqrt($variance), 1);
+        }
+
+        return $stability;
     }
 
     /**

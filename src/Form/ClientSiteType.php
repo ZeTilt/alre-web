@@ -6,6 +6,7 @@ use App\Entity\Client;
 use App\Entity\ClientSite;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -49,6 +50,66 @@ class ClientSiteType extends AbstractType
                     new Assert\Url(['message' => 'Veuillez entrer une URL valide.']),
                     new Assert\Length(['max' => 500]),
                 ],
+            ])
+            // Planning import GSC
+            ->add('importDay', ChoiceType::class, [
+                'label' => 'Jour d\'import GSC',
+                'required' => false,
+                'placeholder' => 'Non planifie',
+                'choices' => [
+                    'Lundi' => 1,
+                    'Mardi' => 2,
+                    'Mercredi' => 3,
+                    'Jeudi' => 4,
+                    'Vendredi' => 5,
+                ],
+                'attr' => ['class' => 'form-control'],
+            ])
+            ->add('importSlot', ChoiceType::class, [
+                'label' => 'Creneau d\'import',
+                'required' => false,
+                'placeholder' => '-',
+                'choices' => [
+                    'Matin' => 'morning',
+                    'Apres-midi' => 'afternoon',
+                ],
+                'attr' => ['class' => 'form-control'],
+            ])
+            // Planning compte rendu
+            ->add('reportWeekOfMonth', ChoiceType::class, [
+                'label' => 'Semaine du rapport',
+                'required' => false,
+                'placeholder' => 'Non planifie',
+                'choices' => [
+                    '1ere semaine' => 1,
+                    '2eme semaine' => 2,
+                    '3eme semaine' => 3,
+                    '4eme semaine' => 4,
+                ],
+                'attr' => ['class' => 'form-control'],
+            ])
+            ->add('reportDayOfWeek', ChoiceType::class, [
+                'label' => 'Jour du rapport',
+                'required' => false,
+                'placeholder' => '-',
+                'choices' => [
+                    'Lundi' => 1,
+                    'Mardi' => 2,
+                    'Mercredi' => 3,
+                    'Jeudi' => 4,
+                    'Vendredi' => 5,
+                ],
+                'attr' => ['class' => 'form-control'],
+            ])
+            ->add('reportSlot', ChoiceType::class, [
+                'label' => 'Creneau du rapport',
+                'required' => false,
+                'placeholder' => '-',
+                'choices' => [
+                    'Matin' => 'morning',
+                    'Apres-midi' => 'afternoon',
+                ],
+                'attr' => ['class' => 'form-control'],
             ])
         ;
     }

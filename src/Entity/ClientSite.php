@@ -59,6 +59,23 @@ class ClientSite
     #[ORM\OneToMany(targetEntity: ClientSeoPage::class, mappedBy: 'clientSite', orphanRemoval: true)]
     private Collection $pages;
 
+    // Planning import GSC
+    #[ORM\Column(type: 'smallint', nullable: true)]
+    private ?int $importDay = null; // 1=Lun, 2=Mar, ..., 5=Ven
+
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $importSlot = null; // 'morning' | 'afternoon'
+
+    // Planning compte rendu
+    #[ORM\Column(type: 'smallint', nullable: true)]
+    private ?int $reportWeekOfMonth = null; // 1-4
+
+    #[ORM\Column(type: 'smallint', nullable: true)]
+    private ?int $reportDayOfWeek = null; // 1=Lun, ..., 5=Ven
+
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $reportSlot = null; // 'morning' | 'afternoon'
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -169,6 +186,157 @@ class ClientSite
     public function getPages(): Collection
     {
         return $this->pages;
+    }
+
+    // --- Scheduling getters/setters ---
+
+    public function getImportDay(): ?int
+    {
+        return $this->importDay;
+    }
+
+    public function setImportDay(?int $importDay): static
+    {
+        $this->importDay = $importDay;
+        return $this;
+    }
+
+    public function getImportSlot(): ?string
+    {
+        return $this->importSlot;
+    }
+
+    public function setImportSlot(?string $importSlot): static
+    {
+        $this->importSlot = $importSlot;
+        return $this;
+    }
+
+    public function getReportWeekOfMonth(): ?int
+    {
+        return $this->reportWeekOfMonth;
+    }
+
+    public function setReportWeekOfMonth(?int $reportWeekOfMonth): static
+    {
+        $this->reportWeekOfMonth = $reportWeekOfMonth;
+        return $this;
+    }
+
+    public function getReportDayOfWeek(): ?int
+    {
+        return $this->reportDayOfWeek;
+    }
+
+    public function setReportDayOfWeek(?int $reportDayOfWeek): static
+    {
+        $this->reportDayOfWeek = $reportDayOfWeek;
+        return $this;
+    }
+
+    public function getReportSlot(): ?string
+    {
+        return $this->reportSlot;
+    }
+
+    public function setReportSlot(?string $reportSlot): static
+    {
+        $this->reportSlot = $reportSlot;
+        return $this;
+    }
+
+    // --- Scheduling helpers ---
+
+    public function getNextImportDate(): ?\DateTimeImmutable
+    {
+        if ($this->importDay === null) {
+            return null;
+        }
+
+        $today = new \DateTimeImmutable('today');
+        $todayDow = (int) $today->format('N'); // 1=Mon..7=Sun
+
+        $diff = $this->importDay - $todayDow;
+        if ($diff < 0) {
+            $diff += 7;
+        }
+
+        return $today->modify("+{$diff} days");
+    }
+
+    public function getNextReportDate(): ?\DateTimeImmutable
+    {
+        if ($this->reportWeekOfMonth === null || $this->reportDayOfWeek === null) {
+            return null;
+        }
+
+        $now = new \DateTimeImmutable('today');
+
+        // Try current month first
+        $date = $this->getNthWeekdayOfMonth($this->reportWeekOfMonth, $this->reportDayOfWeek, $now);
+        if ($date !== null && $date >= $now) {
+            return $date;
+        }
+
+        // Otherwise next month
+        $nextMonth = $now->modify('first day of next month');
+        return $this->getNthWeekdayOfMonth($this->reportWeekOfMonth, $this->reportDayOfWeek, $nextMonth);
+    }
+
+    private function getNthWeekdayOfMonth(int $n, int $dayOfWeek, \DateTimeImmutable $reference): ?\DateTimeImmutable
+    {
+        $firstOfMonth = $reference->modify('first day of this month')->setTime(0, 0, 0);
+        $firstDow = (int) $firstOfMonth->format('N');
+
+        $diff = $dayOfWeek - $firstDow;
+        if ($diff < 0) {
+            $diff += 7;
+        }
+
+        $firstOccurrence = $firstOfMonth->modify("+{$diff} days");
+        $target = $firstOccurrence->modify('+' . ($n - 1) . ' weeks');
+
+        // Verify still in same month
+        if ($target->format('m') !== $firstOfMonth->format('m')) {
+            return null;
+        }
+
+        return $target;
+    }
+
+    public function isImportDue(): bool
+    {
+        if ($this->importDay === null) {
+            return false;
+        }
+
+        $today = new \DateTimeImmutable('today');
+        $todayDow = (int) $today->format('N');
+
+        if ($todayDow !== $this->importDay) {
+            return false;
+        }
+
+        // Check if last import is before today
+        $imports = $this->getImports();
+        if ($imports->isEmpty()) {
+            return true;
+        }
+
+        $lastImport = $imports->first();
+        return $lastImport->getImportedAt()->format('Y-m-d') < $today->format('Y-m-d');
+    }
+
+    public function isReportDue(): bool
+    {
+        $nextReport = $this->getNextReportDate();
+        if ($nextReport === null) {
+            return false;
+        }
+
+        $today = new \DateTimeImmutable('today');
+
+        return $today->format('Y-m-d') === $nextReport->format('Y-m-d');
     }
 
     public function __toString(): string

@@ -50,6 +50,49 @@
             </div>
         </div>
 
+        <!-- Planning Section -->
+        <fieldset style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.25rem;">
+            <legend style="font-weight: 600; color: #374151; font-size: 0.9rem; padding: 0 0.5rem;">
+                <i class="fas fa-calendar-alt" style="color: var(--primary);"></i> Planning
+            </legend>
+
+            <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 1rem;">
+                Planifiez les imports GSC et les comptes rendus pour recevoir des rappels.
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <div style="font-weight: 500; font-size: 0.85rem; color: #374151; margin-bottom: 0.5rem;">Import GSC</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                    <div>
+                        {{ form_label(form.importDay) }}
+                        {{ form_widget(form.importDay) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.importSlot) }}
+                        {{ form_widget(form.importSlot) }}
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div style="font-weight: 500; font-size: 0.85rem; color: #374151; margin-bottom: 0.5rem;">Compte rendu</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;">
+                    <div>
+                        {{ form_label(form.reportWeekOfMonth) }}
+                        {{ form_widget(form.reportWeekOfMonth) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.reportDayOfWeek) }}
+                        {{ form_widget(form.reportDayOfWeek) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.reportSlot) }}
+                        {{ form_widget(form.reportSlot) }}
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
         <div style="display: flex; gap: 0.5rem;">
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-save"></i> {% if site is defined and site.id %}Enregistrer{% else %}Ajouter le site{% endif %}

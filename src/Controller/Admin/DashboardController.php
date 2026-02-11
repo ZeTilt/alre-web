@@ -14,6 +14,7 @@ use App\Entity\Facture;
 use App\Entity\GoogleReview;
 use App\Entity\Prospect;
 use App\Entity\SecurityLog;
+use App\Entity\ClientSeoKeyword;
 use App\Entity\SeoKeyword;
 use App\Entity\User;
 use App\Entity\Project;
@@ -55,6 +56,7 @@ class DashboardController extends AbstractDashboardController
         private EntityManagerInterface $entityManager,
         private ParameterBagInterface $params,
         private DashboardSeoService $dashboardSeoService,
+        private ClientSiteRepository $clientSiteRepository,
     ) {
     }
 
@@ -719,6 +721,22 @@ class DashboardController extends AbstractDashboardController
         return $response;
     }
 
+    #[Route('/saeiblauhjc/client-seo-keyword/{id}/mark-optimized', name: 'admin_client_seo_keyword_mark_optimized', methods: ['POST'])]
+    public function markClientKeywordOptimized(ClientSeoKeyword $keyword, Request $request): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid('client-seo-optimize-' . $keyword->getId(), $request->request->get('_token'))) {
+            return new JsonResponse(['error' => 'Token CSRF invalide'], 403);
+        }
+
+        $keyword->setLastOptimizedAt(new \DateTimeImmutable());
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'date' => $keyword->getLastOptimizedAt()->format('d/m/Y'),
+        ]);
+    }
+
     // ===== CLIENT SEO =====
 
     #[Route('/saeiblauhjc/client-seo', name: 'admin_client_seo_list')]
@@ -959,7 +977,9 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Villes (SEO Local)', 'fas fa-map-marker-alt', City::class);
 
         yield MenuItem::section('SEO Clients');
-        yield MenuItem::linkToRoute('Suivi SEO', 'fa fa-users-cog', 'admin_client_seo_list');
+        $dueCount = $this->clientSiteRepository->countWithDueActions();
+        yield MenuItem::linkToRoute('Suivi SEO', 'fa fa-users-cog', 'admin_client_seo_list')
+            ->setBadge($dueCount > 0 ? (string) $dueCount : false, 'warning');
 
         yield MenuItem::section('Gestion commerciale');
         yield MenuItem::linkToCrud('Devis', 'fas fa-file-invoice', Devis::class);

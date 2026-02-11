@@ -129,7 +129,7 @@
     <div class="chart-title" style="margin-bottom: 1rem;">
         <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
         A travailler
-        <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">(prochain potentiel par score)</span>
+        <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">(criteres avances : CTR, proximite top 10, declin, volume)</span>
     </div>
     <div style="overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
@@ -138,15 +138,20 @@
                     <th style="text-align: left; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Mot-cle</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Position</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">vs M-1</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Tendance 4S</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Clics</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Impressions</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Impr.</th>
+                    <th style="text-align: left; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Raison</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Fait</th>
                 </tr>
             </thead>
             <tbody>
-                {% for keyword in keywordsRanked.toImprove %}
+                {% for item in keywordsRanked.toImprove %}
+                    {% set keyword = item.keyword %}
                     {% set latestPosition = keyword.latestPosition %}
                     {% set comparison = positionComparisons[keyword.id] ?? null %}
-                    <tr style="border-bottom: 1px solid #fef3c7;">
+                    {% set momentumData = seoMomentum[keyword.id] ?? null %}
+                    <tr id="client-seo-improve-row-{{ keyword.id }}" style="border-bottom: 1px solid #fef3c7;">
                         <td style="padding: 0.75rem 0.5rem; font-weight: 500;">{{ keyword.keyword }}</td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
                             {% if latestPosition %}
@@ -178,10 +183,39 @@
                             {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {% if momentumData %}
+                                {% if momentumData.status == 'improved' %}
+                                    <span style="color: #10b981; font-weight: 600; font-size: 0.8rem;"><i class="fas fa-arrow-up"></i> +{{ momentumData.trend|abs|number_format(1) }}</span>
+                                {% elseif momentumData.status == 'degraded' %}
+                                    <span style="color: #ef4444; font-weight: 600; font-size: 0.8rem;"><i class="fas fa-arrow-down"></i> {{ momentumData.trend|number_format(1) }}</span>
+                                {% else %}
+                                    <span style="color: #6b7280; font-size: 0.8rem;">=</span>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #9ca3af;">-</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
                             <span style="font-weight: 600; color: #92400e;">{{ latestPosition.clicks }}</span>
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
                             {{ latestPosition.impressions|number_format(0, '', ' ') }}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            <span title="{{ item.action }}" style="cursor: help; color: #92400e; font-size: 0.8rem; white-space: nowrap;">
+                                {{ item.reason }} <i class="fas fa-info-circle" style="color: #d97706; font-size: 0.7rem;"></i>
+                            </span>
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            <button type="button"
+                                class="btn btn-sm btn-outline-success client-seo-mark-done"
+                                data-keyword-id="{{ keyword.id }}"
+                                data-url="{{ path('admin_client_seo_keyword_mark_optimized', {id: keyword.id}) }}"
+                                data-token="{{ csrf_token('client-seo-optimize-' ~ keyword.id) }}"
+                                title="Marquer comme optimise aujourd'hui"
+                                style="font-size: 0.75rem; padding: 0.15rem 0.5rem;">
+                                <i class="fas fa-check"></i> Fait
+                            </button>
                         </td>
                     </tr>
                 {% endfor %}
@@ -488,6 +522,40 @@ if (seoHasEnoughData && document.getElementById('chartSeo7d')) {
     });
 }
 
+// Bouton "Fait" - marquer un mot-cle client comme optimise
+document.querySelectorAll('.client-seo-mark-done').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var url = this.dataset.url;
+        var token = this.dataset.token;
+        var keywordId = this.dataset.keywordId;
+        var row = document.getElementById('client-seo-improve-row-' + keywordId);
+        var button = this;
+
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: '_token=' + encodeURIComponent(token)
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                row.style.transition = 'opacity 0.3s';
+                row.style.opacity = '0';
+                setTimeout(function() { row.remove(); }, 300);
+            } else {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-check"></i> Fait';
+            }
+        })
+        .catch(function() {
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-check"></i> Fait';
+        });
+    });
+});
 </script>
 {% endif %}
 {% endblock %}

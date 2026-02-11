@@ -43,6 +43,25 @@
                 <i class="fas fa-globe"></i> {{ site.url }}
             </div>
             {% if summary %}
+                {% if summary.importDue or summary.reportDue or summary.toImproveCount > 0 %}
+                <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.75rem;">
+                    {% if summary.importDue %}
+                        <span style="display: inline-flex; align-items: center; gap: 0.25rem; background: #fef3c7; color: #92400e; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;" title="Import GSC a faire">
+                            <i class="fas fa-file-upload"></i> Import du
+                        </span>
+                    {% endif %}
+                    {% if summary.reportDue %}
+                        <span style="display: inline-flex; align-items: center; gap: 0.25rem; background: #fee2e2; color: #991b1b; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;" title="Compte rendu a preparer">
+                            <i class="fas fa-file-alt"></i> Rapport du
+                        </span>
+                    {% endif %}
+                    {% if summary.toImproveCount > 0 %}
+                        <span style="display: inline-flex; align-items: center; gap: 0.25rem; background: #dbeafe; color: #1d4ed8; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;" title="Mots-cles a optimiser">
+                            <i class="fas fa-wrench"></i> {{ summary.toImproveCount }} a optimiser
+                        </span>
+                    {% endif %}
+                </div>
+                {% endif %}
                 <div style="display: flex; gap: 1rem; margin-bottom: 0.75rem;">
                     <div>
                         <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">{{ summary.totalActiveKeywords }}</div>

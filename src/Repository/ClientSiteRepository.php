@@ -47,4 +47,16 @@ class ClientSiteRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function countWithDueActions(): int
+    {
+        $sites = $this->findAllActive();
+        $count = 0;
+        foreach ($sites as $site) {
+            if ($site->isImportDue() || $site->isReportDue()) {
+                $count++;
+            }
+        }
+        return $count;
+    }
 }

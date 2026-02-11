@@ -286,6 +286,11 @@ class City
         $this->updatedAt = new \DateTimeImmutable();
     }
 
+    public function getPageUrls(): ?string
+    {
+        return null;
+    }
+
     public function __toString(): string
     {
         return $this->name ?? '';

@@ -8,6 +8,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
@@ -20,6 +21,11 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
 
 class CityCrudController extends AbstractCrudController
 {
+    public function __construct(
+        private CsrfTokenManagerInterface $csrfTokenManager,
+    ) {
+    }
+
     public static function getEntityFqcn(): string
     {
         return City::class;
@@ -135,22 +141,31 @@ class CityCrudController extends AbstractCrudController
             ->renderAsSwitch(true)
             ->setHelp('Seules les villes actives génèrent des pages');
 
-        // URLs des 3 landing pages (sur index seulement)
+        // URLs des 3 landing pages + bouton "Optimisé" (sur index seulement)
         if ($pageName === Crud::PAGE_INDEX) {
+            $csrfManager = $this->csrfTokenManager;
             yield TextField::new('pageUrls', 'Pages')
-                ->formatValue(function ($value, City $city) {
+                ->formatValue(function ($value, City $city) use ($csrfManager) {
                     if (!$city->isActive()) {
                         return '-';
                     }
                     $slug = $city->getSlug();
                     $base = 'https://alre-web.bzh';
+                    $id = $city->getId();
+                    $token = $csrfManager->getToken('city-optimize-' . $id)->getValue();
 
                     return sprintf(
                         '<a href="%1$s/developpeur-web-%2$s" target="_blank">%1$s/developpeur-web-%2$s</a><br>'
                         . '<a href="%1$s/creation-site-internet-%2$s" target="_blank">%1$s/creation-site-internet-%2$s</a><br>'
-                        . '<a href="%1$s/agence-web-%2$s" target="_blank">%1$s/agence-web-%2$s</a>',
+                        . '<a href="%1$s/agence-web-%2$s" target="_blank">%1$s/agence-web-%2$s</a><br>'
+                        . '<button type="button" class="btn btn-sm btn-outline-success mt-1 city-mark-optimized" '
+                        . 'data-city-id="%3$d" data-token="%4$s" style="font-size:0.75rem">'
+                        . '<i class="fas fa-check"></i> Optimisé</button>'
+                        . '<span class="city-optimized-result ms-2" data-city-id="%3$d" style="font-size:0.75rem"></span>',
                         $base,
-                        $slug
+                        $slug,
+                        $id,
+                        $token
                     );
                 })
                 ->setVirtual(true)

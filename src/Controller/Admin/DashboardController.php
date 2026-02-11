@@ -178,6 +178,34 @@ class DashboardController extends AbstractDashboardController
         ]);
     }
 
+    #[Route('/saeiblauhjc/city/{id}/mark-optimized', name: 'admin_city_mark_optimized', methods: ['POST'])]
+    public function markCityOptimized(City $city, Request $request, SeoKeywordRepository $seoKeywordRepository): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid('city-optimize-' . $city->getId(), $request->request->get('_token'))) {
+            return new JsonResponse(['error' => 'Token CSRF invalide'], 403);
+        }
+
+        $name = $city->getName();
+        $patterns = [$name];
+
+        // Pour les noms composés : "Saint-Avé" → chercher aussi "saint ave"
+        if (str_contains($name, '-')) {
+            $patterns[] = str_replace('-', ' ', $name);
+        }
+        // Et inversement : "Le Bono" → chercher aussi "le-bono"
+        if (str_contains($name, ' ')) {
+            $patterns[] = str_replace(' ', '-', $name);
+        }
+
+        $count = $seoKeywordRepository->markOptimizedByPatterns($patterns);
+
+        return new JsonResponse([
+            'success' => true,
+            'count' => $count,
+            'date' => (new \DateTimeImmutable())->format('d/m/Y'),
+        ]);
+    }
+
     #[Route('/saeiblauhjc/dashboard/finance', name: 'admin_finance_dashboard')]
     public function financeDashboard(
         Request $request,
@@ -948,7 +976,8 @@ class DashboardController extends AbstractDashboardController
             ->addJsFile('js/admin-trix-headings.js')
             ->addJsFile('js/admin-project-partners.js')
             ->addJsFile('js/admin-toggles.js')
-            ->addJsFile('js/admin-char-counter.js');
+            ->addJsFile('js/admin-char-counter.js')
+            ->addJsFile('js/admin-city-optimized.js');
 
         // Charger le CSS de floutage si le mode démo est activé
         if ($this->params->get('app.demo_mode')) {

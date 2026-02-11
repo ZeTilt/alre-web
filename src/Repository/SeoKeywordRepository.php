@@ -193,6 +193,32 @@ class SeoKeywordRepository extends ServiceEntityRepository
     }
 
     /**
+     * Marque comme optimisés tous les mots-clés actifs contenant un des patterns donnés.
+     *
+     * @param string[] $patterns
+     * @return int nombre de mots-clés mis à jour
+     */
+    public function markOptimizedByPatterns(array $patterns): int
+    {
+        $qb = $this->createQueryBuilder('k')
+            ->update()
+            ->set('k.lastOptimizedAt', ':now')
+            ->where('k.isActive = :active')
+            ->setParameter('now', new \DateTimeImmutable())
+            ->setParameter('active', true);
+
+        $orConditions = [];
+        foreach ($patterns as $i => $pattern) {
+            $orConditions[] = "LOWER(k.keyword) LIKE :pattern{$i}";
+            $qb->setParameter("pattern{$i}", '%' . mb_strtolower($pattern) . '%');
+        }
+
+        $qb->andWhere(implode(' OR ', $orConditions));
+
+        return $qb->getQuery()->execute();
+    }
+
+    /**
      * Retourne le décompte des mots-clés actifs par niveau de pertinence.
      *
      * @return array<array{relevanceLevel: string, cnt: int}>

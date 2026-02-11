@@ -59,6 +59,9 @@
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
             <div>
                 <h2 class="text-primary mb-3">Votre {{ service.title|lower }} de proximité à {{ city.name }}</h2>
+                {% if city.descriptionLong %}
+                    {{ city.descriptionLong|nl2br }}
+                {% else %}
                 <p class="lead">
                     Vous êtes artisan, commerçant ou dirigeant d'une TPE à {{ city.name }} ou dans ses environs ?
                     Je crée des sites web qui vous ressemblent et qui font la différence face à la concurrence.
@@ -68,6 +71,7 @@
                     ({{ city.nearby|join(', ') }}). Un premier rendez-vous chez vous ou en visio,
                     et nous définissons ensemble votre projet.
                 </p>
+                {% endif %}
 
                 <h3 class="mt-4 mb-3">Ce que je peux créer pour vous :</h3>
                 <ul class="service-list">

@@ -84,19 +84,34 @@ class CityCrudController extends AbstractCrudController
             ->setHelp('Texte par defaut utilise si les descriptions specifiques ci-dessous sont vides')
             ->hideOnIndex();
 
-        yield TextareaField::new('descriptionDeveloppeur', 'Description - Developpeur Web')
+        yield TextareaField::new('descriptionDeveloppeur', 'Short - Developpeur Web')
             ->setRequired(false)
-            ->setHelp('Texte specifique pour la page /developpeur-web-{slug}. Vide = utilise la description par defaut.')
+            ->setHelp('Hero + meta description pour /developpeur-web-{slug}. 120-155 car. Vide = description par defaut.')
             ->hideOnIndex();
 
-        yield TextareaField::new('descriptionCreation', 'Description - Creation Site Internet')
+        yield TextareaField::new('descriptionDeveloppeurLong', 'Long - Developpeur Web')
             ->setRequired(false)
-            ->setHelp('Texte specifique pour la page /creation-site-internet-{slug}. Vide = utilise la description par defaut.')
+            ->setHelp('Texte de presentation pour /developpeur-web-{slug}. 450-700 car. Vide = texte generique.')
             ->hideOnIndex();
 
-        yield TextareaField::new('descriptionAgence', 'Description - Agence Web')
+        yield TextareaField::new('descriptionCreation', 'Short - Creation Site Internet')
             ->setRequired(false)
-            ->setHelp('Texte specifique pour la page /agence-web-{slug}. Vide = utilise la description par defaut.')
+            ->setHelp('Hero + meta description pour /creation-site-internet-{slug}. 120-155 car. Vide = description par defaut.')
+            ->hideOnIndex();
+
+        yield TextareaField::new('descriptionCreationLong', 'Long - Creation Site Internet')
+            ->setRequired(false)
+            ->setHelp('Texte de presentation pour /creation-site-internet-{slug}. 450-700 car. Vide = texte generique.')
+            ->hideOnIndex();
+
+        yield TextareaField::new('descriptionAgence', 'Short - Agence Web')
+            ->setRequired(false)
+            ->setHelp('Hero + meta description pour /agence-web-{slug}. 120-155 car. Vide = description par defaut.')
+            ->hideOnIndex();
+
+        yield TextareaField::new('descriptionAgenceLong', 'Long - Agence Web')
+            ->setRequired(false)
+            ->setHelp('Texte de presentation pour /agence-web-{slug}. 450-700 car. Vide = texte generique.')
             ->hideOnIndex();
 
         yield ArrayField::new('nearby', 'Villes proches')

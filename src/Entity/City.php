@@ -47,6 +47,15 @@ class City
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $descriptionAgence = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $descriptionDeveloppeurLong = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $descriptionCreationLong = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $descriptionAgenceLong = null;
+
     #[ORM\Column(type: Types::JSON)]
     private array $nearby = [];
 
@@ -159,6 +168,49 @@ class City
     public function setDescriptionAgence(?string $descriptionAgence): static
     {
         $this->descriptionAgence = $descriptionAgence;
+        return $this;
+    }
+
+    public function getLongDescriptionForService(string $serviceSlug): ?string
+    {
+        return match ($serviceSlug) {
+            'developpeur-web' => $this->descriptionDeveloppeurLong,
+            'creation-site-internet' => $this->descriptionCreationLong,
+            'agence-web' => $this->descriptionAgenceLong,
+            default => null,
+        };
+    }
+
+    public function getDescriptionDeveloppeurLong(): ?string
+    {
+        return $this->descriptionDeveloppeurLong;
+    }
+
+    public function setDescriptionDeveloppeurLong(?string $descriptionDeveloppeurLong): static
+    {
+        $this->descriptionDeveloppeurLong = $descriptionDeveloppeurLong;
+        return $this;
+    }
+
+    public function getDescriptionCreationLong(): ?string
+    {
+        return $this->descriptionCreationLong;
+    }
+
+    public function setDescriptionCreationLong(?string $descriptionCreationLong): static
+    {
+        $this->descriptionCreationLong = $descriptionCreationLong;
+        return $this;
+    }
+
+    public function getDescriptionAgenceLong(): ?string
+    {
+        return $this->descriptionAgenceLong;
+    }
+
+    public function setDescriptionAgenceLong(?string $descriptionAgenceLong): static
+    {
+        $this->descriptionAgenceLong = $descriptionAgenceLong;
         return $this;
     }
 

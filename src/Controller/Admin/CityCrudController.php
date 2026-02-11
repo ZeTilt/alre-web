@@ -86,32 +86,38 @@ class CityCrudController extends AbstractCrudController
 
         yield TextareaField::new('descriptionDeveloppeur', 'Short - Developpeur Web')
             ->setRequired(false)
-            ->setHelp('Hero + meta description pour /developpeur-web-{slug}. 120-155 car. Vide = description par defaut.')
+            ->setHelp('Hero + meta description pour /developpeur-web-{slug}. Vide = description par defaut.')
+            ->setFormTypeOption('attr', ['data-char-min' => 120, 'data-char-max' => 155, 'rows' => 3])
             ->hideOnIndex();
 
         yield TextareaField::new('descriptionDeveloppeurLong', 'Long - Developpeur Web')
             ->setRequired(false)
-            ->setHelp('Texte de presentation pour /developpeur-web-{slug}. 450-700 car. Vide = texte generique.')
+            ->setHelp('Texte de presentation pour /developpeur-web-{slug}. Vide = texte generique.')
+            ->setFormTypeOption('attr', ['data-char-min' => 450, 'data-char-max' => 700, 'rows' => 8])
             ->hideOnIndex();
 
         yield TextareaField::new('descriptionCreation', 'Short - Creation Site Internet')
             ->setRequired(false)
-            ->setHelp('Hero + meta description pour /creation-site-internet-{slug}. 120-155 car. Vide = description par defaut.')
+            ->setHelp('Hero + meta description pour /creation-site-internet-{slug}. Vide = description par defaut.')
+            ->setFormTypeOption('attr', ['data-char-min' => 120, 'data-char-max' => 155, 'rows' => 3])
             ->hideOnIndex();
 
         yield TextareaField::new('descriptionCreationLong', 'Long - Creation Site Internet')
             ->setRequired(false)
-            ->setHelp('Texte de presentation pour /creation-site-internet-{slug}. 450-700 car. Vide = texte generique.')
+            ->setHelp('Texte de presentation pour /creation-site-internet-{slug}. Vide = texte generique.')
+            ->setFormTypeOption('attr', ['data-char-min' => 450, 'data-char-max' => 700, 'rows' => 8])
             ->hideOnIndex();
 
         yield TextareaField::new('descriptionAgence', 'Short - Agence Web')
             ->setRequired(false)
-            ->setHelp('Hero + meta description pour /agence-web-{slug}. 120-155 car. Vide = description par defaut.')
+            ->setHelp('Hero + meta description pour /agence-web-{slug}. Vide = description par defaut.')
+            ->setFormTypeOption('attr', ['data-char-min' => 120, 'data-char-max' => 155, 'rows' => 3])
             ->hideOnIndex();
 
         yield TextareaField::new('descriptionAgenceLong', 'Long - Agence Web')
             ->setRequired(false)
-            ->setHelp('Texte de presentation pour /agence-web-{slug}. 450-700 car. Vide = texte generique.')
+            ->setHelp('Texte de presentation pour /agence-web-{slug}. Vide = texte generique.')
+            ->setFormTypeOption('attr', ['data-char-min' => 450, 'data-char-max' => 700, 'rows' => 8])
             ->hideOnIndex();
 
         yield ArrayField::new('nearby', 'Villes proches')

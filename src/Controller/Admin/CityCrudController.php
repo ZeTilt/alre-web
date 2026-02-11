@@ -93,7 +93,7 @@ class CityCrudController extends AbstractCrudController
         yield TextareaField::new('descriptionDeveloppeurLong', 'Long - Developpeur Web')
             ->setRequired(false)
             ->setHelp('Texte de presentation pour /developpeur-web-{slug}. Vide = texte generique.')
-            ->setFormTypeOption('attr', ['data-char-min' => 450, 'data-char-max' => 700, 'rows' => 8])
+            ->setFormTypeOption('attr', ['data-char-min' => 900, 'data-char-max' => 1200, 'rows' => 8])
             ->hideOnIndex();
 
         yield TextareaField::new('descriptionCreation', 'Short - Creation Site Internet')
@@ -105,7 +105,7 @@ class CityCrudController extends AbstractCrudController
         yield TextareaField::new('descriptionCreationLong', 'Long - Creation Site Internet')
             ->setRequired(false)
             ->setHelp('Texte de presentation pour /creation-site-internet-{slug}. Vide = texte generique.')
-            ->setFormTypeOption('attr', ['data-char-min' => 450, 'data-char-max' => 700, 'rows' => 8])
+            ->setFormTypeOption('attr', ['data-char-min' => 900, 'data-char-max' => 1200, 'rows' => 8])
             ->hideOnIndex();
 
         yield TextareaField::new('descriptionAgence', 'Short - Agence Web')
@@ -117,7 +117,7 @@ class CityCrudController extends AbstractCrudController
         yield TextareaField::new('descriptionAgenceLong', 'Long - Agence Web')
             ->setRequired(false)
             ->setHelp('Texte de presentation pour /agence-web-{slug}. Vide = texte generique.')
-            ->setFormTypeOption('attr', ['data-char-min' => 450, 'data-char-max' => 700, 'rows' => 8])
+            ->setFormTypeOption('attr', ['data-char-min' => 900, 'data-char-max' => 1200, 'rows' => 8])
             ->hideOnIndex();
 
         yield ArrayField::new('nearby', 'Villes proches')
@@ -135,13 +135,26 @@ class CityCrudController extends AbstractCrudController
             ->renderAsSwitch(true)
             ->setHelp('Seules les villes actives génèrent des pages');
 
-        // Compteur de pages générées (sur index seulement)
+        // URLs des 3 landing pages (sur index seulement)
         if ($pageName === Crud::PAGE_INDEX) {
-            yield TextField::new('pageCount', 'Pages')
+            yield TextField::new('pageUrls', 'Pages')
                 ->formatValue(function ($value, City $city) {
-                    return $city->isActive() ? '3 pages' : '-';
+                    if (!$city->isActive()) {
+                        return '-';
+                    }
+                    $slug = $city->getSlug();
+                    $base = 'https://alre-web.bzh';
+
+                    return sprintf(
+                        '<a href="%1$s/developpeur-web-%2$s" target="_blank">%1$s/developpeur-web-%2$s</a><br>'
+                        . '<a href="%1$s/creation-site-internet-%2$s" target="_blank">%1$s/creation-site-internet-%2$s</a><br>'
+                        . '<a href="%1$s/agence-web-%2$s" target="_blank">%1$s/agence-web-%2$s</a>',
+                        $base,
+                        $slug
+                    );
                 })
-                ->setVirtual(true);
+                ->setVirtual(true)
+                ->renderAsHtml();
         }
 
         yield DateTimeField::new('createdAt', 'Créé le')

@@ -27,6 +27,17 @@
                         btn.classList.add('btn-success');
                         resultSpan.style.color = '#10b981';
                         resultSpan.textContent = data.count + ' mot(s)-clé(s) marqué(s) le ' + data.date;
+
+                        // Mettre à jour la colonne "Dernière optimisation"
+                        var row = btn.closest('tr');
+                        if (row) {
+                            var cells = row.querySelectorAll('td');
+                            cells.forEach(function (td) {
+                                if (td.textContent.trim() === 'jamais') {
+                                    td.innerHTML = data.date;
+                                }
+                            });
+                        }
                     } else {
                         btn.innerHTML = '<i class="fas fa-times"></i> Erreur';
                         btn.classList.remove('btn-outline-success');

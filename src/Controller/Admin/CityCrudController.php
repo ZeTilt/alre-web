@@ -132,7 +132,21 @@ class CityCrudController extends AbstractCrudController
             ->hideOnIndex();
 
         yield IntegerField::new('sortOrder', 'Ordre')
-            ->setHelp('Pour trier l\'affichage (0 = premier)');
+            ->setHelp('Pour trier l\'affichage (0 = premier)')
+            ->hideOnIndex();
+
+        yield TextField::new('lastOptimizedLabel', 'Dernière optimisation')
+            ->formatValue(function ($value, City $city) {
+                $date = $city->getLastOptimizedAt();
+                if ($date === null) {
+                    return '<span style="color:#9ca3af">jamais</span>';
+                }
+
+                return $date->format('d/m/Y');
+            })
+            ->setVirtual(true)
+            ->renderAsHtml()
+            ->onlyOnIndex();
 
         yield BooleanField::new('isActive', 'Active')
             ->renderAsSwitch(true)

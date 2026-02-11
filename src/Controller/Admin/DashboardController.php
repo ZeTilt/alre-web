@@ -204,10 +204,14 @@ class DashboardController extends AbstractDashboardController
 
         $count = $seoKeywordRepository->markOptimizedByPatterns($patterns);
 
+        $now = new \DateTimeImmutable();
+        $city->setLastOptimizedAt($now);
+        $this->entityManager->flush();
+
         return new JsonResponse([
             'success' => true,
             'count' => $count,
-            'date' => (new \DateTimeImmutable())->format('d/m/Y'),
+            'date' => $now->format('d/m/Y'),
         ]);
     }
 

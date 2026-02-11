@@ -68,6 +68,9 @@ class City
     #[ORM\Column]
     private ?int $sortOrder = 0;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastOptimizedAt = null;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -284,6 +287,22 @@ class City
     public function onPreUpdate(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    public function getLastOptimizedAt(): ?\DateTimeImmutable
+    {
+        return $this->lastOptimizedAt;
+    }
+
+    public function setLastOptimizedAt(?\DateTimeImmutable $lastOptimizedAt): static
+    {
+        $this->lastOptimizedAt = $lastOptimizedAt;
+        return $this;
+    }
+
+    public function getLastOptimizedLabel(): ?string
+    {
+        return null;
     }
 
     public function getPageUrls(): ?string

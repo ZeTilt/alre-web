@@ -186,16 +186,21 @@ class DashboardController extends AbstractDashboardController
         }
 
         $name = $city->getName();
-        $patterns = [$name];
+        $stripped = transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $name);
 
-        // Pour les noms composés : "Saint-Avé" → chercher aussi "saint ave"
-        if (str_contains($name, '-')) {
-            $patterns[] = str_replace('-', ' ', $name);
+        // Générer toutes les variantes : avec/sans accents × avec/sans tirets
+        $variants = array_unique([$name, $stripped]);
+        $patterns = [];
+        foreach ($variants as $v) {
+            $patterns[] = $v;
+            if (str_contains($v, '-')) {
+                $patterns[] = str_replace('-', ' ', $v);
+            }
+            if (str_contains($v, ' ')) {
+                $patterns[] = str_replace(' ', '-', $v);
+            }
         }
-        // Et inversement : "Le Bono" → chercher aussi "le-bono"
-        if (str_contains($name, ' ')) {
-            $patterns[] = str_replace(' ', '-', $name);
-        }
+        $patterns = array_unique($patterns);
 
         $count = $seoKeywordRepository->markOptimizedByPatterns($patterns);
 

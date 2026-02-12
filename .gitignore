@@ -33,6 +33,9 @@
 # Large files and personal docs
 docs/*
 
+# Brochure tarifaire (fichier local, pas versionné)
+public/brochure-tarifs.html
+
 # Claude Code config
 .claude/
 

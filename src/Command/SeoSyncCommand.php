@@ -51,27 +51,7 @@ class SeoSyncCommand extends Command
 
         // Sync GSC Keywords
         if (!$reviewsOnly) {
-            $io->section('Google Search Console - Mots-clés');
-            $gscResult = $this->seoImportService->syncAllKeywords($force);
-
-            if ($gscResult['errors'] > 0) {
-                $io->warning($gscResult['message']);
-                $hasErrors = true;
-            } else {
-                $io->success($gscResult['message']);
-            }
-
-            $io->table(
-                ['Synchronisés', 'Sans données', 'Erreurs'],
-                [[$gscResult['synced'], $gscResult['skipped'], $gscResult['errors']]]
-            );
-
-            // Sync daily totals (real clicks/impressions without anonymization)
-            $io->section('Google Search Console - Totaux journaliers');
-            $dailyResult = $this->seoImportService->syncDailyTotals($force);
-            $io->success($dailyResult['message']);
-
-            // Import new keywords from GSC
+            // Import new keywords FIRST so they're included in the sync
             if (!$noImport) {
                 $io->section('Import automatique des nouveaux mots-clés');
                 $importResult = $this->seoImportService->importNewKeywords();
@@ -92,6 +72,27 @@ class SeoSyncCommand extends Command
                     }
                 }
             }
+
+            // Sync positions for ALL active keywords (including newly imported ones)
+            $io->section('Google Search Console - Mots-clés');
+            $gscResult = $this->seoImportService->syncAllKeywords($force);
+
+            if ($gscResult['errors'] > 0) {
+                $io->warning($gscResult['message']);
+                $hasErrors = true;
+            } else {
+                $io->success($gscResult['message']);
+            }
+
+            $io->table(
+                ['Synchronisés', 'Sans données', 'Erreurs'],
+                [[$gscResult['synced'], $gscResult['skipped'], $gscResult['errors']]]
+            );
+
+            // Sync daily totals (real clicks/impressions without anonymization)
+            $io->section('Google Search Console - Totaux journaliers');
+            $dailyResult = $this->seoImportService->syncDailyTotals($force);
+            $io->success($dailyResult['message']);
 
             // Cleanup missing keywords
             if (!$noCleanup) {

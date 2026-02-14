@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compte rendu SEO - {{ site.client.displayName }} - {{ report.periodLabel }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1f2937; background: #f3f4f6; line-height: 1.5; }
+
+        .page { width: 210mm; min-height: 297mm; margin: 1rem auto; background: white; padding: 20mm 18mm; box-shadow: 0 4px 20px rgba(0,0,0,0.1); position: relative; }
+        .page-break { page-break-after: always; }
+
+        /* Header */
+        .report-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #27A3B4; padding-bottom: 12px; margin-bottom: 24px; }
+        .report-header img { height: 40px; }
+        .report-header-text { text-align: right; }
+        .report-header-title { font-size: 18px; font-weight: 700; color: #3A4556; }
+        .report-header-subtitle { font-size: 13px; color: #6b7280; margin-top: 2px; }
+
+        .report-header-mini { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 20px; }
+        .report-header-mini img { height: 28px; }
+        .report-header-mini-title { font-size: 14px; font-weight: 600; color: #3A4556; }
+
+        /* Hero */
+        .hero-metric { background: #27A3B4; border-radius: 12px; padding: 24px 28px; color: white; margin-bottom: 24px; text-align: center; }
+        .hero-metric-label { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.85; margin-bottom: 6px; }
+        .hero-metric-value { font-size: 36px; font-weight: 800; }
+        .hero-metric-comparison { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+
+        /* KPI Cards */
+        .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+        .kpi-card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; text-align: center; }
+        .kpi-card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280; margin-bottom: 6px; }
+        .kpi-card-value { font-size: 26px; font-weight: 800; color: #1f2937; }
+        .kpi-card-variation { font-size: 12px; margin-top: 4px; font-weight: 600; }
+        .kpi-up { color: #10b981; }
+        .kpi-down { color: #ef4444; }
+        .kpi-stable { color: #6b7280; }
+
+        /* Section */
+        .section-title { font-size: 15px; font-weight: 700; color: #3A4556; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid #e5e7eb; }
+        .section-title i { margin-right: 6px; color: #27A3B4; }
+
+        /* Top 5 Table */
+        .top5-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; }
+        .top5-table th { text-align: left; padding: 8px 10px; background: #f9fafb; border-bottom: 2px solid #e5e7eb; font-weight: 600; color: #374151; font-size: 11px; text-transform: uppercase; }
+        .top5-table td { padding: 10px; border-bottom: 1px solid #f3f4f6; }
+        .top5-table th:not(:first-child), .top5-table td:not(:first-child) { text-align: center; }
+
+        .position-bar { height: 8px; border-radius: 4px; background: #e5e7eb; position: relative; overflow: hidden; }
+        .position-bar-fill { height: 100%; border-radius: 4px; }
+        .pos-green { background: #10b981; }
+        .pos-yellow { background: #f59e0b; }
+        .pos-red { background: #ef4444; }
+
+        .badge-position { display: inline-block; padding: 2px 10px; border-radius: 9999px; font-weight: 700; font-size: 12px; }
+        .badge-green { background: #d1fae5; color: #065f46; }
+        .badge-yellow { background: #fef3c7; color: #92400e; }
+        .badge-red { background: #fee2e2; color: #991b1b; }
+
+        /* Actions */
+        .action-item { padding: 10px 14px; border-left: 3px solid #27A3B4; background: #f0fdfa; border-radius: 0 8px 8px 0; margin-bottom: 8px; font-size: 13px; }
+        .action-keyword { font-weight: 600; color: #0f766e; }
+        .action-detail { color: #6b7280; font-size: 12px; margin-top: 2px; }
+
+        /* Editable zones */
+        .editable-zone { border: 2px dashed #d1d5db; border-radius: 8px; padding: 12px 16px; min-height: 60px; font-size: 13px; line-height: 1.6; outline: none; }
+        .editable-zone:focus { border-color: #27A3B4; background: #f0fdfa; }
+        .editable-zone:empty::before { content: attr(data-placeholder); color: #9ca3af; font-style: italic; }
+        .editable-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #9ca3af; margin-bottom: 4px; }
+
+        /* Health Score */
+        .health-container { text-align: center; padding: 20px; margin-bottom: 20px; }
+        .health-score { font-size: 56px; font-weight: 900; }
+        .health-label { font-size: 14px; color: #6b7280; margin-bottom: 8px; }
+        .health-bar { height: 12px; background: #e5e7eb; border-radius: 6px; overflow: hidden; max-width: 300px; margin: 10px auto; }
+        .health-bar-fill { height: 100%; border-radius: 6px; transition: width 0.3s; }
+        .health-green { color: #10b981; }
+        .health-yellow { color: #f59e0b; }
+        .health-red { color: #ef4444; }
+        .health-legend { display: flex; justify-content: center; gap: 20px; font-size: 11px; color: #9ca3af; margin-top: 8px; }
+        .health-legend span::before { content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+        .health-legend .legend-green::before { background: #10b981; }
+        .health-legend .legend-yellow::before { background: #f59e0b; }
+        .health-legend .legend-red::before { background: #ef4444; }
+
+        /* Footer */
+        .report-footer { position: absolute; bottom: 16mm; left: 18mm; right: 18mm; text-align: center; font-size: 10px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 8px; }
+
+        /* Admin bar */
+        .admin-bar { background: #1f2937; color: white; padding: 12px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; position: sticky; top: 0; z-index: 100; }
+        .admin-bar .btn { padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+        .admin-bar .btn-back { background: #374151; color: white; }
+        .admin-bar .btn-back:hover { background: #4b5563; }
+        .admin-bar .btn-save { background: #3b82f6; color: white; }
+        .admin-bar .btn-save:hover { background: #2563eb; }
+        .admin-bar .btn-print { background: #8b5cf6; color: white; }
+        .admin-bar .btn-print:hover { background: #7c3aed; }
+        .admin-bar .btn-sent { background: #10b981; color: white; }
+        .admin-bar .btn-sent:hover { background: #059669; }
+        .admin-bar .btn-sent:disabled { background: #6b7280; cursor: not-allowed; }
+        .admin-bar .status-badge { padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; }
+        .admin-bar .status-draft { background: #fef3c7; color: #92400e; }
+        .admin-bar .status-sent { background: #d1fae5; color: #065f46; }
+        .admin-bar .spacer { flex: 1; }
+        .save-indicator { font-size: 12px; color: #9ca3af; }
+
+        @media print {
+            body { background: white; }
+            .page { margin: 0; padding: 18mm 16mm; box-shadow: none; width: 100%; }
+            .no-print { display: none !important; }
+            .editable-zone { border: none !important; padding: 0; min-height: auto; }
+            .editable-zone:empty { display: none; }
+            @page { size: A4; margin: 0; }
+            * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+
+{% set data = report.reportData %}
+
+<!-- Admin Bar -->
+<div class="admin-bar no-print">
+    <a href="{{ path('admin_client_seo_report_list', {id: site.id}) }}" class="btn btn-back">
+        <i class="fas fa-arrow-left"></i> Retour
+    </a>
+    <a href="{{ path('admin_client_seo_dashboard', {id: site.id}) }}" class="btn btn-back">
+        <i class="fas fa-chart-line"></i> Dashboard
+    </a>
+    <button type="button" class="btn btn-save" id="btn-save" onclick="saveReport()">
+        <i class="fas fa-save"></i> Sauvegarder
+    </button>
+    <button type="button" class="btn btn-print" onclick="window.print()">
+        <i class="fas fa-print"></i> Imprimer
+    </button>
+    <span class="save-indicator" id="save-indicator"></span>
+    <span class="spacer"></span>
+    <span class="status-badge {{ report.isDraft ? 'status-draft' : 'status-sent' }}" id="status-badge">
+        {{ report.isDraft ? 'Brouillon' : 'Envoye' }}
+    </span>
+    <button type="button" class="btn btn-sent" id="btn-mark-sent" {{ report.isSent ? 'disabled' : '' }} onclick="markSent()">
+        <i class="fas fa-paper-plane"></i> Marquer envoye
+    </button>
+</div>
+
+<!-- PAGE 1: Synthese -->
+<div class="page page-break">
+    <!-- Header -->
+    <div class="report-header">
+        <img src="/images/logo.png" alt="Alre Web">
+        <div class="report-header-text">
+            <div class="report-header-title">Compte rendu SEO</div>
+            <div class="report-header-subtitle">{{ site.client.displayName }} &mdash; {{ report.periodLabel }}</div>
+        </div>
+    </div>
+
+    <!-- Hero Metric -->
+    {% if data.heroMetric is defined %}
+    <div class="hero-metric">
+        <div class="hero-metric-label">{{ data.heroMetric.label }}</div>
+        <div class="hero-metric-value">{{ data.heroMetric.value }}</div>
+        <div class="hero-metric-comparison">{{ data.heroMetric.comparison }}</div>
+    </div>
+    {% endif %}
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+        {% if data.kpiClicks is defined %}
+        <div class="kpi-card">
+            <div class="kpi-card-label">Clics depuis Google</div>
+            <div class="kpi-card-value">{{ data.kpiClicks.current|number_format(0, '', ' ') }}</div>
+            <div class="kpi-card-variation {{ data.kpiClicks.variation > 0 ? 'kpi-up' : (data.kpiClicks.variation < 0 ? 'kpi-down' : 'kpi-stable') }}">
+                {% if data.kpiClicks.variation > 0 %}
+                    <i class="fas fa-arrow-up"></i> +{{ data.kpiClicks.variation }}% vs mois precedent
+                {% elseif data.kpiClicks.variation < 0 %}
+                    <i class="fas fa-arrow-down"></i> {{ data.kpiClicks.variation }}% vs mois precedent
+                {% else %}
+                    = Stable vs mois precedent
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if data.kpiAvgPosition is defined %}
+        <div class="kpi-card">
+            <div class="kpi-card-label">Classement moyen Google</div>
+            <div class="kpi-card-value">{{ data.kpiAvgPosition.current }}</div>
+            <div class="kpi-card-variation {{ data.kpiAvgPosition.variation > 0 ? 'kpi-up' : (data.kpiAvgPosition.variation < 0 ? 'kpi-down' : 'kpi-stable') }}">
+                {% if data.kpiAvgPosition.variation > 0 %}
+                    <i class="fas fa-arrow-up"></i> +{{ data.kpiAvgPosition.variation }} places gagnees
+                {% elseif data.kpiAvgPosition.variation < 0 %}
+                    <i class="fas fa-arrow-down"></i> {{ data.kpiAvgPosition.variation|abs }} places perdues
+                {% else %}
+                    = Stable
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if data.kpiKeywordsPage1 is defined %}
+        <div class="kpi-card">
+            <div class="kpi-card-label">Premiere page de Google</div>
+            <div class="kpi-card-value">{{ data.kpiKeywordsPage1.count }} <span style="font-size: 14px; color: #6b7280; font-weight: 400;">/ {{ data.kpiKeywordsPage1.total }}</span></div>
+            <div class="kpi-card-variation kpi-stable">
+                mots-cles en page 1
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Top 5 Positions -->
+    {% if data.top5Positions is defined and data.top5Positions|length > 0 %}
+    <div class="section-title"><i class="fas fa-trophy"></i> Vos 5 meilleurs mots-cles dans Google</div>
+    <table class="top5-table">
+        <thead>
+            <tr>
+                <th>Mot-cle</th>
+                <th>Classement</th>
+                <th>Evolution</th>
+                <th>Clics</th>
+                <th>Apparitions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in data.top5Positions %}
+            <tr>
+                <td style="font-weight: 600;">{{ item.keyword }}</td>
+                <td>
+                    {% if item.position is not null %}
+                        {% if item.position <= 10 %}
+                            <span class="badge-position badge-green">{{ item.position }}</span>
+                        {% elseif item.position <= 20 %}
+                            <span class="badge-position badge-yellow">{{ item.position }}</span>
+                        {% else %}
+                            <span class="badge-position badge-red">{{ item.position }}</span>
+                        {% endif %}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.variation is not null %}
+                        {% if item.variation > 0 %}
+                            <span class="kpi-up"><i class="fas fa-arrow-up"></i> +{{ item.variation }}</span>
+                        {% elseif item.variation < 0 %}
+                            <span class="kpi-down"><i class="fas fa-arrow-down"></i> {{ item.variation }}</span>
+                        {% else %}
+                            <span class="kpi-stable">=</span>
+                        {% endif %}
+                    {% else %}
+                        <span style="color: #9ca3af;">-</span>
+                    {% endif %}
+                </td>
+                <td style="font-weight: 600;">{{ item.clicks }}</td>
+                <td>{{ item.impressions|number_format(0, '', ' ') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- Position Bars (visual) -->
+    {% if data.top5Positions is defined and data.top5Positions|length > 0 %}
+    <div style="margin-bottom: 16px;">
+        {% for item in data.top5Positions %}
+            {% if item.position is not null %}
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px; font-size: 12px;">
+                <div style="width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #374151; font-weight: 500;">{{ item.keyword }}</div>
+                <div style="flex: 1;">
+                    <div class="position-bar">
+                        {% set barWidth = 100 - ((item.position - 1) * 2) %}
+                        {% if barWidth < 5 %}{% set barWidth = 5 %}{% endif %}
+                        <div class="position-bar-fill {{ item.position <= 10 ? 'pos-green' : (item.position <= 20 ? 'pos-yellow' : 'pos-red') }}" style="width: {{ barWidth }}%;"></div>
+                    </div>
+                </div>
+                <div style="width: 30px; text-align: right; font-weight: 700; color: {{ item.position <= 10 ? '#10b981' : (item.position <= 20 ? '#f59e0b' : '#ef4444') }};">{{ item.position }}</div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Footer Page 1 -->
+    <div class="report-footer">
+        Alre Web &bull; alreweb.fr &bull; contact@alreweb.fr &bull; Page 1/2
+    </div>
+</div>
+
+<!-- PAGE 2: Actions & Sante -->
+<div class="page">
+    <!-- Header mini -->
+    <div class="report-header-mini">
+        <img src="/images/logo.png" alt="Alre Web">
+        <div class="report-header-mini-title">Compte rendu SEO &mdash; {{ site.client.displayName }}</div>
+    </div>
+
+    <!-- Actions effectuees -->
+    <div class="section-title"><i class="fas fa-check-circle"></i> Actions effectuees ce mois</div>
+
+    {% if data.actionsPerformed is defined and data.actionsPerformed|length > 0 %}
+        {% for action in data.actionsPerformed %}
+        <div class="action-item">
+            <span class="action-keyword">{{ action.keyword }}</span>
+            <div class="action-detail">
+                Optimise le {{ action.optimizedAt }}
+                {% if action.positionNow is not null %}
+                    &rarr; Classement actuel : <strong>{{ action.positionNow }}</strong>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div style="color: #9ca3af; font-size: 13px; margin-bottom: 12px; font-style: italic;">
+            Aucune action automatique enregistree sur la periode.
+        </div>
+    {% endif %}
+
+    <div style="margin-top: 12px; margin-bottom: 20px;">
+        <div class="editable-label">Contexte et details (cliquer pour editer)</div>
+        <div class="editable-zone"
+             contenteditable="true"
+             data-field="actionsHtml"
+             data-placeholder="Ajoutez ici le contexte des actions realisees...">{{ report.actionsHtml|raw }}</div>
+    </div>
+
+    <!-- Prochaines actions -->
+    <div class="section-title"><i class="fas fa-forward"></i> Prochaines actions prevues</div>
+    <div style="margin-bottom: 20px;">
+        <div class="editable-zone"
+             contenteditable="true"
+             data-field="nextActionsHtml"
+             data-placeholder="Decrivez les prochaines actions prevues pour le mois suivant...">{{ report.nextActionsHtml|raw }}</div>
+    </div>
+
+    <!-- Health Score -->
+    <div class="section-title"><i class="fas fa-heartbeat"></i> Score de sante SEO</div>
+    <div class="health-container">
+        {% set hs = report.healthScore %}
+        {% set hsClass = hs >= 70 ? 'health-green' : (hs >= 40 ? 'health-yellow' : 'health-red') %}
+        {% set hsBarClass = hs >= 70 ? 'pos-green' : (hs >= 40 ? 'pos-yellow' : 'pos-red') %}
+        <div class="health-score {{ hsClass }}">{{ hs }}</div>
+        <div class="health-label">sur 100</div>
+        <div class="health-bar">
+            <div class="health-bar-fill {{ hsBarClass }}" style="width: {{ hs }}%;"></div>
+        </div>
+        <div class="health-legend">
+            <span class="legend-green">70+ Excellent</span>
+            <span class="legend-yellow">40-69 Correct</span>
+            <span class="legend-red">&lt;40 A ameliorer</span>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="section-title"><i class="fas fa-sticky-note"></i> Notes</div>
+    <div style="margin-bottom: 20px;">
+        <div class="editable-zone"
+             contenteditable="true"
+             data-field="notesHtml"
+             data-placeholder="Ajoutez ici des notes ou remarques...">{{ report.notesHtml|raw }}</div>
+    </div>
+
+    <!-- Footer Page 2 -->
+    <div class="report-footer">
+        Alre Web &bull; alreweb.fr &bull; contact@alreweb.fr &bull; Page 2/2
+    </div>
+</div>
+
+<!-- JS (hidden in print) -->
+<script class="no-print">
+(function() {
+    var reportId = {{ report.id }};
+    var saveUrl = '{{ path('admin_client_seo_report_save', {id: report.id}) }}';
+    var markSentUrl = '{{ path('admin_client_seo_report_mark_sent', {id: report.id}) }}';
+    var markSentToken = '{{ csrf_token('mark-sent-' ~ report.id) }}';
+    var saveIndicator = document.getElementById('save-indicator');
+    var saveTimer = null;
+
+    // Auto-save on blur
+    document.querySelectorAll('.editable-zone').forEach(function(zone) {
+        zone.addEventListener('blur', function() {
+            scheduleSave();
+        });
+    });
+
+    function scheduleSave() {
+        if (saveTimer) clearTimeout(saveTimer);
+        saveTimer = setTimeout(function() { saveReport(); }, 500);
+    }
+
+    window.saveReport = function() {
+        var data = {};
+        document.querySelectorAll('.editable-zone').forEach(function(zone) {
+            var field = zone.dataset.field;
+            data[field] = zone.innerHTML;
+        });
+
+        saveIndicator.textContent = 'Sauvegarde...';
+
+        fetch(saveUrl, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (res.success) {
+                saveIndicator.textContent = 'Sauvegarde OK';
+                setTimeout(function() { saveIndicator.textContent = ''; }, 2000);
+            } else {
+                saveIndicator.textContent = 'Erreur de sauvegarde';
+            }
+        })
+        .catch(function() {
+            saveIndicator.textContent = 'Erreur reseau';
+        });
+    };
+
+    window.markSent = function() {
+        if (!confirm('Marquer ce compte rendu comme envoye ?')) return;
+
+        fetch(markSentUrl, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: '_token=' + encodeURIComponent(markSentToken)
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (res.success) {
+                var badge = document.getElementById('status-badge');
+                badge.className = 'status-badge status-sent';
+                badge.textContent = 'Envoye';
+                var btn = document.getElementById('btn-mark-sent');
+                btn.disabled = true;
+            }
+        })
+        .catch(function() {
+            alert('Erreur lors de la mise a jour du statut');
+        });
+    };
+})();
+</script>
+
+</body>
+</html>

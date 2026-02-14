@@ -15,6 +15,7 @@ use App\Entity\GoogleReview;
 use App\Entity\Prospect;
 use App\Entity\SecurityLog;
 use App\Entity\ClientSeoKeyword;
+use App\Entity\ClientSeoReport;
 use App\Entity\SeoKeyword;
 use App\Entity\User;
 use App\Entity\Project;
@@ -31,8 +32,10 @@ use App\Repository\ClientSeoImportRepository;
 use App\Repository\ClientSiteRepository;
 use App\Repository\SeoKeywordRepository;
 use App\Repository\SeoPositionRepository;
+use App\Repository\ClientSeoReportRepository;
 use App\Service\ClientSeoCsvImportService;
 use App\Service\ClientSeoDashboardService;
+use App\Service\ClientSeoReportService;
 use App\Service\CityKeywordMatcher;
 use App\Service\DashboardPeriodService;
 use App\Service\DashboardSeoService;
@@ -775,6 +778,23 @@ class DashboardController extends AbstractDashboardController
         return $response;
     }
 
+    #[Route('/saeiblauhjc/client-seo-keyword/{id}/set-score', name: 'admin_client_seo_keyword_set_score', methods: ['POST'])]
+    public function setClientKeywordScore(ClientSeoKeyword $keyword, Request $request): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid('client-seo-score-' . $keyword->getId(), $request->request->get('_token'))) {
+            return new JsonResponse(['error' => 'Token CSRF invalide'], 403);
+        }
+
+        $score = (int) $request->request->get('score', 0);
+        $keyword->setRelevanceScore($score);
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'score' => $keyword->getRelevanceScore(),
+        ]);
+    }
+
     #[Route('/saeiblauhjc/client-seo-keyword/{id}/mark-optimized', name: 'admin_client_seo_keyword_mark_optimized', methods: ['POST'])]
     public function markClientKeywordOptimized(ClientSeoKeyword $keyword, Request $request): JsonResponse
     {
@@ -955,6 +975,78 @@ class DashboardController extends AbstractDashboardController
         ));
 
         return $response;
+    }
+
+    // ===== CLIENT SEO REPORTS =====
+
+    #[Route('/saeiblauhjc/client-seo/{id}/report/generate', name: 'admin_client_seo_report_generate', methods: ['POST'])]
+    public function clientSeoReportGenerate(ClientSite $site, Request $request, ClientSeoReportService $reportService): Response
+    {
+        if (!$this->isCsrfTokenValid('generate-report-' . $site->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
+            return $this->redirectToRoute('admin_client_seo_dashboard', ['id' => $site->getId()]);
+        }
+
+        $report = $reportService->generateReport($site);
+
+        return $this->redirectToRoute('admin_client_seo_report_view', ['id' => $report->getId()]);
+    }
+
+    #[Route('/saeiblauhjc/client-seo/report/{id}', name: 'admin_client_seo_report_view')]
+    public function clientSeoReportView(ClientSeoReport $report): Response
+    {
+        return $this->render('admin/client_seo/report_view.html.twig', [
+            'report' => $report,
+            'site' => $report->getClientSite(),
+        ]);
+    }
+
+    #[Route('/saeiblauhjc/client-seo/report/{id}/save', name: 'admin_client_seo_report_save', methods: ['POST'])]
+    public function clientSeoReportSave(ClientSeoReport $report, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (isset($data['actionsHtml'])) {
+            $report->setActionsHtml($data['actionsHtml']);
+        }
+        if (isset($data['nextActionsHtml'])) {
+            $report->setNextActionsHtml($data['nextActionsHtml']);
+        }
+        if (isset($data['notesHtml'])) {
+            $report->setNotesHtml($data['notesHtml']);
+        }
+
+        $this->entityManager->flush();
+
+        return new JsonResponse(['success' => true]);
+    }
+
+    #[Route('/saeiblauhjc/client-seo/report/{id}/mark-sent', name: 'admin_client_seo_report_mark_sent', methods: ['POST'])]
+    public function clientSeoReportMarkSent(ClientSeoReport $report, Request $request): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid('mark-sent-' . $report->getId(), $request->request->get('_token'))) {
+            return new JsonResponse(['error' => 'Token CSRF invalide'], 403);
+        }
+
+        $report->markSent();
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'status' => $report->getStatus(),
+            'sentAt' => $report->getSentAt()->format('d/m/Y H:i'),
+        ]);
+    }
+
+    #[Route('/saeiblauhjc/client-seo/{id}/reports', name: 'admin_client_seo_report_list')]
+    public function clientSeoReportList(ClientSite $site, ClientSeoReportRepository $reportRepository): Response
+    {
+        $reports = $reportRepository->findByClientSite($site);
+
+        return $this->render('admin/client_seo/report_list.html.twig', [
+            'site' => $site,
+            'reports' => $reports,
+        ]);
     }
 
     private function formatEventDate(Event $event): string

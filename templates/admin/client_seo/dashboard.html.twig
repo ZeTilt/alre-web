@@ -22,6 +22,15 @@
         <a href="{{ path('admin_client_seo_export_csv', {id: site.id}) }}" class="btn btn-sm btn-success">
             <i class="fas fa-file-csv"></i> Exporter
         </a>
+        <form action="{{ path('admin_client_seo_report_generate', {id: site.id}) }}" method="POST" style="display: inline;">
+            <input type="hidden" name="_token" value="{{ csrf_token('generate-report-' ~ site.id) }}">
+            <button type="submit" class="btn btn-sm btn-warning">
+                <i class="fas fa-file-alt"></i> Generer compte rendu
+            </button>
+        </form>
+        <a href="{{ path('admin_client_seo_report_list', {id: site.id}) }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-list-alt"></i> Historique CR
+        </a>
     </div>
     <a href="{{ path('admin_client_seo_edit_site', {id: site.id}) }}" class="btn btn-sm btn-outline-secondary">
         <i class="fas fa-cog"></i> Parametres
@@ -69,6 +78,7 @@
             <thead>
                 <tr style="border-bottom: 2px solid #10b981;">
                     <th style="text-align: left; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Mot-cle</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Score</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Position</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">vs M-1</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Clics</th>
@@ -81,6 +91,14 @@
                     {% set comparison = positionComparisons[keyword.id] ?? null %}
                     <tr style="border-bottom: 1px solid #d1fae5;">
                         <td style="padding: 0.75rem 0.5rem; font-weight: 500;">{{ keyword.keyword }}</td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            <span class="seo-star-group" data-score="{{ keyword.relevanceScore }}" data-url="{{ path('admin_client_seo_keyword_set_score', {id: keyword.id}) }}" data-token="{{ csrf_token('client-seo-score-' ~ keyword.id) }}" style="cursor: pointer; white-space: nowrap;">
+                                {% for i in 1..5 %}
+                                    <i class="{{ keyword.relevanceScore >= i ? 'fas' : 'far' }} fa-star seo-star" data-value="{{ i }}" style="color: {{ keyword.relevanceScore >= i ? '#f59e0b' : '#d1d5db' }}; font-size: 0.75rem;"></i>
+                                {% endfor %}
+                                {% if keyword.relevanceScore == 0 %}<span style="color: #d1d5db; font-size: 0.7rem; margin-left: 2px;">?</span>{% endif %}
+                            </span>
+                        </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
                             {% if latestPosition %}
                                 {% set pos = latestPosition.position %}
@@ -136,6 +154,7 @@
             <thead>
                 <tr style="border-bottom: 2px solid #f59e0b;">
                     <th style="text-align: left; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Mot-cle</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Score</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Position</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">vs M-1</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Tendance 4S</th>
@@ -153,6 +172,14 @@
                     {% set momentumData = seoMomentum[keyword.id] ?? null %}
                     <tr id="client-seo-improve-row-{{ keyword.id }}" style="border-bottom: 1px solid #fef3c7;">
                         <td style="padding: 0.75rem 0.5rem; font-weight: 500;">{{ keyword.keyword }}</td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            <span class="seo-star-group" data-score="{{ keyword.relevanceScore }}" data-url="{{ path('admin_client_seo_keyword_set_score', {id: keyword.id}) }}" data-token="{{ csrf_token('client-seo-score-' ~ keyword.id) }}" style="cursor: pointer; white-space: nowrap;">
+                                {% for i in 1..5 %}
+                                    <i class="{{ keyword.relevanceScore >= i ? 'fas' : 'far' }} fa-star seo-star" data-value="{{ i }}" style="color: {{ keyword.relevanceScore >= i ? '#f59e0b' : '#d1d5db' }}; font-size: 0.75rem;"></i>
+                                {% endfor %}
+                                {% if keyword.relevanceScore == 0 %}<span style="color: #d1d5db; font-size: 0.7rem; margin-left: 2px;">?</span>{% endif %}
+                            </span>
+                        </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
                             {% if latestPosition %}
                                 {% set pos = latestPosition.position %}

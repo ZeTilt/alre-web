@@ -39,6 +39,9 @@ class ClientSeoKeyword
     #[ORM\Column(length: 10, options: ['default' => 'medium'])]
     private string $relevanceLevel = 'medium';
 
+    #[ORM\Column(type: 'smallint', options: ['default' => 0])]
+    private int $relevanceScore = 0;
+
     /**
      * @var Collection<int, ClientSeoPosition>
      */
@@ -155,6 +158,17 @@ class ClientSeoKeyword
     public function setRelevanceLevel(string $relevanceLevel): static
     {
         $this->relevanceLevel = $relevanceLevel;
+        return $this;
+    }
+
+    public function getRelevanceScore(): int
+    {
+        return $this->relevanceScore;
+    }
+
+    public function setRelevanceScore(int $relevanceScore): static
+    {
+        $this->relevanceScore = max(0, min(5, $relevanceScore));
         return $this;
     }
 

@@ -33,6 +33,7 @@ use App\Repository\SeoKeywordRepository;
 use App\Repository\SeoPositionRepository;
 use App\Service\ClientSeoCsvImportService;
 use App\Service\ClientSeoDashboardService;
+use App\Service\CityKeywordMatcher;
 use App\Service\DashboardPeriodService;
 use App\Service\DashboardSeoService;
 use App\Service\ProspectionEmailService;
@@ -57,6 +58,7 @@ class DashboardController extends AbstractDashboardController
         private ParameterBagInterface $params,
         private DashboardSeoService $dashboardSeoService,
         private ClientSiteRepository $clientSiteRepository,
+        private CityKeywordMatcher $cityKeywordMatcher,
     ) {
     }
 
@@ -185,23 +187,7 @@ class DashboardController extends AbstractDashboardController
             return new JsonResponse(['error' => 'Token CSRF invalide'], 403);
         }
 
-        $name = $city->getName();
-        $stripped = transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $name);
-
-        // Générer toutes les variantes : avec/sans accents × avec/sans tirets
-        $variants = array_unique([$name, $stripped]);
-        $patterns = [];
-        foreach ($variants as $v) {
-            $patterns[] = $v;
-            if (str_contains($v, '-')) {
-                $patterns[] = str_replace('-', ' ', $v);
-            }
-            if (str_contains($v, ' ')) {
-                $patterns[] = str_replace(' ', '-', $v);
-            }
-        }
-        $patterns = array_unique($patterns);
-
+        $patterns = $this->cityKeywordMatcher->buildCityPatterns($city);
         $count = $seoKeywordRepository->markOptimizedByPatterns($patterns);
 
         $now = new \DateTimeImmutable();

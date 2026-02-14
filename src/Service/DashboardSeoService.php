@@ -7,6 +7,7 @@ use App\Repository\GoogleReviewRepository;
 use App\Repository\SeoDailyTotalRepository;
 use App\Repository\SeoKeywordRepository;
 use App\Repository\SeoPositionRepository;
+use App\Service\CityKeywordMatcher;
 use App\Service\GoogleOAuthService;
 use App\Service\GooglePlacesService;
 use App\Service\ReviewSyncService;
@@ -23,6 +24,7 @@ class DashboardSeoService
         private GooglePlacesService $googlePlacesService,
         private ReviewSyncService $reviewSyncService,
         private SeoDataImportService $seoDataImportService,
+        private CityKeywordMatcher $cityKeywordMatcher,
     ) {
     }
 
@@ -34,6 +36,8 @@ class DashboardSeoService
         $seoPositionComparisons = $this->calculateSeoPositionComparisons();
         $seoDailyComparisons = $this->calculateSeoDailyComparisons();
         $seoMomentum = $this->calculate7DayMomentum();
+        $seoKeywordsRanked = $this->rankSeoKeywords($seoPositionComparisons, $seoDailyComparisons, $seoMomentum);
+        $allActiveKeywords = $this->seoKeywordRepository->findAllWithLatestPosition();
 
         return [
             // Google OAuth
@@ -49,7 +53,10 @@ class DashboardSeoService
             'seoMomentum' => $seoMomentum,
 
             // SEO Keywords ranked by score
-            'seoKeywordsRanked' => $this->rankSeoKeywords($seoPositionComparisons, $seoDailyComparisons, $seoMomentum),
+            'seoKeywordsRanked' => $seoKeywordsRanked,
+
+            // SEO City pages summary (aggregated "to improve" by city)
+            'seoCityPages' => $this->cityKeywordMatcher->buildCityPagesSummary($seoKeywordsRanked, $allActiveKeywords),
 
             // SEO Chart data (last 30 days)
             'seoChartData' => $this->prepareSeoChartData(),
@@ -352,6 +359,14 @@ class DashboardSeoService
                     default => 0.8,
                 };
                 $improveScore *= $volumeMultiplier;
+
+                // City leverage: keywords on cities with more tracked keywords get a slight boost
+                $city = $this->cityKeywordMatcher->findCityForKeyword($keyword);
+                if ($city !== null) {
+                    $cityKeywordCount = $this->cityKeywordMatcher->countKeywordsForCity($city, $eligible);
+                    $cityLeverageMultiplier = min(1.3, 1.0 + 0.1 * log(max(1, $cityKeywordCount), 2));
+                    $improveScore *= $cityLeverageMultiplier;
+                }
 
                 $improveCandidates[] = [
                     'keyword' => $keyword,

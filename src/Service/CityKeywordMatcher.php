@@ -1,0 +1,266 @@
+<?php
+
+namespace App\Service;
+
+use App\Entity\City;
+use App\Entity\SeoKeyword;
+use App\Repository\CityRepository;
+
+class CityKeywordMatcher
+{
+    private ?array $citiesCache = null;
+
+    public function __construct(
+        private CityRepository $cityRepository,
+    ) {
+    }
+
+    /**
+     * Generates name variants for a city (accents, hyphens/spaces) + region.
+     *
+     * @return string[] Lowercased patterns to match against
+     */
+    public function buildCityPatterns(City $city): array
+    {
+        $name = $city->getName();
+        $stripped = transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $name);
+
+        $variants = array_unique([$name, $stripped]);
+        $patterns = [];
+        foreach ($variants as $v) {
+            $patterns[] = $v;
+            if (str_contains($v, '-')) {
+                $patterns[] = str_replace('-', ' ', $v);
+            }
+            if (str_contains($v, ' ')) {
+                $patterns[] = str_replace(' ', '-', $v);
+            }
+        }
+
+        // Add region as pattern (e.g. "morbihan", "bretagne")
+        $region = $city->getRegion();
+        if ($region) {
+            $regionStripped = transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $region);
+            $patterns[] = $region;
+            if ($regionStripped !== $region) {
+                $patterns[] = $regionStripped;
+            }
+        }
+
+        return array_values(array_unique($patterns));
+    }
+
+    /**
+     * Checks if a keyword text matches a city (name or region).
+     */
+    public function keywordMatchesCity(string $keyword, City $city): bool
+    {
+        $normalizedKeyword = mb_strtolower(
+            transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $keyword)
+        );
+
+        foreach ($this->buildCityPatterns($city) as $pattern) {
+            $normalizedPattern = mb_strtolower(
+                transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $pattern)
+            );
+            if (str_contains($normalizedKeyword, $normalizedPattern)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Finds the most specific city matching a keyword.
+     * Cities are sorted by name length descending to match "Ploemeur-Bodou" before "Ploemeur".
+     */
+    public function findCityForKeyword(SeoKeyword $keyword): ?City
+    {
+        $cities = $this->getActiveCitiesByNameLength();
+        $keywordText = $keyword->getKeyword();
+
+        foreach ($cities as $city) {
+            if ($this->keywordMatchesCityName($keywordText, $city)) {
+                return $city;
+            }
+        }
+
+        // Fallback: match by region only
+        foreach ($cities as $city) {
+            if ($this->keywordMatchesCityRegion($keywordText, $city)) {
+                return $city;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Counts active keywords matching a city (by name or region).
+     *
+     * @param SeoKeyword[] $keywords
+     */
+    public function countKeywordsForCity(City $city, array $keywords): int
+    {
+        $count = 0;
+        foreach ($keywords as $keyword) {
+            $text = $keyword instanceof SeoKeyword ? $keyword->getKeyword() : (string) $keyword;
+            if ($this->keywordMatchesCity($text, $city)) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
+    /**
+     * Builds the "Pages a optimiser" summary aggregated by city.
+     *
+     * @param array{top10: array, toImprove: array} $ranked Output of rankSeoKeywords()
+     * @param SeoKeyword[] $allActiveKeywords All active keywords with latest position
+     * @return array<array{city: City, toImproveCount: int, totalCount: int, avgPosition: float, priorityScore: float}>
+     */
+    public function buildCityPagesSummary(array $ranked, array $allActiveKeywords): array
+    {
+        $cities = $this->getActiveCitiesByNameLength();
+
+        if (empty($cities)) {
+            return [];
+        }
+
+        // Collect "to improve" keyword texts for matching
+        $toImproveTexts = [];
+        foreach ($ranked['toImprove'] as $item) {
+            $toImproveTexts[] = $item['keyword']->getKeyword();
+        }
+
+        $cityPages = [];
+        foreach ($cities as $city) {
+            // Count "to improve" keywords matching this city
+            $toImproveCount = 0;
+            foreach ($ranked['toImprove'] as $item) {
+                if ($this->keywordMatchesCity($item['keyword']->getKeyword(), $city)) {
+                    $toImproveCount++;
+                }
+            }
+
+            if ($toImproveCount === 0) {
+                continue;
+            }
+
+            // Count total active keywords matching this city + average position
+            $totalCount = 0;
+            $positionSum = 0;
+            foreach ($allActiveKeywords as $keyword) {
+                if (!$keyword->isActive()) {
+                    continue;
+                }
+                if ($this->keywordMatchesCity($keyword->getKeyword(), $city)) {
+                    $totalCount++;
+                    $latest = $keyword->getLatestPosition();
+                    if ($latest) {
+                        $positionSum += $latest->getPosition();
+                    }
+                }
+            }
+
+            $avgPosition = $totalCount > 0 ? round($positionSum / $totalCount, 1) : 0;
+
+            // Priority score: toImproveCount * (1 + log2(totalCount)) * (1 / avgPosition)
+            $priorityScore = 0;
+            if ($avgPosition > 0 && $totalCount > 0) {
+                $priorityScore = round(
+                    $toImproveCount * (1 + log($totalCount, 2)) * (1 / $avgPosition),
+                    2
+                );
+            }
+
+            $cityPages[] = [
+                'city' => $city,
+                'toImproveCount' => $toImproveCount,
+                'totalCount' => $totalCount,
+                'avgPosition' => $avgPosition,
+                'priorityScore' => $priorityScore,
+            ];
+        }
+
+        // Sort by priority score descending
+        usort($cityPages, fn($a, $b) => $b['priorityScore'] <=> $a['priorityScore']);
+
+        return $cityPages;
+    }
+
+    /**
+     * Returns active cities sorted by name length descending (most specific first).
+     *
+     * @return City[]
+     */
+    private function getActiveCitiesByNameLength(): array
+    {
+        if ($this->citiesCache === null) {
+            $cities = $this->cityRepository->findAllActive();
+            usort($cities, fn(City $a, City $b) => mb_strlen($b->getName()) <=> mb_strlen($a->getName()));
+            $this->citiesCache = $cities;
+        }
+
+        return $this->citiesCache;
+    }
+
+    /**
+     * Checks if a keyword matches a city by its name (not region).
+     */
+    private function keywordMatchesCityName(string $keyword, City $city): bool
+    {
+        $normalizedKeyword = mb_strtolower(
+            transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $keyword)
+        );
+
+        $name = $city->getName();
+        $stripped = transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $name);
+
+        $nameVariants = array_unique([$name, $stripped]);
+        $patterns = [];
+        foreach ($nameVariants as $v) {
+            $patterns[] = $v;
+            if (str_contains($v, '-')) {
+                $patterns[] = str_replace('-', ' ', $v);
+            }
+            if (str_contains($v, ' ')) {
+                $patterns[] = str_replace(' ', '-', $v);
+            }
+        }
+
+        foreach (array_unique($patterns) as $pattern) {
+            $normalizedPattern = mb_strtolower(
+                transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $pattern)
+            );
+            if (str_contains($normalizedKeyword, $normalizedPattern)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if a keyword matches a city by its region only.
+     */
+    private function keywordMatchesCityRegion(string $keyword, City $city): bool
+    {
+        $region = $city->getRegion();
+        if (!$region) {
+            return false;
+        }
+
+        $normalizedKeyword = mb_strtolower(
+            transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $keyword)
+        );
+
+        $normalizedRegion = mb_strtolower(
+            transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $region)
+        );
+
+        return str_contains($normalizedKeyword, $normalizedRegion);
+    }
+}

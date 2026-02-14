@@ -470,7 +470,7 @@
 {% endif %}
 
 <!-- SEO Actions -->
-{% if googleOAuthConnected and (seoKeywordsRanked.top10|length > 0 or seoKeywordsRanked.toImprove|length > 0) %}
+{% if googleOAuthConnected %}
 <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
     <a href="{{ ea_url().setController('App\\Controller\\Admin\\SeoKeywordCrudController').setAction('index') }}" class="btn btn-sm btn-outline-secondary">
         <i class="fas fa-cog"></i> Gerer les mots-cles
@@ -485,20 +485,6 @@
         <a href="{{ path('admin_google_sync_seo') }}" class="btn btn-sm btn-primary">
             <i class="fas fa-sync-alt"></i> Synchroniser
         </a>
-    </div>
-</div>
-{% elseif googleOAuthConnected %}
-<div class="stat-card info" style="margin-bottom: 1.5rem;">
-    <div class="stat-header">
-        <span class="stat-label">Positions SEO</span>
-        <div class="stat-icon info"><i class="fas fa-search"></i></div>
-    </div>
-    <div style="color: #6b7280; font-size: 0.875rem;">
-        Aucun mot-cle configure.
-        <a href="{{ ea_url().setController('App\\Controller\\Admin\\SeoKeywordCrudController').setAction('new') }}" style="color: var(--primary); text-decoration: underline;">
-            Ajouter des mots-cles
-        </a>
-        pour commencer le suivi SEO.
     </div>
 </div>
 {% endif %}

@@ -42,3 +42,6 @@ public/brochure-tarifs.html
 # BMAD workflow files
 _bmad/
 _bmad-output/
+
+# WordPress plugins (developed separately)
+plugins/

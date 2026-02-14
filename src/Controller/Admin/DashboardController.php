@@ -664,6 +664,37 @@ class DashboardController extends AbstractDashboardController
         return $response;
     }
 
+    #[Route('/saeiblauhjc/seo/export-unscored', name: 'admin_seo_export_unscored')]
+    public function exportUnscoredKeywords(SeoKeywordRepository $seoKeywordRepository): Response
+    {
+        $keywords = $seoKeywordRepository->findUnscoredKeywords();
+        $lines = array_map(fn(SeoKeyword $k) => $k->getKeyword(), $keywords);
+        $content = implode("\n", $lines);
+
+        $response = new Response($content);
+        $response->headers->set('Content-Type', 'text/plain; charset=UTF-8');
+        $response->headers->set('Content-Disposition', 'attachment; filename="unscored_keywords_' . date('Y-m-d') . '.txt"');
+
+        return $response;
+    }
+
+    #[Route('/saeiblauhjc/seo-keyword/{id}/set-score', name: 'admin_seo_keyword_set_score', methods: ['POST'])]
+    public function setKeywordScore(SeoKeyword $keyword, Request $request): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid('seo-score-' . $keyword->getId(), $request->request->get('_token'))) {
+            return new JsonResponse(['error' => 'Token CSRF invalide'], 403);
+        }
+
+        $score = (int) $request->request->get('score', 0);
+        $keyword->setRelevanceScore($score);
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'score' => $keyword->getRelevanceScore(),
+        ]);
+    }
+
     #[Route('/saeiblauhjc/seo/export-csv', name: 'admin_seo_export_csv')]
     public function exportSeoCsv(
         SeoKeywordRepository $seoKeywordRepository,
@@ -972,7 +1003,8 @@ class DashboardController extends AbstractDashboardController
             ->addJsFile('js/admin-project-partners.js')
             ->addJsFile('js/admin-toggles.js')
             ->addJsFile('js/admin-char-counter.js')
-            ->addJsFile('js/admin-city-optimized.js');
+            ->addJsFile('js/admin-city-optimized.js')
+            ->addJsFile('js/admin-star-rating.js');
 
         // Charger le CSS de floutage si le mode démo est activé
         if ($this->params->get('app.demo_mode')) {

@@ -130,18 +130,18 @@ class SeoKeywordRepository extends ServiceEntityRepository
 
     /**
      * Retourne la date de première apparition GSC (MIN de SeoPosition.date) par mot-clé actif,
-     * avec le niveau de pertinence.
+     * avec le score de pertinence.
      *
-     * @return array<array{id: int, relevanceLevel: string, firstSeen: string}>
+     * @return array<array{id: int, relevanceScore: int, firstSeen: string}>
      */
     public function getKeywordFirstAppearances(): array
     {
         return $this->createQueryBuilder('k')
-            ->select('k.id, k.relevanceLevel, SUBSTRING(MIN(p.date), 1, 10) as firstSeen')
+            ->select('k.id, k.relevanceScore, SUBSTRING(MIN(p.date), 1, 10) as firstSeen')
             ->join('k.positions', 'p')
             ->where('k.isActive = :active')
             ->setParameter('active', true)
-            ->groupBy('k.id, k.relevanceLevel')
+            ->groupBy('k.id, k.relevanceScore')
             ->orderBy('firstSeen', 'ASC')
             ->getQuery()
             ->getResult();
@@ -150,14 +150,14 @@ class SeoKeywordRepository extends ServiceEntityRepository
     /**
      * Retourne la date de première apparition GSC pour TOUS les mots-clés (actifs + inactifs).
      *
-     * @return array<array{id: int, relevanceLevel: string, firstSeen: string}>
+     * @return array<array{id: int, relevanceScore: int, firstSeen: string}>
      */
     public function getKeywordFirstAppearancesAll(): array
     {
         return $this->createQueryBuilder('k')
-            ->select('k.id, k.relevanceLevel, SUBSTRING(MIN(p.date), 1, 10) as firstSeen')
+            ->select('k.id, k.relevanceScore, SUBSTRING(MIN(p.date), 1, 10) as firstSeen')
             ->join('k.positions', 'p')
-            ->groupBy('k.id, k.relevanceLevel')
+            ->groupBy('k.id, k.relevanceScore')
             ->orderBy('firstSeen', 'ASC')
             ->getQuery()
             ->getResult();
@@ -219,17 +219,33 @@ class SeoKeywordRepository extends ServiceEntityRepository
     }
 
     /**
-     * Retourne le décompte des mots-clés actifs par niveau de pertinence.
+     * Retourne le décompte des mots-clés actifs par score de pertinence (0-5).
      *
-     * @return array<array{relevanceLevel: string, cnt: int}>
+     * @return array<array{relevanceScore: int, cnt: int}>
      */
     public function getRelevanceCounts(): array
     {
         return $this->createQueryBuilder('k')
-            ->select("k.relevanceLevel, COUNT(k.id) as cnt")
+            ->select("k.relevanceScore, COUNT(k.id) as cnt")
             ->where('k.isActive = :active')
             ->setParameter('active', true)
-            ->groupBy('k.relevanceLevel')
+            ->groupBy('k.relevanceScore')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Retourne les mots-clés actifs non scorés (relevanceScore = 0).
+     *
+     * @return SeoKeyword[]
+     */
+    public function findUnscoredKeywords(): array
+    {
+        return $this->createQueryBuilder('k')
+            ->where('k.isActive = :active')
+            ->andWhere('k.relevanceScore = 0')
+            ->setParameter('active', true)
+            ->orderBy('k.keyword', 'ASC')
             ->getQuery()
             ->getResult();
     }

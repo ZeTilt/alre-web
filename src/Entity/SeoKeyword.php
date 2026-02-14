@@ -37,6 +37,9 @@ class SeoKeyword
     #[ORM\Column(length: 20)]
     private string $relevanceLevel = self::RELEVANCE_MEDIUM;
 
+    #[ORM\Column(type: 'smallint', options: ['default' => 0])]
+    private int $relevanceScore = 0;
+
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $lastSeenInGsc = null;
 
@@ -219,6 +222,17 @@ class SeoKeyword
     public function setRelevanceLevel(string $relevanceLevel): static
     {
         $this->relevanceLevel = $relevanceLevel;
+        return $this;
+    }
+
+    public function getRelevanceScore(): int
+    {
+        return $this->relevanceScore;
+    }
+
+    public function setRelevanceScore(int $relevanceScore): static
+    {
+        $this->relevanceScore = max(0, min(5, $relevanceScore));
         return $this;
     }
 

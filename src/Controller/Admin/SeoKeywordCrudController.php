@@ -3,36 +3,42 @@
 namespace App\Controller\Admin;
 
 use App\Entity\SeoKeyword;
-use App\Repository\SeoKeywordRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
-use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Orm\EntityRepository;
-use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Component\HttpFoundation\Response;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 class SeoKeywordCrudController extends AbstractCrudController
 {
+    public function __construct(
+        private CsrfTokenManagerInterface $csrfTokenManager,
+    ) {
+    }
+
     public static function getEntityFqcn(): string
     {
         return SeoKeyword::class;
+    }
+
+    private function generateCsrfToken(int $id): string
+    {
+        return $this->csrfTokenManager->getToken('seo-score-' . $id)->getValue();
     }
 
     public function configureCrud(Crud $crud): Crud
@@ -50,54 +56,8 @@ class SeoKeywordCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        $setHigh = Action::new('setRelevanceHigh', 'Haute', 'fa fa-arrow-up')
-            ->linkToCrudAction('setRelevanceHigh')
-            ->setCssClass('btn btn-sm btn-success')
-            ->displayIf(fn (SeoKeyword $k) => $k->getRelevanceLevel() !== SeoKeyword::RELEVANCE_HIGH);
-
-        $setMedium = Action::new('setRelevanceMedium', 'Moyenne', 'fa fa-minus')
-            ->linkToCrudAction('setRelevanceMedium')
-            ->setCssClass('btn btn-sm btn-warning')
-            ->displayIf(fn (SeoKeyword $k) => $k->getRelevanceLevel() !== SeoKeyword::RELEVANCE_MEDIUM);
-
-        $setLow = Action::new('setRelevanceLow', 'Basse', 'fa fa-arrow-down')
-            ->linkToCrudAction('setRelevanceLow')
-            ->setCssClass('btn btn-sm btn-secondary')
-            ->displayIf(fn (SeoKeyword $k) => $k->getRelevanceLevel() !== SeoKeyword::RELEVANCE_LOW);
-
         return $actions
-            ->add(Crud::PAGE_INDEX, Action::DETAIL)
-            ->add(Crud::PAGE_INDEX, $setHigh)
-            ->add(Crud::PAGE_INDEX, $setMedium)
-            ->add(Crud::PAGE_INDEX, $setLow)
-            ->reorder(Crud::PAGE_INDEX, ['setRelevanceHigh', 'setRelevanceMedium', 'setRelevanceLow', Action::DETAIL, Action::EDIT, Action::DELETE]);
-    }
-
-    public function setRelevanceHigh(AdminContext $context, EntityManagerInterface $em, AdminUrlGenerator $urlGenerator): Response
-    {
-        return $this->setRelevance($context, $em, $urlGenerator, SeoKeyword::RELEVANCE_HIGH);
-    }
-
-    public function setRelevanceMedium(AdminContext $context, EntityManagerInterface $em, AdminUrlGenerator $urlGenerator): Response
-    {
-        return $this->setRelevance($context, $em, $urlGenerator, SeoKeyword::RELEVANCE_MEDIUM);
-    }
-
-    public function setRelevanceLow(AdminContext $context, EntityManagerInterface $em, AdminUrlGenerator $urlGenerator): Response
-    {
-        return $this->setRelevance($context, $em, $urlGenerator, SeoKeyword::RELEVANCE_LOW);
-    }
-
-    private function setRelevance(AdminContext $context, EntityManagerInterface $em, AdminUrlGenerator $urlGenerator, string $level): Response
-    {
-        /** @var SeoKeyword $keyword */
-        $keyword = $context->getEntity()->getInstance();
-        $keyword->setRelevanceLevel($level);
-        $em->flush();
-
-        $this->addFlash('success', sprintf('Pertinence de "%s" mise à jour.', $keyword->getKeyword()));
-
-        return $this->redirect($urlGenerator->setAction(Action::INDEX)->generateUrl());
+            ->add(Crud::PAGE_INDEX, Action::DETAIL);
     }
 
     public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
@@ -148,7 +108,9 @@ class SeoKeywordCrudController extends AbstractCrudController
     {
         return $filters
             ->add(BooleanFilter::new('isActive', 'Actif'))
-            ->add(ChoiceFilter::new('relevanceLevel', 'Pertinence')->setChoices(SeoKeyword::getRelevanceLevelChoices()))
+            ->add(ChoiceFilter::new('relevanceScore', 'Score')->setChoices([
+                '5 ★' => 5, '4 ★' => 4, '3 ★' => 3, '2 ★' => 2, '1 ★' => 1, 'Non scoré' => 0,
+            ]))
             ->add(ChoiceFilter::new('source', 'Source')->setChoices(SeoKeyword::getSourceChoices()));
     }
 
@@ -168,14 +130,28 @@ class SeoKeywordCrudController extends AbstractCrudController
             ->renderAsSwitch(true)
             ->setHelp('Seuls les mots-clés actifs sont synchronisés');
 
-        yield ChoiceField::new('relevanceLevel', 'Pertinence')
-            ->setChoices(SeoKeyword::getRelevanceLevelChoices())
-            ->renderAsBadges([
-                SeoKeyword::RELEVANCE_HIGH => 'success',
-                SeoKeyword::RELEVANCE_MEDIUM => 'warning',
-                SeoKeyword::RELEVANCE_LOW => 'secondary',
-            ])
-            ->setHelp('Niveau de pertinence pour votre activité');
+        yield IntegerField::new('relevanceScore', 'Score')
+            ->setHelp('Score de pertinence (0-5 étoiles)')
+            ->formatValue(function ($value, $entity) {
+                $score = $entity->getRelevanceScore();
+                $id = $entity->getId();
+                $stars = '<span class="seo-star-group" data-keyword-id="' . $id . '" data-score="' . $score . '" data-url="/saeiblauhjc/seo-keyword/' . $id . '/set-score" data-token="' . $this->generateCsrfToken($id) . '" style="white-space: nowrap;">';
+                for ($i = 1; $i <= 5; $i++) {
+                    $filled = $i <= $score ? 'fas' : 'far';
+                    $color = $i <= $score ? '#f59e0b' : '#d1d5db';
+                    $stars .= '<i class="' . $filled . ' fa-star seo-star" data-value="' . $i . '" style="color: ' . $color . '; cursor: pointer; font-size: 0.85rem; padding: 0 1px;"></i>';
+                }
+                if ($score === 0) {
+                    $stars .= ' <span style="color: #9ca3af; font-size: 0.65rem;">?</span>';
+                }
+                $stars .= '</span>';
+                return $stars;
+            })
+            ->onlyOnIndex();
+
+        yield IntegerField::new('relevanceScore', 'Score (0-5)')
+            ->setHelp('0 = non scoré, 1 = bruit, 5 = prioritaire')
+            ->onlyOnForms();
 
         yield TextField::new('sourceLabel', 'Source')
             ->hideOnForm()

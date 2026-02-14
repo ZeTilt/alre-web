@@ -241,7 +241,7 @@ class DashboardSeoService
         $maxImpressions = 0;
 
         foreach ($keywords as $keyword) {
-            if (!$keyword->isActive() || $keyword->getRelevanceLevel() !== SeoKeyword::RELEVANCE_HIGH) {
+            if (!$keyword->isActive() || $keyword->getRelevanceScore() < 4) {
                 continue;
             }
             $latest = $keyword->getLatestPosition();
@@ -366,6 +366,12 @@ class DashboardSeoService
                     $cityKeywordCount = $this->cityKeywordMatcher->countKeywordsForCity($city, $eligible);
                     $cityLeverageMultiplier = min(1.3, 1.0 + 0.1 * log(max(1, $cityKeywordCount), 2));
                     $improveScore *= $cityLeverageMultiplier;
+                }
+
+                // Relevance boost: 5★ gets ×1.15 vs 4★ baseline
+                $score = $keyword->getRelevanceScore();
+                if ($score >= 5) {
+                    $improveScore *= 1.15;
                 }
 
                 $improveCandidates[] = [
@@ -749,6 +755,7 @@ class DashboardSeoService
 
     /**
      * Prepare les donnees pour le graphique d'evolution des mots-cles SEO.
+     * Catégories par score de pertinence (0-5 étoiles).
      */
     private function prepareSeoKeywordsChartData(): array
     {
@@ -759,9 +766,10 @@ class DashboardSeoService
         $inactiveCount = $this->seoKeywordRepository->countInactive();
 
         $currentTotal = 0;
-        $relevanceMap = ['high' => 0, 'medium' => 0, 'low' => 0];
+        $scoreMap = [0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
         foreach ($relevanceCounts as $row) {
-            $relevanceMap[$row['relevanceLevel']] = (int) $row['cnt'];
+            $score = (int) $row['relevanceScore'];
+            $scoreMap[$score] = (int) $row['cnt'];
             $currentTotal += (int) $row['cnt'];
         }
 
@@ -781,19 +789,21 @@ class DashboardSeoService
         $startDate = $endDate->modify("-" . ($days - 1) . " days");
         $sinceDate = $startDate->format('Y-m-d');
 
+        $emptyDay = [0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
+
         $baseCount = 0;
         $newByDay = [];
         foreach ($firstAppearances as $row) {
             $firstSeen = $row['firstSeen'];
-            $level = $row['relevanceLevel'];
+            $score = (int) $row['relevanceScore'];
 
             if ($firstSeen < $sinceDate) {
                 $baseCount++;
             } else {
                 if (!isset($newByDay[$firstSeen])) {
-                    $newByDay[$firstSeen] = ['high' => 0, 'medium' => 0, 'low' => 0];
+                    $newByDay[$firstSeen] = $emptyDay;
                 }
-                $newByDay[$firstSeen][$level]++;
+                $newByDay[$firstSeen][$score]++;
             }
         }
 
@@ -809,9 +819,7 @@ class DashboardSeoService
         }
 
         $labels = [];
-        $newHigh = [];
-        $newMedium = [];
-        $newLow = [];
+        $new5 = []; $new4 = []; $new3 = []; $new2 = []; $new1 = []; $new0 = [];
         $deactivated = [];
         $totalKeywords = [];
         $cumulative = $baseCount - $baseDeactivated;
@@ -819,18 +827,19 @@ class DashboardSeoService
         $currentDate = $startDate;
         while ($currentDate <= $endDate) {
             $dateKey = $currentDate->format('Y-m-d');
-
-            $dayHigh = $newByDay[$dateKey]['high'] ?? 0;
-            $dayMedium = $newByDay[$dateKey]['medium'] ?? 0;
-            $dayLow = $newByDay[$dateKey]['low'] ?? 0;
+            $dayData = $newByDay[$dateKey] ?? $emptyDay;
             $dayDeactivated = $deactivatedByDay[$dateKey] ?? 0;
+            $dayTotal = array_sum($dayData);
 
-            $cumulative += $dayHigh + $dayMedium + $dayLow - $dayDeactivated;
+            $cumulative += $dayTotal - $dayDeactivated;
 
             $labels[] = $currentDate->format('d/m');
-            $newHigh[] = $dayHigh;
-            $newMedium[] = $dayMedium;
-            $newLow[] = $dayLow;
+            $new5[] = $dayData[5];
+            $new4[] = $dayData[4];
+            $new3[] = $dayData[3];
+            $new2[] = $dayData[2];
+            $new1[] = $dayData[1];
+            $new0[] = $dayData[0];
             $deactivated[] = $dayDeactivated > 0 ? -$dayDeactivated : 0;
             $totalKeywords[] = $cumulative;
 
@@ -840,13 +849,16 @@ class DashboardSeoService
         return [
             'labels' => $labels,
             'totalKeywords' => $totalKeywords,
-            'newHigh' => $newHigh,
-            'newMedium' => $newMedium,
-            'newLow' => $newLow,
+            'new5' => $new5,
+            'new4' => $new4,
+            'new3' => $new3,
+            'new2' => $new2,
+            'new1' => $new1,
+            'new0' => $new0,
             'deactivated' => $deactivated,
             'currentTotal' => $currentTotal,
             'inactiveCount' => $inactiveCount,
-            'relevanceCounts' => $relevanceMap,
+            'relevanceCounts' => $scoreMap,
         ];
     }
 }

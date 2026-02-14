@@ -40,4 +40,16 @@ class ClientSeoReportRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * @return ClientSeoReport[]
+     */
+    public function findOwnSiteReports(): array
+    {
+        return $this->createQueryBuilder('r')
+            ->where('r.clientSite IS NULL')
+            ->orderBy('r.generatedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

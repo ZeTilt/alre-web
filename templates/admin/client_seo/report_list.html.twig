@@ -1,29 +1,41 @@
 {% extends '@EasyAdmin/page/content.html.twig' %}
 
 {% block content_title %}
-    <i class="fa fa-list-alt"></i> Comptes rendus SEO - {{ site.name }}
+    <i class="fa fa-list-alt"></i> Comptes rendus SEO - {{ site ? site.name : 'Alre Web' }}
 {% endblock %}
 
 {% block page_content %}
 {% include 'admin/dashboard/_partials/_styles.html.twig' %}
 
 <div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-    <a href="{{ path('admin_client_seo_dashboard', {id: site.id}) }}" class="btn btn-sm btn-outline-secondary">
-        <i class="fas fa-arrow-left"></i> Retour au dashboard
-    </a>
-    <form action="{{ path('admin_client_seo_report_generate', {id: site.id}) }}" method="POST" style="display: inline;">
-        <input type="hidden" name="_token" value="{{ csrf_token('generate-report-' ~ site.id) }}">
-        <button type="submit" class="btn btn-sm btn-warning">
-            <i class="fas fa-file-alt"></i> Generer un compte rendu
-        </button>
-    </form>
+    {% if site %}
+        <a href="{{ path('admin_client_seo_dashboard', {id: site.id}) }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Retour au dashboard
+        </a>
+        <form action="{{ path('admin_client_seo_report_generate', {id: site.id}) }}" method="POST" style="display: inline;">
+            <input type="hidden" name="_token" value="{{ csrf_token('generate-report-' ~ site.id) }}">
+            <button type="submit" class="btn btn-sm btn-warning">
+                <i class="fas fa-file-alt"></i> Generer un compte rendu
+            </button>
+        </form>
+    {% else %}
+        <a href="{{ path('admin_seo_dashboard') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Retour au dashboard SEO
+        </a>
+        <form action="{{ path('admin_seo_report_generate') }}" method="POST" style="display: inline;">
+            <input type="hidden" name="_token" value="{{ csrf_token('generate-own-report') }}">
+            <button type="submit" class="btn btn-sm btn-warning">
+                <i class="fas fa-file-alt"></i> Generer un compte rendu
+            </button>
+        </form>
+    {% endif %}
 </div>
 
 {% if reports|length == 0 %}
 <div class="stat-card info" style="text-align: center; padding: 3rem;">
     <i class="fas fa-file-alt" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem; display: block;"></i>
     <div style="font-size: 1.125rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Aucun compte rendu</div>
-    <div style="color: #6b7280; margin-bottom: 1.5rem;">Generez votre premier compte rendu SEO pour ce client.</div>
+    <div style="color: #6b7280; margin-bottom: 1.5rem;">Generez votre premier compte rendu SEO.</div>
 </div>
 {% else %}
 <div class="chart-container" style="padding: 1rem 1.5rem;">
@@ -72,10 +84,16 @@
                         <td style="text-align: center; padding: 0.75rem 0.5rem; color: #6b7280;">
                             {{ report.generatedAt|date('d/m/Y a H:i') }}
                         </td>
-                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                        <td style="text-align: center; padding: 0.75rem 0.5rem; white-space: nowrap;">
                             <a href="{{ path('admin_client_seo_report_view', {id: report.id}) }}" class="btn btn-sm btn-outline-primary">
                                 <i class="fas fa-eye"></i> Voir
                             </a>
+                            <form action="{{ path('admin_seo_report_delete', {id: report.id}) }}" method="POST" style="display: inline;" onsubmit="return confirm('Supprimer ce compte rendu ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete-report-' ~ report.id) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 {% endfor %}

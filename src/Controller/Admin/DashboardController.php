@@ -37,6 +37,7 @@ use App\Repository\ClientSeoReportRepository;
 use App\Service\ClientSeoCsvImportService;
 use App\Service\ClientSeoDashboardService;
 use App\Service\ClientSeoReportService;
+use App\Service\SeoReportService;
 use App\Service\CityKeywordMatcher;
 use App\Service\DashboardPeriodService;
 use App\Service\DashboardSeoService;
@@ -1057,6 +1058,52 @@ class DashboardController extends AbstractDashboardController
 
         return $this->render('admin/client_seo/report_list.html.twig', [
             'site' => $site,
+            'reports' => $reports,
+        ]);
+    }
+
+    #[Route('/saeiblauhjc/seo/report/{id}/delete', name: 'admin_seo_report_delete', methods: ['POST'])]
+    public function seoReportDelete(ClientSeoReport $report, Request $request): Response
+    {
+        $clientSite = $report->getClientSite();
+
+        if (!$this->isCsrfTokenValid('delete-report-' . $report->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
+        } else {
+            $this->entityManager->remove($report);
+            $this->entityManager->flush();
+            $this->addFlash('success', 'Compte rendu supprime.');
+        }
+
+        if ($clientSite) {
+            return $this->redirectToRoute('admin_client_seo_report_list', ['id' => $clientSite->getId()]);
+        }
+
+        return $this->redirectToRoute('admin_seo_report_list');
+    }
+
+    // ===== OWN SITE SEO REPORTS =====
+
+    #[Route('/saeiblauhjc/seo/report/generate', name: 'admin_seo_report_generate', methods: ['POST'])]
+    public function seoReportGenerate(Request $request, SeoReportService $reportService): Response
+    {
+        if (!$this->isCsrfTokenValid('generate-own-report', $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
+            return $this->redirectToRoute('admin_seo_dashboard');
+        }
+
+        $report = $reportService->generateReport();
+
+        return $this->redirectToRoute('admin_client_seo_report_view', ['id' => $report->getId()]);
+    }
+
+    #[Route('/saeiblauhjc/seo/reports', name: 'admin_seo_report_list')]
+    public function seoReportList(ClientSeoReportRepository $reportRepository): Response
+    {
+        $reports = $reportRepository->findOwnSiteReports();
+
+        return $this->render('admin/client_seo/report_list.html.twig', [
+            'site' => null,
             'reports' => $reports,
         ]);
     }

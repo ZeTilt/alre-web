@@ -476,6 +476,15 @@
         <i class="fas fa-cog"></i> Gerer les mots-cles
     </a>
     <div style="display: flex; gap: 0.5rem;">
+        <a href="{{ path('admin_seo_report_list') }}" class="btn btn-sm btn-outline-info" title="Historique des comptes rendus">
+            <i class="fas fa-list-alt"></i> CR
+        </a>
+        <form action="{{ path('admin_seo_report_generate') }}" method="POST" style="display: inline;">
+            <input type="hidden" name="_token" value="{{ csrf_token('generate-own-report') }}">
+            <button type="submit" class="btn btn-sm btn-warning" title="Generer un compte rendu SEO">
+                <i class="fas fa-file-alt"></i> Compte rendu
+            </button>
+        </form>
         <a href="{{ path('admin_seo_export_unscored') }}" class="btn btn-sm btn-outline-warning" title="Exporter les mots-cles non scores en .txt">
             <i class="fas fa-file-alt"></i> Non scores
         </a>

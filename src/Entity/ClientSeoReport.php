@@ -17,7 +17,7 @@ class ClientSeoReport
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: ClientSite::class)]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?ClientSite $clientSite = null;
 
     #[ORM\Column(type: 'date_immutable')]

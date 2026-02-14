@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compte rendu SEO - {{ site.client.displayName }} - {{ report.periodLabel }}</title>
+    <title>Compte rendu SEO - {{ site ? site.client.displayName : 'Alre Web' }} - {{ report.periodLabel }}</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1f2937; background: #f3f4f6; line-height: 1.5; }
@@ -100,6 +100,8 @@
         .admin-bar .btn-sent { background: #10b981; color: white; }
         .admin-bar .btn-sent:hover { background: #059669; }
         .admin-bar .btn-sent:disabled { background: #6b7280; cursor: not-allowed; }
+        .admin-bar .btn-delete { background: #ef4444; color: white; }
+        .admin-bar .btn-delete:hover { background: #dc2626; }
         .admin-bar .status-badge { padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; }
         .admin-bar .status-draft { background: #fef3c7; color: #92400e; }
         .admin-bar .status-sent { background: #d1fae5; color: #065f46; }
@@ -124,12 +126,21 @@
 
 <!-- Admin Bar -->
 <div class="admin-bar no-print">
-    <a href="{{ path('admin_client_seo_report_list', {id: site.id}) }}" class="btn btn-back">
-        <i class="fas fa-arrow-left"></i> Retour
-    </a>
-    <a href="{{ path('admin_client_seo_dashboard', {id: site.id}) }}" class="btn btn-back">
-        <i class="fas fa-chart-line"></i> Dashboard
-    </a>
+    {% if site %}
+        <a href="{{ path('admin_client_seo_report_list', {id: site.id}) }}" class="btn btn-back">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+        <a href="{{ path('admin_client_seo_dashboard', {id: site.id}) }}" class="btn btn-back">
+            <i class="fas fa-chart-line"></i> Dashboard
+        </a>
+    {% else %}
+        <a href="{{ path('admin_seo_report_list') }}" class="btn btn-back">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+        <a href="{{ path('admin_seo_dashboard') }}" class="btn btn-back">
+            <i class="fas fa-chart-line"></i> Dashboard
+        </a>
+    {% endif %}
     <button type="button" class="btn btn-save" id="btn-save" onclick="saveReport()">
         <i class="fas fa-save"></i> Sauvegarder
     </button>
@@ -144,6 +155,12 @@
     <button type="button" class="btn btn-sent" id="btn-mark-sent" {{ report.isSent ? 'disabled' : '' }} onclick="markSent()">
         <i class="fas fa-paper-plane"></i> Marquer envoye
     </button>
+    <form action="{{ path('admin_seo_report_delete', {id: report.id}) }}" method="POST" style="display: inline;" onsubmit="return confirm('Supprimer ce compte rendu ?')">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete-report-' ~ report.id) }}">
+        <button type="submit" class="btn btn-delete">
+            <i class="fas fa-trash"></i> Supprimer
+        </button>
+    </form>
 </div>
 
 <!-- PAGE 1: Synthese -->
@@ -153,7 +170,7 @@
         <img src="/images/logo.png" alt="Alre Web">
         <div class="report-header-text">
             <div class="report-header-title">Compte rendu SEO</div>
-            <div class="report-header-subtitle">{{ site.client.displayName }} &mdash; {{ report.periodLabel }}</div>
+            <div class="report-header-subtitle">{{ site ? site.client.displayName : 'Alre Web' }} &mdash; {{ report.periodLabel }}</div>
         </div>
     </div>
 
@@ -292,7 +309,7 @@
     <!-- Header mini -->
     <div class="report-header-mini">
         <img src="/images/logo.png" alt="Alre Web">
-        <div class="report-header-mini-title">Compte rendu SEO &mdash; {{ site.client.displayName }}</div>
+        <div class="report-header-mini-title">Compte rendu SEO &mdash; {{ site ? site.client.displayName : 'Alre Web' }}</div>
     </div>
 
     <!-- Actions effectuees -->

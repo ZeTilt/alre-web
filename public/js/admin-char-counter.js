@@ -1,22 +1,22 @@
 /**
- * Live character counter for textareas with data-char-min / data-char-max attributes.
+ * Live character counter for inputs/textareas with data-char-min / data-char-max attributes.
  * Shows "X / 120-155" with color coding: green = in range, orange = close, red = out of range.
  */
 (function () {
     function initCounters() {
-        document.querySelectorAll('textarea[data-char-min], textarea[data-char-max]').forEach(function (textarea) {
-            if (textarea.dataset.charCounterInit) return;
-            textarea.dataset.charCounterInit = '1';
+        document.querySelectorAll('textarea[data-char-min], textarea[data-char-max], input[data-char-min], input[data-char-max]').forEach(function (field) {
+            if (field.dataset.charCounterInit) return;
+            field.dataset.charCounterInit = '1';
 
-            var min = parseInt(textarea.dataset.charMin) || 0;
-            var max = parseInt(textarea.dataset.charMax) || 9999;
+            var min = parseInt(field.dataset.charMin) || 0;
+            var max = parseInt(field.dataset.charMax) || 9999;
 
             var counter = document.createElement('div');
             counter.style.cssText = 'font-size: 0.75rem; margin-top: 0.25rem; font-weight: 600;';
-            textarea.parentNode.insertBefore(counter, textarea.nextSibling);
+            field.parentNode.insertBefore(counter, field.nextSibling);
 
             function update() {
-                var len = textarea.value.length;
+                var len = field.value.length;
                 var label = len + ' / ' + min + '-' + max;
 
                 if (len === 0) {
@@ -40,7 +40,7 @@
                 }
             }
 
-            textarea.addEventListener('input', update);
+            field.addEventListener('input', update);
             update();
         });
     }

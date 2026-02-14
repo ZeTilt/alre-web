@@ -33,6 +33,7 @@ class LocalPageController extends AbstractController
         $cityArray = [
             'name' => $city->getName(),
             'region' => $city->getRegion(),
+            'title' => $city->getTitleForService($parsed['service']),
             'description' => $city->getDescriptionForService($parsed['service']),
             'descriptionLong' => $city->getLongDescriptionForService($parsed['service']),
             'nearby' => $city->getNearby(),

@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ service.title }} {{ city.name }} | Création de sites web {{ city.region }}{% endblock %}
+{% block title %}{{ city.title ?? (service.title ~ ' ' ~ city.name ~ ' | Création de sites web ' ~ city.region) }}{% endblock %}
 
 {% block meta_description %}{{ service.title }} à {{ city.name }} ({{ city.region }}). {{ city.description }} Sites vitrines, e-commerce et applications sur mesure pour artisans et TPE.{% endblock %}
 

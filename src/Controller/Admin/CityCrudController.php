@@ -12,6 +12,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
@@ -68,6 +69,10 @@ class CityCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        // --- Informations générales ---
+        yield FormField::addPanel('Informations générales')
+            ->setIcon('fa fa-city')
+            ->onlyOnForms();
 
         yield TextField::new('name', 'Nom de la ville')
             ->setRequired(true)
@@ -85,43 +90,85 @@ class CityCrudController extends AbstractCrudController
         yield TextareaField::new('description', 'Description (par defaut)')
             ->setRequired(true)
             ->setHelp('Texte par defaut utilise si les descriptions specifiques ci-dessous sont vides')
+            ->hideOnIndex()
+            ->hideOnForm();
+
+        // --- Page Développeur Web ---
+        yield FormField::addPanel('Page : Développeur Web')
+            ->setIcon('fa fa-code')
+            ->setHelp('/developpeur-web-{slug}')
+            ->onlyOnForms();
+
+        yield TextField::new('titleDeveloppeur', 'Title SEO')
+            ->setRequired(false)
+            ->setHelp('50-60 car. Vide = title auto.')
+            ->setFormTypeOption('attr', ['data-char-min' => 50, 'data-char-max' => 65, 'maxlength' => 70])
             ->hideOnIndex();
 
-        yield TextareaField::new('descriptionDeveloppeur', 'Short - Developpeur Web')
+        yield TextareaField::new('descriptionDeveloppeur', 'Description courte')
             ->setRequired(false)
-            ->setHelp('Hero + meta description pour /developpeur-web-{slug}. Vide = description par defaut.')
+            ->setHelp('Hero + meta description. 120-145 car. Vide = description par défaut.')
             ->setFormTypeOption('attr', ['data-char-min' => 120, 'data-char-max' => 155, 'rows' => 3])
             ->hideOnIndex();
 
-        yield TextareaField::new('descriptionDeveloppeurLong', 'Long - Developpeur Web')
+        yield TextareaField::new('descriptionDeveloppeurLong', 'Description longue')
             ->setRequired(false)
-            ->setHelp('Texte de presentation pour /developpeur-web-{slug}. Vide = texte generique.')
+            ->setHelp('Texte de présentation. 900-1200 car. Vide = texte générique.')
             ->setFormTypeOption('attr', ['data-char-min' => 900, 'data-char-max' => 1200, 'rows' => 8])
             ->hideOnIndex();
 
-        yield TextareaField::new('descriptionCreation', 'Short - Creation Site Internet')
+        // --- Page Création Site Internet ---
+        yield FormField::addPanel('Page : Création Site Internet')
+            ->setIcon('fa fa-paint-brush')
+            ->setHelp('/creation-site-internet-{slug}')
+            ->onlyOnForms();
+
+        yield TextField::new('titleCreation', 'Title SEO')
             ->setRequired(false)
-            ->setHelp('Hero + meta description pour /creation-site-internet-{slug}. Vide = description par defaut.')
+            ->setHelp('50-60 car. Vide = title auto.')
+            ->setFormTypeOption('attr', ['data-char-min' => 50, 'data-char-max' => 65, 'maxlength' => 70])
+            ->hideOnIndex();
+
+        yield TextareaField::new('descriptionCreation', 'Description courte')
+            ->setRequired(false)
+            ->setHelp('Hero + meta description. 120-145 car. Vide = description par défaut.')
             ->setFormTypeOption('attr', ['data-char-min' => 120, 'data-char-max' => 155, 'rows' => 3])
             ->hideOnIndex();
 
-        yield TextareaField::new('descriptionCreationLong', 'Long - Creation Site Internet')
+        yield TextareaField::new('descriptionCreationLong', 'Description longue')
             ->setRequired(false)
-            ->setHelp('Texte de presentation pour /creation-site-internet-{slug}. Vide = texte generique.')
+            ->setHelp('Texte de présentation. 900-1200 car. Vide = texte générique.')
             ->setFormTypeOption('attr', ['data-char-min' => 900, 'data-char-max' => 1200, 'rows' => 8])
             ->hideOnIndex();
 
-        yield TextareaField::new('descriptionAgence', 'Short - Agence Web')
+        // --- Page Agence Web ---
+        yield FormField::addPanel('Page : Agence Web')
+            ->setIcon('fa fa-building')
+            ->setHelp('/agence-web-{slug}')
+            ->onlyOnForms();
+
+        yield TextField::new('titleAgence', 'Title SEO')
             ->setRequired(false)
-            ->setHelp('Hero + meta description pour /agence-web-{slug}. Vide = description par defaut.')
+            ->setHelp('50-60 car. Vide = title auto.')
+            ->setFormTypeOption('attr', ['data-char-min' => 50, 'data-char-max' => 65, 'maxlength' => 70])
+            ->hideOnIndex();
+
+        yield TextareaField::new('descriptionAgence', 'Description courte')
+            ->setRequired(false)
+            ->setHelp('Hero + meta description. 120-145 car. Vide = description par défaut.')
             ->setFormTypeOption('attr', ['data-char-min' => 120, 'data-char-max' => 155, 'rows' => 3])
             ->hideOnIndex();
 
-        yield TextareaField::new('descriptionAgenceLong', 'Long - Agence Web')
+        yield TextareaField::new('descriptionAgenceLong', 'Description longue')
             ->setRequired(false)
-            ->setHelp('Texte de presentation pour /agence-web-{slug}. Vide = texte generique.')
+            ->setHelp('Texte de présentation. 900-1200 car. Vide = texte générique.')
             ->setFormTypeOption('attr', ['data-char-min' => 900, 'data-char-max' => 1200, 'rows' => 8])
             ->hideOnIndex();
+
+        // --- Configuration ---
+        yield FormField::addPanel('Configuration')
+            ->setIcon('fa fa-cog')
+            ->onlyOnForms();
 
         yield ArrayField::new('nearby', 'Villes proches')
             ->setHelp('Liste des villes/communes environnantes (une par ligne)')

@@ -38,6 +38,15 @@ class City
     #[Assert\NotBlank(message: 'La description est obligatoire')]
     private ?string $description = null;
 
+    #[ORM\Column(type: Types::STRING, length: 70, nullable: true)]
+    private ?string $titleDeveloppeur = null;
+
+    #[ORM\Column(type: Types::STRING, length: 70, nullable: true)]
+    private ?string $titleCreation = null;
+
+    #[ORM\Column(type: Types::STRING, length: 70, nullable: true)]
+    private ?string $titleAgence = null;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $descriptionDeveloppeur = null;
 
@@ -128,6 +137,49 @@ class City
     public function setDescription(string $description): static
     {
         $this->description = $description;
+        return $this;
+    }
+
+    public function getTitleForService(string $serviceSlug): ?string
+    {
+        return match ($serviceSlug) {
+            'developpeur-web' => $this->titleDeveloppeur,
+            'creation-site-internet' => $this->titleCreation,
+            'agence-web' => $this->titleAgence,
+            default => null,
+        };
+    }
+
+    public function getTitleDeveloppeur(): ?string
+    {
+        return $this->titleDeveloppeur;
+    }
+
+    public function setTitleDeveloppeur(?string $titleDeveloppeur): static
+    {
+        $this->titleDeveloppeur = $titleDeveloppeur;
+        return $this;
+    }
+
+    public function getTitleCreation(): ?string
+    {
+        return $this->titleCreation;
+    }
+
+    public function setTitleCreation(?string $titleCreation): static
+    {
+        $this->titleCreation = $titleCreation;
+        return $this;
+    }
+
+    public function getTitleAgence(): ?string
+    {
+        return $this->titleAgence;
+    }
+
+    public function setTitleAgence(?string $titleAgence): static
+    {
+        $this->titleAgence = $titleAgence;
         return $this;
     }
 

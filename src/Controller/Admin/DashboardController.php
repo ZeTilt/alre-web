@@ -29,6 +29,7 @@ use App\Repository\FactureRepository;
 use App\Repository\ProspectRepository;
 use App\Repository\ProspectFollowUpRepository;
 use App\Repository\ClientSeoImportRepository;
+use App\Repository\ClientSeoKeywordRepository;
 use App\Repository\ClientSiteRepository;
 use App\Repository\SeoKeywordRepository;
 use App\Repository\SeoPositionRepository;
@@ -975,6 +976,17 @@ class DashboardController extends AbstractDashboardController
         ));
 
         return $response;
+    }
+
+    #[Route('/saeiblauhjc/client-seo/{id}/keywords', name: 'admin_client_seo_keywords')]
+    public function clientSeoKeywords(ClientSite $site, ClientSeoKeywordRepository $keywordRepository): Response
+    {
+        $keywords = $keywordRepository->findAllWithLatestPosition($site);
+
+        return $this->render('admin/client_seo/keywords.html.twig', [
+            'site' => $site,
+            'keywords' => $keywords,
+        ]);
     }
 
     // ===== CLIENT SEO REPORTS =====

@@ -1,0 +1,124 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}
+    <i class="fa fa-key"></i> Mots-cles - {{ site.name }}
+{% endblock %}
+
+{% block page_content %}
+{% include 'admin/dashboard/_partials/_styles.html.twig' %}
+
+<div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <a href="{{ path('admin_client_seo_dashboard', {id: site.id}) }}" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Retour au dashboard
+    </a>
+</div>
+
+{% set activeKeywords = keywords|filter(k => k.active) %}
+{% set inactiveKeywords = keywords|filter(k => not k.active) %}
+
+{% if activeKeywords|length == 0 and inactiveKeywords|length == 0 %}
+<div class="stat-card info" style="text-align: center; padding: 3rem;">
+    <i class="fas fa-key" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem; display: block;"></i>
+    <div style="font-size: 1.125rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Aucun mot-cle</div>
+    <div style="color: #6b7280;">Importez des donnees GSC pour voir apparaitre les mots-cles.</div>
+</div>
+{% else %}
+
+<div class="chart-container" style="padding: 1rem 1.5rem; margin-bottom: 1.5rem;">
+    <div class="chart-title" style="margin-bottom: 1rem;">
+        <i class="fas fa-key" style="color: var(--primary);"></i>
+        {{ activeKeywords|length }} mot{{ activeKeywords|length > 1 ? 's' : '' }}-cle{{ activeKeywords|length > 1 ? 's' : '' }} actif{{ activeKeywords|length > 1 ? 's' : '' }}
+        {% if inactiveKeywords|length > 0 %}
+            <span style="font-size: 0.75rem; font-weight: 400; color: #9ca3af; margin-left: 0.5rem;">(+ {{ inactiveKeywords|length }} inactif{{ inactiveKeywords|length > 1 ? 's' : '' }})</span>
+        {% endif %}
+    </div>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid #e5e7eb;">
+                    <th style="text-align: left; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Mot-cle</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Score</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Position</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Clics</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Impressions</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Derniere optimisation</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for keyword in activeKeywords %}
+                    {% set latestPosition = keyword.latestPosition %}
+                    <tr style="border-bottom: 1px solid #f3f4f6;">
+                        <td style="padding: 0.75rem 0.5rem; font-weight: 500;">{{ keyword.keyword }}</td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            <span class="seo-star-group" data-score="{{ keyword.relevanceScore }}" data-url="{{ path('admin_client_seo_keyword_set_score', {id: keyword.id}) }}" data-token="{{ csrf_token('client-seo-score-' ~ keyword.id) }}" style="cursor: pointer; white-space: nowrap;">
+                                {% for i in 1..5 %}
+                                    <i class="{{ keyword.relevanceScore >= i ? 'fas' : 'far' }} fa-star seo-star" data-value="{{ i }}" style="color: {{ keyword.relevanceScore >= i ? '#f59e0b' : '#d1d5db' }}; font-size: 0.85rem;"></i>
+                                {% endfor %}
+                                {% if keyword.relevanceScore == 0 %}<span style="color: #d1d5db; font-size: 0.7rem; margin-left: 2px;">?</span>{% endif %}
+                            </span>
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {% if latestPosition %}
+                                {% set pos = latestPosition.position %}
+                                {% if pos <= 10 %}
+                                    <span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 700;">{{ pos|number_format(1) }}</span>
+                                {% elseif pos <= 20 %}
+                                    <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 700;">{{ pos|number_format(1) }}</span>
+                                {% else %}
+                                    <span style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 700;">{{ pos|number_format(1) }}</span>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #9ca3af;">-</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem; font-weight: 600;">
+                            {% if latestPosition %}{{ latestPosition.clicks }}{% else %}-{% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {% if latestPosition %}{{ latestPosition.impressions|number_format(0, '', ' ') }}{% else %}-{% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem; font-size: 0.8rem; color: #6b7280;">
+                            {% if keyword.lastOptimizedAt %}
+                                {{ keyword.lastOptimizedAt|date('d/m/Y') }}
+                            {% else %}
+                                <span style="color: #d1d5db;">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if inactiveKeywords|length > 0 %}
+<details style="margin-bottom: 1.5rem;">
+    <summary style="cursor: pointer; font-size: 0.875rem; color: #6b7280; padding: 0.5rem;">
+        <i class="fas fa-eye-slash"></i> {{ inactiveKeywords|length }} mot{{ inactiveKeywords|length > 1 ? 's' : '' }}-cle{{ inactiveKeywords|length > 1 ? 's' : '' }} inactif{{ inactiveKeywords|length > 1 ? 's' : '' }}
+    </summary>
+    <div class="chart-container" style="padding: 1rem 1.5rem; margin-top: 0.5rem;">
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem; opacity: 0.7;">
+                <tbody>
+                    {% for keyword in inactiveKeywords %}
+                        <tr style="border-bottom: 1px solid #f3f4f6;">
+                            <td style="padding: 0.5rem; color: #9ca3af;">{{ keyword.keyword }}</td>
+                            <td style="text-align: center; padding: 0.5rem;">
+                                <span class="seo-star-group" data-score="{{ keyword.relevanceScore }}" data-url="{{ path('admin_client_seo_keyword_set_score', {id: keyword.id}) }}" data-token="{{ csrf_token('client-seo-score-' ~ keyword.id) }}" style="cursor: pointer; white-space: nowrap;">
+                                    {% for i in 1..5 %}
+                                        <i class="{{ keyword.relevanceScore >= i ? 'fas' : 'far' }} fa-star seo-star" data-value="{{ i }}" style="color: {{ keyword.relevanceScore >= i ? '#f59e0b' : '#d1d5db' }}; font-size: 0.85rem;"></i>
+                                    {% endfor %}
+                                    {% if keyword.relevanceScore == 0 %}<span style="color: #d1d5db; font-size: 0.7rem; margin-left: 2px;">?</span>{% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</details>
+{% endif %}
+
+{% endif %}
+{% endblock %}

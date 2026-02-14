@@ -37,6 +37,7 @@ class ClientSeoDashboardService
         return [
             'positionComparisons' => $positionComparisons,
             'seoMomentum' => $seoMomentum,
+            'seoStability' => $this->calculateWeeklyPositionStability($site),
             'keywordsRanked' => $this->rankKeywords($site, $positionComparisons, $seoMomentum),
             'chartData' => $this->prepareChartData($site),
             'performanceData' => $this->categorizeKeywords($site),

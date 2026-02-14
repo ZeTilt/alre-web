@@ -84,6 +84,8 @@
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Score</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Position</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">vs M-1</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Tendance 4S</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Stabilite</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Clics</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Impressions</th>
                 </tr>
@@ -132,6 +134,34 @@
                             {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {% set momentumData = seoMomentum[keyword.id] ?? null %}
+                            {% if momentumData %}
+                                {% if momentumData.status == 'improved' %}
+                                    <span style="color: #10b981; font-weight: 600; font-size: 0.8rem;"><i class="fas fa-arrow-up"></i> +{{ momentumData.trend|abs|number_format(1) }}</span>
+                                {% elseif momentumData.status == 'degraded' %}
+                                    <span style="color: #ef4444; font-weight: 600; font-size: 0.8rem;"><i class="fas fa-arrow-down"></i> {{ momentumData.trend|number_format(1) }}</span>
+                                {% else %}
+                                    <span style="color: #6b7280; font-size: 0.8rem;">=</span>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #9ca3af;">-</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {% set stabilityVal = seoStability[keyword.id] ?? null %}
+                            {% if stabilityVal is not null and stabilityVal < 99 %}
+                                {% if stabilityVal < 2 %}
+                                    <span style="background: #d1fae5; color: #065f46; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Stable</span>
+                                {% elseif stabilityVal < 5 %}
+                                    <span style="background: #fef3c7; color: #92400e; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Variable</span>
+                                {% else %}
+                                    <span style="background: #fee2e2; color: #991b1b; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Instable</span>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #9ca3af; font-size: 0.75rem;">Insuff.</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
                             <span style="font-weight: 700; color: #065f46;">{{ latestPosition.clicks }}</span>
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
@@ -161,6 +191,7 @@
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Position</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">vs M-1</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Tendance 4S</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Stabilite</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Clics</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Impr.</th>
                     <th style="text-align: left; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Raison</th>
@@ -223,6 +254,20 @@
                                 {% endif %}
                             {% else %}
                                 <span style="color: #9ca3af;">-</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {% set stabilityVal = seoStability[keyword.id] ?? null %}
+                            {% if stabilityVal is not null and stabilityVal < 99 %}
+                                {% if stabilityVal < 2 %}
+                                    <span style="background: #d1fae5; color: #065f46; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Stable</span>
+                                {% elseif stabilityVal < 5 %}
+                                    <span style="background: #fef3c7; color: #92400e; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Variable</span>
+                                {% else %}
+                                    <span style="background: #fee2e2; color: #991b1b; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Instable</span>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #9ca3af; font-size: 0.75rem;">Insuff.</span>
                             {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">

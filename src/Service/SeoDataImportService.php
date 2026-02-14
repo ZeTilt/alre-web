@@ -61,8 +61,11 @@ class SeoDataImportService
         $errors = 0;
         $now = new \DateTimeImmutable();
 
-        // Requêter chaque jour individuellement (J-3 à J-7)
-        $endDate = (new \DateTimeImmutable('-3 days'))->setTime(0, 0, 0);
+        // Requêter chaque jour individuellement (J-1 à J-7)
+        // On va jusqu'à J-1 pour avoir la date réelle de dernière impression dès le premier sync.
+        // Les données J-1/J-2 sont potentiellement incomplètes (délai GSC 2-3j) mais suffisantes
+        // pour déterminer lastSeenInGsc et obtenir une position approximative.
+        $endDate = (new \DateTimeImmutable('-1 day'))->setTime(0, 0, 0);
         $startDate = (new \DateTimeImmutable('-7 days'))->setTime(0, 0, 0);
         $currentDate = clone $startDate;
 
@@ -383,7 +386,6 @@ class SeoDataImportService
         $existingNormalized = array_map(fn($k) => $this->normalizeString($k), $existingKeywords);
 
         $imported = 0;
-        $now = new \DateTimeImmutable();
 
         foreach ($gscData as $keyword => $data) {
             // Toujours importer si le mot-clé a des clics (important pour le tracking)
@@ -410,7 +412,8 @@ class SeoDataImportService
             $seoKeyword->setSource(SeoKeyword::SOURCE_AUTO_GSC);
             // Pertinence haute si le mot-clé a des clics
             $seoKeyword->setRelevanceLevel($hasClicks ? SeoKeyword::RELEVANCE_HIGH : SeoKeyword::RELEVANCE_MEDIUM);
-            $seoKeyword->setLastSeenInGsc($now);
+            // lastSeenInGsc n'est PAS défini ici : c'est syncAllKeywords() qui le fera
+            // avec la vraie date par jour (J-1 à J-7), juste après l'import.
 
             $this->entityManager->persist($seoKeyword);
             $imported++;
@@ -442,7 +445,9 @@ class SeoDataImportService
             if (isset($gscNormalized[$keywordNormalized])) {
                 $keyword->setIsActive(true);
                 $keyword->setDeactivatedAt(null);
-                $keyword->setLastSeenInGsc($now);
+                // Date temporaire pour éviter la re-désactivation immédiate.
+                // syncAllKeywords() (J-1 à J-7) affinera avec la date exacte juste après.
+                $keyword->setLastSeenInGsc((new \DateTimeImmutable('-1 day'))->setTime(0, 0, 0));
                 $reactivated++;
 
                 $this->logger->info('Reactivated keyword from GSC', [

@@ -35,7 +35,6 @@ class DashboardSeoService
     {
         // Pre-fetch shared data to avoid duplicate queries
         $activeKeywords = $this->seoKeywordRepository->findActiveKeywords();
-        $allKeywordsWithPositions = $this->seoKeywordRepository->findAllWithLatestPosition();
         $latestDates7 = $this->seoPositionRepository->findLatestDatesWithData(7);
         $dailyTotals = $this->seoDailyTotalRepository->findByDateRange(
             (new \DateTimeImmutable())->modify('-35 days')->setTime(0, 0, 0),
@@ -49,10 +48,13 @@ class DashboardSeoService
             $now
         );
 
+        // Extract latest position per keyword from rawPositions (eliminates findAllWithLatestPosition query)
+        $latestPositionData = $this->extractLatestPositions($rawPositions);
+
         $seoPositionComparisons = $this->calculateSeoPositionComparisons($activeKeywords, $rawPositions);
         $seoDailyComparisons = $this->calculateSeoDailyComparisons($activeKeywords, $latestDates7, $rawPositions);
         $seoMomentum = $this->calculate7DayMomentum($latestDates7, $rawPositions);
-        $seoKeywordsRanked = $this->rankSeoKeywords($seoPositionComparisons, $seoDailyComparisons, $seoMomentum, $allKeywordsWithPositions, $latestDates7, $rawPositions);
+        $seoKeywordsRanked = $this->rankSeoKeywords($seoPositionComparisons, $seoDailyComparisons, $seoMomentum, $activeKeywords, $latestPositionData, $latestDates7, $rawPositions);
 
         return [
             // Google OAuth
@@ -71,13 +73,13 @@ class DashboardSeoService
             'seoKeywordsRanked' => $seoKeywordsRanked,
 
             // SEO City pages summary (aggregated "to improve" by city)
-            'seoCityPages' => $this->cityKeywordMatcher->buildCityPagesSummary($seoKeywordsRanked, $allKeywordsWithPositions),
+            'seoCityPages' => $this->cityKeywordMatcher->buildCityPagesSummary($seoKeywordsRanked, $activeKeywords, $latestPositionData),
 
             // SEO Chart data (last 30 days)
             'seoChartData' => $this->prepareSeoChartData($dailyTotals),
 
             // SEO Performance categories
-            'seoPerformanceData' => $this->categorizeSeoKeywords($allKeywordsWithPositions),
+            'seoPerformanceData' => $this->categorizeSeoKeywords($activeKeywords, $latestPositionData),
 
             // SEO Keywords Chart
             'seoKeywordsChartData' => $this->prepareSeoKeywordsChartData($dailyTotals),
@@ -98,7 +100,6 @@ class DashboardSeoService
     {
         // Pre-fetch shared data
         $activeKeywords = $this->seoKeywordRepository->findActiveKeywords();
-        $allKeywordsWithPositions = $this->seoKeywordRepository->findAllWithLatestPosition();
         $latestDates7 = $this->seoPositionRepository->findLatestDatesWithData(7);
 
         // Single query for all position data (replaces 7 individual queries)
@@ -108,10 +109,13 @@ class DashboardSeoService
             $now
         );
 
+        // Extract latest position per keyword from rawPositions (eliminates findAllWithLatestPosition query)
+        $latestPositionData = $this->extractLatestPositions($rawPositions);
+
         $seoPositionComparisons = $this->calculateSeoPositionComparisons($activeKeywords, $rawPositions);
         $seoDailyComparisons = $this->calculateSeoDailyComparisons($activeKeywords, $latestDates7, $rawPositions);
         $seoMomentum = $this->calculate7DayMomentum($latestDates7, $rawPositions);
-        $ranked = $this->rankSeoKeywords($seoPositionComparisons, $seoDailyComparisons, $seoMomentum, $allKeywordsWithPositions, $latestDates7, $rawPositions);
+        $ranked = $this->rankSeoKeywords($seoPositionComparisons, $seoDailyComparisons, $seoMomentum, $activeKeywords, $latestPositionData, $latestDates7, $rawPositions);
 
         // Count active keywords
         $relevanceCounts = $this->seoKeywordRepository->getRelevanceCounts();
@@ -261,11 +265,12 @@ class DashboardSeoService
      * Top 10 : score = baseValue × ctrFactor × momentum × monthlyVelocity
      * A travailler : score basé sur le critère déclencheur + raison + action
      *
-     * @param SeoKeyword[] $allKeywordsWithPositions Pre-fetched keywords with positions
+     * @param SeoKeyword[] $activeKeywords Pre-fetched active keywords
+     * @param array<int, array{position: float, clicks: int, impressions: int}> $latestPositionData Latest position per keyword
      * @param \DateTimeImmutable[] $latestDates7 Pre-fetched latest 7 dates
      * @return array{top10: array<SeoKeyword>, toImprove: array<array{keyword: SeoKeyword, reason: string, action: string}>}
      */
-    private function rankSeoKeywords(array $comparisons, array $dailyComparisons, array $momentum, array $allKeywordsWithPositions, array $latestDates7, array $rawPositions): array
+    private function rankSeoKeywords(array $comparisons, array $dailyComparisons, array $momentum, array $activeKeywords, array $latestPositionData, array $latestDates7, array $rawPositions): array
     {
         $stability = $this->calculatePositionStability($latestDates7, $rawPositions);
 
@@ -274,21 +279,21 @@ class DashboardSeoService
         $maxImpressions = 0;
         $cityCountCache = [];
 
-        foreach ($allKeywordsWithPositions as $keyword) {
-            if (!$keyword->isActive() || $keyword->getRelevanceScore() < 4) {
-                continue;
-            }
-            $latest = $keyword->getLatestPosition();
-            if (!$latest) {
+        foreach ($activeKeywords as $keyword) {
+            if ($keyword->getRelevanceScore() < 4) {
                 continue;
             }
             $keywordId = $keyword->getId();
+            $latestData = $latestPositionData[$keywordId] ?? null;
+            if (!$latestData) {
+                continue;
+            }
             $daily = $dailyComparisons[$keywordId] ?? null;
             if ($daily === null || $daily['latestImpressions'] === 0 || $daily['previousImpressions'] === 0) {
                 continue;
             }
-            $position = $latest->getPosition();
-            $impressions = $latest->getImpressions();
+            $position = $latestData['position'];
+            $impressions = $latestData['impressions'];
             if ($position <= 0 || $impressions <= 0) {
                 continue;
             }
@@ -308,12 +313,12 @@ class DashboardSeoService
         $improveCandidates = [];
 
         foreach ($eligible as $keyword) {
-            $latest = $keyword->getLatestPosition();
             $keywordId = $keyword->getId();
+            $latestData = $latestPositionData[$keywordId];
 
-            $position = $latest->getPosition();
-            $clicks = $latest->getClicks();
-            $impressions = $latest->getImpressions();
+            $position = $latestData['position'];
+            $clicks = $latestData['clicks'];
+            $impressions = $latestData['impressions'];
 
             $ctr = ($clicks / $impressions) * 100;
             $expectedCtr = $this->getExpectedCtr($position);
@@ -443,27 +448,24 @@ class DashboardSeoService
     /**
      * Categorise les mots-cles SEO en Top Performers, A ameliorer, et Opportunites CTR.
      *
-     * @param SeoKeyword[] $keywords Pre-fetched keywords with positions
+     * @param SeoKeyword[] $activeKeywords Pre-fetched active keywords
+     * @param array<int, array{position: float, clicks: int, impressions: int}> $latestPositionData Latest position per keyword
      * @return array{topPerformers: array, toImprove: array, ctrOpportunities: array}
      */
-    private function categorizeSeoKeywords(array $keywords): array
+    private function categorizeSeoKeywords(array $activeKeywords, array $latestPositionData): array
     {
         $allScored = [];
         $ctrOpportunities = [];
 
-        foreach ($keywords as $keyword) {
-            if (!$keyword->isActive()) {
+        foreach ($activeKeywords as $keyword) {
+            $latestData = $latestPositionData[$keyword->getId()] ?? null;
+            if (!$latestData) {
                 continue;
             }
 
-            $latestPosition = $keyword->getLatestPosition();
-            if (!$latestPosition) {
-                continue;
-            }
-
-            $position = $latestPosition->getPosition();
-            $clicks = $latestPosition->getClicks();
-            $impressions = $latestPosition->getImpressions();
+            $position = $latestData['position'];
+            $clicks = $latestData['clicks'];
+            $impressions = $latestData['impressions'];
             $ctr = $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0;
 
             $keywordData = [
@@ -839,6 +841,24 @@ class DashboardSeoService
         }
 
         return $data;
+    }
+
+    /**
+     * Extract the latest position data per keyword from raw positions.
+     *
+     * @param array<int, array<string, array{position: float, clicks: int, impressions: int}>> $rawPositions
+     * @return array<int, array{position: float, clicks: int, impressions: int}>
+     */
+    private function extractLatestPositions(array $rawPositions): array
+    {
+        $latest = [];
+        foreach ($rawPositions as $keywordId => $dates) {
+            if (!empty($dates)) {
+                $latest[$keywordId] = $dates[array_key_last($dates)];
+            }
+        }
+
+        return $latest;
     }
 
     private function prepareSeoKeywordsChartData(array $dailyTotals): array

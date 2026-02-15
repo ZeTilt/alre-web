@@ -190,10 +190,11 @@ class CityKeywordMatcher
      * Requires at least 1 "to improve" keyword matching the city NAME (not just region).
      *
      * @param array{top10: array, toImprove: array} $ranked Output of rankSeoKeywords()
-     * @param SeoKeyword[] $allActiveKeywords All active keywords with latest position
+     * @param SeoKeyword[] $activeKeywords Active keywords
+     * @param array<int, array{position: float, clicks: int, impressions: int}> $latestPositionData Latest position per keyword
      * @return array<array{city: City, toImproveCount: int, totalCount: int, avgPosition: float, priorityScore: float}>
      */
-    public function buildCityPagesSummary(array $ranked, array $allActiveKeywords): array
+    public function buildCityPagesSummary(array $ranked, array $activeKeywords, array $latestPositionData = []): array
     {
         $cities = $this->getActiveCitiesByNameLength();
 
@@ -232,15 +233,12 @@ class CityKeywordMatcher
             // Count total active keywords matching this city + average position
             $totalCount = 0;
             $positionSum = 0;
-            foreach ($allActiveKeywords as $keyword) {
-                if (!$keyword->isActive()) {
-                    continue;
-                }
+            foreach ($activeKeywords as $keyword) {
                 if ($this->keywordMatchesCity($keyword->getKeyword(), $city)) {
                     $totalCount++;
-                    $latest = $keyword->getLatestPosition();
-                    if ($latest) {
-                        $positionSum += $latest->getPosition();
+                    $latestData = $latestPositionData[$keyword->getId()] ?? null;
+                    if ($latestData) {
+                        $positionSum += $latestData['position'];
                     }
                 }
             }

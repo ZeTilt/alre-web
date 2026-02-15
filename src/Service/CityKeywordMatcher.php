@@ -117,6 +117,9 @@ class CityKeywordMatcher
     /**
      * Builds the "Pages a optimiser" summary aggregated by city.
      *
+     * Excludes cities optimized in the last 30 days.
+     * Requires at least 1 "to improve" keyword matching the city NAME (not just region).
+     *
      * @param array{top10: array, toImprove: array} $ranked Output of rankSeoKeywords()
      * @param SeoKeyword[] $allActiveKeywords All active keywords with latest position
      * @return array<array{city: City, toImproveCount: int, totalCount: int, avgPosition: float, priorityScore: float}>
@@ -129,23 +132,31 @@ class CityKeywordMatcher
             return [];
         }
 
-        // Collect "to improve" keyword texts for matching
-        $toImproveTexts = [];
-        foreach ($ranked['toImprove'] as $item) {
-            $toImproveTexts[] = $item['keyword']->getKeyword();
-        }
+        $recentThreshold = (new \DateTimeImmutable())->modify('-30 days');
 
         $cityPages = [];
         foreach ($cities as $city) {
+            // Skip cities optimized in the last 30 days
+            $lastOpt = $city->getLastOptimizedAt();
+            if ($lastOpt !== null && $lastOpt > $recentThreshold) {
+                continue;
+            }
+
             // Count "to improve" keywords matching this city
+            // Must have at least 1 keyword matching the city NAME (not just region)
             $toImproveCount = 0;
+            $hasCityNameMatch = false;
             foreach ($ranked['toImprove'] as $item) {
-                if ($this->keywordMatchesCity($item['keyword']->getKeyword(), $city)) {
+                $kwText = $item['keyword']->getKeyword();
+                if ($this->keywordMatchesCityName($kwText, $city)) {
+                    $toImproveCount++;
+                    $hasCityNameMatch = true;
+                } elseif ($this->keywordMatchesCityRegion($kwText, $city)) {
                     $toImproveCount++;
                 }
             }
 
-            if ($toImproveCount === 0) {
+            if ($toImproveCount === 0 || !$hasCityNameMatch) {
                 continue;
             }
 

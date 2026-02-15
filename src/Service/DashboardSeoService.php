@@ -42,10 +42,17 @@ class DashboardSeoService
             new \DateTimeImmutable()
         );
 
-        $seoPositionComparisons = $this->calculateSeoPositionComparisons($activeKeywords);
-        $seoDailyComparisons = $this->calculateSeoDailyComparisons($activeKeywords, $latestDates7);
-        $seoMomentum = $this->calculate7DayMomentum($latestDates7);
-        $seoKeywordsRanked = $this->rankSeoKeywords($seoPositionComparisons, $seoDailyComparisons, $seoMomentum, $allKeywordsWithPositions, $latestDates7);
+        // Single query for all position data (replaces 7 individual queries)
+        $now = new \DateTimeImmutable();
+        $rawPositions = $this->seoPositionRepository->getRawPositionsForActiveKeywords(
+            $now->modify('first day of last month')->setTime(0, 0, 0),
+            $now
+        );
+
+        $seoPositionComparisons = $this->calculateSeoPositionComparisons($activeKeywords, $rawPositions);
+        $seoDailyComparisons = $this->calculateSeoDailyComparisons($activeKeywords, $latestDates7, $rawPositions);
+        $seoMomentum = $this->calculate7DayMomentum($latestDates7, $rawPositions);
+        $seoKeywordsRanked = $this->rankSeoKeywords($seoPositionComparisons, $seoDailyComparisons, $seoMomentum, $allKeywordsWithPositions, $latestDates7, $rawPositions);
 
         return [
             // Google OAuth
@@ -94,10 +101,17 @@ class DashboardSeoService
         $allKeywordsWithPositions = $this->seoKeywordRepository->findAllWithLatestPosition();
         $latestDates7 = $this->seoPositionRepository->findLatestDatesWithData(7);
 
-        $seoPositionComparisons = $this->calculateSeoPositionComparisons($activeKeywords);
-        $seoDailyComparisons = $this->calculateSeoDailyComparisons($activeKeywords, $latestDates7);
-        $seoMomentum = $this->calculate7DayMomentum($latestDates7);
-        $ranked = $this->rankSeoKeywords($seoPositionComparisons, $seoDailyComparisons, $seoMomentum, $allKeywordsWithPositions, $latestDates7);
+        // Single query for all position data (replaces 7 individual queries)
+        $now = new \DateTimeImmutable();
+        $rawPositions = $this->seoPositionRepository->getRawPositionsForActiveKeywords(
+            $now->modify('first day of last month')->setTime(0, 0, 0),
+            $now
+        );
+
+        $seoPositionComparisons = $this->calculateSeoPositionComparisons($activeKeywords, $rawPositions);
+        $seoDailyComparisons = $this->calculateSeoDailyComparisons($activeKeywords, $latestDates7, $rawPositions);
+        $seoMomentum = $this->calculate7DayMomentum($latestDates7, $rawPositions);
+        $ranked = $this->rankSeoKeywords($seoPositionComparisons, $seoDailyComparisons, $seoMomentum, $allKeywordsWithPositions, $latestDates7, $rawPositions);
 
         // Count active keywords
         $relevanceCounts = $this->seoKeywordRepository->getRelevanceCounts();
@@ -165,7 +179,7 @@ class DashboardSeoService
      * @param \DateTimeImmutable[] $latestDates7 Pre-fetched latest 7 dates with data
      * @return array<int, array{factor: float, trend: float, status: string}> keywordId => momentum data
      */
-    private function calculate7DayMomentum(array $latestDates7): array
+    private function calculate7DayMomentum(array $latestDates7, array $rawPositions): array
     {
         if (\count($latestDates7) < 4) {
             return []; // Pas assez de données
@@ -180,8 +194,8 @@ class DashboardSeoService
         $olderStart = end($olderDates)->setTime(0, 0, 0);
         $olderEnd = $olderDates[0]->setTime(23, 59, 59);
 
-        $recentPositions = $this->seoPositionRepository->getAveragePositionsForAllKeywords($recentStart, $recentEnd);
-        $olderPositions = $this->seoPositionRepository->getAveragePositionsForAllKeywords($olderStart, $olderEnd);
+        $recentPositions = $this->aggregatePositions($rawPositions, $recentStart, $recentEnd);
+        $olderPositions = $this->aggregatePositions($rawPositions, $olderStart, $olderEnd);
 
         $momentum = [];
         foreach ($recentPositions as $keywordId => $recentData) {
@@ -216,7 +230,7 @@ class DashboardSeoService
      * @param \DateTimeImmutable[] $latestDates7 Pre-fetched latest 7 dates with data
      * @return array<int, float> keywordId => stddev (bas = stable)
      */
-    private function calculatePositionStability(array $latestDates7): array
+    private function calculatePositionStability(array $latestDates7, array $rawPositions): array
     {
         if (empty($latestDates7)) {
             return [];
@@ -225,7 +239,7 @@ class DashboardSeoService
         $startDate = end($latestDates7)->setTime(0, 0, 0);
         $endDate = $latestDates7[0]->setTime(23, 59, 59);
 
-        $history = $this->seoPositionRepository->getPositionHistoryForRange($startDate, $endDate);
+        $history = $this->extractPositionHistory($rawPositions, $startDate, $endDate);
 
         $stability = [];
         foreach ($history as $keywordId => $positions) {
@@ -251,9 +265,9 @@ class DashboardSeoService
      * @param \DateTimeImmutable[] $latestDates7 Pre-fetched latest 7 dates
      * @return array{top10: array<SeoKeyword>, toImprove: array<array{keyword: SeoKeyword, reason: string, action: string}>}
      */
-    private function rankSeoKeywords(array $comparisons, array $dailyComparisons, array $momentum, array $allKeywordsWithPositions, array $latestDates7): array
+    private function rankSeoKeywords(array $comparisons, array $dailyComparisons, array $momentum, array $allKeywordsWithPositions, array $latestDates7, array $rawPositions): array
     {
-        $stability = $this->calculatePositionStability($latestDates7);
+        $stability = $this->calculatePositionStability($latestDates7, $rawPositions);
 
         // Pré-filtrer et collecter les données pour calculer le seuil d'impressions relatif
         $eligible = [];
@@ -627,7 +641,7 @@ class DashboardSeoService
      * @param SeoKeyword[] $activeKeywords Pre-fetched active keywords
      * @return array<int, array{currentPosition: ?float, previousPosition: ?float, variation: ?float, status: string}>
      */
-    private function calculateSeoPositionComparisons(array $activeKeywords): array
+    private function calculateSeoPositionComparisons(array $activeKeywords, array $rawPositions): array
     {
         $now = new \DateTimeImmutable();
 
@@ -637,14 +651,8 @@ class DashboardSeoService
         $previousMonthStart = $now->modify('first day of last month')->setTime(0, 0, 0);
         $previousMonthEnd = $now->modify('last day of last month')->setTime(23, 59, 59);
 
-        $currentPositions = $this->seoPositionRepository->getAveragePositionsForAllKeywords(
-            $currentMonthStart,
-            $currentMonthEnd
-        );
-        $previousPositions = $this->seoPositionRepository->getAveragePositionsForAllKeywords(
-            $previousMonthStart,
-            $previousMonthEnd
-        );
+        $currentPositions = $this->aggregatePositions($rawPositions, $currentMonthStart, $currentMonthEnd);
+        $previousPositions = $this->aggregatePositions($rawPositions, $previousMonthStart, $previousMonthEnd);
 
         $comparisons = [];
         foreach ($activeKeywords as $keyword) {
@@ -690,7 +698,7 @@ class DashboardSeoService
      * @param \DateTimeImmutable[] $latestDates7 Pre-fetched latest 7 dates (first 2 used)
      * @return array<int, array{latestPosition: ?float, previousPosition: ?float, variation: ?float, status: string}>
      */
-    private function calculateSeoDailyComparisons(array $activeKeywords, array $latestDates7): array
+    private function calculateSeoDailyComparisons(array $activeKeywords, array $latestDates7, array $rawPositions): array
     {
         // Derive the 2 most recent dates from the 7-dates array
         $latestDates = \array_slice($latestDates7, 0, 2);
@@ -719,14 +727,8 @@ class DashboardSeoService
         $previousStart = $previousDate->setTime(0, 0, 0);
         $previousEnd = $previousDate->setTime(23, 59, 59);
 
-        $latestPositions = $this->seoPositionRepository->getAveragePositionsForAllKeywords(
-            $latestStart,
-            $latestEnd
-        );
-        $previousPositions = $this->seoPositionRepository->getAveragePositionsForAllKeywords(
-            $previousStart,
-            $previousEnd
-        );
+        $latestPositions = $this->aggregatePositions($rawPositions, $latestStart, $latestEnd);
+        $previousPositions = $this->aggregatePositions($rawPositions, $previousStart, $previousEnd);
 
         $comparisons = [];
         foreach ($activeKeywords as $keyword) {
@@ -773,6 +775,67 @@ class DashboardSeoService
      *
      * @param \App\Entity\SeoDailyTotal[] $dailyTotals Pre-fetched daily totals
      */
+    /**
+     * Agrège les positions brutes pour une sous-période (équivalent PHP de getAveragePositionsForAllKeywords).
+     *
+     * @param array<int, array<string, array{position: float, clicks: int, impressions: int}>> $rawPositions
+     * @return array<int, array{keywordId: int, avgPosition: float, totalClicks: int, totalImpressions: int}>
+     */
+    private function aggregatePositions(array $rawPositions, \DateTimeImmutable $start, \DateTimeImmutable $end): array
+    {
+        $startKey = $start->format('Y-m-d');
+        $endKey = $end->format('Y-m-d');
+
+        $data = [];
+        foreach ($rawPositions as $keywordId => $dates) {
+            $positions = [];
+            $totalClicks = 0;
+            $totalImpressions = 0;
+
+            foreach ($dates as $dateKey => $values) {
+                if ($dateKey >= $startKey && $dateKey <= $endKey) {
+                    $positions[] = $values['position'];
+                    $totalClicks += $values['clicks'];
+                    $totalImpressions += $values['impressions'];
+                }
+            }
+
+            if (!empty($positions)) {
+                $data[$keywordId] = [
+                    'keywordId' => $keywordId,
+                    'avgPosition' => round(array_sum($positions) / \count($positions), 1),
+                    'totalClicks' => $totalClicks,
+                    'totalImpressions' => $totalImpressions,
+                ];
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Extrait l'historique de positions pour une sous-période (équivalent PHP de getPositionHistoryForRange).
+     *
+     * @param array<int, array<string, array{position: float, clicks: int, impressions: int}>> $rawPositions
+     * @return array<int, float[]> keywordId => [position1, position2, ...]
+     */
+    private function extractPositionHistory(array $rawPositions, \DateTimeImmutable $start, \DateTimeImmutable $end): array
+    {
+        $startKey = $start->format('Y-m-d');
+        $endKey = $end->format('Y-m-d');
+
+        $data = [];
+        foreach ($rawPositions as $keywordId => $dates) {
+            foreach ($dates as $dateKey => $values) {
+                if ($dateKey >= $startKey && $dateKey <= $endKey) {
+                    $data[$keywordId][] = $values['position'];
+                }
+            }
+        }
+
+        return $data;
+    }
+
     private function prepareSeoKeywordsChartData(array $dailyTotals): array
     {
         $days = 30;

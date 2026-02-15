@@ -344,6 +344,43 @@ class SeoPositionRepository extends ServiceEntityRepository
     }
 
     /**
+     * Récupère toutes les positions brutes des mots-clés actifs pour une plage de dates.
+     * Résultat groupé par keywordId puis par date (1 entrée par keyword par jour).
+     *
+     * @return array<int, array<string, array{position: float, clicks: int, impressions: int}>>
+     */
+    public function getRawPositionsForActiveKeywords(
+        \DateTimeImmutable $startDate,
+        \DateTimeImmutable $endDate
+    ): array {
+        $results = $this->createQueryBuilder('p')
+            ->select('IDENTITY(p.keyword) as keywordId', 'p.date as dateObj', 'p.position', 'p.clicks', 'p.impressions')
+            ->join('p.keyword', 'k')
+            ->where('k.isActive = :active')
+            ->andWhere('p.date >= :startDate')
+            ->andWhere('p.date <= :endDate')
+            ->setParameter('active', true)
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->orderBy('p.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $data = [];
+        foreach ($results as $row) {
+            $keywordId = (int) $row['keywordId'];
+            $dateKey = $row['dateObj']->format('Y-m-d');
+            $data[$keywordId][$dateKey] = [
+                'position' => (float) $row['position'],
+                'clicks' => (int) $row['clicks'],
+                'impressions' => (int) $row['impressions'],
+            ];
+        }
+
+        return $data;
+    }
+
+    /**
      * Retourne les positions d'un mot-clé depuis une date donnée.
      *
      * @return SeoPosition[]

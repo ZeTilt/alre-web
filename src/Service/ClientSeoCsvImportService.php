@@ -22,6 +22,9 @@ class ClientSeoCsvImportService
     /** @var array<string, ClientSeoKeyword> Cache keywords pendant un import pour eviter les doublons */
     private array $keywordCache = [];
 
+    /** @var array<string, ClientSeoPosition> Cache positions pendant un import pour eviter les doublons */
+    private array $positionCache = [];
+
     public function __construct(
         private EntityManagerInterface $entityManager,
         private ClientSeoKeywordRepository $keywordRepository,
@@ -38,7 +41,8 @@ class ClientSeoCsvImportService
      */
     public function importFromFile(ClientSite $site, UploadedFile $file): array
     {
-        $this->keywordCache = []; // Reset cache pour chaque import
+        $this->keywordCache = [];
+        $this->positionCache = [];
 
         $extension = strtolower($file->getClientOriginalExtension());
         $originalFilename = $file->getClientOriginalName();
@@ -467,12 +471,16 @@ class ClientSeoCsvImportService
                 $this->entityManager->flush();
             }
 
-            // Upsert position
-            $existingPosition = $this->positionRepository->findByKeywordAndDate($keyword, $date);
+            // Upsert position (cache memoire pour eviter les doublons non-flushed)
+            $positionCacheKey = $keyword->getId() . '-' . $date->format('Y-m-d');
+            $existingPosition = $this->positionCache[$positionCacheKey]
+                ?? $this->positionRepository->findByKeywordAndDate($keyword, $date);
+
             if ($existingPosition) {
                 $existingPosition->setPosition($position);
                 $existingPosition->setClicks($clicks);
                 $existingPosition->setImpressions($impressions);
+                $this->positionCache[$positionCacheKey] = $existingPosition;
                 $updated++;
             } else {
                 $newPosition = new ClientSeoPosition();
@@ -482,6 +490,7 @@ class ClientSeoCsvImportService
                 $newPosition->setClicks($clicks);
                 $newPosition->setImpressions($impressions);
                 $this->entityManager->persist($newPosition);
+                $this->positionCache[$positionCacheKey] = $newPosition;
                 $imported++;
             }
 

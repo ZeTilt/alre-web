@@ -327,6 +327,7 @@ class DashboardSeoService
         // Pré-filtrer et collecter les données pour calculer le seuil d'impressions relatif
         $eligible = [];
         $maxImpressions = 0;
+        $cityCountCache = [];
 
         foreach ($allKeywordsWithPositions as $keyword) {
             if (!$keyword->isActive() || $keyword->getRelevanceScore() < 4) {
@@ -451,7 +452,11 @@ class DashboardSeoService
                 // City leverage: keywords on cities with more tracked keywords get a slight boost
                 $city = $this->cityKeywordMatcher->findCityForKeyword($keyword);
                 if ($city !== null) {
-                    $cityKeywordCount = $this->cityKeywordMatcher->countKeywordsForCity($city, $eligible);
+                    $cityId = $city->getId();
+                    if (!isset($cityCountCache[$cityId])) {
+                        $cityCountCache[$cityId] = $this->cityKeywordMatcher->countKeywordsForCity($city, $eligible);
+                    }
+                    $cityKeywordCount = $cityCountCache[$cityId];
                     $cityLeverageMultiplier = min(1.3, 1.0 + 0.1 * log(max(1, $cityKeywordCount), 2));
                     $improveScore *= $cityLeverageMultiplier;
                 }

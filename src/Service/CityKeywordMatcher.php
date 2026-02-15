@@ -10,9 +10,83 @@ class CityKeywordMatcher
 {
     private ?array $citiesCache = null;
 
+    /** @var array<string, string> Memoized normalize() results */
+    private array $normalizeCache = [];
+
+    /** @var array<int, string[]> Normalized name-only patterns per city ID */
+    private array $cityNamePatternsCache = [];
+
+    /** @var array<int, string[]> Normalized name+region patterns per city ID */
+    private array $cityAllPatternsCache = [];
+
     public function __construct(
         private CityRepository $cityRepository,
     ) {
+    }
+
+    /**
+     * Normalize a string: strip accents + lowercase. Memoized.
+     */
+    private function normalize(string $text): string
+    {
+        return $this->normalizeCache[$text] ??= mb_strtolower(
+            transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $text)
+        );
+    }
+
+    /**
+     * Get pre-normalized name patterns for a city (no region). Memoized.
+     *
+     * @return string[] Normalized patterns
+     */
+    private function getCityNamePatterns(City $city): array
+    {
+        $cityId = $city->getId();
+        if (!isset($this->cityNamePatternsCache[$cityId])) {
+            $name = $city->getName();
+            $stripped = transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $name);
+
+            $nameVariants = array_unique([$name, $stripped]);
+            $patterns = [];
+            foreach ($nameVariants as $v) {
+                $patterns[] = $v;
+                if (str_contains($v, '-')) {
+                    $patterns[] = str_replace('-', ' ', $v);
+                }
+                if (str_contains($v, ' ')) {
+                    $patterns[] = str_replace(' ', '-', $v);
+                }
+            }
+
+            $this->cityNamePatternsCache[$cityId] = array_map(
+                fn($p) => $this->normalize($p),
+                array_unique($patterns)
+            );
+        }
+
+        return $this->cityNamePatternsCache[$cityId];
+    }
+
+    /**
+     * Get pre-normalized name+region patterns for a city. Memoized.
+     *
+     * @return string[] Normalized patterns
+     */
+    private function getCityAllPatterns(City $city): array
+    {
+        $cityId = $city->getId();
+        if (!isset($this->cityAllPatternsCache[$cityId])) {
+            $patterns = $this->getCityNamePatterns($city);
+
+            $region = $city->getRegion();
+            if ($region) {
+                $patterns[] = $this->normalize($region);
+            }
+
+            $this->cityAllPatternsCache[$cityId] = array_values(array_unique($patterns));
+        }
+
+        return $this->cityAllPatternsCache[$cityId];
     }
 
     /**
@@ -55,14 +129,9 @@ class CityKeywordMatcher
      */
     public function keywordMatchesCity(string $keyword, City $city): bool
     {
-        $normalizedKeyword = mb_strtolower(
-            transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $keyword)
-        );
+        $normalizedKeyword = $this->normalize($keyword);
 
-        foreach ($this->buildCityPatterns($city) as $pattern) {
-            $normalizedPattern = mb_strtolower(
-                transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $pattern)
-            );
+        foreach ($this->getCityAllPatterns($city) as $normalizedPattern) {
             if (str_contains($normalizedKeyword, $normalizedPattern)) {
                 return true;
             }
@@ -223,29 +292,9 @@ class CityKeywordMatcher
      */
     private function keywordMatchesCityName(string $keyword, City $city): bool
     {
-        $normalizedKeyword = mb_strtolower(
-            transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $keyword)
-        );
+        $normalizedKeyword = $this->normalize($keyword);
 
-        $name = $city->getName();
-        $stripped = transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $name);
-
-        $nameVariants = array_unique([$name, $stripped]);
-        $patterns = [];
-        foreach ($nameVariants as $v) {
-            $patterns[] = $v;
-            if (str_contains($v, '-')) {
-                $patterns[] = str_replace('-', ' ', $v);
-            }
-            if (str_contains($v, ' ')) {
-                $patterns[] = str_replace(' ', '-', $v);
-            }
-        }
-
-        foreach (array_unique($patterns) as $pattern) {
-            $normalizedPattern = mb_strtolower(
-                transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $pattern)
-            );
+        foreach ($this->getCityNamePatterns($city) as $normalizedPattern) {
             if (str_contains($normalizedKeyword, $normalizedPattern)) {
                 return true;
             }
@@ -264,14 +313,6 @@ class CityKeywordMatcher
             return false;
         }
 
-        $normalizedKeyword = mb_strtolower(
-            transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $keyword)
-        );
-
-        $normalizedRegion = mb_strtolower(
-            transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $region)
-        );
-
-        return str_contains($normalizedKeyword, $normalizedRegion);
+        return str_contains($this->normalize($keyword), $this->normalize($region));
     }
 }

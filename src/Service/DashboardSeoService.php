@@ -33,116 +33,61 @@ class DashboardSeoService
      */
     public function getFullData(): array
     {
-        $t = [];
-        $t0 = microtime(true);
-
+        // Pre-fetch shared data to avoid duplicate queries
         $activeKeywords = $this->seoKeywordRepository->findActiveKeywords();
-        $t['findActiveKeywords'] = microtime(true) - $t0;
-
-        $t1 = microtime(true);
         $allKeywordsWithPositions = $this->seoKeywordRepository->findAllWithLatestPosition();
-        $t['findAllWithLatestPosition'] = microtime(true) - $t1;
-
-        $t1 = microtime(true);
         $latestDates7 = $this->seoPositionRepository->findLatestDatesWithData(7);
-        $t['findLatestDatesWithData'] = microtime(true) - $t1;
-
-        $t1 = microtime(true);
         $dailyTotals = $this->seoDailyTotalRepository->findByDateRange(
             (new \DateTimeImmutable())->modify('-35 days')->setTime(0, 0, 0),
             new \DateTimeImmutable()
         );
-        $t['findByDateRange'] = microtime(true) - $t1;
 
-        $t1 = microtime(true);
+        // Single query for all position data (replaces 7 individual queries)
         $now = new \DateTimeImmutable();
         $rawPositions = $this->seoPositionRepository->getRawPositionsForActiveKeywords(
             $now->modify('first day of last month')->setTime(0, 0, 0),
             $now
         );
-        $t['getRawPositions'] = microtime(true) - $t1;
 
-        $t1 = microtime(true);
         $seoPositionComparisons = $this->calculateSeoPositionComparisons($activeKeywords, $rawPositions);
-        $t['positionComparisons'] = microtime(true) - $t1;
-
-        $t1 = microtime(true);
         $seoDailyComparisons = $this->calculateSeoDailyComparisons($activeKeywords, $latestDates7, $rawPositions);
-        $t['dailyComparisons'] = microtime(true) - $t1;
-
-        $t1 = microtime(true);
         $seoMomentum = $this->calculate7DayMomentum($latestDates7, $rawPositions);
-        $t['momentum'] = microtime(true) - $t1;
-
-        $t1 = microtime(true);
         $seoKeywordsRanked = $this->rankSeoKeywords($seoPositionComparisons, $seoDailyComparisons, $seoMomentum, $allKeywordsWithPositions, $latestDates7, $rawPositions);
-        $t['rankKeywords'] = microtime(true) - $t1;
-
-        $t1 = microtime(true);
-        $seoCityPages = $this->cityKeywordMatcher->buildCityPagesSummary($seoKeywordsRanked, $allKeywordsWithPositions);
-        $t['cityPages'] = microtime(true) - $t1;
-
-        $t1 = microtime(true);
-        $seoChartData = $this->prepareSeoChartData($dailyTotals);
-        $t['chartData'] = microtime(true) - $t1;
-
-        $t1 = microtime(true);
-        $seoPerformanceData = $this->categorizeSeoKeywords($allKeywordsWithPositions);
-        $t['categorize'] = microtime(true) - $t1;
-
-        $t1 = microtime(true);
-        $seoKeywordsChartData = $this->prepareSeoKeywordsChartData($dailyTotals);
-        $t['keywordsChart'] = microtime(true) - $t1;
-
-        $t1 = microtime(true);
-        $googleOAuthConfigured = $this->googleOAuthService->isConfigured();
-        $googleOAuthConnected = $this->googleOAuthService->isConnected();
-        $googleOAuthToken = $this->googleOAuthService->getValidToken();
-        $t['googleOAuth'] = microtime(true) - $t1;
-
-        $t1 = microtime(true);
-        $lastSeoSyncAt = $this->seoDataImportService->getLastSyncDate();
-        $t['lastSyncDate'] = microtime(true) - $t1;
-
-        $t1 = microtime(true);
-        $googlePlacesConfigured = $this->googlePlacesService->isConfigured();
-        $reviewStats = $this->googleReviewRepository->getStats();
-        $reviewsDataFresh = $this->reviewSyncService->isDataFresh();
-        $pendingReviews = $this->googleReviewRepository->findPending();
-        $reviewsApiError = $this->googlePlacesService->getLastError();
-        $t['googleReviews'] = microtime(true) - $t1;
-
-        $total = microtime(true) - $t0;
-
-        // Log timing breakdown to var/log/perf.log
-        $parts = [];
-        foreach ($t as $label => $duration) {
-            $parts[] = sprintf('%s=%.0fms', $label, $duration * 1000);
-        }
-        $logDir = \dirname(__DIR__, 2) . '/var/log';
-        @file_put_contents(
-            $logDir . '/perf.log',
-            sprintf("[%s] TOTAL=%.0fms | %s\n", date('H:i:s'), $total * 1000, implode(' | ', $parts)),
-            FILE_APPEND
-        );
 
         return [
-            'googleOAuthConfigured' => $googleOAuthConfigured,
-            'googleOAuthConnected' => $googleOAuthConnected,
-            'googleOAuthToken' => $googleOAuthToken,
-            'lastSeoSyncAt' => $lastSeoSyncAt,
+            // Google OAuth
+            'googleOAuthConfigured' => $this->googleOAuthService->isConfigured(),
+            'googleOAuthConnected' => $this->googleOAuthService->isConnected(),
+            'googleOAuthToken' => $this->googleOAuthService->getValidToken(),
+
+            // SEO Sync
+            'lastSeoSyncAt' => $this->seoDataImportService->getLastSyncDate(),
+
+            // SEO Position comparisons (monthly + momentum)
             'seoPositionComparisons' => $seoPositionComparisons,
             'seoMomentum' => $seoMomentum,
+
+            // SEO Keywords ranked by score
             'seoKeywordsRanked' => $seoKeywordsRanked,
-            'seoCityPages' => $seoCityPages,
-            'seoChartData' => $seoChartData,
-            'seoPerformanceData' => $seoPerformanceData,
-            'seoKeywordsChartData' => $seoKeywordsChartData,
-            'googlePlacesConfigured' => $googlePlacesConfigured,
-            'reviewStats' => $reviewStats,
-            'reviewsDataFresh' => $reviewsDataFresh,
-            'pendingReviews' => $pendingReviews,
-            'reviewsApiError' => $reviewsApiError,
+
+            // SEO City pages summary (aggregated "to improve" by city)
+            'seoCityPages' => $this->cityKeywordMatcher->buildCityPagesSummary($seoKeywordsRanked, $allKeywordsWithPositions),
+
+            // SEO Chart data (last 30 days)
+            'seoChartData' => $this->prepareSeoChartData($dailyTotals),
+
+            // SEO Performance categories
+            'seoPerformanceData' => $this->categorizeSeoKeywords($allKeywordsWithPositions),
+
+            // SEO Keywords Chart
+            'seoKeywordsChartData' => $this->prepareSeoKeywordsChartData($dailyTotals),
+
+            // Google Reviews
+            'googlePlacesConfigured' => $this->googlePlacesService->isConfigured(),
+            'reviewStats' => $this->googleReviewRepository->getStats(),
+            'reviewsDataFresh' => $this->reviewSyncService->isDataFresh(),
+            'pendingReviews' => $this->googleReviewRepository->findPending(),
+            'reviewsApiError' => $this->googlePlacesService->getLastError(),
         ];
     }
 

@@ -299,6 +299,34 @@ class SeoPositionRepository extends ServiceEntityRepository
     }
 
     /**
+     * Retourne les positions quotidiennes groupées par keyword pour un range de dates.
+     *
+     * @return array<int, float[]> keywordId => [position1, position2, ...]
+     */
+    public function getPositionHistoryForRange(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
+    {
+        $results = $this->createQueryBuilder('p')
+            ->select('IDENTITY(p.keyword) as keywordId', 'p.position')
+            ->join('p.keyword', 'k')
+            ->where('k.isActive = :active')
+            ->andWhere('p.date >= :startDate')
+            ->andWhere('p.date <= :endDate')
+            ->setParameter('active', true)
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->orderBy('p.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $data = [];
+        foreach ($results as $row) {
+            $data[(int) $row['keywordId']][] = (float) $row['position'];
+        }
+
+        return $data;
+    }
+
+    /**
      * Retourne toutes les positions depuis une date donnée.
      *
      * @return SeoPosition[]

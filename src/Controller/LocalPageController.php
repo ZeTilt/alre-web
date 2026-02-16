@@ -90,6 +90,8 @@ class LocalPageController extends AbstractController
         return $this->render('local_page/index.html.twig', [
             'pages' => $this->localPageService->getAllPages(),
             'cities' => $citiesArray,
+            'citiesByRegion' => $this->localPageService->getCitiesByRegion(),
+            'departmentPages' => $this->localPageService->getDepartmentPagesIndexedByName(),
             'services' => $this->localPageService->getServices(),
         ]);
     }

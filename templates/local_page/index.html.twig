@@ -17,28 +17,51 @@
     </div>
 </section>
 
-{# Carte / Liste des zones #}
+{# Villes par département #}
 <section class="section">
     <div class="container">
         <h2 class="text-center mb-5">Mes zones d'intervention</h2>
 
-        <div class="grid grid-3">
-            {% for citySlug, city in cities %}
-            <div class="card" style="text-align: center;">
-                <div class="card-icon"><i class="fas fa-map-marker-alt"></i></div>
-                <h3 class="card-title">{{ city.name }}</h3>
-                <p class="card-text">{{ city.description }}</p>
-                <div style="margin-top: 1rem;">
-                    {% for serviceSlug, service in services %}
-                    <a href="{{ path('app_local_page', {slug: serviceSlug ~ '-' ~ citySlug}) }}"
-                       style="display: inline-block; margin: 0.25rem; padding: 0.5rem 1rem; background: var(--light-bg); border-radius: 20px; font-size: 0.85rem; text-decoration: none; color: var(--text-color);">
-                        {{ service.title }}
-                    </a>
-                    {% endfor %}
+        {% for regionName, regionCities in citiesByRegion %}
+        <div style="margin-bottom: 3rem;">
+            {# En-tête département cliquable #}
+            {% set dept = departmentPages[regionName] | default(null) %}
+            <h3 style="margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--accent-color);">
+                <i class="fas fa-map-marker-alt" style="color: var(--accent-color); margin-right: 0.5rem;"></i>
+                {% if dept %}
+                    {{ regionName }}
+                    <span style="font-size: 0.85rem; font-weight: 400; color: var(--text-muted); margin-left: 0.25rem;">({{ dept.number }})</span>
+                    <span style="float: right; display: inline-flex; gap: 0.5rem;">
+                        {% for serviceSlug, service in services %}
+                        <a href="{{ path('app_local_page', {slug: serviceSlug ~ '-' ~ dept.slug}) }}"
+                           style="font-size: 0.8rem; font-weight: 500; padding: 0.3rem 0.8rem; background: var(--bg-light); border-radius: 20px; text-decoration: none; color: var(--primary-color);">
+                            {{ service.title }}
+                        </a>
+                        {% endfor %}
+                    </span>
+                {% else %}
+                    {{ regionName }}
+                {% endif %}
+            </h3>
+
+            <div class="grid grid-3">
+                {% for city in regionCities %}
+                <div class="card" style="text-align: center;">
+                    <h4 class="card-title" style="font-size: 1.1rem;">{{ city.name }}</h4>
+                    <p class="card-text" style="font-size: 0.9rem;">{{ city.description }}</p>
+                    <div style="margin-top: auto;">
+                        {% for serviceSlug, service in services %}
+                        <a href="{{ path('app_local_page', {slug: serviceSlug ~ '-' ~ city.slug}) }}"
+                           style="display: inline-block; margin: 0.25rem; padding: 0.4rem 0.8rem; background: var(--bg-light); border-radius: 20px; font-size: 0.8rem; text-decoration: none; color: var(--primary-color);">
+                            {{ service.title }}
+                        </a>
+                        {% endfor %}
+                    </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
+        {% endfor %}
     </div>
 </section>
 

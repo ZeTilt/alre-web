@@ -1,0 +1,186 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Création Site Internet Bretagne | Sites Web pour TPE | Alré Web{% endblock %}
+
+{% block meta_description %}Création de sites internet en Bretagne pour artisans et TPE. Sites vitrines, e-commerce, applications sur mesure. Basé à Auray, j'interviens sur tout le Morbihan et au-delà.{% endblock %}
+
+{% block structured_data %}
+{{ parent() }}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "Création de Site Internet en Bretagne",
+    "description": "Création de sites internet sur mesure pour artisans et TPE en Bretagne : sites vitrines, e-commerce et applications métier",
+    "provider": {
+        "@type": "ProfessionalService",
+        "name": "Alré Web",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Auray",
+            "addressRegion": "Bretagne",
+            "postalCode": "56400",
+            "addressCountry": "FR"
+        }
+    },
+    "areaServed": {
+        "@type": "State",
+        "name": "Bretagne"
+    },
+    "serviceType": "Création de Site Internet"
+}
+</script>
+{% endblock %}
+
+{% block body %}
+
+{# Hero Section #}
+<section class="hero" style="padding: 4rem 0;">
+    <div class="hero-content">
+        <h1 class="fade-in">Création de site internet en Bretagne</h1>
+        <p class="lead fade-in-delay-1">
+            Sites vitrines, e-commerce et applications web sur mesure<br>
+            pour artisans et TPE en Morbihan, Finistère, Côtes-d'Armor et Ille-et-Vilaine.
+        </p>
+        <div class="fade-in-delay-2" style="margin-top: 2rem;">
+            <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-paper-plane"></i> Demander un devis gratuit
+            </a>
+        </div>
+    </div>
+</section>
+
+{# Main Content #}
+<section class="section">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
+            <div>
+                <h2 class="text-primary mb-3">Un site qui correspond à votre activité</h2>
+                <p class="lead">
+                    Vous êtes artisan, commerçant ou profession libérale en Bretagne ?
+                    Votre site internet est votre vitrine permanente, celle qui travaille pour vous 24h/24.
+                </p>
+                <p>
+                    Je crée des sites internet sur mesure, pensés pour votre activité et vos clients.
+                    Pas de template générique : chaque site est conçu pour mettre en valeur
+                    ce que vous faites et convertir les visiteurs en clients.
+                </p>
+
+                <h3 class="mt-4 mb-3">Ce que je peux créer pour vous :</h3>
+                <ul class="service-list">
+                    <li><strong>Site vitrine</strong> : présentez votre activité, vos réalisations et vos coordonnées. Idéal pour artisans, professions libérales, restaurants.</li>
+                    <li><strong>Site e-commerce</strong> : vendez vos produits en ligne avec paiement sécurisé, gestion de stock et suivi des commandes.</li>
+                    <li><strong>Application métier</strong> : outils sur mesure pour automatiser votre gestion (devis, factures, réservations, planning).</li>
+                    <li><strong>Refonte de site</strong> : votre site actuel est daté ou pas responsive ? Je le modernise de A à Z.</li>
+                </ul>
+
+                <div class="service-highlight mt-4">
+                    <strong>Chaque site intègre dès le départ :</strong> un design responsive (mobile, tablette, PC),
+                    l'optimisation pour le référencement Google, le certificat SSL
+                    et une formation pour gérer vos contenus en autonomie.
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 5rem; color: var(--accent-color);">
+                    <i class="fas fa-globe"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Process #}
+<section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-5">De l'idée à la mise en ligne</h2>
+
+        <div class="grid grid-3">
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-comments"></i></div>
+                <h3 class="card-title">1. On en discute</h3>
+                <p class="card-text">
+                    Un premier rendez-vous gratuit (chez vous, en visio ou par téléphone)
+                    pour comprendre votre activité et vos objectifs.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-file-alt"></i></div>
+                <h3 class="card-title">2. Devis clair</h3>
+                <p class="card-text">
+                    Un devis détaillé sans surprise, avec un planning de livraison.
+                    Vous savez exactement ce que vous aurez et quand.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-code"></i></div>
+                <h3 class="card-title">3. Développement</h3>
+                <p class="card-text">
+                    Je crée votre site et vous montre l'avancement au fur et à mesure.
+                    Vous validez chaque étape.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-rocket"></i></div>
+                <h3 class="card-title">4. Mise en ligne</h3>
+                <p class="card-text">
+                    Votre site est en ligne, optimisé pour Google.
+                    Je vous forme à le gérer en autonomie (15-30 min).
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-headset"></i></div>
+                <h3 class="card-title">5. Support continu</h3>
+                <p class="card-text">
+                    Hébergement, maintenance, mises à jour : je reste à vos côtés
+                    pour que votre site fonctionne sans accroc.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-chart-line"></i></div>
+                <h3 class="card-title">6. Évolution</h3>
+                <p class="card-text">
+                    Votre activité évolue, votre site aussi.
+                    Nouvelles pages, nouvelles fonctionnalités : tout est possible.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# City Grid #}
+<section class="section">
+    <div class="container">
+        <h2 class="text-center mb-5">Création de sites internet partout en Bretagne</h2>
+        <p class="text-center lead mb-5" style="max-width: 700px; margin-left: auto; margin-right: auto;">
+            Basé à Auray, j'interviens sur les quatre départements bretons.
+            Cliquez sur votre ville pour découvrir mon offre locale.
+        </p>
+
+        {% include 'services/_city_grid.html.twig' with {serviceSlug: 'creation-site-internet'} %}
+    </div>
+</section>
+
+{# CTA #}
+<section class="section section-light">
+    <div class="container text-center">
+        <h2 class="mb-3">Vous avez un projet de site internet ?</h2>
+        <p class="lead mb-4">
+            Parlons-en. Premier rendez-vous gratuit et sans engagement.
+        </p>
+        <div style="display: inline-flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+            <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-paper-plane"></i> Demander un devis gratuit
+            </a>
+            <a href="{{ path('app_pricing') }}" class="btn btn-outline btn-lg">
+                <i class="fas fa-euro-sign"></i> Voir les tarifs
+            </a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

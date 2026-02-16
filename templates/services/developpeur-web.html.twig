@@ -1,0 +1,186 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Développeur Web Freelance Bretagne | Symfony Sur Mesure | Alré Web{% endblock %}
+
+{% block meta_description %}Développeur web freelance en Bretagne, spécialisé Symfony. Sites et applications sur mesure pour artisans et TPE. Basé à Auray, j'interviens dans tout le Morbihan et au-delà.{% endblock %}
+
+{% block structured_data %}
+{{ parent() }}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "Développeur Web Freelance en Bretagne",
+    "description": "Développement web sur mesure en Symfony pour artisans et TPE en Bretagne",
+    "provider": {
+        "@type": "ProfessionalService",
+        "name": "Alré Web",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Auray",
+            "addressRegion": "Bretagne",
+            "postalCode": "56400",
+            "addressCountry": "FR"
+        }
+    },
+    "areaServed": {
+        "@type": "State",
+        "name": "Bretagne"
+    },
+    "serviceType": "Développement Web"
+}
+</script>
+{% endblock %}
+
+{% block body %}
+
+{# Hero Section #}
+<section class="hero" style="padding: 4rem 0;">
+    <div class="hero-content">
+        <h1 class="fade-in">Développeur web freelance en Bretagne</h1>
+        <p class="lead fade-in-delay-1">
+            Développement sur mesure en Symfony pour artisans, commerçants et TPE.<br>
+            Basé à Auray, j'interviens sur toute la Bretagne.
+        </p>
+        <div class="fade-in-delay-2" style="margin-top: 2rem;">
+            <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-paper-plane"></i> Discutons de votre projet
+            </a>
+        </div>
+    </div>
+</section>
+
+{# Main Content #}
+<section class="section">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
+            <div>
+                <h2 class="text-primary mb-3">Un développeur, pas une agence</h2>
+                <p class="lead">
+                    Quand vous travaillez avec moi, vous savez à qui vous avez affaire.
+                    Pas de commercial, pas de sous-traitance : c'est moi qui code votre site, de A à Z.
+                </p>
+                <p>
+                    Je suis développeur web freelance, spécialisé dans le framework Symfony.
+                    Je crée des sites internet et des applications sur mesure pour les artisans,
+                    commerçants et TPE de Bretagne. Chaque projet est développé avec du code propre,
+                    performant et maintenable.
+                </p>
+
+                <h3 class="mt-4 mb-3">Pourquoi choisir un freelance ?</h3>
+                <ul class="service-list">
+                    <li><strong>Un interlocuteur unique</strong> : vous parlez directement à la personne qui code votre site. Pas de perte d'information.</li>
+                    <li><strong>Des tarifs justes</strong> : pas de frais de structure, de locaux ou d'équipe commerciale à financer.</li>
+                    <li><strong>De la réactivité</strong> : un problème ? Un email ou un appel, et je m'en occupe dans la journée.</li>
+                    <li><strong>Du sur mesure</strong> : pas de template, pas de page builder. Du code pensé pour votre besoin.</li>
+                </ul>
+
+                <div class="service-highlight mt-4">
+                    <strong>Mon engagement :</strong> un code propre, des délais respectés,
+                    et un site qui fonctionne. Si quelque chose ne va pas, je corrige.
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 5rem; color: var(--accent-color);">
+                    <i class="fas fa-code"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Technical Expertise #}
+<section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Expertise technique</h2>
+
+        <div class="grid grid-3">
+            <div class="card">
+                <div class="card-icon"><i class="fab fa-symfony"></i></div>
+                <h3 class="card-title">Symfony</h3>
+                <p class="card-text">
+                    Le framework PHP de référence pour les applications web professionnelles.
+                    Robuste, sécurisé, conçu pour durer.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-mobile-alt"></i></div>
+                <h3 class="card-title">Responsive Design</h3>
+                <p class="card-text">
+                    Des sites qui s'affichent parfaitement sur tous les écrans.
+                    Mobile-first, parce que vos clients naviguent sur leur téléphone.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-search"></i></div>
+                <h3 class="card-title">SEO intégré</h3>
+                <p class="card-text">
+                    Structure HTML propre, temps de chargement optimisé, balises méta :
+                    votre site est pensé pour le référencement dès la première ligne de code.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-shield-alt"></i></div>
+                <h3 class="card-title">Sécurité</h3>
+                <p class="card-text">
+                    HTTPS, protection contre les injections, mises à jour régulières :
+                    votre site et vos données sont protégés.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-tachometer-alt"></i></div>
+                <h3 class="card-title">Performance</h3>
+                <p class="card-text">
+                    Un site rapide, c'est des visiteurs qui restent. J'optimise le code
+                    et l'hébergement pour des temps de chargement minimaux.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-leaf"></i></div>
+                <h3 class="card-title">Écoconception</h3>
+                <p class="card-text">
+                    Code léger, images optimisées, hébergement vert :
+                    un site performant qui respecte l'environnement.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# City Grid #}
+<section class="section">
+    <div class="container">
+        <h2 class="text-center mb-5">Développeur web disponible partout en Bretagne</h2>
+        <p class="text-center lead mb-5" style="max-width: 700px; margin-left: auto; margin-right: auto;">
+            Basé à Auray dans le Morbihan, je me déplace ou travaille en visio
+            avec des clients dans toute la Bretagne.
+        </p>
+
+        {% include 'services/_city_grid.html.twig' with {serviceSlug: 'developpeur-web'} %}
+    </div>
+</section>
+
+{# CTA #}
+<section class="section section-light">
+    <div class="container text-center">
+        <h2 class="mb-3">Besoin d'un développeur web en Bretagne ?</h2>
+        <p class="lead mb-4">
+            Expliquez-moi votre projet. Premier rendez-vous gratuit, devis sous 48h.
+        </p>
+        <div style="display: inline-flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+            <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-paper-plane"></i> Demander un devis gratuit
+            </a>
+            <a href="{{ path('app_pricing') }}" class="btn btn-outline btn-lg">
+                <i class="fas fa-euro-sign"></i> Voir les tarifs
+            </a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

@@ -154,6 +154,39 @@ class LocalPageService
     }
 
     /**
+     * Retourne les villes actives groupées par département.
+     * Morbihan en premier (base), puis alphabétique.
+     *
+     * @return array<string, City[]>
+     */
+    public function getCitiesByRegion(): array
+    {
+        $cities = $this->getCities();
+        $grouped = [];
+
+        foreach ($cities as $city) {
+            // Normaliser : "Morbihan, Bretagne" → "Morbihan"
+            $region = trim(explode(',', $city->getRegion())[0]);
+            $grouped[$region][] = $city;
+        }
+
+        $order = ['Morbihan', 'Finistère', 'Côtes-d\'Armor', 'Ille-et-Vilaine'];
+        $sorted = [];
+        foreach ($order as $region) {
+            if (isset($grouped[$region])) {
+                $sorted[$region] = $grouped[$region];
+            }
+        }
+        foreach ($grouped as $region => $regionCities) {
+            if (!isset($sorted[$region])) {
+                $sorted[$region] = $regionCities;
+            }
+        }
+
+        return $sorted;
+    }
+
+    /**
      * Vérifie si un slug est valide.
      */
     public function isValidSlug(string $slug): bool

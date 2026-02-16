@@ -35,6 +35,25 @@ class SitemapController extends AbstractController
             'priority' => '0.9',
         ];
 
+        // Service hub pages
+        $urls[] = [
+            'loc' => $this->generateUrl('app_service_creation', [], UrlGeneratorInterface::ABSOLUTE_URL),
+            'changefreq' => 'monthly',
+            'priority' => '0.8',
+        ];
+
+        $urls[] = [
+            'loc' => $this->generateUrl('app_service_developpeur', [], UrlGeneratorInterface::ABSOLUTE_URL),
+            'changefreq' => 'monthly',
+            'priority' => '0.8',
+        ];
+
+        $urls[] = [
+            'loc' => $this->generateUrl('app_service_agence', [], UrlGeneratorInterface::ABSOLUTE_URL),
+            'changefreq' => 'monthly',
+            'priority' => '0.8',
+        ];
+
         // Page Portfolio
         $urls[] = [
             'loc' => $this->generateUrl('app_portfolio', [], UrlGeneratorInterface::ABSOLUTE_URL),

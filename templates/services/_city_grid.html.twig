@@ -1,0 +1,21 @@
+{# Grille de villes groupées par département #}
+{# Attend : citiesByRegion (dict région → City[]), serviceSlug (string) #}
+
+{% set deptNumbers = {'Morbihan': '56', 'Finistère': '29', "Côtes-d'Armor": '22', 'Ille-et-Vilaine': '35'} %}
+
+{% for region, cities in citiesByRegion %}
+<div style="margin-bottom: 2rem;">
+    <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">
+        <i class="fas fa-map-marker-alt" style="color: var(--primary-color);"></i>
+        {{ region }} ({{ deptNumbers[region]|default('') }})
+    </h3>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+        {% for city in cities %}
+        <a href="{{ path('app_local_page', {slug: serviceSlug ~ '-' ~ city.slug}) }}"
+           style="display: inline-block; padding: 0.4rem 1rem; background: var(--light-bg); border-radius: 20px; text-decoration: none; color: var(--text-color); font-size: 0.9rem; transition: all 0.2s;">
+            {{ city.name }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}

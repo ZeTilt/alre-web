@@ -463,9 +463,47 @@
 </section>
 
 {# ============================================
-   CTA FINAL
+   SERVICES EN DÉTAIL (liens vers les hubs)
    ============================================ #}
 <section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Découvrir en détail</h2>
+
+        <div class="grid grid-3">
+            <a href="{{ path('app_service_creation') }}" class="card" style="text-decoration: none; color: inherit;">
+                <div class="card-icon"><i class="fas fa-globe"></i></div>
+                <h3 class="card-title">Création de Site Internet</h3>
+                <p class="card-text">
+                    Sites vitrines, e-commerce et applications web sur mesure pour artisans et TPE en Bretagne.
+                </p>
+                <span class="btn btn-outline" style="margin-top: 1rem;">En savoir plus</span>
+            </a>
+
+            <a href="{{ path('app_service_developpeur') }}" class="card" style="text-decoration: none; color: inherit;">
+                <div class="card-icon"><i class="fas fa-code"></i></div>
+                <h3 class="card-title">Développeur Web Freelance</h3>
+                <p class="card-text">
+                    Expertise Symfony, code sur mesure et interlocuteur unique pour vos projets.
+                </p>
+                <span class="btn btn-outline" style="margin-top: 1rem;">En savoir plus</span>
+            </a>
+
+            <a href="{{ path('app_service_agence') }}" class="card" style="text-decoration: none; color: inherit;">
+                <div class="card-icon"><i class="fas fa-building"></i></div>
+                <h3 class="card-title">Agence Web de Proximité</h3>
+                <p class="card-text">
+                    Accompagnement complet : création, hébergement, SEO et maintenance.
+                </p>
+                <span class="btn btn-outline" style="margin-top: 1rem;">En savoir plus</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+{# ============================================
+   CTA FINAL
+   ============================================ #}
+<section class="section">
     <div class="container text-center">
         <h2 class="mb-3">Vous avez une idée ? Parlons-en.</h2>
         <p class="lead mb-4">

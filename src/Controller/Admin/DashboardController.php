@@ -1177,7 +1177,8 @@ class DashboardController extends AbstractDashboardController
             ->addJsFile('js/admin-toggles.js')
             ->addJsFile('js/admin-char-counter.js')
             ->addJsFile('js/admin-city-optimized.js')
-            ->addJsFile('js/admin-star-rating.js');
+            ->addJsFile('js/admin-star-rating.js')
+            ->addJsFile('js/admin-table-filter.js');
 
         // Charger le CSS de floutage si le mode démo est activé
         if ($this->params->get('app.demo_mode')) {

@@ -16,8 +16,23 @@
             "position": 1,
             "item": {
                 "@type": "Service",
-                "name": "Développement Web Sur Mesure",
-                "description": "Création de sites vitrines, applications métier et outils personnalisés avec Symfony",
+                "name": "Création de Site Internet",
+                "description": "Sites vitrines, e-commerce et applications web sur mesure pour artisans et TPE en Bretagne",
+                "provider": {
+                    "@type": "ProfessionalService",
+                    "name": "Alré Web"
+                },
+                "areaServed": "Bretagne, France",
+                "serviceType": "Création de Site Internet"
+            }
+        },
+        {
+            "@type": "ListItem",
+            "position": 2,
+            "item": {
+                "@type": "Service",
+                "name": "Développeur Web Freelance",
+                "description": "Développement sur mesure en Symfony, interlocuteur unique pour vos projets web",
                 "provider": {
                     "@type": "ProfessionalService",
                     "name": "Alré Web"
@@ -28,42 +43,17 @@
         },
         {
             "@type": "ListItem",
-            "position": 2,
-            "item": {
-                "@type": "Service",
-                "name": "Site Vitrine",
-                "description": "Site one-page ou multi-pages pour présenter votre activité et être visible sur Google",
-                "provider": {
-                    "@type": "ProfessionalService",
-                    "name": "Alré Web"
-                },
-                "areaServed": "Bretagne, France",
-                "offers": {
-                    "@type": "Offer",
-                    "price": "493",
-                    "priceCurrency": "EUR",
-                    "priceSpecification": {
-                        "@type": "PriceSpecification",
-                        "price": "493",
-                        "priceCurrency": "EUR",
-                        "description": "À partir de"
-                    }
-                }
-            }
-        },
-        {
-            "@type": "ListItem",
             "position": 3,
             "item": {
                 "@type": "Service",
-                "name": "Site E-commerce",
-                "description": "Boutique en ligne complète pour vendre vos produits 24h/24",
+                "name": "Agence Web de Proximité",
+                "description": "Accompagnement complet : création, hébergement, maintenance et référencement",
                 "provider": {
                     "@type": "ProfessionalService",
                     "name": "Alré Web"
                 },
                 "areaServed": "Bretagne, France",
-                "serviceType": "E-commerce"
+                "serviceType": "Agence Web"
             }
         },
         {
@@ -71,24 +61,14 @@
             "position": 4,
             "item": {
                 "@type": "Service",
-                "name": "Hébergement et Maintenance",
-                "description": "Hébergement sécurisé, mises à jour et support technique pour votre site web",
+                "name": "Référencement Local",
+                "description": "Optimisation du référencement local sur Google pour les artisans et TPE",
                 "provider": {
                     "@type": "ProfessionalService",
                     "name": "Alré Web"
                 },
                 "areaServed": "Bretagne, France",
-                "offers": {
-                    "@type": "Offer",
-                    "price": "13",
-                    "priceCurrency": "EUR",
-                    "priceSpecification": {
-                        "@type": "PriceSpecification",
-                        "price": "13",
-                        "priceCurrency": "EUR",
-                        "unitText": "mois"
-                    }
-                }
+                "serviceType": "Référencement Local"
             }
         }
     ]
@@ -104,334 +84,89 @@
         <h1 class="fade-in">Sites web sur mesure pour artisans et TPE</h1>
         <p class="lead fade-in-delay-1">
             Être visible, vendre en ligne, gagner du temps :<br>
-            des solutions concrètes adaptées à votre activité
+            des solutions concrètes adaptées à votre activité.
         </p>
     </div>
 </section>
 
 {# ============================================
-   SERVICE 1 - DÉVELOPPEMENT SYMFONY (cœur de métier)
-   ============================================ #}
-<section id="developpement" class="section">
-    <div class="container">
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
-            <div>
-                <h2 class="text-primary mb-3">Un site ou un outil qui fait exactement ce dont vous avez besoin</h2>
-                <p class="lead">
-                    Fini les solutions génériques qui ne correspondent pas à votre façon de travailler.
-                </p>
-                <p>
-                    Vous avez un besoin spécifique ? Un processus à automatiser ? Un outil interne à créer ?
-                    Je développe des solutions sur mesure qui s'adaptent à VOTRE activité,
-                    pas l'inverse. Site vitrine, application métier, espace client... tout est possible.
-                </p>
-
-                <h3 class="mt-4 mb-3">Concrètement, ça vous permet de :</h3>
-                <ul class="service-list">
-                    <li>Avoir un site qui reflète vraiment votre activité et vos valeurs</li>
-                    <li>Automatiser les tâches répétitives (devis, factures, relances...)</li>
-                    <li>Connecter vos outils existants (comptabilité, CRM, paiement...)</li>
-                    <li>Créer un espace client pour vos clients récurrents</li>
-                    <li>Centraliser vos données dans un seul outil</li>
-                    <li>Faire évoluer votre site au fur et à mesure de vos besoins</li>
-                </ul>
-
-                <div class="service-highlight mt-4">
-                    <strong>Pourquoi du sur-mesure ?</strong><br>
-                    Parce qu'un outil qui correspond à votre façon de travailler vous fait gagner du temps.
-                    Et un site qui vous ressemble inspire confiance à vos clients.
-                </div>
-
-                <div class="mt-4">
-                    <a href="{{ path('app_contact') }}" class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i> Demander un devis
-                    </a>
-                </div>
-            </div>
-            <div style="text-align: center;">
-                <div style="font-size: 5rem; color: var(--accent-color);">
-                    <i class="fas fa-code"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-{# ============================================
-   SERVICE 2 - SITES E-COMMERCE
-   ============================================ #}
-<section id="ecommerce" class="section section-light">
-    <div class="container">
-        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 3rem; align-items: start;">
-            <div style="text-align: center;">
-                <div style="font-size: 5rem; color: var(--accent-color);">
-                    <i class="fas fa-shopping-cart"></i>
-                </div>
-            </div>
-            <div>
-                <h2 class="text-primary mb-3">Vendez vos produits 24h/24, même quand vous dormez</h2>
-                <p class="lead">
-                    Votre boutique en ligne prend les commandes pendant que vous êtes sur le terrain.
-                </p>
-                <p>
-                    Vous fabriquez des produits artisanaux ? Vous avez une boutique physique ?
-                    Avec un site e-commerce, vos clients peuvent commander à toute heure,
-                    de n'importe où. Vous élargissez votre clientèle sans ouvrir un deuxième local.
-                </p>
-
-                <h3 class="mt-4 mb-3">Ce que ça change pour vous :</h3>
-                <ul class="service-list">
-                    <li>Des ventes qui arrivent même le dimanche ou en vacances</li>
-                    <li>Des clients au-delà de votre zone géographique habituelle</li>
-                    <li>Des paiements sécurisés (Stripe, PayPal, CB...)</li>
-                    <li>Un suivi automatique des stocks et des commandes</li>
-                    <li>Des emails automatiques envoyés à vos clients (confirmation, expédition...)</li>
-                    <li>Un tableau de bord pour suivre vos ventes en temps réel</li>
-                    <li>Des codes promo pour fidéliser vos clients</li>
-                </ul>
-
-                <div class="service-highlight mt-4">
-                    <strong>Pour qui ?</strong><br>
-                    Artisans, producteurs locaux, commerçants, créateurs... Tous ceux qui veulent
-                    vendre leurs produits en ligne sans passer par des plateformes qui prennent des commissions.
-                </div>
-
-                <div class="mt-4">
-                    <a href="{{ path('app_contact') }}" class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i> Demander un devis
-                    </a>
-                    <a href="{{ path('app_pricing') }}" class="btn btn-outline">
-                        <i class="fas fa-euro-sign"></i> Voir les tarifs
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-{# ============================================
-   SERVICE 3 - GESTION DE PROJET
-   ============================================ #}
-<section id="gestion-projet" class="section">
-    <div class="container">
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
-            <div>
-                <h2 class="text-primary mb-3">Vous n'avez pas de temps à perdre en réunions et en technique</h2>
-                <p class="lead">
-                    Expliquez-moi ce dont vous avez besoin, je m'occupe de tout le reste.
-                </p>
-                <p>
-                    Vous avez une entreprise à gérer, des clients à servir. Vous n'avez pas le temps
-                    de suivre les détails techniques d'un projet web. C'est mon travail. Vous me dites
-                    ce que vous voulez, je vous tiens informé de l'avancement, vous validez. Point.
-                </p>
-
-                <h3 class="mt-4 mb-3">Comment ça se passe :</h3>
-                <ul class="service-list">
-                    <li>On discute de vos besoins et de vos objectifs (1h de votre temps)</li>
-                    <li>Je vous propose une solution adaptée avec un devis clair</li>
-                    <li>Je développe, vous validez les étapes clés</li>
-                    <li>Je vous forme à utiliser votre site (15-30 min)</li>
-                    <li>Votre site est en ligne, je reste disponible pour le support</li>
-                </ul>
-
-                <div class="service-highlight mt-4">
-                    <strong>Ce que ça veut dire pour vous :</strong><br>
-                    Pas de jargon technique, pas de dizaines de réunions. Vous restez concentré
-                    sur votre activité pendant que votre projet avance.
-                </div>
-
-                <div class="mt-4">
-                    <a href="{{ path('app_contact') }}" class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i> Discutons de votre projet
-                    </a>
-                </div>
-            </div>
-            <div style="text-align: center;">
-                <div style="font-size: 5rem; color: var(--accent-color);">
-                    <i class="fas fa-project-diagram"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-{# ============================================
-   SERVICE 4 - HÉBERGEMENT & MAINTENANCE
-   ============================================ #}
-<section id="hebergement" class="section section-light">
-    <div class="container">
-        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 3rem; align-items: start;">
-            <div style="text-align: center;">
-                <div style="font-size: 5rem; color: var(--accent-color);">
-                    <i class="fas fa-server"></i>
-                </div>
-            </div>
-            <div>
-                <h2 class="text-primary mb-3">Vous n'avez pas à comprendre la technique pour avoir un site pro</h2>
-                <p class="lead">
-                    Hébergement, sécurité, mises à jour : je gère tout, vous n'y pensez plus.
-                </p>
-                <p>
-                    "C'est quoi un certificat SSL ?" "Comment on fait une sauvegarde ?"
-                    Vous n'avez pas besoin de le savoir. C'est mon travail. Votre site fonctionne,
-                    il est rapide, sécurisé, et si jamais il y a un problème, je m'en occupe.
-                </p>
-
-                <h3 class="mt-4 mb-3">Ce que ça veut dire pour vous :</h3>
-                <ul class="service-list">
-                    <li>Un site toujours en ligne (99.9% de disponibilité)</li>
-                    <li>Des sauvegardes quotidiennes (on peut revenir en arrière si besoin)</li>
-                    <li>Un site sécurisé avec le petit cadenas HTTPS</li>
-                    <li>Des mises à jour faites automatiquement pour éviter les failles</li>
-                    <li>Un support réactif : vous m'appelez, je réponds</li>
-                    <li>Des petites modifications incluses (textes, images...)</li>
-                </ul>
-
-                <div class="service-highlight mt-4">
-                    <strong>En résumé :</strong><br>
-                    Vous avez un site professionnel qui fonctionne, sans jamais avoir à vous soucier
-                    de la technique. Un seul forfait, tout compris.
-                </div>
-
-                <div class="mt-4">
-                    <a href="{{ path('app_pricing') }}" class="btn btn-primary">
-                        <i class="fas fa-euro-sign"></i> 53€/mois tout compris
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-{# ============================================
-   SERVICE 5 - RÉFÉRENCEMENT SEO
-   ============================================ #}
-<section id="seo" class="section">
-    <div class="container">
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
-            <div>
-                <h2 class="text-primary mb-3">Apparaissez quand vos clients vous cherchent sur Google</h2>
-                <p class="lead">
-                    Fini l'invisibilité. Vos futurs clients vous trouvent au moment où ils ont besoin de vous.
-                </p>
-                <p>
-                    Quand quelqu'un tape "plombier Vannes" ou "boulangerie bio Auray" sur Google,
-                    est-ce que votre entreprise apparaît ? Si non, vous perdez des clients tous les jours.
-                    J'optimise votre site pour qu'il remonte dans les résultats de recherche.
-                </p>
-
-                <h3 class="mt-4 mb-3">Concrètement, qu'est-ce que ça change :</h3>
-                <ul class="service-list">
-                    <li>Vos clients vous trouvent quand ils cherchent vos services</li>
-                    <li>Vous recevez plus de demandes de devis sans payer de pub</li>
-                    <li>Votre site apparaît avant vos concurrents qui n'ont pas fait ce travail</li>
-                    <li>Votre entreprise gagne en crédibilité (être bien placé = être sérieux)</li>
-                </ul>
-
-                <h3 class="mt-4 mb-3">Ce que je fais pour y arriver :</h3>
-                <p>
-                    J'optimise la technique (site rapide, bien structuré), je travaille les bons mots-clés,
-                    et je configure les outils Google pour suivre vos résultats. C'est inclus dans tous mes sites.
-                </p>
-
-                <div class="service-highlight mt-4">
-                    <strong>Le saviez-vous ?</strong><br>
-                    75% des gens ne vont jamais au-delà de la première page Google.
-                    Si vous n'y êtes pas, vous n'existez pas pour eux.
-                </div>
-
-                <div class="mt-4">
-                    <a href="{{ path('app_contact') }}" class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i> Demander un audit SEO
-                    </a>
-                </div>
-            </div>
-            <div style="text-align: center;">
-                <div style="font-size: 5rem; color: var(--accent-color);">
-                    <i class="fas fa-search"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-{# ============================================
-   SERVICE 6 - CONCEPTION & DESIGN UI/UX (peut être sous-traité)
-   ============================================ #}
-<section id="conception" class="section section-light">
-    <div class="container">
-        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 3rem; align-items: start;">
-            <div style="text-align: center;">
-                <div style="font-size: 5rem; color: var(--accent-color);">
-                    <i class="fas fa-palette"></i>
-                </div>
-            </div>
-            <div>
-                <h2 class="text-primary mb-3">Un site qui inspire confiance dès le premier regard</h2>
-                <p class="lead">
-                    Vos clients jugent votre professionnalisme en 3 secondes. Autant faire bonne impression.
-                </p>
-                <p>
-                    Un site daté ou mal présenté, c'est comme un commerce avec une vitrine sale :
-                    les gens passent leur chemin. Je crée des sites modernes, clairs, qui donnent envie
-                    de vous contacter. Et qui fonctionnent aussi bien sur téléphone que sur ordinateur.
-                </p>
-
-                <h3 class="mt-4 mb-3">Ce que ça apporte à votre entreprise :</h3>
-                <ul class="service-list">
-                    <li>Une image professionnelle qui inspire confiance</li>
-                    <li>Un site lisible sur tous les écrans (téléphone, tablette, ordinateur)</li>
-                    <li>Une navigation simple : vos visiteurs trouvent ce qu'ils cherchent</li>
-                    <li>Des couleurs et un style qui correspondent à votre activité</li>
-                    <li>Plus de visiteurs qui vous contactent (au lieu de partir ailleurs)</li>
-                </ul>
-
-                <div class="service-highlight mt-4">
-                    <strong>Le saviez-vous ?</strong><br>
-                    94% des premières impressions sont liées au design. Un site professionnel
-                    peut faire la différence entre un client gagné et un client perdu.
-                </div>
-
-                <div class="mt-4">
-                    <a href="{{ path('app_contact') }}" class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i> Demander un devis
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-{# ============================================
-   SERVICES ADDITIONNELS
+   4 SERVICES PRINCIPAUX - Cards cliquables
    ============================================ #}
 <section class="section">
     <div class="container">
-        <h2 class="text-center mb-5">Autres Services sur Demande</h2>
+        <div class="grid grid-2" style="gap: 2rem;">
+            <a href="{{ path('app_service_creation') }}" class="card" style="text-decoration: none; color: inherit;">
+                <div class="card-icon"><i class="fas fa-globe"></i></div>
+                <h2 class="card-title" style="font-size: 1.25rem;">Création de Site Internet</h2>
+                <p class="card-text">
+                    Sites vitrines, e-commerce et applications web sur mesure.
+                    De l'idée à la mise en ligne, un site qui vous ressemble.
+                </p>
+                <span class="btn btn-outline" style="margin-top: auto;">En savoir plus</span>
+            </a>
+
+            <a href="{{ path('app_service_developpeur') }}" class="card" style="text-decoration: none; color: inherit;">
+                <div class="card-icon"><i class="fas fa-code"></i></div>
+                <h2 class="card-title" style="font-size: 1.25rem;">Développeur Web Freelance</h2>
+                <p class="card-text">
+                    Expertise Symfony et code sur mesure. Un interlocuteur unique
+                    qui code votre projet de A à Z.
+                </p>
+                <span class="btn btn-outline" style="margin-top: auto;">En savoir plus</span>
+            </a>
+
+            <a href="{{ path('app_service_agence') }}" class="card" style="text-decoration: none; color: inherit;">
+                <div class="card-icon"><i class="fas fa-building"></i></div>
+                <h2 class="card-title" style="font-size: 1.25rem;">Agence Web de Proximité</h2>
+                <p class="card-text">
+                    Accompagnement complet : création, hébergement, maintenance et SEO.
+                    Un seul prestataire pour tout.
+                </p>
+                <span class="btn btn-outline" style="margin-top: auto;">En savoir plus</span>
+            </a>
+
+            <a href="{{ path('app_service_referencement') }}" class="card" style="text-decoration: none; color: inherit;">
+                <div class="card-icon"><i class="fas fa-search-location"></i></div>
+                <h2 class="card-title" style="font-size: 1.25rem;">Référencement Local</h2>
+                <p class="card-text">
+                    Soyez visible sur Google quand vos clients vous cherchent.
+                    Optimisation SEO locale pour artisans et TPE.
+                </p>
+                <span class="btn btn-outline" style="margin-top: auto;">En savoir plus</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+{# ============================================
+   SERVICES COMPLÉMENTAIRES
+   ============================================ #}
+<section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Également disponible</h2>
 
         <div class="grid grid-3">
             <div class="card">
-                <div class="card-icon"><i class="fas fa-language"></i></div>
-                <h3 class="card-title">Site Multilingue</h3>
+                <div class="card-icon"><i class="fas fa-shopping-cart"></i></div>
+                <h3 class="card-title">E-commerce</h3>
                 <p class="card-text">
-                    Ajoutez des versions en plusieurs langues pour toucher une clientèle internationale.
+                    Boutique en ligne complète avec paiement sécurisé, gestion de stock et suivi des commandes.
                 </p>
             </div>
 
             <div class="card">
-                <div class="card-icon"><i class="fas fa-paper-plane"></i></div>
-                <h3 class="card-title">Newsletter & Emailing</h3>
+                <div class="card-icon"><i class="fas fa-server"></i></div>
+                <h3 class="card-title">Hébergement & Maintenance</h3>
                 <p class="card-text">
-                    Intégration d'un système de newsletter pour fidéliser vos clients et communiquer régulièrement.
+                    Votre site en ligne 24h/24, sécurisé, sauvegardé et mis à jour. À partir de 13€/mois.
                 </p>
             </div>
 
             <div class="card">
-                <div class="card-icon"><i class="fas fa-lock"></i></div>
-                <h3 class="card-title">Espace Membres</h3>
+                <div class="card-icon"><i class="fas fa-palette"></i></div>
+                <h3 class="card-title">Design & UX</h3>
                 <p class="card-text">
-                    Création d'un espace privé sécurisé pour vos membres, clients ou collaborateurs.
+                    Un site moderne qui inspire confiance dès le premier regard, sur tous les écrans.
                 </p>
             </div>
 
@@ -439,15 +174,15 @@
                 <div class="card-icon"><i class="fas fa-calendar-check"></i></div>
                 <h3 class="card-title">Module de Réservation</h3>
                 <p class="card-text">
-                    Système de prise de rendez-vous en ligne pour les prestataires de services.
+                    Prise de rendez-vous en ligne pour les prestataires de services.
                 </p>
             </div>
 
             <div class="card">
-                <div class="card-icon"><i class="fas fa-pen"></i></div>
-                <h3 class="card-title">Rédaction de Contenu</h3>
+                <div class="card-icon"><i class="fas fa-language"></i></div>
+                <h3 class="card-title">Site Multilingue</h3>
                 <p class="card-text">
-                    Besoin d'aide pour rédiger les textes de votre site ? Je peux vous accompagner ou recommander un rédacteur web.
+                    Versions en plusieurs langues pour toucher une clientèle internationale.
                 </p>
             </div>
 
@@ -455,56 +190,9 @@
                 <div class="card-icon"><i class="fas fa-graduation-cap"></i></div>
                 <h3 class="card-title">Formation</h3>
                 <p class="card-text">
-                    Formation complète pour utiliser votre site en autonomie et gérer vos contenus.
+                    Formation pour gérer votre site en autonomie et mettre à jour vos contenus.
                 </p>
             </div>
-        </div>
-    </div>
-</section>
-
-{# ============================================
-   SERVICES EN DÉTAIL (liens vers les hubs)
-   ============================================ #}
-<section class="section section-light">
-    <div class="container">
-        <h2 class="text-center mb-5">Découvrir en détail</h2>
-
-        <div class="grid grid-4">
-            <a href="{{ path('app_service_creation') }}" class="card" style="text-decoration: none; color: inherit;">
-                <div class="card-icon"><i class="fas fa-globe"></i></div>
-                <h3 class="card-title">Création de Site Internet</h3>
-                <p class="card-text">
-                    Sites vitrines, e-commerce et applications web sur mesure pour artisans et TPE en Bretagne.
-                </p>
-                <span class="btn btn-outline" style="margin-top: 1rem;">En savoir plus</span>
-            </a>
-
-            <a href="{{ path('app_service_developpeur') }}" class="card" style="text-decoration: none; color: inherit;">
-                <div class="card-icon"><i class="fas fa-code"></i></div>
-                <h3 class="card-title">Développeur Web Freelance</h3>
-                <p class="card-text">
-                    Expertise Symfony, code sur mesure et interlocuteur unique pour vos projets.
-                </p>
-                <span class="btn btn-outline" style="margin-top: 1rem;">En savoir plus</span>
-            </a>
-
-            <a href="{{ path('app_service_agence') }}" class="card" style="text-decoration: none; color: inherit;">
-                <div class="card-icon"><i class="fas fa-building"></i></div>
-                <h3 class="card-title">Agence Web de Proximité</h3>
-                <p class="card-text">
-                    Accompagnement complet : création, hébergement, SEO et maintenance.
-                </p>
-                <span class="btn btn-outline" style="margin-top: 1rem;">En savoir plus</span>
-            </a>
-
-            <a href="{{ path('app_service_referencement') }}" class="card" style="text-decoration: none; color: inherit;">
-                <div class="card-icon"><i class="fas fa-search-location"></i></div>
-                <h3 class="card-title">Référencement Local</h3>
-                <p class="card-text">
-                    Soyez visible sur Google quand vos clients vous cherchent dans votre ville.
-                </p>
-                <span class="btn btn-outline" style="margin-top: 1rem;">En savoir plus</span>
-            </a>
         </div>
     </div>
 </section>

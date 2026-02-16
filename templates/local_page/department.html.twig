@@ -109,28 +109,6 @@
     </div>
 </section>
 
-{# Grille des villes du département #}
-{% if cities|length > 0 %}
-<section class="section section-light">
-    <div class="container">
-        <h2 class="text-center mb-5">{{ service.title }} dans les villes du {{ department.name }}</h2>
-        <p class="text-center lead mb-5" style="max-width: 700px; margin-left: auto; margin-right: auto;">
-            J'interviens dans toutes les villes du département.
-            Cliquez sur votre ville pour découvrir mon offre locale.
-        </p>
-
-        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;">
-            {% for city in cities %}
-            <a href="{{ path('app_local_page', {slug: serviceSlug ~ '-' ~ city.slug}) }}"
-               style="display: inline-block; padding: 0.5rem 1.2rem; background: var(--light-bg); border-radius: 20px; text-decoration: none; color: var(--text-color); font-size: 0.95rem; transition: all 0.2s;">
-                {{ city.name }}
-            </a>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-{% endif %}
-
 {# CTA #}
 <section class="section">
     <div class="container text-center">

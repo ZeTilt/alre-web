@@ -34,15 +34,10 @@ class LocalPageController extends AbstractController
                 throw $this->createNotFoundException('Page non trouvée');
             }
 
-            // Get cities for this department
-            $citiesByRegion = $this->localPageService->getCitiesByRegion();
-            $deptCities = $citiesByRegion[$department->getName()] ?? [];
-
             return $this->render('local_page/department.html.twig', [
                 'service' => $service,
                 'serviceSlug' => $parsed['service'],
                 'department' => $department,
-                'cities' => $deptCities,
             ]);
         }
 

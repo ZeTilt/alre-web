@@ -241,6 +241,54 @@ a:hover {
     cursor: pointer;
 }
 
+/* Dropdown menu */
+.navbar-dropdown {
+    position: relative;
+}
+
+.navbar-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--bg-white);
+    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius-md);
+    min-width: 220px;
+    padding: 0.5rem 0;
+    list-style: none;
+    z-index: 1001;
+}
+
+.navbar-dropdown:hover .navbar-dropdown-menu {
+    display: block;
+}
+
+.navbar-dropdown-menu li a {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 1.2rem;
+    color: var(--text-dark);
+    font-weight: 500;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    transition: all var(--transition-fast);
+    border-radius: 0;
+}
+
+.navbar-dropdown-menu li a:hover {
+    background-color: var(--bg-light);
+    color: var(--primary-color);
+}
+
+.navbar-dropdown-menu li a i {
+    width: 18px;
+    text-align: center;
+    color: var(--accent-color);
+    font-size: 0.85rem;
+}
+
 /* ============================================
    5. HERO SECTION
    ============================================ */
@@ -1073,6 +1121,25 @@ textarea.form-control {
 
     .navbar-menu.active {
         display: flex;
+    }
+
+    /* Dropdown mobile : toujours visible, inline */
+    .navbar-dropdown-menu {
+        display: none;
+        position: static;
+        box-shadow: none;
+        min-width: 0;
+        padding: 0;
+        padding-left: 1rem;
+    }
+
+    .navbar-dropdown.open .navbar-dropdown-menu {
+        display: block;
+    }
+
+    .navbar-dropdown-menu li a {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
     }
 
     /* Cacher les icônes des cards en mobile */

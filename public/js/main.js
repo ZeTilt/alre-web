@@ -30,6 +30,18 @@ document.addEventListener('DOMContentLoaded', function() {
             : '<i class="fas fa-bars"></i>';
     });
 
+    // Dropdown mobile toggle
+    const navDropdown = document.querySelector('.navbar-dropdown');
+    if (navDropdown) {
+        const dropdownLink = navDropdown.querySelector(':scope > a');
+        dropdownLink?.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) {
+                e.preventDefault();
+                navDropdown.classList.toggle('open');
+            }
+        });
+    }
+
     // Fermer le menu mobile au clic sur un lien
     navbarLinks.forEach(link => {
         link.addEventListener('click', function() {

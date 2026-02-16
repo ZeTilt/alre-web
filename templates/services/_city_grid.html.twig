@@ -1,5 +1,5 @@
 {# Grille de villes groupées par département #}
-{# Attend : citiesByRegion (dict région → City[]), serviceSlug (string) #}
+{# Attend : citiesByRegion (dict région → City[]), serviceSlug (string), departmentPages (optionnel, dict name → DepartmentPage) #}
 
 {% set deptNumbers = {'Morbihan': '56', 'Finistère': '29', "Côtes-d'Armor": '22', 'Ille-et-Vilaine': '35'} %}
 
@@ -7,7 +7,14 @@
 <div style="margin-bottom: 2rem;">
     <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">
         <i class="fas fa-map-marker-alt" style="color: var(--primary-color);"></i>
-        {{ region }} ({{ deptNumbers[region]|default('') }})
+        {% if departmentPages is defined and departmentPages[region] is defined %}
+            <a href="{{ path('app_local_page', {slug: serviceSlug ~ '-' ~ departmentPages[region].slug}) }}"
+               style="text-decoration: none; color: inherit;">
+                {{ region }} ({{ deptNumbers[region]|default('') }})
+            </a>
+        {% else %}
+            {{ region }} ({{ deptNumbers[region]|default('') }})
+        {% endif %}
     </h3>
     <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
         {% for city in cities %}

@@ -75,6 +75,9 @@ class DashboardSeoService
             // SEO City pages summary (aggregated "to improve" by city)
             'seoCityPages' => $this->cityKeywordMatcher->buildCityPagesSummary($seoKeywordsRanked, $activeKeywords, $latestPositionData),
 
+            // SEO Department pages summary
+            'seoDepartmentPages' => $this->cityKeywordMatcher->buildDepartmentPagesSummary($seoKeywordsRanked, $activeKeywords, $latestPositionData),
+
             // SEO Chart data (last 30 days)
             'seoChartData' => $this->prepareSeoChartData($dailyTotals),
 

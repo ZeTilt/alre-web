@@ -16,6 +16,7 @@ use App\Entity\Prospect;
 use App\Entity\SecurityLog;
 use App\Entity\ClientSeoKeyword;
 use App\Entity\ClientSeoReport;
+use App\Entity\DepartmentPage;
 use App\Entity\SeoKeyword;
 use App\Entity\User;
 use App\Entity\Project;
@@ -197,6 +198,27 @@ class DashboardController extends AbstractDashboardController
 
         $now = new \DateTimeImmutable();
         $city->setLastOptimizedAt($now);
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'count' => $count,
+            'date' => $now->format('d/m/Y'),
+        ]);
+    }
+
+    #[Route('/saeiblauhjc/department/{id}/mark-optimized', name: 'admin_department_mark_optimized', methods: ['POST'])]
+    public function markDepartmentOptimized(DepartmentPage $department, Request $request, SeoKeywordRepository $seoKeywordRepository): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid('dept-optimize-' . $department->getId(), $request->request->get('_token'))) {
+            return new JsonResponse(['error' => 'Token CSRF invalide'], 403);
+        }
+
+        $patterns = $this->cityKeywordMatcher->buildDepartmentPatterns($department);
+        $count = $seoKeywordRepository->markOptimizedByPatterns($patterns);
+
+        $now = new \DateTimeImmutable();
+        $department->setLastOptimizedAt($now);
         $this->entityManager->flush();
 
         return new JsonResponse([
@@ -1183,6 +1205,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('SEO');
         yield MenuItem::linkToCrud('Mots-clés SEO', 'fas fa-search', SeoKeyword::class);
         yield MenuItem::linkToCrud('Villes (SEO Local)', 'fas fa-map-marker-alt', City::class);
+        yield MenuItem::linkToCrud('Départements (SEO)', 'fas fa-map', DepartmentPage::class);
 
         yield MenuItem::section('SEO Clients');
         $dueCount = $this->clientSiteRepository->countWithDueActions();

@@ -3,7 +3,9 @@
 namespace App\Service;
 
 use App\Entity\City;
+use App\Entity\DepartmentPage;
 use App\Repository\CityRepository;
+use App\Repository\DepartmentPageRepository;
 use Symfony\Component\Yaml\Yaml;
 
 class LocalPageService
@@ -12,6 +14,7 @@ class LocalPageService
 
     public function __construct(
         private CityRepository $cityRepository,
+        private DepartmentPageRepository $departmentPageRepository,
         private string $projectDir,
     ) {
         $this->loadServicesConfig();
@@ -85,6 +88,34 @@ class LocalPageService
     }
 
     /**
+     * Retourne un département par son slug.
+     */
+    public function getDepartment(string $slug): ?DepartmentPage
+    {
+        return $this->departmentPageRepository->findBySlug($slug);
+    }
+
+    /**
+     * Retourne tous les départements actifs.
+     *
+     * @return DepartmentPage[]
+     */
+    public function getDepartmentPages(): array
+    {
+        return $this->departmentPageRepository->findAllActive();
+    }
+
+    /**
+     * Retourne les départements actifs indexés par nom.
+     *
+     * @return array<string, DepartmentPage>
+     */
+    public function getDepartmentPagesIndexedByName(): array
+    {
+        return $this->departmentPageRepository->findAllActiveIndexedByName();
+    }
+
+    /**
      * Retourne tous les services configurés.
      */
     public function getServices(): array
@@ -101,24 +132,42 @@ class LocalPageService
     }
 
     /**
-     * Génère toutes les combinaisons service-ville pour le sitemap.
+     * Génère toutes les combinaisons service-ville et service-département pour le sitemap.
      *
-     * @return array<array{service: string, city: string, url: string, cityEntity: City}>
+     * @return array<array{service: string, city: string|null, url: string, type: string, cityEntity: ?City, departmentEntity: ?DepartmentPage}>
      */
     public function getAllPages(): array
     {
         $pages = [];
         $cities = $this->getCities();
+        $departments = $this->getDepartmentPages();
 
         foreach ($this->servicesConfig as $serviceSlug => $service) {
+            // Department pages
+            foreach ($departments as $dept) {
+                $pages[] = [
+                    'type' => 'department',
+                    'service' => $serviceSlug,
+                    'serviceTitle' => $service['title'],
+                    'city' => null,
+                    'cityName' => null,
+                    'url' => $serviceSlug . '-' . $dept->getSlug(),
+                    'cityEntity' => null,
+                    'departmentEntity' => $dept,
+                ];
+            }
+
+            // City pages
             foreach ($cities as $city) {
                 $pages[] = [
+                    'type' => 'city',
                     'service' => $serviceSlug,
                     'serviceTitle' => $service['title'],
                     'city' => $city->getSlug(),
                     'cityName' => $city->getName(),
                     'url' => $serviceSlug . '-' . $city->getSlug(),
                     'cityEntity' => $city,
+                    'departmentEntity' => null,
                 ];
             }
         }
@@ -127,21 +176,33 @@ class LocalPageService
     }
 
     /**
-     * Parse un slug combiné (ex: developpeur-web-vannes) en service et ville.
+     * Parse un slug combiné (ex: developpeur-web-vannes) en service et ville/département.
      *
-     * @return array{service: string|null, city: string|null}
+     * @return array{service: string|null, city: string|null, department: string|null}
      */
     public function parseSlug(string $slug): array
     {
         foreach ($this->servicesConfig as $serviceSlug => $service) {
             if (str_starts_with($slug, $serviceSlug . '-')) {
-                $citySlug = substr($slug, strlen($serviceSlug) + 1);
-                $city = $this->getCity($citySlug);
+                $remainder = substr($slug, strlen($serviceSlug) + 1);
 
+                // Try city first
+                $city = $this->getCity($remainder);
                 if ($city) {
                     return [
                         'service' => $serviceSlug,
-                        'city' => $citySlug,
+                        'city' => $remainder,
+                        'department' => null,
+                    ];
+                }
+
+                // Try department
+                $dept = $this->getDepartment($remainder);
+                if ($dept) {
+                    return [
+                        'service' => $serviceSlug,
+                        'city' => null,
+                        'department' => $remainder,
                     ];
                 }
             }
@@ -150,6 +211,7 @@ class LocalPageService
         return [
             'service' => null,
             'city' => null,
+            'department' => null,
         ];
     }
 
@@ -192,7 +254,7 @@ class LocalPageService
     public function isValidSlug(string $slug): bool
     {
         $parsed = $this->parseSlug($slug);
-        return $parsed['service'] !== null && $parsed['city'] !== null;
+        return $parsed['service'] !== null && ($parsed['city'] !== null || $parsed['department'] !== null);
     }
 
     /**

@@ -737,3 +737,8 @@ services:
     title: "Agence Web"
     description: "Accompagnement complet pour votre présence en ligne"
     icon: "fa-building"
+
+  referencement-local:
+    title: "Référencement Local"
+    description: "Optimisation du référencement local sur Google"
+    icon: "fa-search-location"

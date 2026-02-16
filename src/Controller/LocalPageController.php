@@ -18,18 +18,44 @@ class LocalPageController extends AbstractController
     {
         $parsed = $this->localPageService->parseSlug($slug);
 
-        if ($parsed['service'] === null || $parsed['city'] === null) {
+        if ($parsed['service'] === null) {
             throw $this->createNotFoundException('Page non trouvée');
         }
 
         $service = $this->localPageService->getService($parsed['service']);
-        $city = $this->localPageService->getCity($parsed['city']);
-
-        if (!$service || !$city) {
+        if (!$service) {
             throw $this->createNotFoundException('Page non trouvée');
         }
 
-        // Convertir l'entité City en tableau pour le template
+        // Department page
+        if ($parsed['department'] !== null) {
+            $department = $this->localPageService->getDepartment($parsed['department']);
+            if (!$department) {
+                throw $this->createNotFoundException('Page non trouvée');
+            }
+
+            // Get cities for this department
+            $citiesByRegion = $this->localPageService->getCitiesByRegion();
+            $deptCities = $citiesByRegion[$department->getName()] ?? [];
+
+            return $this->render('local_page/department.html.twig', [
+                'service' => $service,
+                'serviceSlug' => $parsed['service'],
+                'department' => $department,
+                'cities' => $deptCities,
+            ]);
+        }
+
+        // City page
+        if ($parsed['city'] === null) {
+            throw $this->createNotFoundException('Page non trouvée');
+        }
+
+        $city = $this->localPageService->getCity($parsed['city']);
+        if (!$city) {
+            throw $this->createNotFoundException('Page non trouvée');
+        }
+
         $cityArray = [
             'name' => $city->getName(),
             'region' => $city->getRegion(),

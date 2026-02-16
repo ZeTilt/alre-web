@@ -3,8 +3,10 @@
 namespace App\Service;
 
 use App\Entity\City;
+use App\Entity\DepartmentPage;
 use App\Entity\SeoKeyword;
 use App\Repository\CityRepository;
+use App\Repository\DepartmentPageRepository;
 
 class CityKeywordMatcher
 {
@@ -21,6 +23,7 @@ class CityKeywordMatcher
 
     public function __construct(
         private CityRepository $cityRepository,
+        private DepartmentPageRepository $departmentPageRepository,
     ) {
     }
 
@@ -267,6 +270,123 @@ class CityKeywordMatcher
         usort($cityPages, fn($a, $b) => $b['priorityScore'] <=> $a['priorityScore']);
 
         return $cityPages;
+    }
+
+    /**
+     * Generates name variants for a department.
+     *
+     * @return string[] Lowercased patterns to match against
+     */
+    public function buildDepartmentPatterns(DepartmentPage $dept): array
+    {
+        $name = $dept->getName();
+        $stripped = transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $name);
+
+        $variants = array_unique([$name, $stripped]);
+        $patterns = [];
+        foreach ($variants as $v) {
+            $patterns[] = $v;
+            if (str_contains($v, '-')) {
+                $patterns[] = str_replace('-', ' ', $v);
+            }
+            if (str_contains($v, ' ')) {
+                $patterns[] = str_replace(' ', '-', $v);
+            }
+            if (str_contains($v, '\'')) {
+                $patterns[] = str_replace('\'', '', $v);
+                $patterns[] = str_replace('\'', '-', $v);
+            }
+        }
+
+        return array_values(array_unique($patterns));
+    }
+
+    /**
+     * Checks if a keyword text matches a department.
+     */
+    public function keywordMatchesDepartment(string $keyword, DepartmentPage $dept): bool
+    {
+        $normalizedKeyword = $this->normalize($keyword);
+
+        foreach ($this->buildDepartmentPatterns($dept) as $pattern) {
+            if (str_contains($normalizedKeyword, $this->normalize($pattern))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Builds the "Départements à optimiser" summary.
+     *
+     * @param array{top10: array, toImprove: array} $ranked
+     * @param SeoKeyword[] $activeKeywords
+     * @param array<int, array{position: float, clicks: int, impressions: int}> $latestPositionData
+     * @return array<array{department: DepartmentPage, toImproveCount: int, totalCount: int, avgPosition: float, priorityScore: float}>
+     */
+    public function buildDepartmentPagesSummary(array $ranked, array $activeKeywords, array $latestPositionData = []): array
+    {
+        $departments = $this->departmentPageRepository->findAllActive();
+
+        if (empty($departments)) {
+            return [];
+        }
+
+        $recentThreshold = (new \DateTimeImmutable())->modify('-30 days');
+
+        $deptPages = [];
+        foreach ($departments as $dept) {
+            $lastOpt = $dept->getLastOptimizedAt();
+            if ($lastOpt !== null && $lastOpt > $recentThreshold) {
+                continue;
+            }
+
+            $toImproveCount = 0;
+            foreach ($ranked['toImprove'] as $item) {
+                if ($this->keywordMatchesDepartment($item['keyword']->getKeyword(), $dept)) {
+                    $toImproveCount++;
+                }
+            }
+
+            if ($toImproveCount === 0) {
+                continue;
+            }
+
+            $totalCount = 0;
+            $positionSum = 0;
+            foreach ($activeKeywords as $keyword) {
+                if ($this->keywordMatchesDepartment($keyword->getKeyword(), $dept)) {
+                    $totalCount++;
+                    $latestData = $latestPositionData[$keyword->getId()] ?? null;
+                    if ($latestData) {
+                        $positionSum += $latestData['position'];
+                    }
+                }
+            }
+
+            $avgPosition = $totalCount > 0 ? round($positionSum / $totalCount, 1) : 0;
+
+            $priorityScore = 0;
+            if ($avgPosition > 0 && $totalCount > 0) {
+                $priorityScore = round(
+                    $toImproveCount * (1 + log($totalCount, 2)) * (1 / $avgPosition),
+                    2
+                );
+            }
+
+            $deptPages[] = [
+                'department' => $dept,
+                'toImproveCount' => $toImproveCount,
+                'totalCount' => $totalCount,
+                'avgPosition' => $avgPosition,
+                'priorityScore' => $priorityScore,
+            ];
+        }
+
+        usort($deptPages, fn($a, $b) => $b['priorityScore'] <=> $a['priorityScore']);
+
+        return $deptPages;
     }
 
     /**

@@ -54,6 +54,12 @@ class SitemapController extends AbstractController
             'priority' => '0.8',
         ];
 
+        $urls[] = [
+            'loc' => $this->generateUrl('app_service_referencement', [], UrlGeneratorInterface::ABSOLUTE_URL),
+            'changefreq' => 'monthly',
+            'priority' => '0.8',
+        ];
+
         // Page Portfolio
         $urls[] = [
             'loc' => $this->generateUrl('app_portfolio', [], UrlGeneratorInterface::ABSOLUTE_URL),
@@ -119,15 +125,26 @@ class SitemapController extends AbstractController
             ];
         }
 
-        // Pages locales SEO (générées automatiquement depuis les villes en BDD)
+        // Pages locales SEO (générées automatiquement depuis les villes et départements en BDD)
         $localPages = $this->localPageService->getAllPages();
         foreach ($localPages as $page) {
-            $urls[] = [
-                'loc' => $this->generateUrl('app_local_page', ['slug' => $page['url']], UrlGeneratorInterface::ABSOLUTE_URL),
-                'changefreq' => 'monthly',
-                'priority' => '0.4',
-                'lastmod' => $page['cityEntity']->getUpdatedAt()?->format('Y-m-d') ?? $page['cityEntity']->getCreatedAt()->format('Y-m-d'),
-            ];
+            if ($page['type'] === 'department') {
+                $dept = $page['departmentEntity'];
+                $urls[] = [
+                    'loc' => $this->generateUrl('app_local_page', ['slug' => $page['url']], UrlGeneratorInterface::ABSOLUTE_URL),
+                    'changefreq' => 'monthly',
+                    'priority' => '0.6',
+                    'lastmod' => $dept->getUpdatedAt()?->format('Y-m-d') ?? $dept->getCreatedAt()->format('Y-m-d'),
+                ];
+            } else {
+                $city = $page['cityEntity'];
+                $urls[] = [
+                    'loc' => $this->generateUrl('app_local_page', ['slug' => $page['url']], UrlGeneratorInterface::ABSOLUTE_URL),
+                    'changefreq' => 'monthly',
+                    'priority' => '0.4',
+                    'lastmod' => $city->getUpdatedAt()?->format('Y-m-d') ?? $city->getCreatedAt()->format('Y-m-d'),
+                ];
+            }
         }
 
         // Page index des zones d'intervention

@@ -24,6 +24,7 @@ class ServicesController extends AbstractController
     {
         return $this->render('services/creation-site-internet.html.twig', [
             'citiesByRegion' => $this->localPageService->getCitiesByRegion(),
+            'departmentPages' => $this->localPageService->getDepartmentPagesIndexedByName(),
         ]);
     }
 
@@ -32,6 +33,7 @@ class ServicesController extends AbstractController
     {
         return $this->render('services/developpeur-web.html.twig', [
             'citiesByRegion' => $this->localPageService->getCitiesByRegion(),
+            'departmentPages' => $this->localPageService->getDepartmentPagesIndexedByName(),
         ]);
     }
 
@@ -40,6 +42,16 @@ class ServicesController extends AbstractController
     {
         return $this->render('services/agence-web.html.twig', [
             'citiesByRegion' => $this->localPageService->getCitiesByRegion(),
+            'departmentPages' => $this->localPageService->getDepartmentPagesIndexedByName(),
+        ]);
+    }
+
+    #[Route('/referencement-local', name: 'app_service_referencement')]
+    public function referencementLocal(): Response
+    {
+        return $this->render('services/referencement-local.html.twig', [
+            'citiesByRegion' => $this->localPageService->getCitiesByRegion(),
+            'departmentPages' => $this->localPageService->getDepartmentPagesIndexedByName(),
         ]);
     }
 }

@@ -2,16 +2,16 @@
 
 namespace App\Entity;
 
-use App\Repository\CityRepository;
+use App\Repository\DepartmentPageRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[ORM\Entity(repositoryClass: CityRepository::class)]
-#[ORM\Table(name: 'city')]
+#[ORM\Entity(repositoryClass: DepartmentPageRepository::class)]
+#[ORM\Table(name: 'department_page')]
 #[UniqueEntity(fields: ['slug'], message: 'Ce slug est déjà utilisé')]
-class City
+class DepartmentPage
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -30,9 +30,9 @@ class City
     )]
     private ?string $slug = null;
 
-    #[ORM\Column(length: 100)]
-    #[Assert\NotBlank(message: 'La région est obligatoire')]
-    private ?string $region = null;
+    #[ORM\Column(length: 5)]
+    #[Assert\NotBlank(message: 'Le numéro de département est obligatoire')]
+    private ?string $number = null;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: 'La description est obligatoire')]
@@ -47,6 +47,9 @@ class City
     #[ORM\Column(type: Types::STRING, length: 70, nullable: true)]
     private ?string $titleAgence = null;
 
+    #[ORM\Column(type: Types::STRING, length: 70, nullable: true)]
+    private ?string $titleReferencement = null;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $descriptionDeveloppeur = null;
 
@@ -57,6 +60,9 @@ class City
     private ?string $descriptionAgence = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $descriptionReferencement = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $descriptionDeveloppeurLong = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -65,29 +71,14 @@ class City
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $descriptionAgenceLong = null;
 
-    #[ORM\Column(type: Types::STRING, length: 70, nullable: true)]
-    private ?string $titleReferencement = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $descriptionReferencement = null;
-
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $descriptionReferencementLong = null;
 
-    #[ORM\Column(type: Types::JSON)]
-    private array $nearby = [];
-
-    #[ORM\Column(type: Types::JSON)]
-    private array $keywords = [];
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastOptimizedAt = null;
 
     #[ORM\Column]
     private bool $isActive = true;
-
-    #[ORM\Column]
-    private ?int $sortOrder = 0;
-
-    #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $lastOptimizedAt = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -127,14 +118,14 @@ class City
         return $this;
     }
 
-    public function getRegion(): ?string
+    public function getNumber(): ?string
     {
-        return $this->region;
+        return $this->number;
     }
 
-    public function setRegion(string $region): static
+    public function setNumber(string $number): static
     {
-        $this->region = $region;
+        $this->number = $number;
         return $this;
     }
 
@@ -159,6 +150,30 @@ class City
             default => null,
         };
     }
+
+    public function getDescriptionForService(string $serviceSlug): string
+    {
+        return match ($serviceSlug) {
+            'developpeur-web' => $this->descriptionDeveloppeur ?? $this->description,
+            'creation-site-internet' => $this->descriptionCreation ?? $this->description,
+            'agence-web' => $this->descriptionAgence ?? $this->description,
+            'referencement-local' => $this->descriptionReferencement ?? $this->description,
+            default => $this->description,
+        };
+    }
+
+    public function getLongDescriptionForService(string $serviceSlug): ?string
+    {
+        return match ($serviceSlug) {
+            'developpeur-web' => $this->descriptionDeveloppeurLong,
+            'creation-site-internet' => $this->descriptionCreationLong,
+            'agence-web' => $this->descriptionAgenceLong,
+            'referencement-local' => $this->descriptionReferencementLong,
+            default => null,
+        };
+    }
+
+    // --- Title getters/setters ---
 
     public function getTitleDeveloppeur(): ?string
     {
@@ -193,16 +208,18 @@ class City
         return $this;
     }
 
-    public function getDescriptionForService(string $serviceSlug): string
+    public function getTitleReferencement(): ?string
     {
-        return match ($serviceSlug) {
-            'developpeur-web' => $this->descriptionDeveloppeur ?? $this->description,
-            'creation-site-internet' => $this->descriptionCreation ?? $this->description,
-            'agence-web' => $this->descriptionAgence ?? $this->description,
-            'referencement-local' => $this->descriptionReferencement ?? $this->description,
-            default => $this->description,
-        };
+        return $this->titleReferencement;
     }
+
+    public function setTitleReferencement(?string $titleReferencement): static
+    {
+        $this->titleReferencement = $titleReferencement;
+        return $this;
+    }
+
+    // --- Description courte getters/setters ---
 
     public function getDescriptionDeveloppeur(): ?string
     {
@@ -237,16 +254,18 @@ class City
         return $this;
     }
 
-    public function getLongDescriptionForService(string $serviceSlug): ?string
+    public function getDescriptionReferencement(): ?string
     {
-        return match ($serviceSlug) {
-            'developpeur-web' => $this->descriptionDeveloppeurLong,
-            'creation-site-internet' => $this->descriptionCreationLong,
-            'agence-web' => $this->descriptionAgenceLong,
-            'referencement-local' => $this->descriptionReferencementLong,
-            default => null,
-        };
+        return $this->descriptionReferencement;
     }
+
+    public function setDescriptionReferencement(?string $descriptionReferencement): static
+    {
+        $this->descriptionReferencement = $descriptionReferencement;
+        return $this;
+    }
+
+    // --- Description longue getters/setters ---
 
     public function getDescriptionDeveloppeurLong(): ?string
     {
@@ -281,28 +300,6 @@ class City
         return $this;
     }
 
-    public function getTitleReferencement(): ?string
-    {
-        return $this->titleReferencement;
-    }
-
-    public function setTitleReferencement(?string $titleReferencement): static
-    {
-        $this->titleReferencement = $titleReferencement;
-        return $this;
-    }
-
-    public function getDescriptionReferencement(): ?string
-    {
-        return $this->descriptionReferencement;
-    }
-
-    public function setDescriptionReferencement(?string $descriptionReferencement): static
-    {
-        $this->descriptionReferencement = $descriptionReferencement;
-        return $this;
-    }
-
     public function getDescriptionReferencementLong(): ?string
     {
         return $this->descriptionReferencementLong;
@@ -314,25 +311,16 @@ class City
         return $this;
     }
 
-    public function getNearby(): array
+    // --- Metadata ---
+
+    public function getLastOptimizedAt(): ?\DateTimeImmutable
     {
-        return $this->nearby;
+        return $this->lastOptimizedAt;
     }
 
-    public function setNearby(array $nearby): static
+    public function setLastOptimizedAt(?\DateTimeImmutable $lastOptimizedAt): static
     {
-        $this->nearby = $nearby;
-        return $this;
-    }
-
-    public function getKeywords(): array
-    {
-        return $this->keywords;
-    }
-
-    public function setKeywords(array $keywords): static
-    {
-        $this->keywords = $keywords;
+        $this->lastOptimizedAt = $lastOptimizedAt;
         return $this;
     }
 
@@ -344,17 +332,6 @@ class City
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
-        return $this;
-    }
-
-    public function getSortOrder(): ?int
-    {
-        return $this->sortOrder;
-    }
-
-    public function setSortOrder(int $sortOrder): static
-    {
-        $this->sortOrder = $sortOrder;
         return $this;
     }
 
@@ -377,23 +354,6 @@ class City
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
-        return $this;
-    }
-
-    #[ORM\PreUpdate]
-    public function onPreUpdate(): void
-    {
-        $this->updatedAt = new \DateTimeImmutable();
-    }
-
-    public function getLastOptimizedAt(): ?\DateTimeImmutable
-    {
-        return $this->lastOptimizedAt;
-    }
-
-    public function setLastOptimizedAt(?\DateTimeImmutable $lastOptimizedAt): static
-    {
-        $this->lastOptimizedAt = $lastOptimizedAt;
         return $this;
     }
 

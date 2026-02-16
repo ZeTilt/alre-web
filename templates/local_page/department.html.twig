@@ -1,0 +1,152 @@
+{% extends 'base.html.twig' %}
+
+{% set deptNumbers = {'Morbihan': '56', 'Finistère': '29', "Côtes-d'Armor": '22', 'Ille-et-Vilaine': '35'} %}
+{% set deptPreposition = {'Morbihan': 'dans le', 'Finistère': 'dans le', "Côtes-d'Armor": 'dans les', 'Ille-et-Vilaine': 'en'} %}
+
+{% set customTitle = department.getTitleForService(serviceSlug) %}
+{% set customDesc = department.getDescriptionForService(serviceSlug) %}
+{% set customDescLong = department.getLongDescriptionForService(serviceSlug) %}
+{% set preposition = deptPreposition[department.name] | default('dans le') %}
+
+{% block title %}{{ customTitle ?? (service.title ~ ' ' ~ department.name ~ ' (' ~ department.number ~ ') | Alré Web') }}{% endblock %}
+
+{% block meta_description %}{{ customDesc }}{% endblock %}
+
+{% block structured_data %}
+{{ parent() }}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "{{ service.title }} {{ preposition }} {{ department.name }}",
+    "description": "{{ customDesc|e('js') }}",
+    "provider": {
+        "@type": "ProfessionalService",
+        "name": "Alré Web",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Auray",
+            "addressRegion": "Bretagne",
+            "postalCode": "56400",
+            "addressCountry": "FR"
+        }
+    },
+    "areaServed": {
+        "@type": "AdministrativeArea",
+        "name": "{{ department.name }}"
+    },
+    "serviceType": "{{ service.title }}"
+}
+</script>
+{% endblock %}
+
+{% block body %}
+
+{# Hero Section #}
+<section class="hero" style="padding: 4rem 0;">
+    <div class="hero-content">
+        <h1 class="fade-in">{{ service.title }} {{ preposition }} {{ department.name }}</h1>
+        <p class="lead fade-in-delay-1">
+            {{ customDesc }}<br>
+            Création de sites web professionnels pour artisans et TPE {{ preposition }} {{ department.name }} ({{ department.number }}).
+        </p>
+        <div class="fade-in-delay-2" style="margin-top: 2rem;">
+            <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-paper-plane"></i> Demander un devis gratuit
+            </a>
+        </div>
+    </div>
+</section>
+
+{# Présentation #}
+<section class="section">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
+            <div>
+                <h2 class="text-primary mb-3">{{ service.title }} {{ preposition }} {{ department.name }} ({{ department.number }})</h2>
+
+                {% if customDescLong %}
+                    {{ customDescLong|raw }}
+                {% else %}
+                    <p class="lead">
+                        Vous êtes artisan, commerçant ou profession libérale {{ preposition }} {{ department.name }} ?
+                        Je vous accompagne dans la création de votre site internet et votre visibilité en ligne.
+                    </p>
+                    <p>
+                        Basé à Auray dans le Morbihan, j'interviens sur l'ensemble du département {{ department.number }}
+                        pour créer des sites web sur mesure, adaptés à votre activité et à votre clientèle locale.
+                    </p>
+
+                    <h3 class="mt-4 mb-3">Pourquoi travailler avec un professionnel local ?</h3>
+                    <ul class="service-list">
+                        <li><strong>Proximité</strong> : je me déplace chez vous pour comprendre votre activité</li>
+                        <li><strong>Connaissance du territoire</strong> : j'optimise votre site pour les recherches locales</li>
+                        <li><strong>Réactivité</strong> : un interlocuteur unique, disponible et à l'écoute</li>
+                        <li><strong>Sur mesure</strong> : chaque site est conçu pour votre métier et vos clients</li>
+                    </ul>
+                {% endif %}
+
+                <div class="service-highlight mt-4">
+                    <strong>Un projet de site internet {{ preposition }} {{ department.name }} ?</strong><br>
+                    Premier rendez-vous gratuit et sans engagement. Contactez-moi pour en discuter.
+                </div>
+
+                <div class="mt-4">
+                    <a href="{{ path('app_contact') }}" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Demander un devis gratuit
+                    </a>
+                    <a href="{{ path('app_pricing') }}" class="btn btn-outline" style="margin-left: 0.5rem;">
+                        <i class="fas fa-euro-sign"></i> Voir les tarifs
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 5rem; color: var(--accent-color);">
+                    <i class="fas {{ service.icon|default('fa-globe') }}"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Grille des villes du département #}
+{% if cities|length > 0 %}
+<section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-5">{{ service.title }} dans les villes du {{ department.name }}</h2>
+        <p class="text-center lead mb-5" style="max-width: 700px; margin-left: auto; margin-right: auto;">
+            J'interviens dans toutes les villes du département.
+            Cliquez sur votre ville pour découvrir mon offre locale.
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;">
+            {% for city in cities %}
+            <a href="{{ path('app_local_page', {slug: serviceSlug ~ '-' ~ city.slug}) }}"
+               style="display: inline-block; padding: 0.5rem 1.2rem; background: var(--light-bg); border-radius: 20px; text-decoration: none; color: var(--text-color); font-size: 0.95rem; transition: all 0.2s;">
+                {{ city.name }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# CTA #}
+<section class="section">
+    <div class="container text-center">
+        <h2 class="mb-3">Un projet web {{ preposition }} {{ department.name }} ?</h2>
+        <p class="lead mb-4">
+            Parlons-en. Premier rendez-vous gratuit et sans engagement.
+        </p>
+        <div style="display: inline-flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+            <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-paper-plane"></i> Demander un devis gratuit
+            </a>
+            <a href="{{ path('app_pricing') }}" class="btn btn-outline btn-lg">
+                <i class="fas fa-euro-sign"></i> Voir les tarifs
+            </a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

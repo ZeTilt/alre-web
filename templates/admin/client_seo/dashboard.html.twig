@@ -51,16 +51,17 @@
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
         <div>
             <div style="font-weight: 600; color: #111827;">{{ site.url }}</div>
-            {% if lastImportDate %}
-                <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+            <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                {% if lastImportDate %}
                     <i class="fas fa-sync-alt"></i> Dernier import : {{ lastImportDate|date('d/m/Y a H:i') }}
-                </div>
-            {% else %}
-                <div style="font-size: 0.75rem; color: #f59e0b; margin-top: 0.25rem;">
-                    <i class="fas fa-exclamation-triangle"></i> Aucun import effectue -
+                {% else %}
+                    <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i> Aucun import -
                     <a href="{{ path('admin_client_seo_import', {id: site.id}) }}" style="color: var(--primary); text-decoration: underline;">Importer des donnees</a>
-                </div>
-            {% endif %}
+                {% endif %}
+                {% if nextImportDate %}
+                    &middot; <i class="fas fa-calendar-alt"></i> Prochain : {{ nextImportDate|date('d/m/Y') }}
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>

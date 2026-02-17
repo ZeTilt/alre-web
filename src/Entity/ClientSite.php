@@ -304,9 +304,39 @@ class ClientSite
         return $target;
     }
 
-    public function isImportDue(): bool
+    public function getNextImportDate(): ?\DateTimeImmutable
     {
         if ($this->importDay === null) {
+            return null;
+        }
+
+        $daysMap = [1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday', 7 => 'Sunday'];
+        $dayName = $daysMap[$this->importDay];
+
+        $imports = $this->getImports();
+        if ($imports->isEmpty()) {
+            // No import yet: next occurrence of importDay from today
+            $today = new \DateTimeImmutable('today');
+            $todayDow = (int) $today->format('N');
+
+            return $todayDow === $this->importDay ? $today : $today->modify("next {$dayName}");
+        }
+
+        $lastImportDate = \DateTimeImmutable::createFromInterface($imports->first()->getImportedAt());
+        $nextDue = $lastImportDate->modify("next {$dayName}");
+
+        // If next due date is less than 5 days after import, skip to the week after
+        if ($lastImportDate->diff($nextDue)->days < 5) {
+            $nextDue = $nextDue->modify('+7 days');
+        }
+
+        return $nextDue;
+    }
+
+    public function isImportDue(): bool
+    {
+        $nextDue = $this->getNextImportDate();
+        if ($nextDue === null) {
             return false;
         }
 
@@ -315,21 +345,7 @@ class ClientSite
             return true;
         }
 
-        $lastImport = $imports->first();
-        $lastImportDate = \DateTimeImmutable::createFromInterface($lastImport->getImportedAt());
-        $today = new \DateTimeImmutable('today');
-
-        // Find next occurrence of importDay after lastImport
-        $daysMap = [1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday', 7 => 'Sunday'];
-        $dayName = $daysMap[$this->importDay];
-        $nextDue = $lastImportDate->modify("next {$dayName}");
-
-        // If next due date is less than 5 days after import, skip to the week after
-        if ($lastImportDate->diff($nextDue)->days < 5) {
-            $nextDue = $nextDue->modify('+7 days');
-        }
-
-        return $today >= $nextDue;
+        return new \DateTimeImmutable('today') >= $nextDue;
     }
 
     public function isReportDue(): bool

@@ -849,6 +849,17 @@ class DashboardController extends AbstractDashboardController
             $summaries[$site->getId()] = $clientSeoDashboardService->getSummaryData($site);
         }
 
+        // Sort by next import date (soonest first, null last)
+        usort($sites, function (ClientSite $a, ClientSite $b) use ($summaries) {
+            $dateA = $summaries[$a->getId()]['nextImportDate'];
+            $dateB = $summaries[$b->getId()]['nextImportDate'];
+            if ($dateA === null && $dateB === null) return 0;
+            if ($dateA === null) return 1;
+            if ($dateB === null) return -1;
+
+            return $dateA <=> $dateB;
+        });
+
         return $this->render('admin/client_seo/list.html.twig', [
             'sites' => $sites,
             'summaries' => $summaries,

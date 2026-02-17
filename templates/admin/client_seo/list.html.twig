@@ -83,15 +83,16 @@
                         </div>
                     {% endif %}
                 </div>
-                {% if summary.lastImportDate %}
-                    <div style="font-size: 0.75rem; color: #9ca3af; border-top: 1px solid #f3f4f6; padding-top: 0.5rem;">
-                        <i class="fas fa-clock"></i> Dernier import : {{ summary.lastImportDate|date('d/m/Y a H:i') }}
-                    </div>
-                {% else %}
-                    <div style="font-size: 0.75rem; color: #f59e0b; border-top: 1px solid #f3f4f6; padding-top: 0.5rem;">
-                        <i class="fas fa-exclamation-triangle"></i> Aucun import effectue
-                    </div>
-                {% endif %}
+                <div style="font-size: 0.75rem; color: #9ca3af; border-top: 1px solid #f3f4f6; padding-top: 0.5rem;">
+                    {% if summary.lastImportDate %}
+                        <i class="fas fa-clock"></i> Dernier : {{ summary.lastImportDate|date('d/m/Y') }}
+                    {% else %}
+                        <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i> Aucun import
+                    {% endif %}
+                    {% if summary.nextImportDate %}
+                        &middot; <i class="fas fa-calendar-alt"></i> Prochain : {{ summary.nextImportDate|date('d/m/Y') }}
+                    {% endif %}
+                </div>
             {% endif %}
             <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
                 <a href="{{ path('admin_client_seo_import', {id: site.id}) }}" class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation();">

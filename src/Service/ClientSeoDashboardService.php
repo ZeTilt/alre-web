@@ -44,6 +44,7 @@ class ClientSeoDashboardService
             'topPages' => $this->pageRepository->findTopPages($site, 20),
             'imports' => $this->importRepository->findByClientSite($site),
             'lastImportDate' => $this->importRepository->getLastImportDate($site),
+            'nextImportDate' => $site->getNextImportDate(),
         ];
     }
 
@@ -63,6 +64,7 @@ class ClientSeoDashboardService
             'top3' => array_slice($ranked['top10'], 0, 3),
             'positionComparisons' => $positionComparisons,
             'lastImportDate' => $this->importRepository->getLastImportDate($site),
+            'nextImportDate' => $site->getNextImportDate(),
             'toImproveCount' => \count($ranked['toImprove']),
             'importDue' => $site->isImportDue(),
             'reportDue' => $site->isReportDue(),

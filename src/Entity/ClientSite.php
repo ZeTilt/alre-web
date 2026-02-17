@@ -310,21 +310,26 @@ class ClientSite
             return false;
         }
 
-        $today = new \DateTimeImmutable('today');
-        $todayDow = (int) $today->format('N');
-
-        if ($todayDow !== $this->importDay) {
-            return false;
-        }
-
-        // Check if last import is before today
         $imports = $this->getImports();
         if ($imports->isEmpty()) {
             return true;
         }
 
         $lastImport = $imports->first();
-        return $lastImport->getImportedAt()->format('Y-m-d') < $today->format('Y-m-d');
+        $lastImportDate = \DateTimeImmutable::createFromInterface($lastImport->getImportedAt());
+        $today = new \DateTimeImmutable('today');
+
+        // Find next occurrence of importDay after lastImport
+        $daysMap = [1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday', 7 => 'Sunday'];
+        $dayName = $daysMap[$this->importDay];
+        $nextDue = $lastImportDate->modify("next {$dayName}");
+
+        // If next due date is less than 5 days after import, skip to the week after
+        if ($lastImportDate->diff($nextDue)->days < 5) {
+            $nextDue = $nextDue->modify('+7 days');
+        }
+
+        return $today >= $nextDue;
     }
 
     public function isReportDue(): bool

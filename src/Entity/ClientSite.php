@@ -247,23 +247,6 @@ class ClientSite
 
     // --- Scheduling helpers ---
 
-    public function getNextImportDate(): ?\DateTimeImmutable
-    {
-        if ($this->importDay === null) {
-            return null;
-        }
-
-        $today = new \DateTimeImmutable('today');
-        $todayDow = (int) $today->format('N'); // 1=Mon..7=Sun
-
-        $diff = $this->importDay - $todayDow;
-        if ($diff < 0) {
-            $diff += 7;
-        }
-
-        return $today->modify("+{$diff} days");
-    }
-
     public function getNextReportDate(): ?\DateTimeImmutable
     {
         if ($this->reportWeekOfMonth === null || $this->reportDayOfWeek === null) {

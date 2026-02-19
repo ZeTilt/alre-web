@@ -60,6 +60,12 @@ class SitemapController extends AbstractController
             'priority' => '0.8',
         ];
 
+        $urls[] = [
+            'loc' => $this->generateUrl('app_service_optimisation_ia', [], UrlGeneratorInterface::ABSOLUTE_URL),
+            'changefreq' => 'monthly',
+            'priority' => '0.8',
+        ];
+
         // Page Portfolio
         $urls[] = [
             'loc' => $this->generateUrl('app_portfolio', [], UrlGeneratorInterface::ABSOLUTE_URL),

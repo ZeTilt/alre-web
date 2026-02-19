@@ -1,0 +1,282 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Optimisation IA & Référencement GEO | Alré Web{% endblock %}
+
+{% block meta_description %}Rendez votre site visible sur Google et sur les IA (ChatGPT, Gemini, Perplexity). Optimisation GEO et référencement IA en Bretagne. Développeur web à Auray.{% endblock %}
+
+{% block structured_data %}
+{{ parent() }}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "Optimisation IA & Référencement GEO",
+    "description": "Optimisation de sites web pour les moteurs de recherche IA (ChatGPT, Gemini, Perplexity) et le référencement classique Google",
+    "provider": {
+        "@type": "ProfessionalService",
+        "name": "Alré Web",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Auray",
+            "addressRegion": "Bretagne",
+            "postalCode": "56400",
+            "addressCountry": "FR"
+        }
+    },
+    "areaServed": {
+        "@type": "State",
+        "name": "Bretagne"
+    },
+    "serviceType": "Optimisation IA"
+}
+</script>
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+        {
+            "@type": "Question",
+            "name": "C'est quoi le GEO (Generative Engine Optimization) ?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Le GEO (Generative Engine Optimization) est l'optimisation d'un site web pour qu'il soit compris et recommandé par les intelligences artificielles comme ChatGPT, Gemini ou Perplexity. Contrairement au SEO classique qui cible Google, le GEO vise à rendre votre contenu exploitable par les moteurs de réponse IA."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Mon site actuel est-il visible par les IA ?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "La plupart des sites ne sont pas optimisés pour les IA. Pour être visible, votre site doit avoir des données structurées schema.org, un contenu sémantique clair avec des FAQ et des titres descriptifs, de bonnes performances techniques et un maillage interne cohérent. Un audit permet d'identifier les points à améliorer."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Faut-il refaire mon site pour l'IA ?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Non, il n'est généralement pas nécessaire de refaire votre site. L'optimisation IA s'appuie sur les mêmes fondations qu'un bon SEO : contenu structuré, données schema.org, vitesse de chargement. Il s'agit souvent d'améliorer l'existant plutôt que de tout reconstruire."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Le référencement IA remplace-t-il le SEO Google ?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Non, le référencement IA complète le SEO Google. Google reste la principale source de trafic pour la majorité des sites. L'optimisation IA (GEO) est un investissement complémentaire qui vous positionne sur les nouveaux canaux de recherche. Les deux approches partagent les mêmes bonnes pratiques techniques."
+            }
+        }
+    ]
+}
+</script>
+{% endblock %}
+
+{% block body %}
+
+{# Hero Section #}
+<section class="hero" style="padding: 4rem 0;">
+    <div class="hero-content">
+        <h1 class="fade-in">Votre site visible sur Google et sur les IA</h1>
+        <p class="lead fade-in-delay-1">
+            ChatGPT, Gemini, Perplexity : vos futurs clients posent des questions aux IA.<br>
+            Optimisation GEO et référencement IA en Bretagne pour être recommandé partout.
+        </p>
+        <div class="fade-in-delay-2" style="margin-top: 2rem;">
+            <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-paper-plane"></i> Parlons de votre visibilité IA
+            </a>
+        </div>
+    </div>
+</section>
+
+{# Main Content #}
+<section class="section">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
+            <div>
+                <h2 class="text-primary mb-3">Vos clients ne cherchent plus seulement sur Google</h2>
+                <p class="lead">
+                    De plus en plus d'internautes utilisent ChatGPT, Gemini ou Perplexity pour trouver
+                    un prestataire, comparer des services ou choisir un commerce local.
+                </p>
+                <p>
+                    Ces IA ne fonctionnent pas comme Google : elles ne listent pas des liens,
+                    elles recommandent directement des entreprises. Pour être cité dans leurs réponses,
+                    votre site doit être structuré, rapide et sémantiquement clair.
+                    C'est ce qu'on appelle le <strong>GEO (Generative Engine Optimization)</strong>.
+                </p>
+
+                <h3 class="mt-4 mb-3">Ce que j'optimise concrètement :</h3>
+                <ul class="service-list">
+                    <li><strong>Données structurées schema.org</strong> : balisage technique pour que les IA comprennent votre activité, vos services et votre zone d'intervention</li>
+                    <li><strong>Contenu sémantique clair</strong> : FAQ, titres H1 descriptifs et paragraphes qui répondent aux vraies questions de vos clients</li>
+                    <li><strong>Vitesse et Core Web Vitals</strong> : optimisation LCP, INP et CLS pour satisfaire Google et les IA</li>
+                    <li><strong>Maillage interne optimisé</strong> : liens contextuels entre vos pages pour faciliter l'exploration par les robots</li>
+                    <li><strong>Contenu orienté Position Zéro</strong> : réponses directes aux questions fréquentes pour apparaître en featured snippet et dans les réponses IA</li>
+                </ul>
+
+                <div class="service-highlight mt-4">
+                    <strong>Le saviez-vous ?</strong><br>
+                    Selon une étude GWI 2024, 1 internaute sur 3 entre 25 et 44 ans utilise déjà
+                    les IA comme alternative aux moteurs de recherche. Ce chiffre double chaque année.
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 5rem; color: var(--accent-color);">
+                    <i class="fas fa-robot"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# 3 Pillars #}
+<section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Une stratégie complète sur 3 piliers</h2>
+
+        <div class="grid grid-3">
+            <div class="card">
+                <div class="card-icon"><i class="fab fa-google"></i></div>
+                <h3 class="card-title">Visibilité Google</h3>
+                <p class="card-text">
+                    SEO technique et sémantique pour rester bien positionné sur Google :
+                    balises, vitesse, contenu optimisé et maillage interne.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-robot"></i></div>
+                <h3 class="card-title">Visibilité IA</h3>
+                <p class="card-text">
+                    Optimisation GEO pour être recommandé par ChatGPT, Gemini et Perplexity :
+                    données structurées, FAQ et contenu qui répond aux questions.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-chart-bar"></i></div>
+                <h3 class="card-title">Suivi & Mesure</h3>
+                <p class="card-text">
+                    Rapport mensuel de positionnement Google et suivi de la visibilité IA.
+                    Des données concrètes pour mesurer votre progression.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# FAQ #}
+<section class="section">
+    <div class="container">
+        <h2 class="text-center mb-5">Questions fréquentes sur le référencement IA</h2>
+
+        <div style="max-width: 800px; margin: 0 auto;">
+            <div class="service-highlight mb-4">
+                <h3 style="margin-top: 0;">C'est quoi le GEO (Generative Engine Optimization) ?</h3>
+                <p style="margin-bottom: 0;">
+                    Le GEO est l'optimisation d'un site web pour qu'il soit compris et recommandé par les
+                    intelligences artificielles comme ChatGPT, Gemini ou Perplexity. Contrairement au SEO classique
+                    qui cible Google, le GEO vise à rendre votre contenu exploitable par les moteurs de réponse IA.
+                </p>
+            </div>
+
+            <div class="service-highlight mb-4">
+                <h3 style="margin-top: 0;">Mon site actuel est-il visible par les IA ?</h3>
+                <p style="margin-bottom: 0;">
+                    La plupart des sites ne sont pas optimisés pour les IA. Pour être visible, votre site
+                    doit avoir des données structurées schema.org, un contenu sémantique clair avec des FAQ
+                    et des titres descriptifs, de bonnes performances techniques et un maillage interne cohérent.
+                    Un audit permet d'identifier les points à améliorer.
+                </p>
+            </div>
+
+            <div class="service-highlight mb-4">
+                <h3 style="margin-top: 0;">Faut-il refaire mon site pour l'IA ?</h3>
+                <p style="margin-bottom: 0;">
+                    Non, il n'est généralement pas nécessaire de refaire votre site. L'optimisation IA s'appuie
+                    sur les mêmes fondations qu'un bon SEO : contenu structuré, données schema.org, vitesse
+                    de chargement. Il s'agit souvent d'améliorer l'existant plutôt que de tout reconstruire.
+                </p>
+            </div>
+
+            <div class="service-highlight">
+                <h3 style="margin-top: 0;">Le référencement IA remplace-t-il le SEO Google ?</h3>
+                <p style="margin-bottom: 0;">
+                    Non, le référencement IA complète le SEO Google. Google reste la principale source de trafic
+                    pour la majorité des sites. L'optimisation IA (GEO) est un investissement complémentaire qui
+                    vous positionne sur les nouveaux canaux de recherche. Les deux approches partagent les mêmes
+                    bonnes pratiques techniques.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Packs SEO #}
+<section class="section section-light">
+    <div class="container">
+        <h2 class="text-center mb-3">L'optimisation IA est incluse dans nos packs SEO</h2>
+        <p class="text-center lead mb-5">Pas de supplément : le GEO fait partie de chaque pack.</p>
+
+        <div class="grid grid-3">
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-seedling"></i></div>
+                <h3 class="card-title">Pack Essentiel</h3>
+                <p class="card-text">
+                    Audit SEO complet, optimisation technique, données structurées schema.org
+                    et configuration Google Business Profile.
+                </p>
+                <div style="margin-top: 1rem;">
+                    <a href="{{ path('app_pricing') }}" class="btn btn-outline">Voir les tarifs</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-chart-line"></i></div>
+                <h3 class="card-title">Pack Visibilité</h3>
+                <p class="card-text">
+                    Suivi mensuel, optimisation continue, création de contenu optimisé IA
+                    et amélioration des Core Web Vitals.
+                </p>
+                <div style="margin-top: 1rem;">
+                    <a href="{{ path('app_pricing') }}" class="btn btn-outline">Voir les tarifs</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-trophy"></i></div>
+                <h3 class="card-title">Pack Performance</h3>
+                <p class="card-text">
+                    Stratégie SEO et GEO complète avec backlinks, contenu approfondi,
+                    FAQ optimisées Position Zéro et rapport détaillé.
+                </p>
+                <div style="margin-top: 1rem;">
+                    <a href="{{ path('app_pricing') }}" class="btn btn-outline">Voir les tarifs</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# CTA #}
+<section class="section">
+    <div class="container text-center">
+        <h2 class="mb-3">Prêt à être visible partout ?</h2>
+        <p class="lead mb-4">
+            Google, ChatGPT, Gemini, Perplexity : vos clients vous cherchent sur tous les canaux.
+            Positionnez-vous dès maintenant.
+        </p>
+        <div style="display: inline-flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+            <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-paper-plane"></i> Demander un devis gratuit
+            </a>
+            <a href="{{ path('app_pricing') }}" class="btn btn-outline btn-lg">
+                <i class="fas fa-euro-sign"></i> Voir les packs SEO
+            </a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

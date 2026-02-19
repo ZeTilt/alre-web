@@ -37,4 +37,10 @@ class ServicesController extends AbstractController
     {
         return $this->render('services/referencement-local.html.twig');
     }
+
+    #[Route('/optimisation-ia', name: 'app_service_optimisation_ia')]
+    public function optimisationIa(): Response
+    {
+        return $this->render('services/optimisation-ia.html.twig');
+    }
 }

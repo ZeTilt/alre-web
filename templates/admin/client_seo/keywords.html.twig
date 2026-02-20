@@ -49,7 +49,7 @@
                     <th class="sortable" data-sort="number" style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Position</th>
                     <th class="sortable" data-sort="number" style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Clics</th>
                     <th class="sortable" data-sort="number" style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Impr.</th>
-                    <th class="sortable" data-sort="number" style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Dern. vue GSC</th>
+                    <th class="sortable" data-sort="number" style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Dern. vue</th>
                     <th class="sortable" data-sort="number" style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Dern. optim.</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;"></th>
                 </tr>
@@ -87,11 +87,11 @@
                         <td data-sort-value="{{ latestPosition ? latestPosition.impressions : -1 }}" style="text-align: center; padding: 0.75rem 0.5rem;">
                             {% if latestPosition %}{{ latestPosition.impressions|number_format(0, '', ' ') }}{% else %}-{% endif %}
                         </td>
-                        <td data-sort-value="{{ keyword.lastSeenInGsc ? keyword.lastSeenInGsc|date('U') : 0 }}" style="text-align: center; padding: 0.75rem 0.5rem; font-size: 0.8rem;">
-                            {% if keyword.lastSeenInGsc %}
-                                {% set daysSince = date().diff(keyword.lastSeenInGsc).days %}
+                        <td data-sort-value="{{ keyword.lastSeen ? keyword.lastSeen|date('U') : 0 }}" style="text-align: center; padding: 0.75rem 0.5rem; font-size: 0.8rem;">
+                            {% if keyword.lastSeen %}
+                                {% set daysSince = date().diff(keyword.lastSeen).days %}
                                 <span style="color: {{ daysSince > 14 ? '#dc2626' : (daysSince > 7 ? '#d97706' : '#6b7280') }};">
-                                    {{ keyword.lastSeenInGsc|date('d/m/Y') }}
+                                    {{ keyword.lastSeen|date('d/m/Y') }}
                                 </span>
                                 {% if daysSince > 14 %}
                                     <div style="font-size: 0.65rem; color: #dc2626;">il y a {{ daysSince }}j</div>
@@ -132,7 +132,7 @@
                         <th class="sortable" data-sort="string" style="text-align: left; padding: 0.5rem; color: #9ca3af; font-weight: 600;">Mot-cle</th>
                         <th class="sortable" data-sort="number" style="text-align: center; padding: 0.5rem; color: #9ca3af; font-weight: 600;">Score</th>
                         <th class="sortable" data-sort="number" style="text-align: center; padding: 0.5rem; color: #9ca3af; font-weight: 600;">Dern. position</th>
-                        <th class="sortable" data-sort="number" style="text-align: center; padding: 0.5rem; color: #9ca3af; font-weight: 600;">Dern. vue GSC</th>
+                        <th class="sortable" data-sort="number" style="text-align: center; padding: 0.5rem; color: #9ca3af; font-weight: 600;">Dern. vue</th>
                         <th class="sortable" data-sort="number" style="text-align: center; padding: 0.5rem; color: #9ca3af; font-weight: 600;">Desactive le</th>
                         <th style="text-align: center; padding: 0.5rem; color: #9ca3af; font-weight: 600;"></th>
                     </tr>
@@ -157,9 +157,9 @@
                                     <span style="color: #d1d5db;">-</span>
                                 {% endif %}
                             </td>
-                            <td data-sort-value="{{ keyword.lastSeenInGsc ? keyword.lastSeenInGsc|date('U') : 0 }}" style="text-align: center; padding: 0.5rem; font-size: 0.8rem; color: #9ca3af;">
-                                {% if keyword.lastSeenInGsc %}
-                                    {{ keyword.lastSeenInGsc|date('d/m/Y') }}
+                            <td data-sort-value="{{ keyword.lastSeen ? keyword.lastSeen|date('U') : 0 }}" style="text-align: center; padding: 0.5rem; font-size: 0.8rem; color: #9ca3af;">
+                                {% if keyword.lastSeen %}
+                                    {{ keyword.lastSeen|date('d/m/Y') }}
                                 {% else %}
                                     <span style="color: #d1d5db;">-</span>
                                 {% endif %}

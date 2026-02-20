@@ -6,9 +6,12 @@ use App\Repository\ClientSeoDailyTotalRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ClientSeoDailyTotalRepository::class)]
-#[ORM\UniqueConstraint(name: 'unique_client_seo_daily_total', columns: ['client_site_id', 'date'])]
+#[ORM\UniqueConstraint(name: 'unique_client_seo_daily_total_source', columns: ['client_site_id', 'date', 'source'])]
 class ClientSeoDailyTotal
 {
+    public const SOURCE_GOOGLE = 'google';
+    public const SOURCE_BING = 'bing';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -17,6 +20,9 @@ class ClientSeoDailyTotal
     #[ORM\ManyToOne(targetEntity: ClientSite::class, inversedBy: 'dailyTotals')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?ClientSite $clientSite = null;
+
+    #[ORM\Column(length: 10, options: ['default' => 'google'])]
+    private string $source = self::SOURCE_GOOGLE;
 
     #[ORM\Column(type: 'date_immutable')]
     private ?\DateTimeImmutable $date = null;
@@ -51,6 +57,17 @@ class ClientSeoDailyTotal
     public function setClientSite(?ClientSite $clientSite): static
     {
         $this->clientSite = $clientSite;
+        return $this;
+    }
+
+    public function getSource(): string
+    {
+        return $this->source;
+    }
+
+    public function setSource(string $source): static
+    {
+        $this->source = $source;
         return $this;
     }
 

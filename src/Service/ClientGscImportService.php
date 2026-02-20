@@ -40,7 +40,7 @@ class ClientGscImportService
         $deleted += (int) $conn->executeStatement('DELETE FROM client_seo_import WHERE client_site_id = ?', [$siteId]);
 
         // Reset keyword tracking fields
-        $conn->executeStatement('UPDATE client_seo_keyword SET last_seen_in_gsc = NULL, deactivated_at = NULL, is_active = 1 WHERE client_site_id = ?', [$siteId]);
+        $conn->executeStatement('UPDATE client_seo_keyword SET last_seen_in_gsc = NULL, last_seen_in_bing = NULL, deactivated_at = NULL, is_active = 1 WHERE client_site_id = ?', [$siteId]);
 
         return $deleted;
     }

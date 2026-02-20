@@ -3,8 +3,6 @@
 namespace App\Service;
 
 use App\Entity\ClientSite;
-use App\Repository\ClientBingDailyTotalRepository;
-use App\Repository\ClientBingKeywordRepository;
 use App\Repository\ClientSeoDailyTotalRepository;
 use App\Repository\ClientSeoImportRepository;
 use App\Repository\ClientSeoKeywordRepository;
@@ -25,8 +23,6 @@ class ClientSeoDashboardService
         private ClientSeoDailyTotalRepository $dailyTotalRepository,
         private ClientSeoPageRepository $pageRepository,
         private ClientSeoImportRepository $importRepository,
-        private ClientBingDailyTotalRepository $bingDailyTotalRepository,
-        private ClientBingKeywordRepository $bingKeywordRepository,
     ) {
     }
 
@@ -96,7 +92,6 @@ class ClientSeoDashboardService
             'toImproveCount' => \count($ranked['toImprove']),
             'reportDue' => $site->isReportDue(),
             'bingEnabled' => $site->isBingEnabled(),
-            'bingKeywordCount' => $site->isBingEnabled() ? $this->bingKeywordRepository->getActiveCount($site) : 0,
         ];
     }
 
@@ -328,9 +323,9 @@ class ClientSeoDashboardService
         $now = new \DateTimeImmutable();
         $dataStartDate = $now->modify('-35 days')->setTime(0, 0, 0);
 
-        $googleTotals = $this->dailyTotalRepository->findByDateRange($site, $dataStartDate, $now);
+        $googleTotals = $this->dailyTotalRepository->findByDateRangeAndSource($site, $dataStartDate, $now, 'google');
         $bingTotals = $site->isBingEnabled()
-            ? $this->bingDailyTotalRepository->findByDateRange($site, $dataStartDate, $now)
+            ? $this->dailyTotalRepository->findByDateRangeAndSource($site, $dataStartDate, $now, 'bing')
             : [];
 
         if (empty($googleTotals) && empty($bingTotals)) {
@@ -622,7 +617,7 @@ class ClientSeoDashboardService
         $now = new \DateTimeImmutable();
         $startDate = $now->modify('-30 days')->setTime(0, 0, 0);
 
-        $dailyTotals = $this->bingDailyTotalRepository->findByDateRange($site, $startDate, $now);
+        $dailyTotals = $this->dailyTotalRepository->findByDateRangeAndSource($site, $startDate, $now, 'bing');
 
         if (empty($dailyTotals)) {
             return ['hasData' => false, 'totalClicks' => 0, 'totalImpressions' => 0, 'avgCtr' => 0, 'chartLabels' => [], 'chartClicks' => []];

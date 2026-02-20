@@ -18,15 +18,22 @@ class ClientSeoDailyTotalRepository extends ServiceEntityRepository
         parent::__construct($registry, ClientSeoDailyTotal::class);
     }
 
-    public function findByDateAndSite(ClientSite $clientSite, \DateTimeImmutable $date): ?ClientSeoDailyTotal
+    public function findByDateAndSite(ClientSite $clientSite, \DateTimeImmutable $date, string $source = ClientSeoDailyTotal::SOURCE_GOOGLE): ?ClientSeoDailyTotal
     {
         return $this->createQueryBuilder('t')
             ->where('t.clientSite = :site')
             ->andWhere('t.date = :date')
+            ->andWhere('t.source = :source')
             ->setParameter('site', $clientSite)
             ->setParameter('date', $date, Types::DATE_IMMUTABLE)
+            ->setParameter('source', $source)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    public function findByDateSiteAndSource(ClientSite $clientSite, \DateTimeImmutable $date, string $source): ?ClientSeoDailyTotal
+    {
+        return $this->findByDateAndSite($clientSite, $date, $source);
     }
 
     /**
@@ -41,6 +48,25 @@ class ClientSeoDailyTotalRepository extends ServiceEntityRepository
             ->setParameter('site', $clientSite)
             ->setParameter('start', $startDate, Types::DATE_IMMUTABLE)
             ->setParameter('end', $endDate, Types::DATE_IMMUTABLE)
+            ->orderBy('t.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return ClientSeoDailyTotal[]
+     */
+    public function findByDateRangeAndSource(ClientSite $clientSite, \DateTimeImmutable $startDate, \DateTimeImmutable $endDate, string $source): array
+    {
+        return $this->createQueryBuilder('t')
+            ->where('t.clientSite = :site')
+            ->andWhere('t.date >= :start')
+            ->andWhere('t.date <= :end')
+            ->andWhere('t.source = :source')
+            ->setParameter('site', $clientSite)
+            ->setParameter('start', $startDate, Types::DATE_IMMUTABLE)
+            ->setParameter('end', $endDate, Types::DATE_IMMUTABLE)
+            ->setParameter('source', $source)
             ->orderBy('t.date', 'ASC')
             ->getQuery()
             ->getResult();

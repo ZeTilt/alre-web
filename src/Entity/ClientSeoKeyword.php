@@ -46,6 +46,9 @@ class ClientSeoKeyword
     private ?\DateTimeImmutable $lastSeenInGsc = null;
 
     #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastSeenInBing = null;
+
+    #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $deactivatedAt = null;
 
     /**
@@ -187,6 +190,28 @@ class ClientSeoKeyword
     {
         $this->lastSeenInGsc = $lastSeenInGsc;
         return $this;
+    }
+
+    public function getLastSeenInBing(): ?\DateTimeImmutable
+    {
+        return $this->lastSeenInBing;
+    }
+
+    public function setLastSeenInBing(?\DateTimeImmutable $lastSeenInBing): static
+    {
+        $this->lastSeenInBing = $lastSeenInBing;
+        return $this;
+    }
+
+    public function getLastSeen(): ?\DateTimeImmutable
+    {
+        if ($this->lastSeenInGsc === null) {
+            return $this->lastSeenInBing;
+        }
+        if ($this->lastSeenInBing === null) {
+            return $this->lastSeenInGsc;
+        }
+        return $this->lastSeenInGsc > $this->lastSeenInBing ? $this->lastSeenInGsc : $this->lastSeenInBing;
     }
 
     public function getDeactivatedAt(): ?\DateTimeImmutable

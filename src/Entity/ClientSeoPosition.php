@@ -6,10 +6,13 @@ use App\Repository\ClientSeoPositionRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ClientSeoPositionRepository::class)]
-#[ORM\UniqueConstraint(name: 'unique_client_seo_position', columns: ['client_seo_keyword_id', 'date'])]
+#[ORM\UniqueConstraint(name: 'unique_client_seo_position_source', columns: ['client_seo_keyword_id', 'date', 'source'])]
 #[ORM\Index(columns: ['date'], name: 'idx_client_seo_position_date')]
 class ClientSeoPosition
 {
+    public const SOURCE_GOOGLE = 'google';
+    public const SOURCE_BING = 'bing';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -18,6 +21,9 @@ class ClientSeoPosition
     #[ORM\ManyToOne(targetEntity: ClientSeoKeyword::class, inversedBy: 'positions')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?ClientSeoKeyword $clientSeoKeyword = null;
+
+    #[ORM\Column(length: 10, options: ['default' => 'google'])]
+    private string $source = self::SOURCE_GOOGLE;
 
     #[ORM\Column]
     private ?float $position = null;
@@ -52,6 +58,17 @@ class ClientSeoPosition
     public function setClientSeoKeyword(?ClientSeoKeyword $clientSeoKeyword): static
     {
         $this->clientSeoKeyword = $clientSeoKeyword;
+        return $this;
+    }
+
+    public function getSource(): string
+    {
+        return $this->source;
+    }
+
+    public function setSource(string $source): static
+    {
+        $this->source = $source;
         return $this;
     }
 

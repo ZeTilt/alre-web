@@ -58,18 +58,6 @@ class ClientSite
     #[ORM\Column(options: ['default' => false])]
     private bool $bingEnabled = false;
 
-    /**
-     * @var Collection<int, ClientBingKeyword>
-     */
-    #[ORM\OneToMany(targetEntity: ClientBingKeyword::class, mappedBy: 'clientSite', orphanRemoval: true)]
-    private Collection $bingKeywords;
-
-    /**
-     * @var Collection<int, ClientBingDailyTotal>
-     */
-    #[ORM\OneToMany(targetEntity: ClientBingDailyTotal::class, mappedBy: 'clientSite', orphanRemoval: true)]
-    private Collection $bingDailyTotals;
-
     // Planning compte rendu
     #[ORM\Column(type: 'smallint', nullable: true)]
     private ?int $reportWeekOfMonth = null; // 1-4
@@ -86,8 +74,6 @@ class ClientSite
         $this->keywords = new ArrayCollection();
         $this->dailyTotals = new ArrayCollection();
         $this->pages = new ArrayCollection();
-        $this->bingKeywords = new ArrayCollection();
-        $this->bingDailyTotals = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -216,21 +202,6 @@ class ClientSite
         return $this;
     }
 
-    /**
-     * @return Collection<int, ClientBingKeyword>
-     */
-    public function getBingKeywords(): Collection
-    {
-        return $this->bingKeywords;
-    }
-
-    /**
-     * @return Collection<int, ClientBingDailyTotal>
-     */
-    public function getBingDailyTotals(): Collection
-    {
-        return $this->bingDailyTotals;
-    }
 
     // --- Scheduling getters/setters ---
 

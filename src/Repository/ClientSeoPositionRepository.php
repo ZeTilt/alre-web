@@ -19,15 +19,22 @@ class ClientSeoPositionRepository extends ServiceEntityRepository
         parent::__construct($registry, ClientSeoPosition::class);
     }
 
-    public function findByKeywordAndDate(ClientSeoKeyword $keyword, \DateTimeImmutable $date): ?ClientSeoPosition
+    public function findByKeywordAndDate(ClientSeoKeyword $keyword, \DateTimeImmutable $date, string $source = ClientSeoPosition::SOURCE_GOOGLE): ?ClientSeoPosition
     {
         return $this->createQueryBuilder('p')
             ->where('p.clientSeoKeyword = :keyword')
             ->andWhere('p.date = :date')
+            ->andWhere('p.source = :source')
             ->setParameter('keyword', $keyword)
             ->setParameter('date', $date, Types::DATE_IMMUTABLE)
+            ->setParameter('source', $source)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    public function findByKeywordDateAndSource(ClientSeoKeyword $keyword, \DateTimeImmutable $date, string $source): ?ClientSeoPosition
+    {
+        return $this->findByKeywordAndDate($keyword, $date, $source);
     }
 
     /**

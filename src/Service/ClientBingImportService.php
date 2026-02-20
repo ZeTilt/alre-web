@@ -2,14 +2,14 @@
 
 namespace App\Service;
 
-use App\Entity\ClientBingDailyTotal;
-use App\Entity\ClientBingKeyword;
-use App\Entity\ClientBingPosition;
+use App\Entity\ClientSeoDailyTotal;
 use App\Entity\ClientSeoImport;
+use App\Entity\ClientSeoKeyword;
+use App\Entity\ClientSeoPosition;
 use App\Entity\ClientSite;
-use App\Repository\ClientBingDailyTotalRepository;
-use App\Repository\ClientBingKeywordRepository;
-use App\Repository\ClientBingPositionRepository;
+use App\Repository\ClientSeoDailyTotalRepository;
+use App\Repository\ClientSeoKeywordRepository;
+use App\Repository\ClientSeoPositionRepository;
 use App\Repository\ClientSiteRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -19,9 +19,9 @@ class ClientBingImportService
     public function __construct(
         private BingWebmasterService $bingService,
         private ClientSiteRepository $clientSiteRepository,
-        private ClientBingKeywordRepository $keywordRepository,
-        private ClientBingPositionRepository $positionRepository,
-        private ClientBingDailyTotalRepository $dailyTotalRepository,
+        private ClientSeoKeywordRepository $keywordRepository,
+        private ClientSeoPositionRepository $positionRepository,
+        private ClientSeoDailyTotalRepository $dailyTotalRepository,
         private EntityManagerInterface $entityManager,
         private LoggerInterface $logger,
     ) {}
@@ -35,15 +35,24 @@ class ClientBingImportService
         $siteId = $site->getId();
 
         $deleted = 0;
-        $deleted += (int) $conn->executeStatement('DELETE p FROM client_bing_position p INNER JOIN client_bing_keyword k ON p.client_bing_keyword_id = k.id WHERE k.client_site_id = ?', [$siteId]);
-        $deleted += (int) $conn->executeStatement('DELETE FROM client_bing_daily_total WHERE client_site_id = ?', [$siteId]);
+        $deleted += (int) $conn->executeStatement(
+            'DELETE p FROM client_seo_position p INNER JOIN client_seo_keyword k ON p.client_seo_keyword_id = k.id WHERE k.client_site_id = ? AND p.source = ?',
+            [$siteId, 'bing']
+        );
+        $deleted += (int) $conn->executeStatement(
+            'DELETE FROM client_seo_daily_total WHERE client_site_id = ? AND source = ?',
+            [$siteId, 'bing']
+        );
+
+        // Reset Bing tracking on keywords
+        $conn->executeStatement('UPDATE client_seo_keyword SET last_seen_in_bing = NULL WHERE client_site_id = ?', [$siteId]);
 
         return $deleted;
     }
 
     /**
      * Importe les données Bing pour un site client.
-     * Note: l'API Bing renvoie tout l'historique disponible (~6 mois), pas de filtre par date.
+     * Utilise les mêmes entités que GSC (ClientSeoKeyword/Position/DailyTotal) avec source='bing'.
      *
      * @return array{keywords: int, positions: int, dailyTotals: int, message: string}
      */
@@ -68,10 +77,10 @@ class ClientBingImportService
             $date = new \DateTimeImmutable($dateStr);
 
             foreach ($keywords as $query => $data) {
-                // Find or create keyword
-                $keyword = $this->keywordRepository->findByClientSiteAndKeyword($site, $query);
+                // Find or create unified keyword (shared with GSC)
+                $keyword = $this->keywordRepository->findByKeywordAndSite($query, $site);
                 if ($keyword === null) {
-                    $keyword = new ClientBingKeyword();
+                    $keyword = new ClientSeoKeyword();
                     $keyword->setClientSite($site);
                     $keyword->setKeyword($query);
                     $this->entityManager->persist($keyword);
@@ -79,15 +88,21 @@ class ClientBingImportService
                     $keywordsCreated++;
                 }
 
-                // Upsert position
-                $existing = $keyword->getId() ? $this->positionRepository->findByKeywordAndDate($keyword, $date) : null;
+                // Track last seen in Bing
+                if ($keyword->getLastSeenInBing() === null || $date > $keyword->getLastSeenInBing()) {
+                    $keyword->setLastSeenInBing($date);
+                }
+
+                // Upsert position with source=bing
+                $existing = $this->positionRepository->findByKeywordDateAndSource($keyword, $date, ClientSeoPosition::SOURCE_BING);
                 if ($existing !== null) {
                     $existing->setPosition($data['position']);
                     $existing->setClicks($data['clicks']);
                     $existing->setImpressions($data['impressions']);
                 } else {
-                    $position = new ClientBingPosition();
-                    $position->setClientBingKeyword($keyword);
+                    $position = new ClientSeoPosition();
+                    $position->setClientSeoKeyword($keyword);
+                    $position->setSource(ClientSeoPosition::SOURCE_BING);
                     $position->setPosition($data['position']);
                     $position->setClicks($data['clicks']);
                     $position->setImpressions($data['impressions']);
@@ -98,18 +113,26 @@ class ClientBingImportService
             }
         }
 
+        $this->entityManager->flush();
+
         // Import daily traffic stats
         $trafficStats = $this->bingService->fetchDailyTrafficStats($siteUrl);
         foreach ($trafficStats as $dateStr => $data) {
             $date = new \DateTimeImmutable($dateStr);
 
-            $existing = $this->dailyTotalRepository->findByDateAndSite($site, $date);
+            $existing = $this->dailyTotalRepository->findByDateSiteAndSource($site, $date, ClientSeoDailyTotal::SOURCE_BING);
             if ($existing !== null) {
+                if ($existing->getClicks() !== $data['clicks'] || $existing->getImpressions() !== $data['impressions']) {
+                    $existing->setClicks($data['clicks']);
+                    $existing->setImpressions($data['impressions']);
+                    $dailyTotalsCreated++;
+                }
                 continue;
             }
 
-            $dailyTotal = new ClientBingDailyTotal();
+            $dailyTotal = new ClientSeoDailyTotal();
             $dailyTotal->setClientSite($site);
+            $dailyTotal->setSource(ClientSeoDailyTotal::SOURCE_BING);
             $dailyTotal->setDate($date);
             $dailyTotal->setClicks($data['clicks']);
             $dailyTotal->setImpressions($data['impressions']);

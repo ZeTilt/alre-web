@@ -39,6 +39,9 @@ class ClientGscImportService
         $deleted += (int) $conn->executeStatement('DELETE FROM client_seo_daily_total WHERE client_site_id = ?', [$siteId]);
         $deleted += (int) $conn->executeStatement('DELETE FROM client_seo_import WHERE client_site_id = ?', [$siteId]);
 
+        // Reset keyword tracking fields
+        $conn->executeStatement('UPDATE client_seo_keyword SET last_seen_in_gsc = NULL, deactivated_at = NULL, is_active = 1 WHERE client_site_id = ?', [$siteId]);
+
         return $deleted;
     }
 
@@ -86,7 +89,9 @@ class ClientGscImportService
                         $this->entityManager->flush();
                         $keywordsCreated++;
                     }
-                    $keyword->setLastSeenInGsc(new \DateTimeImmutable());
+                    if ($keyword->getLastSeenInGsc() === null || $date > $keyword->getLastSeenInGsc()) {
+                        $keyword->setLastSeenInGsc($date);
+                    }
 
                     // Deduplicate (accent collisions in MySQL collation)
                     $posKey = $keyword->getId() . '-' . $dateStr;

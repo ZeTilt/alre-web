@@ -89,6 +89,10 @@ services:
         arguments:
             $googleSiteUrl: '%env(GOOGLE_SITE_URL)%'
 
+    App\Service\BingDataImportService:
+        arguments:
+            $googleSiteUrl: '%env(GOOGLE_SITE_URL)%'
+
     App\Service\GooglePlacesService:
         arguments:
             $googlePlacesApiKey: '%env(GOOGLE_PLACES_API_KEY)%'

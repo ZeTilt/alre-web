@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\ClientSeoPage;
 use App\Entity\ClientSite;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -47,7 +48,7 @@ class ClientSeoPageRepository extends ServiceEntityRepository
             ->andWhere('p.date = :date')
             ->setParameter('site', $clientSite)
             ->setParameter('hash', $urlHash)
-            ->setParameter('date', $date)
+            ->setParameter('date', $date, Types::DATE_IMMUTABLE)
             ->getQuery()
             ->getOneOrNullResult();
     }

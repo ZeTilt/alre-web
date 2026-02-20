@@ -1,0 +1,101 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}
+    <i class="fab fa-microsoft"></i> Configuration Bing Webmaster Tools
+{% endblock %}
+
+{% block page_content %}
+{% include 'admin/dashboard/_partials/_styles.html.twig' %}
+
+<div style="max-width: 600px;">
+    <div class="stat-card" style="margin-bottom: 1.5rem;">
+        <div class="stat-header">
+            <span class="stat-label">Bing Webmaster API</span>
+            <div class="stat-icon {% if config.apiKey %}success{% else %}warning{% endif %}">
+                <i class="fab fa-microsoft"></i>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ path('admin_bing_config') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('bing-config') }}">
+
+            <div style="margin-bottom: 1.25rem;">
+                <label for="site_url" style="display: block; font-weight: 600; font-size: 0.875rem; color: #374151; margin-bottom: 0.5rem;">
+                    URL du site (Bing)
+                </label>
+                <input type="url" id="site_url" name="site_url" value="{{ config.siteUrl }}"
+                    class="form-control" placeholder="https://www.alre-web.bzh"
+                    style="font-size: 0.875rem;">
+                <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                    URL classique du site, utilisee pour Bing Webmaster Tools.
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1.25rem;">
+                <label for="gsc_site_url" style="display: block; font-weight: 600; font-size: 0.875rem; color: #374151; margin-bottom: 0.5rem;">
+                    Propriete GSC (Google Search Console)
+                </label>
+                <input type="text" id="gsc_site_url" name="gsc_site_url" value="{{ config.gscSiteUrl }}"
+                    class="form-control" placeholder="sc-domain:alre-web.bzh"
+                    style="font-family: monospace; font-size: 0.875rem;">
+                <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                    Identifiant de propriete GSC : <code>sc-domain:example.com</code> (domaine) ou <code>https://www.example.com/</code> (prefixe URL).
+                    Visible dans <a href="https://search.google.com/search-console" target="_blank" rel="noopener">Search Console</a>.
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1.25rem;">
+                <label for="api_key" style="display: block; font-weight: 600; font-size: 0.875rem; color: #374151; margin-bottom: 0.5rem;">
+                    API Key Bing Webmaster
+                </label>
+                <input type="text" id="api_key" name="api_key" value="{{ config.apiKey }}"
+                    class="form-control" placeholder="Votre cle API Bing Webmaster Tools"
+                    style="font-family: monospace; font-size: 0.875rem;">
+                <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                    Disponible dans <a href="https://www.bing.com/webmasters/home" target="_blank" rel="noopener">Bing Webmaster Tools</a> &gt; Parametres &gt; Acces API
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1.25rem;">
+                <label for="indexnow_key" style="display: block; font-weight: 600; font-size: 0.875rem; color: #374151; margin-bottom: 0.5rem;">
+                    Cle IndexNow
+                </label>
+                <input type="text" id="indexnow_key" name="indexnow_key" value="{{ config.indexNowKey }}"
+                    class="form-control" placeholder="Cle hexadecimale pour IndexNow"
+                    style="font-family: monospace; font-size: 0.875rem;">
+                <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                    Cle de verification IndexNow. Generez-en une sur <a href="https://www.bing.com/indexnow" target="_blank" rel="noopener">indexnow.org</a> ou utilisez un UUID.
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+                <a href="{{ path('admin_seo_dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour au dashboard
+                </a>
+            </div>
+        </form>
+    </div>
+
+    {% if config.apiKey %}
+    <div class="stat-card success" style="font-size: 0.875rem;">
+        <i class="fas fa-check-circle" style="color: #10b981;"></i>
+        API Key configuree. Les donnees Bing seront importees lors du prochain <code>app:seo-sync</code>.
+        {% if config.updatedAt %}
+            <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                Derniere mise a jour : {{ config.updatedAt|date('d/m/Y a H:i') }}
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if config.indexNowKey %}
+    <div class="stat-card info" style="font-size: 0.875rem; margin-top: 1rem;">
+        <i class="fas fa-bolt" style="color: #3b82f6;"></i>
+        IndexNow actif. Les nouvelles pages seront notifiees automatiquement.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

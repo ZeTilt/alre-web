@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\SeoDailyTotal;
 use App\Entity\SeoKeyword;
 use App\Repository\GoogleReviewRepository;
 use App\Repository\SeoDailyTotalRepository;
@@ -36,10 +37,9 @@ class DashboardSeoService
         // Pre-fetch shared data to avoid duplicate queries
         $activeKeywords = $this->seoKeywordRepository->findActiveKeywords();
         $latestDates7 = $this->seoPositionRepository->findLatestDatesWithData(7);
-        $dailyTotals = $this->seoDailyTotalRepository->findByDateRange(
-            (new \DateTimeImmutable())->modify('-35 days')->setTime(0, 0, 0),
-            new \DateTimeImmutable()
-        );
+        $dataStartDate = (new \DateTimeImmutable())->modify('-35 days')->setTime(0, 0, 0);
+        $dailyTotals = $this->seoDailyTotalRepository->findByDateRange($dataStartDate, new \DateTimeImmutable());
+        $bingDailyTotals = $this->seoDailyTotalRepository->findByDateRange($dataStartDate, new \DateTimeImmutable(), SeoDailyTotal::SOURCE_BING);
 
         // Single query for all position data (replaces 7 individual queries)
         $now = new \DateTimeImmutable();
@@ -54,6 +54,7 @@ class DashboardSeoService
         $seoPositionComparisons = $this->calculateSeoPositionComparisons($activeKeywords, $rawPositions);
         $seoDailyComparisons = $this->calculateSeoDailyComparisons($activeKeywords, $latestDates7, $rawPositions);
         $seoMomentum = $this->calculate7DayMomentum($latestDates7, $rawPositions);
+        $seoStability = $this->calculatePositionStability($latestDates7, $rawPositions);
         $seoKeywordsRanked = $this->rankSeoKeywords($seoPositionComparisons, $seoDailyComparisons, $seoMomentum, $activeKeywords, $latestPositionData, $latestDates7, $rawPositions);
 
         return [
@@ -65,9 +66,10 @@ class DashboardSeoService
             // SEO Sync
             'lastSeoSyncAt' => $this->seoDataImportService->getLastSyncDate(),
 
-            // SEO Position comparisons (monthly + momentum)
+            // SEO Position comparisons (monthly + momentum + stability)
             'seoPositionComparisons' => $seoPositionComparisons,
             'seoMomentum' => $seoMomentum,
+            'seoStability' => $seoStability,
 
             // SEO Keywords ranked by score
             'seoKeywordsRanked' => $seoKeywordsRanked,
@@ -79,7 +81,7 @@ class DashboardSeoService
             'seoDepartmentPages' => $this->cityKeywordMatcher->buildDepartmentPagesSummary($seoKeywordsRanked, $activeKeywords, $latestPositionData),
 
             // SEO Chart data (last 30 days)
-            'seoChartData' => $this->prepareSeoChartData($dailyTotals),
+            'seoChartData' => $this->prepareSeoChartData($dailyTotals, $bingDailyTotals),
 
             // SEO Performance categories
             'seoPerformanceData' => $this->categorizeSeoKeywords($activeKeywords, $latestPositionData),
@@ -506,44 +508,31 @@ class DashboardSeoService
 
     /**
      * Prepare les donnees pour le graphique SEO (clics/impressions sur 30 jours).
+     * Agrege Google + Bing quand des donnees Bing sont presentes.
      *
-     * @param \App\Entity\SeoDailyTotal[] $dailyTotals Pre-fetched daily totals
-     * @return array{labels: array, clicks: array, impressions: array, hasEnoughData: bool}
+     * @param \App\Entity\SeoDailyTotal[] $googleTotals Pre-fetched Google daily totals
+     * @param \App\Entity\SeoDailyTotal[] $bingTotals Pre-fetched Bing daily totals
      */
-    private function prepareSeoChartData(array $dailyTotals): array
+    private function prepareSeoChartData(array $googleTotals, array $bingTotals = []): array
     {
-        if (empty($dailyTotals)) {
+        if (empty($googleTotals) && empty($bingTotals)) {
             return [
                 'labels' => [],
-                'clicks' => [],
-                'impressions' => [],
-                'ctr' => [],
-                'position' => [],
-                'clicks7d' => [],
-                'impressions7d' => [],
-                'ctr7d' => [],
-                'position7d' => [],
+                'clicks' => [], 'impressions' => [], 'ctr' => [], 'position' => [],
+                'googleClicks' => [], 'googleImpressions' => [],
+                'bingClicks' => [], 'bingImpressions' => [],
+                'clicks7d' => [], 'impressions7d' => [], 'ctr7d' => [], 'position7d' => [],
                 'hasEnoughData' => false,
                 'daysWithData' => 0,
+                'hasBingData' => false,
             ];
         }
 
-        $firstDataDate = null;
-        $lastDataDate = null;
-        foreach ($dailyTotals as $total) {
-            $date = $total->getDate();
-            if ($firstDataDate === null || $date < $firstDataDate) {
-                $firstDataDate = $date;
-            }
-            if ($lastDataDate === null || $date > $lastDataDate) {
-                $lastDataDate = $date;
-            }
-        }
-
-        $dailyData = [];
-        foreach ($dailyTotals as $total) {
+        // Build daily maps
+        $googleData = [];
+        foreach ($googleTotals as $total) {
             $dateKey = $total->getDate()->format('Y-m-d');
-            $dailyData[$dateKey] = [
+            $googleData[$dateKey] = [
                 'clicks' => $total->getClicks(),
                 'impressions' => $total->getImpressions(),
                 'ctr' => $total->getCtr(),
@@ -551,14 +540,48 @@ class DashboardSeoService
             ];
         }
 
-        $daysWithData = count($dailyTotals);
-        $hasEnoughData = $daysWithData >= 7;
+        $bingData = [];
+        foreach ($bingTotals as $total) {
+            $dateKey = $total->getDate()->format('Y-m-d');
+            $bingData[$dateKey] = [
+                'clicks' => $total->getClicks(),
+                'impressions' => $total->getImpressions(),
+            ];
+        }
+
+        // Find date range across both sources
+        $allDates = array_unique(array_merge(array_keys($googleData), array_keys($bingData)));
+        sort($allDates);
+
+        if (empty($allDates)) {
+            return [
+                'labels' => [],
+                'clicks' => [], 'impressions' => [], 'ctr' => [], 'position' => [],
+                'googleClicks' => [], 'googleImpressions' => [],
+                'bingClicks' => [], 'bingImpressions' => [],
+                'clicks7d' => [], 'impressions7d' => [], 'ctr7d' => [], 'position7d' => [],
+                'hasEnoughData' => false,
+                'daysWithData' => 0,
+                'hasBingData' => false,
+            ];
+        }
+
+        $firstDataDate = new \DateTimeImmutable(reset($allDates));
+        $lastDataDate = new \DateTimeImmutable(end($allDates));
+
+        $daysWithData = \count($googleTotals) + \count($bingTotals);
+        $hasEnoughData = \count($googleTotals) >= 7 || \count($bingTotals) >= 7;
+        $hasBingData = !empty($bingTotals);
 
         $allLabels = [];
         $allClicks = [];
         $allImpressions = [];
         $allCtr = [];
         $allPosition = [];
+        $allGoogleClicks = [];
+        $allGoogleImpressions = [];
+        $allBingClicks = [];
+        $allBingImpressions = [];
 
         $currentDate = $firstDataDate;
         $endDate = $lastDataDate;
@@ -567,27 +590,34 @@ class DashboardSeoService
             $dateKey = $currentDate->format('Y-m-d');
             $allLabels[] = $currentDate->format('d/m');
 
-            if (isset($dailyData[$dateKey])) {
-                $allClicks[] = $dailyData[$dateKey]['clicks'];
-                $allImpressions[] = $dailyData[$dateKey]['impressions'];
-                $allCtr[] = $dailyData[$dateKey]['ctr'];
-                $allPosition[] = $dailyData[$dateKey]['position'];
-            } else {
-                $allClicks[] = 0;
-                $allImpressions[] = 0;
-                $allCtr[] = null;
-                $allPosition[] = null;
-            }
+            $gClicks = $googleData[$dateKey]['clicks'] ?? 0;
+            $gImpressions = $googleData[$dateKey]['impressions'] ?? 0;
+            $bClicks = $bingData[$dateKey]['clicks'] ?? 0;
+            $bImpressions = $bingData[$dateKey]['impressions'] ?? 0;
+
+            $totalClicks = $gClicks + $bClicks;
+            $totalImpressions = $gImpressions + $bImpressions;
+
+            $allClicks[] = $totalClicks;
+            $allImpressions[] = $totalImpressions;
+            $allCtr[] = isset($googleData[$dateKey]) ? $googleData[$dateKey]['ctr'] : ($totalImpressions > 0 ? round(($totalClicks / $totalImpressions) * 100, 2) : null);
+            $allPosition[] = $googleData[$dateKey]['position'] ?? null;
+
+            $allGoogleClicks[] = $gClicks;
+            $allGoogleImpressions[] = $gImpressions;
+            $allBingClicks[] = $bClicks;
+            $allBingImpressions[] = $bImpressions;
 
             $currentDate = $currentDate->modify('+1 day');
         }
 
+        // 7-day rolling averages
         $allClicks7d = [];
         $allImpressions7d = [];
         $allCtr7d = [];
         $allPosition7d = [];
 
-        for ($i = 0; $i < count($allClicks); $i++) {
+        for ($i = 0; $i < \count($allClicks); $i++) {
             $windowStart = max(0, $i - 6);
 
             $sumClicks = 0;
@@ -616,32 +646,27 @@ class DashboardSeoService
             $allPosition7d[] = $countPosition > 0 ? round($sumPosition / $countPosition, 1) : null;
         }
 
-        $totalDays = count($allLabels);
+        $totalDays = \count($allLabels);
         $displayDays = min(30, $totalDays);
         $startIndex = $totalDays - $displayDays;
 
-        $labels = array_slice($allLabels, $startIndex);
-        $clicks = array_slice($allClicks, $startIndex);
-        $impressions = array_slice($allImpressions, $startIndex);
-        $ctr = array_slice($allCtr, $startIndex);
-        $position = array_slice($allPosition, $startIndex);
-        $clicks7d = array_slice($allClicks7d, $startIndex);
-        $impressions7d = array_slice($allImpressions7d, $startIndex);
-        $ctr7d = array_slice($allCtr7d, $startIndex);
-        $position7d = array_slice($allPosition7d, $startIndex);
-
         return [
-            'labels' => $labels,
-            'clicks' => $clicks,
-            'impressions' => $impressions,
-            'ctr' => $ctr,
-            'position' => $position,
-            'clicks7d' => $clicks7d,
-            'impressions7d' => $impressions7d,
-            'ctr7d' => $ctr7d,
-            'position7d' => $position7d,
+            'labels' => array_slice($allLabels, $startIndex),
+            'clicks' => array_slice($allClicks, $startIndex),
+            'impressions' => array_slice($allImpressions, $startIndex),
+            'ctr' => array_slice($allCtr, $startIndex),
+            'position' => array_slice($allPosition, $startIndex),
+            'googleClicks' => array_slice($allGoogleClicks, $startIndex),
+            'googleImpressions' => array_slice($allGoogleImpressions, $startIndex),
+            'bingClicks' => array_slice($allBingClicks, $startIndex),
+            'bingImpressions' => array_slice($allBingImpressions, $startIndex),
+            'clicks7d' => array_slice($allClicks7d, $startIndex),
+            'impressions7d' => array_slice($allImpressions7d, $startIndex),
+            'ctr7d' => array_slice($allCtr7d, $startIndex),
+            'position7d' => array_slice($allPosition7d, $startIndex),
             'hasEnoughData' => $hasEnoughData,
             'daysWithData' => $daysWithData,
+            'hasBingData' => $hasBingData,
         ];
     }
 
@@ -965,4 +990,5 @@ class DashboardSeoService
             'relevanceCounts' => $scoreMap,
         ];
     }
+
 }

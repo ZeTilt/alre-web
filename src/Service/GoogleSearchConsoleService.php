@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Repository\BingConfigRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -14,16 +15,26 @@ class GoogleSearchConsoleService
     public function __construct(
         private HttpClientInterface $httpClient,
         private GoogleOAuthService $googleOAuthService,
+        private BingConfigRepository $bingConfigRepository,
         private LoggerInterface $logger,
         private string $googleSiteUrl,
     ) {}
+
+    /**
+     * Retourne l'URL du site principal (BDD prioritaire, env fallback).
+     */
+    public function getMainSiteUrl(): string
+    {
+        $config = $this->bingConfigRepository->getOrCreate();
+        return $config->getGscSiteUrl() ?: $config->getSiteUrl() ?: $this->googleSiteUrl;
+    }
 
     /**
      * Vérifie si le service est configuré et connecté.
      */
     public function isAvailable(): bool
     {
-        return !empty($this->googleSiteUrl)
+        return !empty($this->getMainSiteUrl())
             && $this->googleOAuthService->isConfigured()
             && $this->googleOAuthService->isConnected();
     }
@@ -33,7 +44,7 @@ class GoogleSearchConsoleService
      *
      * @return array{position: float, clicks: int, impressions: int}|null
      */
-    public function fetchDataForKeyword(string $keyword, ?\DateTimeImmutable $startDate = null, ?\DateTimeImmutable $endDate = null): ?array
+    public function fetchDataForKeyword(string $keyword, ?\DateTimeImmutable $startDate = null, ?\DateTimeImmutable $endDate = null, ?string $siteUrl = null): ?array
     {
         $token = $this->googleOAuthService->getValidTokenWithRefresh();
         if (!$token) {
@@ -45,7 +56,7 @@ class GoogleSearchConsoleService
         $endDate = $endDate ?? new \DateTimeImmutable('-1 day');
         $startDate = $startDate ?? new \DateTimeImmutable('-7 days');
 
-        $encodedSiteUrl = urlencode($this->googleSiteUrl);
+        $encodedSiteUrl = urlencode($siteUrl ?? $this->getMainSiteUrl());
         $url = self::API_URL . "/{$encodedSiteUrl}/searchAnalytics/query";
 
         $body = [
@@ -92,7 +103,7 @@ class GoogleSearchConsoleService
      *
      * @return array<string, array{position: float, clicks: int, impressions: int}>
      */
-    public function fetchAllKeywordsData(?\DateTimeImmutable $startDate = null, ?\DateTimeImmutable $endDate = null): array
+    public function fetchAllKeywordsData(?\DateTimeImmutable $startDate = null, ?\DateTimeImmutable $endDate = null, ?string $siteUrl = null): array
     {
         $token = $this->googleOAuthService->getValidTokenWithRefresh();
         if (!$token) {
@@ -103,7 +114,7 @@ class GoogleSearchConsoleService
         $endDate = $endDate ?? new \DateTimeImmutable('-1 day');
         $startDate = $startDate ?? new \DateTimeImmutable('-7 days');
 
-        $encodedSiteUrl = urlencode($this->googleSiteUrl);
+        $encodedSiteUrl = urlencode($siteUrl ?? $this->getMainSiteUrl());
         $url = self::API_URL . "/{$encodedSiteUrl}/searchAnalytics/query";
 
         $body = [
@@ -141,7 +152,7 @@ class GoogleSearchConsoleService
      * @return array<string, array<string, array{position: float, clicks: int, impressions: int}>>
      *         Format: [date][keyword] => {position, clicks, impressions}
      */
-    public function fetchDailyKeywordsData(?\DateTimeImmutable $startDate = null, ?\DateTimeImmutable $endDate = null): array
+    public function fetchDailyKeywordsData(?\DateTimeImmutable $startDate = null, ?\DateTimeImmutable $endDate = null, ?string $siteUrl = null): array
     {
         $token = $this->googleOAuthService->getValidTokenWithRefresh();
         if (!$token) {
@@ -152,7 +163,7 @@ class GoogleSearchConsoleService
         $endDate = $endDate ?? new \DateTimeImmutable('-1 day');
         $startDate = $startDate ?? new \DateTimeImmutable('-7 days');
 
-        $encodedSiteUrl = urlencode($this->googleSiteUrl);
+        $encodedSiteUrl = urlencode($siteUrl ?? $this->getMainSiteUrl());
         $url = self::API_URL . "/{$encodedSiteUrl}/searchAnalytics/query";
 
         $body = [
@@ -195,7 +206,7 @@ class GoogleSearchConsoleService
      * @return array<string, array{clicks: int, impressions: int, position: float}>
      *         Format: [date] => {clicks, impressions, position}
      */
-    public function fetchDailyTotals(?\DateTimeImmutable $startDate = null, ?\DateTimeImmutable $endDate = null): array
+    public function fetchDailyTotals(?\DateTimeImmutable $startDate = null, ?\DateTimeImmutable $endDate = null, ?string $siteUrl = null): array
     {
         $token = $this->googleOAuthService->getValidTokenWithRefresh();
         if (!$token) {
@@ -206,7 +217,7 @@ class GoogleSearchConsoleService
         $endDate = $endDate ?? new \DateTimeImmutable('-1 day');
         $startDate = $startDate ?? new \DateTimeImmutable('-7 days');
 
-        $encodedSiteUrl = urlencode($this->googleSiteUrl);
+        $encodedSiteUrl = urlencode($siteUrl ?? $this->getMainSiteUrl());
         $url = self::API_URL . "/{$encodedSiteUrl}/searchAnalytics/query";
 
         $body = [

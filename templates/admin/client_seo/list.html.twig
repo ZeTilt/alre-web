@@ -20,7 +20,7 @@
 <div class="stat-card info" style="text-align: center; padding: 3rem;">
     <i class="fas fa-users-cog" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem; display: block;"></i>
     <div style="font-size: 1.125rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Aucun site client suivi</div>
-    <div style="color: #6b7280; margin-bottom: 1.5rem;">Ajoutez un site client pour commencer le suivi SEO via import CSV.</div>
+    <div style="color: #6b7280; margin-bottom: 1.5rem;">Ajoutez un site client pour commencer le suivi SEO automatique via API.</div>
     <a href="{{ path('admin_client_seo_add_site') }}" class="btn btn-primary">
         <i class="fas fa-plus"></i> Ajouter un site client
     </a>
@@ -41,18 +41,18 @@
             </div>
             <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.75rem;">
                 <i class="fas fa-globe"></i> {{ site.url }}
+                {% if site.bingEnabled %}
+                    <span style="display: inline-flex; align-items: center; gap: 0.2rem; background: #e0f2fe; color: #0078d4; padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.65rem; font-weight: 600; margin-left: 0.25rem;" title="Suivi Bing active">
+                        <i class="fab fa-microsoft" style="font-size: 0.6rem;"></i> Bing
+                    </span>
+                {% endif %}
             </div>
             {% if summary %}
-                {% if summary.importDue or summary.reportDue or summary.toImproveCount > 0 %}
+                {% if summary.reportDue or summary.toImproveCount > 0 %}
                 <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.75rem;">
-                    {% if summary.importDue %}
-                        <span style="display: inline-flex; align-items: center; gap: 0.25rem; background: #fef3c7; color: #92400e; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;" title="Import GSC a faire">
-                            <i class="fas fa-file-upload"></i> Import du
-                        </span>
-                    {% endif %}
                     {% if summary.reportDue %}
                         <span style="display: inline-flex; align-items: center; gap: 0.25rem; background: #fee2e2; color: #991b1b; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;" title="Compte rendu a preparer">
-                            <i class="fas fa-file-alt"></i> Rapport du
+                            <i class="fas fa-file-alt"></i> CR a faire
                         </span>
                     {% endif %}
                     {% if summary.toImproveCount > 0 %}
@@ -83,21 +83,8 @@
                         </div>
                     {% endif %}
                 </div>
-                <div style="font-size: 0.75rem; color: #9ca3af; border-top: 1px solid #f3f4f6; padding-top: 0.5rem;">
-                    {% if summary.lastImportDate %}
-                        <i class="fas fa-clock"></i> Dernier : {{ summary.lastImportDate|date('d/m/Y') }}
-                    {% else %}
-                        <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i> Aucun import
-                    {% endif %}
-                    {% if summary.nextImportDate %}
-                        &middot; <i class="fas fa-calendar-alt"></i> Prochain : {{ summary.nextImportDate|date('d/m/Y') }}
-                    {% endif %}
-                </div>
             {% endif %}
             <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
-                <a href="{{ path('admin_client_seo_import', {id: site.id}) }}" class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation();">
-                    <i class="fas fa-file-upload"></i> Importer
-                </a>
                 <a href="{{ path('admin_client_seo_dashboard', {id: site.id}) }}" class="btn btn-sm btn-primary" onclick="event.stopPropagation();">
                     <i class="fas fa-chart-line"></i> Dashboard
                 </a>

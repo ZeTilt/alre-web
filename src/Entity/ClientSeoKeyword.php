@@ -42,6 +42,12 @@ class ClientSeoKeyword
     #[ORM\Column(type: 'smallint', options: ['default' => 0])]
     private int $relevanceScore = 0;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastSeenInGsc = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $deactivatedAt = null;
+
     /**
      * @var Collection<int, ClientSeoPosition>
      */
@@ -169,6 +175,28 @@ class ClientSeoKeyword
     public function setRelevanceScore(int $relevanceScore): static
     {
         $this->relevanceScore = max(0, min(5, $relevanceScore));
+        return $this;
+    }
+
+    public function getLastSeenInGsc(): ?\DateTimeImmutable
+    {
+        return $this->lastSeenInGsc;
+    }
+
+    public function setLastSeenInGsc(?\DateTimeImmutable $lastSeenInGsc): static
+    {
+        $this->lastSeenInGsc = $lastSeenInGsc;
+        return $this;
+    }
+
+    public function getDeactivatedAt(): ?\DateTimeImmutable
+    {
+        return $this->deactivatedAt;
+    }
+
+    public function setDeactivatedAt(?\DateTimeImmutable $deactivatedAt): static
+    {
+        $this->deactivatedAt = $deactivatedAt;
         return $this;
     }
 

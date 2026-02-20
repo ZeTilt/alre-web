@@ -5,7 +5,6 @@ namespace App\DataFixtures;
 use App\Entity\City;
 use App\Entity\Client;
 use App\Entity\ClientSeoDailyTotal;
-use App\Entity\ClientSeoImport;
 use App\Entity\ClientSeoKeyword;
 use App\Entity\ClientSeoPage;
 use App\Entity\ClientSeoPosition;
@@ -925,30 +924,6 @@ class DemoFixtures extends Fixture implements DependentFixtureInterface
             $manager->persist($page);
         }
 
-        // Client SEO Imports (2 successful imports)
-        $import1 = new ClientSeoImport();
-        $import1->setClientSite($clientSite);
-        $import1->setType(ClientSeoImport::TYPE_PERFORMANCE_QUERIES);
-        $import1->setPeriodStart(new \DateTimeImmutable('2026-01-10'));
-        $import1->setPeriodEnd(new \DateTimeImmutable('2026-02-08'));
-        $import1->setOriginalFilename('Performance-Queries-fitnessplus-20260208.csv');
-        $import1->setRowsImported(420);
-        $import1->setRowsSkipped(12);
-        $import1->setImportedAt(new \DateTimeImmutable('2026-02-08 10:30:00'));
-        $import1->setStatus(ClientSeoImport::STATUS_SUCCESS);
-        $manager->persist($import1);
-
-        $import2 = new ClientSeoImport();
-        $import2->setClientSite($clientSite);
-        $import2->setType(ClientSeoImport::TYPE_PERFORMANCE_PAGES);
-        $import2->setPeriodStart(new \DateTimeImmutable('2026-01-10'));
-        $import2->setPeriodEnd(new \DateTimeImmutable('2026-02-08'));
-        $import2->setOriginalFilename('Performance-Pages-fitnessplus-20260208.csv');
-        $import2->setRowsImported(85);
-        $import2->setRowsSkipped(3);
-        $import2->setImportedAt(new \DateTimeImmutable('2026-02-08 10:32:00'));
-        $import2->setStatus(ClientSeoImport::STATUS_SUCCESS);
-        $manager->persist($import2);
     }
 
     // =========================================================================

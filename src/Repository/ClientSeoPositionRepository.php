@@ -6,6 +6,7 @@ use App\Entity\ClientSeoKeyword;
 use App\Entity\ClientSeoPosition;
 use App\Entity\ClientSite;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -24,7 +25,7 @@ class ClientSeoPositionRepository extends ServiceEntityRepository
             ->where('p.clientSeoKeyword = :keyword')
             ->andWhere('p.date = :date')
             ->setParameter('keyword', $keyword)
-            ->setParameter('date', $date)
+            ->setParameter('date', $date, Types::DATE_IMMUTABLE)
             ->getQuery()
             ->getOneOrNullResult();
     }
@@ -111,6 +112,46 @@ class ClientSeoPositionRepository extends ServiceEntityRepository
             ->getResult();
 
         return array_map(fn(array $row) => $row['date'], $results);
+    }
+
+    /**
+     * Recupere toutes les positions brutes des mots-cles actifs pour une plage de dates.
+     * Resultat groupe par keywordId puis par date (1 entree par keyword par jour).
+     *
+     * @return array<int, array<string, array{position: float, clicks: int, impressions: int}>>
+     */
+    public function getRawPositionsForActiveKeywords(
+        ClientSite $site,
+        \DateTimeImmutable $startDate,
+        \DateTimeImmutable $endDate
+    ): array {
+        $results = $this->createQueryBuilder('p')
+            ->select('IDENTITY(p.clientSeoKeyword) as keywordId', 'p.date as dateObj', 'p.position', 'p.clicks', 'p.impressions')
+            ->join('p.clientSeoKeyword', 'k')
+            ->where('k.clientSite = :site')
+            ->andWhere('k.isActive = :active')
+            ->andWhere('p.date >= :startDate')
+            ->andWhere('p.date <= :endDate')
+            ->setParameter('site', $site)
+            ->setParameter('active', true)
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->orderBy('p.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $data = [];
+        foreach ($results as $row) {
+            $keywordId = (int) $row['keywordId'];
+            $dateKey = $row['dateObj']->format('Y-m-d');
+            $data[$keywordId][$dateKey] = [
+                'position' => (float) $row['position'],
+                'clicks' => (int) $row['clicks'],
+                'impressions' => (int) $row['impressions'],
+            ];
+        }
+
+        return $data;
     }
 
     /**

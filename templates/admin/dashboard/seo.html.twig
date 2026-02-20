@@ -189,9 +189,11 @@
             <thead>
                 <tr style="border-bottom: 2px solid #10b981;">
                     <th style="text-align: left; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Mot-cle</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Score</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Position</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Tend. 7j</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">vs M-1</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Tend. 7j</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Stabilite</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Clics</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Impressions</th>
                 </tr>
@@ -204,6 +206,14 @@
                     <tr style="border-bottom: 1px solid #d1fae5;">
                         <td style="padding: 0.75rem 0.5rem; font-weight: 500;">
                             {{ keyword.keyword }}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            <span class="seo-star-group" data-score="{{ keyword.relevanceScore }}" data-url="{{ path('admin_seo_keyword_set_score', {id: keyword.id}) }}" data-token="{{ csrf_token('seo-score-' ~ keyword.id) }}" style="cursor: pointer; white-space: nowrap;">
+                                {% for i in 1..5 %}
+                                    <i class="{{ keyword.relevanceScore >= i ? 'fas' : 'far' }} fa-star seo-star" data-value="{{ i }}" style="color: {{ keyword.relevanceScore >= i ? '#f59e0b' : '#d1d5db' }}; font-size: 0.75rem;"></i>
+                                {% endfor %}
+                                {% if keyword.relevanceScore == 0 %}<span style="color: #d1d5db; font-size: 0.7rem; margin-left: 2px;">?</span>{% endif %}
+                            </span>
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
                             {% if latestPosition %}
@@ -221,6 +231,27 @@
                                         {{ pos|number_format(1) }}
                                     </span>
                                 {% endif %}
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {% if comparison %}
+                                {% if comparison.status == 'improved' %}
+                                    <span style="color: #10b981; font-weight: 600;">
+                                        <i class="fas fa-arrow-up"></i> +{{ comparison.variation|abs|number_format(1) }}
+                                    </span>
+                                {% elseif comparison.status == 'degraded' %}
+                                    <span style="color: #ef4444; font-weight: 600;">
+                                        <i class="fas fa-arrow-down"></i> {{ comparison.variation|number_format(1) }}
+                                    </span>
+                                {% elseif comparison.status == 'stable' %}
+                                    <span style="color: #6b7280;">=</span>
+                                {% elseif comparison.status == 'new' %}
+                                    <span style="background: #dbeafe; color: #1d4ed8; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500;">Nouveau</span>
+                                {% else %}
+                                    <span style="color: #9ca3af;">-</span>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #9ca3af;">-</span>
                             {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
@@ -243,24 +274,29 @@
                             {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
-                            {% if comparison %}
-                                {% if comparison.status == 'improved' %}
-                                    <span style="color: #10b981; font-weight: 600;">
-                                        <i class="fas fa-arrow-up"></i> +{{ comparison.variation|abs|number_format(1) }}
-                                    </span>
-                                {% elseif comparison.status == 'degraded' %}
-                                    <span style="color: #ef4444; font-weight: 600;">
-                                        <i class="fas fa-arrow-down"></i> {{ comparison.variation|number_format(1) }}
-                                    </span>
-                                {% elseif comparison.status == 'stable' %}
-                                    <span style="color: #6b7280;">=</span>
-                                {% elseif comparison.status == 'new' %}
-                                    <span style="background: #dbeafe; color: #1d4ed8; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500;">Nouveau</span>
+                            {% set stabilityVal = seoStability[keyword.id] ?? null %}
+                            {% if stabilityVal is not null and stabilityVal < 99 %}
+                                {% if stabilityVal < 3 %}
+                                    <span style="background: #d1fae5; color: #065f46; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Stable</span>
+                                {% elseif stabilityVal < 6 %}
+                                    {% if mom and mom.status == 'improved' %}
+                                        <span style="background: #d1fae5; color: #065f46; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Légère hausse</span>
+                                    {% elseif mom and mom.status == 'degraded' %}
+                                        <span style="background: #fee2e2; color: #991b1b; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Légère baisse</span>
+                                    {% else %}
+                                        <span style="background: #fef3c7; color: #92400e; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Variable</span>
+                                    {% endif %}
                                 {% else %}
-                                    <span style="color: #9ca3af;">-</span>
+                                    {% if mom and mom.status == 'improved' %}
+                                        <span style="background: #d1fae5; color: #065f46; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">En hausse</span>
+                                    {% elseif mom and mom.status == 'degraded' %}
+                                        <span style="background: #fee2e2; color: #991b1b; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">En baisse</span>
+                                    {% else %}
+                                        <span style="background: #fee2e2; color: #991b1b; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Instable</span>
+                                    {% endif %}
                                 {% endif %}
                             {% else %}
-                                <span style="color: #9ca3af;">-</span>
+                                <span style="color: #9ca3af; font-size: 0.75rem;">Insuff.</span>
                             {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
@@ -432,13 +468,15 @@
             <thead>
                 <tr style="border-bottom: 2px solid #f59e0b;">
                     <th style="text-align: left; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Mot-cle</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Score</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Position</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Tend. 7j</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">vs M-1</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Tend. 7j</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Stabilite</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Clics</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Impr.</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Raison</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;"></th>
+                    <th style="text-align: left; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Raison</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Fait</th>
                 </tr>
             </thead>
             <tbody>
@@ -450,6 +488,14 @@
                     <tr style="border-bottom: 1px solid #fef3c7;" id="seo-improve-row-{{ keyword.id }}">
                         <td style="padding: 0.75rem 0.5rem; font-weight: 500;">
                             {{ keyword.keyword }}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            <span class="seo-star-group" data-score="{{ keyword.relevanceScore }}" data-url="{{ path('admin_seo_keyword_set_score', {id: keyword.id}) }}" data-token="{{ csrf_token('seo-score-' ~ keyword.id) }}" style="cursor: pointer; white-space: nowrap;">
+                                {% for i in 1..5 %}
+                                    <i class="{{ keyword.relevanceScore >= i ? 'fas' : 'far' }} fa-star seo-star" data-value="{{ i }}" style="color: {{ keyword.relevanceScore >= i ? '#f59e0b' : '#d1d5db' }}; font-size: 0.75rem;"></i>
+                                {% endfor %}
+                                {% if keyword.relevanceScore == 0 %}<span style="color: #d1d5db; font-size: 0.7rem; margin-left: 2px;">?</span>{% endif %}
+                            </span>
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
                             {% if latestPosition %}
@@ -467,6 +513,27 @@
                                         {{ pos|number_format(1) }}
                                     </span>
                                 {% endif %}
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {% if comparison %}
+                                {% if comparison.status == 'improved' %}
+                                    <span style="color: #10b981; font-weight: 600;">
+                                        <i class="fas fa-arrow-up"></i> +{{ comparison.variation|abs|number_format(1) }}
+                                    </span>
+                                {% elseif comparison.status == 'degraded' %}
+                                    <span style="color: #ef4444; font-weight: 600;">
+                                        <i class="fas fa-arrow-down"></i> {{ comparison.variation|number_format(1) }}
+                                    </span>
+                                {% elseif comparison.status == 'stable' %}
+                                    <span style="color: #6b7280;">=</span>
+                                {% elseif comparison.status == 'new' %}
+                                    <span style="background: #dbeafe; color: #1d4ed8; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500;">Nouveau</span>
+                                {% else %}
+                                    <span style="color: #9ca3af;">-</span>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #9ca3af;">-</span>
                             {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
@@ -489,24 +556,29 @@
                             {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
-                            {% if comparison %}
-                                {% if comparison.status == 'improved' %}
-                                    <span style="color: #10b981; font-weight: 600;">
-                                        <i class="fas fa-arrow-up"></i> +{{ comparison.variation|abs|number_format(1) }}
-                                    </span>
-                                {% elseif comparison.status == 'degraded' %}
-                                    <span style="color: #ef4444; font-weight: 600;">
-                                        <i class="fas fa-arrow-down"></i> {{ comparison.variation|number_format(1) }}
-                                    </span>
-                                {% elseif comparison.status == 'stable' %}
-                                    <span style="color: #6b7280;">=</span>
-                                {% elseif comparison.status == 'new' %}
-                                    <span style="background: #dbeafe; color: #1d4ed8; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500;">Nouveau</span>
+                            {% set stabilityVal = seoStability[keyword.id] ?? null %}
+                            {% if stabilityVal is not null and stabilityVal < 99 %}
+                                {% if stabilityVal < 3 %}
+                                    <span style="background: #d1fae5; color: #065f46; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Stable</span>
+                                {% elseif stabilityVal < 6 %}
+                                    {% if mom and mom.status == 'improved' %}
+                                        <span style="background: #d1fae5; color: #065f46; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Légère hausse</span>
+                                    {% elseif mom and mom.status == 'degraded' %}
+                                        <span style="background: #fee2e2; color: #991b1b; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Légère baisse</span>
+                                    {% else %}
+                                        <span style="background: #fef3c7; color: #92400e; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Variable</span>
+                                    {% endif %}
                                 {% else %}
-                                    <span style="color: #9ca3af;">-</span>
+                                    {% if mom and mom.status == 'improved' %}
+                                        <span style="background: #d1fae5; color: #065f46; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">En hausse</span>
+                                    {% elseif mom and mom.status == 'degraded' %}
+                                        <span style="background: #fee2e2; color: #991b1b; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">En baisse</span>
+                                    {% else %}
+                                        <span style="background: #fee2e2; color: #991b1b; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Instable</span>
+                                    {% endif %}
                                 {% endif %}
                             {% else %}
-                                <span style="color: #9ca3af;">-</span>
+                                <span style="color: #9ca3af; font-size: 0.75rem;">Insuff.</span>
                             {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
@@ -568,12 +640,60 @@
 </div>
 {% endif %}
 
+<!-- Traffic Summary Card (Google + Bing aggregated) -->
+{% if seoChartData.hasBingData is defined and seoChartData.hasBingData %}
+{% set totalClicks = seoChartData.clicks|reduce((carry, v) => carry + v, 0) %}
+{% set totalImpressions = seoChartData.impressions|reduce((carry, v) => carry + v, 0) %}
+{% set gClicks = seoChartData.googleClicks|reduce((carry, v) => carry + v, 0) %}
+{% set gImpressions = seoChartData.googleImpressions|reduce((carry, v) => carry + v, 0) %}
+{% set bClicks = seoChartData.bingClicks|reduce((carry, v) => carry + v, 0) %}
+{% set bImpressions = seoChartData.bingImpressions|reduce((carry, v) => carry + v, 0) %}
+{% set totalCtr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100)|round(2) : 0 %}
+<div class="stat-card info" style="margin-bottom: 1.5rem;">
+    <div class="stat-header">
+        <span class="stat-label">Trafic organique (30 jours)</span>
+        <div class="stat-icon info">
+            <i class="fas fa-chart-bar"></i>
+        </div>
+    </div>
+    <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
+        <div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #111827;">{{ totalClicks|number_format(0, '', ' ') }}</div>
+            <div style="font-size: 0.75rem; color: #6b7280;">Clics total</div>
+            <div style="font-size: 0.7rem; color: #9ca3af; margin-top: 2px;">
+                <i class="fab fa-google" style="color: #4285f4;"></i> {{ gClicks|number_format(0, '', ' ') }}
+                &middot;
+                <i class="fab fa-microsoft" style="color: #0078d4;"></i> {{ bClicks|number_format(0, '', ' ') }}
+            </div>
+        </div>
+        <div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #06b6d4;">{{ totalImpressions|number_format(0, '', ' ') }}</div>
+            <div style="font-size: 0.75rem; color: #6b7280;">Impressions total</div>
+            <div style="font-size: 0.7rem; color: #9ca3af; margin-top: 2px;">
+                <i class="fab fa-google" style="color: #4285f4;"></i> {{ gImpressions|number_format(0, '', ' ') }}
+                &middot;
+                <i class="fab fa-microsoft" style="color: #0078d4;"></i> {{ bImpressions|number_format(0, '', ' ') }}
+            </div>
+        </div>
+        <div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #8b5cf6;">{{ totalCtr }}%</div>
+            <div style="font-size: 0.75rem; color: #6b7280;">CTR global</div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <!-- SEO Evolution Chart (Clics/Impressions) -->
 {% if googleOAuthConnected and (seoKeywordsRanked.top10|length > 0 or seoKeywordsRanked.toImprove|length > 0) %}
 <div class="chart-container" style="margin-bottom: 1.5rem;">
     <div class="chart-title">
         <i class="fas fa-chart-line" style="color: var(--info);"></i>
         Evolution SEO - 30 derniers jours
+        {% if seoChartData.hasBingData is defined and seoChartData.hasBingData %}
+            <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">
+                (<i class="fab fa-google" style="color: #4285f4;"></i> Google + <i class="fab fa-microsoft" style="color: #0078d4;"></i> Bing)
+            </span>
+        {% endif %}
     </div>
     {% if seoChartData.hasEnoughData %}
         <canvas id="chartSeoEvolution" class="chart-canvas"></canvas>
@@ -593,6 +713,11 @@
     <div class="chart-title">
         <i class="fas fa-chart-area" style="color: var(--primary);"></i>
         Tendances SEO - Moyenne glissante 7 jours
+        {% if seoChartData.hasBingData is defined and seoChartData.hasBingData %}
+            <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">
+                (Google + Bing agrege)
+            </span>
+        {% endif %}
     </div>
     {% if seoChartData.hasEnoughData %}
         <canvas id="chartSeo7d" class="chart-canvas"></canvas>
@@ -712,12 +837,17 @@ const seoChartClicks = {{ seoChartData.clicks|json_encode|raw }};
 const seoChartImpressions = {{ seoChartData.impressions|json_encode|raw }};
 const seoChartCtr = {{ seoChartData.ctr|json_encode|raw }};
 const seoChartPosition = {{ seoChartData.position|json_encode|raw }};
+const seoChartGoogleClicks = {{ seoChartData.googleClicks|json_encode|raw }};
+const seoChartGoogleImpressions = {{ seoChartData.googleImpressions|json_encode|raw }};
+const seoChartBingClicks = {{ seoChartData.bingClicks|json_encode|raw }};
+const seoChartBingImpressions = {{ seoChartData.bingImpressions|json_encode|raw }};
 // SEO Chart Data - 7-day rolling
 const seoChartClicks7d = {{ seoChartData.clicks7d|json_encode|raw }};
 const seoChartImpressions7d = {{ seoChartData.impressions7d|json_encode|raw }};
 const seoChartCtr7d = {{ seoChartData.ctr7d|json_encode|raw }};
 const seoChartPosition7d = {{ seoChartData.position7d|json_encode|raw }};
 const seoHasEnoughData = {{ seoChartData.hasEnoughData ? 'true' : 'false' }};
+const seoHasBingData = {{ seoChartData.hasBingData is defined and seoChartData.hasBingData ? 'true' : 'false' }};
 
 // SEO Keywords Chart Data (par score 0-5 etoiles)
 const seoKwLabels = {{ seoKeywordsChartData.labels|json_encode|raw }};
@@ -732,83 +862,35 @@ const seoKwDeactivated = {{ seoKeywordsChartData.deactivated|json_encode|raw }};
 
 // Graphique SEO Evolution
 if (seoHasEnoughData && document.getElementById('chartSeoEvolution')) {
+    var dailyDatasets = [];
+    if (seoHasBingData) {
+        // Stacked: Google clicks + Bing clicks
+        dailyDatasets.push({ label: 'Clics Google', data: seoChartGoogleClicks, borderColor: '#4285f4', backgroundColor: 'rgba(66, 133, 244, 0.15)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, yAxisID: 'yClicks', stack: 'clicks' });
+        dailyDatasets.push({ label: 'Clics Bing', data: seoChartBingClicks, borderColor: '#0078d4', backgroundColor: 'rgba(0, 120, 212, 0.15)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, yAxisID: 'yClicks', stack: 'clicks' });
+        dailyDatasets.push({ label: 'Impressions Google', data: seoChartGoogleImpressions, borderColor: '#34a853', backgroundColor: 'rgba(52, 168, 83, 0.08)', fill: true, tension: 0.4, borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 4, yAxisID: 'yImpressions', borderDash: [3, 2] });
+        dailyDatasets.push({ label: 'Impressions Bing', data: seoChartBingImpressions, borderColor: '#50e6ff', backgroundColor: 'rgba(80, 230, 255, 0.08)', fill: true, tension: 0.4, borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 4, yAxisID: 'yImpressions', borderDash: [3, 2] });
+    } else {
+        dailyDatasets.push({ label: 'Clics', data: seoChartClicks, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, yAxisID: 'yClicks' });
+        dailyDatasets.push({ label: 'Impressions', data: seoChartImpressions, borderColor: '#06b6d4', backgroundColor: 'rgba(6, 182, 212, 0.05)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, yAxisID: 'yImpressions' });
+    }
+    dailyDatasets.push({ label: 'CTR (%)', data: seoChartCtr, borderColor: '#8b5cf6', backgroundColor: 'transparent', fill: false, tension: 0.4, borderWidth: 2, borderDash: [4, 4], pointRadius: 0, pointHoverRadius: 4, yAxisID: 'yCtr' });
+    dailyDatasets.push({ label: 'Position', data: seoChartPosition, borderColor: '#f59e0b', backgroundColor: 'transparent', fill: false, tension: 0.4, borderWidth: 2, borderDash: [2, 2], pointRadius: 0, pointHoverRadius: 4, yAxisID: 'yPosition' });
+
     new Chart(document.getElementById('chartSeoEvolution'), {
         type: 'line',
-        data: {
-            labels: seoChartLabels,
-            datasets: [
-                {
-                    label: 'Clics',
-                    data: seoChartClicks,
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    borderWidth: 2,
-                    pointRadius: 2,
-                    pointHoverRadius: 5,
-                    yAxisID: 'yClicks'
-                },
-                {
-                    label: 'Impressions',
-                    data: seoChartImpressions,
-                    borderColor: '#06b6d4',
-                    backgroundColor: 'rgba(6, 182, 212, 0.05)',
-                    fill: true,
-                    tension: 0.4,
-                    borderWidth: 2,
-                    pointRadius: 2,
-                    pointHoverRadius: 5,
-                    yAxisID: 'yImpressions'
-                },
-                {
-                    label: 'CTR (%)',
-                    data: seoChartCtr,
-                    borderColor: '#8b5cf6',
-                    backgroundColor: 'transparent',
-                    fill: false,
-                    tension: 0.4,
-                    borderWidth: 2,
-                    borderDash: [4, 4],
-                    pointRadius: 0,
-                    pointHoverRadius: 4,
-                    yAxisID: 'yCtr'
-                },
-                {
-                    label: 'Position',
-                    data: seoChartPosition,
-                    borderColor: '#f59e0b',
-                    backgroundColor: 'transparent',
-                    fill: false,
-                    tension: 0.4,
-                    borderWidth: 2,
-                    borderDash: [2, 2],
-                    pointRadius: 0,
-                    pointHoverRadius: 4,
-                    yAxisID: 'yPosition'
-                }
-            ]
-        },
+        data: { labels: seoChartLabels, datasets: dailyDatasets },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
+            responsive: true, maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: { display: true, position: 'top', labels: { usePointStyle: true, padding: 12, font: { size: 11 } } },
-                tooltip: {
-                    callbacks: {
-                        title: (items) => items.length > 0 ? 'Date: ' + items[0].label : '',
-                        label: (ctx) => {
-                            let value = ctx.parsed.y;
-                            if (ctx.dataset.label === 'CTR (%)') return ctx.dataset.label + ': ' + value.toFixed(2) + '%';
-                            if (ctx.dataset.label === 'Position') return ctx.dataset.label + ': ' + value.toFixed(1);
-                            return ctx.dataset.label + ': ' + value.toLocaleString('fr-FR');
-                        }
-                    }
-                }
+                tooltip: { callbacks: {
+                    title: (items) => items.length > 0 ? 'Date: ' + items[0].label : '',
+                    label: (ctx) => { let v = ctx.parsed.y; if (v === null) return null; if (ctx.dataset.label === 'CTR (%)') return ctx.dataset.label + ': ' + v.toFixed(2) + '%'; if (ctx.dataset.label === 'Position') return ctx.dataset.label + ': ' + v.toFixed(1); return ctx.dataset.label + ': ' + v.toLocaleString('fr-FR'); }
+                }}
             },
             scales: {
-                yClicks: { type: 'linear', display: true, position: 'left', beginAtZero: true, title: { display: true, text: 'Clics', color: '#3b82f6', font: { size: 10 } }, ticks: { color: '#3b82f6', font: { size: 9 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                yClicks: { type: 'linear', display: true, position: 'left', beginAtZero: true, stacked: seoHasBingData, title: { display: true, text: 'Clics', color: '#3b82f6', font: { size: 10 } }, ticks: { color: '#3b82f6', font: { size: 9 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
                 yImpressions: { type: 'linear', display: true, position: 'right', beginAtZero: true, title: { display: true, text: 'Impressions', color: '#06b6d4', font: { size: 10 } }, ticks: { color: '#06b6d4', font: { size: 9 } }, grid: { drawOnChartArea: false } },
                 yCtr: { type: 'linear', display: false, beginAtZero: true, max: 10, grid: { drawOnChartArea: false } },
                 yPosition: { type: 'linear', display: false, reverse: true, min: 1, max: 100, grid: { drawOnChartArea: false } },
@@ -825,58 +907,21 @@ if (seoHasEnoughData && document.getElementById('chartSeo7d')) {
         data: {
             labels: seoChartLabels,
             datasets: [
-                {
-                    label: 'Clics (cumul 7j)',
-                    data: seoChartClicks7d,
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5,
-                    yAxisID: 'yClicks7d'
-                },
-                {
-                    label: 'Impressions (cumul 7j)',
-                    data: seoChartImpressions7d,
-                    borderColor: '#06b6d4',
-                    backgroundColor: 'rgba(6, 182, 212, 0.05)',
-                    fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5,
-                    yAxisID: 'yImpressions7d'
-                },
-                {
-                    label: 'CTR moy. 7j (%)',
-                    data: seoChartCtr7d,
-                    borderColor: '#8b5cf6',
-                    backgroundColor: 'transparent',
-                    fill: false, tension: 0.4, borderWidth: 2, borderDash: [4, 4], pointRadius: 0, pointHoverRadius: 4,
-                    yAxisID: 'yCtr7d'
-                },
-                {
-                    label: 'Position moy. 7j',
-                    data: seoChartPosition7d,
-                    borderColor: '#f59e0b',
-                    backgroundColor: 'transparent',
-                    fill: false, tension: 0.4, borderWidth: 2, borderDash: [2, 2], pointRadius: 0, pointHoverRadius: 4,
-                    yAxisID: 'yPosition7d'
-                }
+                { label: seoHasBingData ? 'Clics G+B (cumul 7j)' : 'Clics (cumul 7j)', data: seoChartClicks7d, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, yAxisID: 'yClicks7d' },
+                { label: seoHasBingData ? 'Impressions G+B (cumul 7j)' : 'Impressions (cumul 7j)', data: seoChartImpressions7d, borderColor: '#06b6d4', backgroundColor: 'rgba(6, 182, 212, 0.05)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, yAxisID: 'yImpressions7d' },
+                { label: 'CTR moy. 7j (%)', data: seoChartCtr7d, borderColor: '#8b5cf6', backgroundColor: 'transparent', fill: false, tension: 0.4, borderWidth: 2, borderDash: [4, 4], pointRadius: 0, pointHoverRadius: 4, yAxisID: 'yCtr7d' },
+                { label: 'Position moy. 7j', data: seoChartPosition7d, borderColor: '#f59e0b', backgroundColor: 'transparent', fill: false, tension: 0.4, borderWidth: 2, borderDash: [2, 2], pointRadius: 0, pointHoverRadius: 4, yAxisID: 'yPosition7d' }
             ]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
+            responsive: true, maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: { display: true, position: 'top', labels: { usePointStyle: true, padding: 12, font: { size: 11 } } },
-                tooltip: {
-                    callbacks: {
-                        title: (items) => items.length > 0 ? 'Semaine se terminant le ' + items[0].label : '',
-                        label: (ctx) => {
-                            let value = ctx.parsed.y;
-                            if (value === null) return null;
-                            if (ctx.dataset.label.includes('CTR')) return ctx.dataset.label + ': ' + value.toFixed(2) + '%';
-                            if (ctx.dataset.label.includes('Position')) return ctx.dataset.label + ': ' + value.toFixed(1);
-                            return ctx.dataset.label + ': ' + value.toLocaleString('fr-FR');
-                        }
-                    }
-                }
+                tooltip: { callbacks: {
+                    title: (items) => items.length > 0 ? 'Semaine se terminant le ' + items[0].label : '',
+                    label: (ctx) => { let v = ctx.parsed.y; if (v === null) return null; if (ctx.dataset.label.includes('CTR')) return ctx.dataset.label + ': ' + v.toFixed(2) + '%'; if (ctx.dataset.label.includes('Position')) return ctx.dataset.label + ': ' + v.toFixed(1); return ctx.dataset.label + ': ' + v.toLocaleString('fr-FR'); }
+                }}
             },
             scales: {
                 yClicks7d: { type: 'linear', display: true, position: 'left', beginAtZero: true, title: { display: true, text: 'Clics (7j)', color: '#3b82f6', font: { size: 10 } }, ticks: { color: '#3b82f6', font: { size: 9 } }, grid: { color: 'rgba(0,0,0,0.05)' } },

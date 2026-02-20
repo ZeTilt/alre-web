@@ -22,6 +22,7 @@ use App\Entity\User;
 use App\Entity\Project;
 use App\Entity\Partner;
 use App\Entity\Testimonial;
+use App\Repository\BingConfigRepository;
 use App\Repository\CompanyRepository;
 use App\Repository\DevisRepository;
 use App\Repository\EventRepository;
@@ -35,7 +36,6 @@ use App\Repository\ClientSiteRepository;
 use App\Repository\SeoKeywordRepository;
 use App\Repository\SeoPositionRepository;
 use App\Repository\ClientSeoReportRepository;
-use App\Service\ClientSeoCsvImportService;
 use App\Service\ClientSeoDashboardService;
 use App\Service\ClientSeoReportService;
 use App\Service\SeoReportService;
@@ -44,7 +44,6 @@ use App\Service\DashboardPeriodService;
 use App\Service\DashboardSeoService;
 use App\Service\ProspectionEmailService;
 use App\Entity\ClientSite;
-use App\Form\ClientSeoImportType;
 use App\Form\ClientSiteType;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
@@ -835,6 +834,37 @@ class DashboardController extends AbstractDashboardController
         ]);
     }
 
+    // ===== BING CONFIG =====
+
+    #[Route('/saeiblauhjc/bing/config', name: 'admin_bing_config')]
+    public function bingConfig(
+        Request $request,
+        BingConfigRepository $bingConfigRepository,
+    ): Response {
+        $config = $bingConfigRepository->getOrCreate();
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('bing-config', $request->request->get('_token'))) {
+                $this->addFlash('danger', 'Token CSRF invalide.');
+                return $this->redirectToRoute('admin_bing_config');
+            }
+
+            $config->setSiteUrl($request->request->get('site_url') ?: null);
+            $config->setGscSiteUrl($request->request->get('gsc_site_url') ?: null);
+            $config->setApiKey($request->request->get('api_key') ?: null);
+            $config->setIndexNowKey($request->request->get('indexnow_key') ?: null);
+            $config->setUpdatedAt(new \DateTimeImmutable());
+            $this->entityManager->flush();
+
+            $this->addFlash('success', 'Configuration Bing mise a jour.');
+            return $this->redirectToRoute('admin_bing_config');
+        }
+
+        return $this->render('admin/bing/config.html.twig', [
+            'config' => $config,
+        ]);
+    }
+
     // ===== CLIENT SEO =====
 
     #[Route('/saeiblauhjc/client-seo', name: 'admin_client_seo_list')]
@@ -848,17 +878,6 @@ class DashboardController extends AbstractDashboardController
         foreach ($sites as $site) {
             $summaries[$site->getId()] = $clientSeoDashboardService->getSummaryData($site);
         }
-
-        // Sort by next import date (soonest first, null last)
-        usort($sites, function (ClientSite $a, ClientSite $b) use ($summaries) {
-            $dateA = $summaries[$a->getId()]['nextImportDate'];
-            $dateB = $summaries[$b->getId()]['nextImportDate'];
-            if ($dateA === null && $dateB === null) return 0;
-            if ($dateA === null) return 1;
-            if ($dateB === null) return -1;
-
-            return $dateA <=> $dateB;
-        });
 
         return $this->render('admin/client_seo/list.html.twig', [
             'sites' => $sites,
@@ -895,38 +914,6 @@ class DashboardController extends AbstractDashboardController
             $data,
             ['site' => $site]
         ));
-    }
-
-    #[Route('/saeiblauhjc/client-seo/{id}/import', name: 'admin_client_seo_import')]
-    public function clientSeoImport(
-        Request $request,
-        ClientSite $site,
-        ClientSeoCsvImportService $importService
-    ): Response {
-        $form = $this->createForm(ClientSeoImportType::class);
-        $form->handleRequest($request);
-
-        $result = null;
-        $error = null;
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $file = $form->get('file')->getData();
-            try {
-                $result = $importService->importFromFile($site, $file);
-                $this->addFlash('success', $result['message']);
-                return $this->redirectToRoute('admin_client_seo_dashboard', ['id' => $site->getId()]);
-            } catch (\Exception $e) {
-                $error = $e->getMessage();
-                $this->addFlash('danger', 'Erreur lors de l\'import : ' . $error);
-            }
-        }
-
-        return $this->render('admin/client_seo/import.html.twig', [
-            'site' => $site,
-            'form' => $form,
-            'result' => $result,
-            'error' => $error,
-        ]);
     }
 
     #[Route('/saeiblauhjc/client-seo/{id}/imports', name: 'admin_client_seo_import_history')]
@@ -1239,6 +1226,7 @@ class DashboardController extends AbstractDashboardController
 
         yield MenuItem::section('Administration');
         yield MenuItem::linkToCrud('Mon Entreprise', 'fas fa-building', Company::class);
+        yield MenuItem::linkToRoute('Config Bing', 'fab fa-microsoft', 'admin_bing_config');
         yield MenuItem::linkToCrud('Utilisateurs', 'fas fa-user', User::class);
 
         if ($this->isGranted('ROLE_USER')) {

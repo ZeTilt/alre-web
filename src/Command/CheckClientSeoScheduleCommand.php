@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[AsCommand(
     name: 'app:check-client-seo-schedule',
-    description: 'Check client SEO schedule and send push notifications for due imports/reports',
+    description: 'Check client SEO schedule and send push notifications for due reports',
 )]
 class CheckClientSeoScheduleCommand extends Command
 {
@@ -33,26 +33,6 @@ class CheckClientSeoScheduleCommand extends Command
         $notificationsSent = 0;
 
         foreach ($sites as $site) {
-            if ($site->isImportDue()) {
-                $url = $this->urlGenerator->generate(
-                    'admin_client_seo_import',
-                    ['id' => $site->getId()],
-                    UrlGeneratorInterface::ABSOLUTE_URL
-                );
-
-                $sent = $this->webPushService->sendNotification(
-                    'SEO Client : action requise',
-                    'Import du pour ' . $site->getName(),
-                    $url,
-                    'client-seo-import-' . $site->getId()
-                );
-
-                if ($sent) {
-                    $notificationsSent++;
-                    $io->info('Import notification sent for: ' . $site->getName());
-                }
-            }
-
             if ($site->isReportDue()) {
                 $url = $this->urlGenerator->generate(
                     'admin_client_seo_dashboard',

@@ -6,6 +6,7 @@ use App\Entity\Client;
 use App\Entity\ClientSite;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
@@ -51,29 +52,18 @@ class ClientSiteType extends AbstractType
                     new Assert\Length(['max' => 500]),
                 ],
             ])
-            // Planning import GSC
-            ->add('importDay', ChoiceType::class, [
-                'label' => 'Jour d\'import GSC',
+            ->add('gscPropertyId', TextType::class, [
+                'label' => 'Propriete GSC',
                 'required' => false,
-                'placeholder' => 'Non planifie',
-                'choices' => [
-                    'Lundi' => 1,
-                    'Mardi' => 2,
-                    'Mercredi' => 3,
-                    'Jeudi' => 4,
-                    'Vendredi' => 5,
+                'attr' => [
+                    'placeholder' => 'sc-domain:example.com ou laisser vide (= URL du site)',
+                    'class' => 'form-control',
+                    'style' => 'font-family: monospace;',
                 ],
-                'attr' => ['class' => 'form-control'],
-            ])
-            ->add('importSlot', ChoiceType::class, [
-                'label' => 'Creneau d\'import',
-                'required' => false,
-                'placeholder' => '-',
-                'choices' => [
-                    'Matin' => 'morning',
-                    'Apres-midi' => 'afternoon',
+                'help' => 'Identifiant de la propriete dans Google Search Console. Laisser vide pour utiliser l\'URL du site.',
+                'constraints' => [
+                    new Assert\Length(['max' => 500]),
                 ],
-                'attr' => ['class' => 'form-control'],
             ])
             // Planning compte rendu
             ->add('reportWeekOfMonth', ChoiceType::class, [
@@ -110,6 +100,12 @@ class ClientSiteType extends AbstractType
                     'Apres-midi' => 'afternoon',
                 ],
                 'attr' => ['class' => 'form-control'],
+            ])
+            // Bing
+            ->add('bingEnabled', CheckboxType::class, [
+                'label' => 'Activer le suivi Bing',
+                'required' => false,
+                'attr' => ['class' => 'form-check-input'],
             ])
         ;
     }

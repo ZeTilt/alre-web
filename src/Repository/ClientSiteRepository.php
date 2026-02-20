@@ -53,7 +53,7 @@ class ClientSiteRepository extends ServiceEntityRepository
         $sites = $this->findAllActive();
         $count = 0;
         foreach ($sites as $site) {
-            if ($site->isImportDue() || $site->isReportDue()) {
+            if ($site->isReportDue()) {
                 $count++;
             }
         }

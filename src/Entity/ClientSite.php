@@ -35,13 +35,6 @@ class ClientSite
     private ?\DateTimeImmutable $updatedAt = null;
 
     /**
-     * @var Collection<int, ClientSeoImport>
-     */
-    #[ORM\OneToMany(targetEntity: ClientSeoImport::class, mappedBy: 'clientSite', orphanRemoval: true)]
-    #[ORM\OrderBy(['importedAt' => 'DESC'])]
-    private Collection $imports;
-
-    /**
      * @var Collection<int, ClientSeoKeyword>
      */
     #[ORM\OneToMany(targetEntity: ClientSeoKeyword::class, mappedBy: 'clientSite', orphanRemoval: true)]
@@ -59,12 +52,23 @@ class ClientSite
     #[ORM\OneToMany(targetEntity: ClientSeoPage::class, mappedBy: 'clientSite', orphanRemoval: true)]
     private Collection $pages;
 
-    // Planning import GSC
-    #[ORM\Column(type: 'smallint', nullable: true)]
-    private ?int $importDay = null; // 1=Lun, 2=Mar, ..., 5=Ven
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $gscPropertyId = null;
 
-    #[ORM\Column(length: 10, nullable: true)]
-    private ?string $importSlot = null; // 'morning' | 'afternoon'
+    #[ORM\Column(options: ['default' => false])]
+    private bool $bingEnabled = false;
+
+    /**
+     * @var Collection<int, ClientBingKeyword>
+     */
+    #[ORM\OneToMany(targetEntity: ClientBingKeyword::class, mappedBy: 'clientSite', orphanRemoval: true)]
+    private Collection $bingKeywords;
+
+    /**
+     * @var Collection<int, ClientBingDailyTotal>
+     */
+    #[ORM\OneToMany(targetEntity: ClientBingDailyTotal::class, mappedBy: 'clientSite', orphanRemoval: true)]
+    private Collection $bingDailyTotals;
 
     // Planning compte rendu
     #[ORM\Column(type: 'smallint', nullable: true)]
@@ -79,10 +83,11 @@ class ClientSite
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->imports = new ArrayCollection();
         $this->keywords = new ArrayCollection();
         $this->dailyTotals = new ArrayCollection();
         $this->pages = new ArrayCollection();
+        $this->bingKeywords = new ArrayCollection();
+        $this->bingDailyTotals = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -157,14 +162,6 @@ class ClientSite
     }
 
     /**
-     * @return Collection<int, ClientSeoImport>
-     */
-    public function getImports(): Collection
-    {
-        return $this->imports;
-    }
-
-    /**
      * @return Collection<int, ClientSeoKeyword>
      */
     public function getKeywords(): Collection
@@ -188,29 +185,54 @@ class ClientSite
         return $this->pages;
     }
 
+    public function getGscPropertyId(): ?string
+    {
+        return $this->gscPropertyId;
+    }
+
+    public function setGscPropertyId(?string $gscPropertyId): static
+    {
+        $this->gscPropertyId = $gscPropertyId;
+        return $this;
+    }
+
+    /**
+     * Retourne l'identifiant a utiliser pour les requetes GSC API.
+     * gscPropertyId si renseigne, sinon l'URL classique.
+     */
+    public function getGscSiteUrl(): string
+    {
+        return $this->gscPropertyId ?: $this->url;
+    }
+
+    public function isBingEnabled(): bool
+    {
+        return $this->bingEnabled;
+    }
+
+    public function setBingEnabled(bool $bingEnabled): static
+    {
+        $this->bingEnabled = $bingEnabled;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ClientBingKeyword>
+     */
+    public function getBingKeywords(): Collection
+    {
+        return $this->bingKeywords;
+    }
+
+    /**
+     * @return Collection<int, ClientBingDailyTotal>
+     */
+    public function getBingDailyTotals(): Collection
+    {
+        return $this->bingDailyTotals;
+    }
+
     // --- Scheduling getters/setters ---
-
-    public function getImportDay(): ?int
-    {
-        return $this->importDay;
-    }
-
-    public function setImportDay(?int $importDay): static
-    {
-        $this->importDay = $importDay;
-        return $this;
-    }
-
-    public function getImportSlot(): ?string
-    {
-        return $this->importSlot;
-    }
-
-    public function setImportSlot(?string $importSlot): static
-    {
-        $this->importSlot = $importSlot;
-        return $this;
-    }
 
     public function getReportWeekOfMonth(): ?int
     {
@@ -285,50 +307,6 @@ class ClientSite
         }
 
         return $target;
-    }
-
-    public function getNextImportDate(): ?\DateTimeImmutable
-    {
-        if ($this->importDay === null) {
-            return null;
-        }
-
-        $daysMap = [1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday', 7 => 'Sunday'];
-        $dayName = $daysMap[$this->importDay];
-
-        $imports = $this->getImports();
-        if ($imports->isEmpty()) {
-            // No import yet: next occurrence of importDay from today
-            $today = new \DateTimeImmutable('today');
-            $todayDow = (int) $today->format('N');
-
-            return $todayDow === $this->importDay ? $today : $today->modify("next {$dayName}");
-        }
-
-        $lastImportDate = \DateTimeImmutable::createFromInterface($imports->first()->getImportedAt());
-        $nextDue = $lastImportDate->modify("next {$dayName}");
-
-        // If next due date is less than 5 days after import, skip to the week after
-        if ($lastImportDate->diff($nextDue)->days < 5) {
-            $nextDue = $nextDue->modify('+7 days');
-        }
-
-        return $nextDue;
-    }
-
-    public function isImportDue(): bool
-    {
-        $nextDue = $this->getNextImportDate();
-        if ($nextDue === null) {
-            return false;
-        }
-
-        $imports = $this->getImports();
-        if ($imports->isEmpty()) {
-            return true;
-        }
-
-        return new \DateTimeImmutable('today') >= $nextDue;
     }
 
     public function isReportDue(): bool

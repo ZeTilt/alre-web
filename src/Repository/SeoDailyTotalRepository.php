@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\SeoDailyTotal;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -16,13 +17,19 @@ class SeoDailyTotalRepository extends ServiceEntityRepository
         parent::__construct($registry, SeoDailyTotal::class);
     }
 
-    public function findByDate(\DateTimeImmutable $date): ?SeoDailyTotal
+    public function findByDate(\DateTimeImmutable $date, ?string $source = null): ?SeoDailyTotal
     {
-        return $this->createQueryBuilder('t')
+        $qb = $this->createQueryBuilder('t')
             ->where('t.date = :date')
-            ->setParameter('date', $date)
-            ->getQuery()
-            ->getOneOrNullResult();
+            ->setParameter('date', $date, Types::DATE_IMMUTABLE);
+
+        if ($source !== null) {
+            $qb->andWhere('t.source = :source')->setParameter('source', $source);
+        } else {
+            $qb->andWhere('t.source = :source')->setParameter('source', SeoDailyTotal::SOURCE_GOOGLE);
+        }
+
+        return $qb->getQuery()->getOneOrNullResult();
     }
 
     /**
@@ -30,16 +37,22 @@ class SeoDailyTotalRepository extends ServiceEntityRepository
      *
      * @return SeoDailyTotal[]
      */
-    public function findByDateRange(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
+    public function findByDateRange(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate, ?string $source = null): array
     {
-        return $this->createQueryBuilder('t')
+        $qb = $this->createQueryBuilder('t')
             ->where('t.date >= :start')
             ->andWhere('t.date <= :end')
             ->setParameter('start', $startDate)
             ->setParameter('end', $endDate)
-            ->orderBy('t.date', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->orderBy('t.date', 'ASC');
+
+        if ($source !== null) {
+            $qb->andWhere('t.source = :source')->setParameter('source', $source);
+        } else {
+            $qb->andWhere('t.source = :source')->setParameter('source', SeoDailyTotal::SOURCE_GOOGLE);
+        }
+
+        return $qb->getQuery()->getResult();
     }
 
     /**
@@ -47,16 +60,22 @@ class SeoDailyTotalRepository extends ServiceEntityRepository
      *
      * @return SeoDailyTotal[]
      */
-    public function findLastDays(int $days = 30): array
+    public function findLastDays(int $days = 30, ?string $source = null): array
     {
         $startDate = new \DateTimeImmutable("-{$days} days");
 
-        return $this->createQueryBuilder('t')
+        $qb = $this->createQueryBuilder('t')
             ->where('t.date >= :start')
             ->setParameter('start', $startDate)
-            ->orderBy('t.date', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->orderBy('t.date', 'ASC');
+
+        if ($source !== null) {
+            $qb->andWhere('t.source = :source')->setParameter('source', $source);
+        } else {
+            $qb->andWhere('t.source = :source')->setParameter('source', SeoDailyTotal::SOURCE_GOOGLE);
+        }
+
+        return $qb->getQuery()->getResult();
     }
 
     /**
@@ -64,16 +83,22 @@ class SeoDailyTotalRepository extends ServiceEntityRepository
      *
      * @return array{clicks: int, impressions: int, avgPosition: float, days: int}
      */
-    public function getAggregatedTotals(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
+    public function getAggregatedTotals(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate, ?string $source = null): array
     {
-        $result = $this->createQueryBuilder('t')
+        $qb = $this->createQueryBuilder('t')
             ->select('SUM(t.clicks) as clicks, SUM(t.impressions) as impressions, AVG(t.position) as avgPosition, COUNT(t.id) as days')
             ->where('t.date >= :start')
             ->andWhere('t.date <= :end')
             ->setParameter('start', $startDate)
-            ->setParameter('end', $endDate)
-            ->getQuery()
-            ->getSingleResult();
+            ->setParameter('end', $endDate);
+
+        if ($source !== null) {
+            $qb->andWhere('t.source = :source')->setParameter('source', $source);
+        } else {
+            $qb->andWhere('t.source = :source')->setParameter('source', SeoDailyTotal::SOURCE_GOOGLE);
+        }
+
+        $result = $qb->getQuery()->getSingleResult();
 
         return [
             'clicks' => (int) ($result['clicks'] ?? 0),
@@ -86,12 +111,16 @@ class SeoDailyTotalRepository extends ServiceEntityRepository
     /**
      * Retourne la date du dernier enregistrement.
      */
-    public function getLastDate(): ?\DateTimeImmutable
+    public function getLastDate(?string $source = null): ?\DateTimeImmutable
     {
-        $result = $this->createQueryBuilder('t')
-            ->select('MAX(t.date) as lastDate')
-            ->getQuery()
-            ->getSingleScalarResult();
+        $qb = $this->createQueryBuilder('t')
+            ->select('MAX(t.date) as lastDate');
+
+        if ($source !== null) {
+            $qb->andWhere('t.source = :source')->setParameter('source', $source);
+        }
+
+        $result = $qb->getQuery()->getSingleScalarResult();
 
         return $result ? new \DateTimeImmutable($result) : null;
     }

@@ -9,8 +9,8 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: ClientSeoImportRepository::class)]
 class ClientSeoImport
 {
-    public const TYPE_PERFORMANCE_QUERIES = 'performance_queries';
-    public const TYPE_PERFORMANCE_PAGES = 'performance_pages';
+    public const TYPE_BING_API = 'bing_api';
+    public const TYPE_GSC_API = 'gsc_api';
 
     public const STATUS_SUCCESS = 'success';
     public const STATUS_ERROR = 'error';
@@ -20,7 +20,7 @@ class ClientSeoImport
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: ClientSite::class, inversedBy: 'imports')]
+    #[ORM\ManyToOne(targetEntity: ClientSite::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?ClientSite $clientSite = null;
 
@@ -174,8 +174,8 @@ class ClientSeoImport
     public function getTypeLabel(): string
     {
         return match ($this->type) {
-            self::TYPE_PERFORMANCE_QUERIES => 'Performance (Requetes)',
-            self::TYPE_PERFORMANCE_PAGES => 'Performance (Pages)',
+            self::TYPE_BING_API => 'Bing API (Auto)',
+            self::TYPE_GSC_API => 'GSC API (Auto)',
             default => $this->type ?? '',
         };
     }

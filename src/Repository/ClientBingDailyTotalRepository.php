@@ -2,43 +2,43 @@
 
 namespace App\Repository;
 
-use App\Entity\ClientSeoDailyTotal;
+use App\Entity\ClientBingDailyTotal;
 use App\Entity\ClientSite;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<ClientSeoDailyTotal>
+ * @extends ServiceEntityRepository<ClientBingDailyTotal>
  */
-class ClientSeoDailyTotalRepository extends ServiceEntityRepository
+class ClientBingDailyTotalRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ClientSeoDailyTotal::class);
+        parent::__construct($registry, ClientBingDailyTotal::class);
     }
 
-    public function findByDateAndSite(ClientSite $clientSite, \DateTimeImmutable $date): ?ClientSeoDailyTotal
+    public function findByDateAndSite(ClientSite $site, \DateTimeImmutable $date): ?ClientBingDailyTotal
     {
         return $this->createQueryBuilder('t')
             ->where('t.clientSite = :site')
             ->andWhere('t.date = :date')
-            ->setParameter('site', $clientSite)
+            ->setParameter('site', $site)
             ->setParameter('date', $date, Types::DATE_IMMUTABLE)
             ->getQuery()
             ->getOneOrNullResult();
     }
 
     /**
-     * @return ClientSeoDailyTotal[]
+     * @return ClientBingDailyTotal[]
      */
-    public function findByDateRange(ClientSite $clientSite, \DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
+    public function findByDateRange(ClientSite $site, \DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
     {
         return $this->createQueryBuilder('t')
             ->where('t.clientSite = :site')
             ->andWhere('t.date >= :start')
             ->andWhere('t.date <= :end')
-            ->setParameter('site', $clientSite)
+            ->setParameter('site', $site)
             ->setParameter('start', $startDate, Types::DATE_IMMUTABLE)
             ->setParameter('end', $endDate, Types::DATE_IMMUTABLE)
             ->orderBy('t.date', 'ASC')
@@ -49,14 +49,14 @@ class ClientSeoDailyTotalRepository extends ServiceEntityRepository
     /**
      * @return array{clicks: int, impressions: int, avgPosition: float, days: int}
      */
-    public function getAggregatedTotals(ClientSite $clientSite, \DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
+    public function getAggregatedTotals(ClientSite $site, \DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
     {
         $result = $this->createQueryBuilder('t')
             ->select('SUM(t.clicks) as clicks, SUM(t.impressions) as impressions, AVG(t.position) as avgPosition, COUNT(t.id) as days')
             ->where('t.clientSite = :site')
             ->andWhere('t.date >= :start')
             ->andWhere('t.date <= :end')
-            ->setParameter('site', $clientSite)
+            ->setParameter('site', $site)
             ->setParameter('start', $startDate, Types::DATE_IMMUTABLE)
             ->setParameter('end', $endDate, Types::DATE_IMMUTABLE)
             ->getQuery()
@@ -68,17 +68,5 @@ class ClientSeoDailyTotalRepository extends ServiceEntityRepository
             'avgPosition' => round((float) ($result['avgPosition'] ?? 0), 1),
             'days' => (int) ($result['days'] ?? 0),
         ];
-    }
-
-    public function getLastDate(ClientSite $clientSite): ?\DateTimeImmutable
-    {
-        $result = $this->createQueryBuilder('t')
-            ->select('MAX(t.date) as lastDate')
-            ->where('t.clientSite = :site')
-            ->setParameter('site', $clientSite)
-            ->getQuery()
-            ->getSingleScalarResult();
-
-        return $result ? new \DateTimeImmutable($result) : null;
     }
 }

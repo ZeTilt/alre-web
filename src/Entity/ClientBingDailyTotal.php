@@ -2,23 +2,21 @@
 
 namespace App\Entity;
 
-use App\Repository\SeoDailyTotalRepository;
+use App\Repository\ClientBingDailyTotalRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * Totaux journaliers (sans dimension query pour éviter l'anonymisation).
- */
-#[ORM\Entity(repositoryClass: SeoDailyTotalRepository::class)]
-#[ORM\UniqueConstraint(name: 'unique_daily_total_date_source', columns: ['date', 'source'])]
-class SeoDailyTotal
+#[ORM\Entity(repositoryClass: ClientBingDailyTotalRepository::class)]
+#[ORM\UniqueConstraint(name: 'unique_client_bing_daily_total', columns: ['client_site_id', 'date'])]
+class ClientBingDailyTotal
 {
-    public const SOURCE_GOOGLE = 'google';
-    public const SOURCE_BING = 'bing';
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\ManyToOne(targetEntity: ClientSite::class, inversedBy: 'bingDailyTotals')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ?ClientSite $clientSite = null;
 
     #[ORM\Column(type: 'date_immutable')]
     private ?\DateTimeImmutable $date = null;
@@ -32,9 +30,6 @@ class SeoDailyTotal
     #[ORM\Column]
     private float $position = 0;
 
-    #[ORM\Column(length: 10, options: ['default' => 'google'])]
-    private string $source = self::SOURCE_GOOGLE;
-
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -46,6 +41,17 @@ class SeoDailyTotal
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getClientSite(): ?ClientSite
+    {
+        return $this->clientSite;
+    }
+
+    public function setClientSite(?ClientSite $clientSite): static
+    {
+        $this->clientSite = $clientSite;
+        return $this;
     }
 
     public function getDate(): ?\DateTimeImmutable
@@ -92,25 +98,11 @@ class SeoDailyTotal
         return $this;
     }
 
-    public function getSource(): string
-    {
-        return $this->source;
-    }
-
-    public function setSource(string $source): static
-    {
-        $this->source = $source;
-        return $this;
-    }
-
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    /**
-     * Calcule le CTR (Click-Through Rate).
-     */
     public function getCtr(): float
     {
         if ($this->impressions === 0) {
@@ -122,6 +114,6 @@ class SeoDailyTotal
     public function __toString(): string
     {
         $dateStr = $this->date?->format('d/m/Y') ?? '?';
-        return sprintf('%s: %d clics, %d impr', $dateStr, $this->clicks, $this->impressions);
+        return sprintf('%s: %d clics, %d impr (Bing)', $dateStr, $this->clicks, $this->impressions);
     }
 }

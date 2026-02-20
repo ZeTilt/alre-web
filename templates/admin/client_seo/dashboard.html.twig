@@ -13,11 +13,8 @@
         <a href="{{ path('admin_client_seo_list') }}" class="btn btn-sm btn-outline-secondary">
             <i class="fas fa-arrow-left"></i> Retour a la liste
         </a>
-        <a href="{{ path('admin_client_seo_import', {id: site.id}) }}" class="btn btn-sm btn-primary">
-            <i class="fas fa-file-upload"></i> Importer CSV
-        </a>
         <a href="{{ path('admin_client_seo_import_history', {id: site.id}) }}" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-history"></i> Historique
+            <i class="fas fa-history"></i> Historique syncs
         </a>
         <a href="{{ path('admin_client_seo_keywords', {id: site.id}) }}" class="btn btn-sm btn-outline-primary">
             <i class="fas fa-key"></i> Mots-cles
@@ -52,19 +49,54 @@
         <div>
             <div style="font-weight: 600; color: #111827;">{{ site.url }}</div>
             <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
-                {% if lastImportDate %}
-                    <i class="fas fa-sync-alt"></i> Dernier import : {{ lastImportDate|date('d/m/Y a H:i') }}
-                {% else %}
-                    <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i> Aucun import -
-                    <a href="{{ path('admin_client_seo_import', {id: site.id}) }}" style="color: var(--primary); text-decoration: underline;">Importer des donnees</a>
-                {% endif %}
-                {% if nextImportDate %}
-                    &middot; <i class="fas fa-calendar-alt"></i> Prochain : {{ nextImportDate|date('d/m/Y') }}
-                {% endif %}
+                <i class="fas fa-sync-alt"></i> Synchronisation automatique via API
             </div>
         </div>
     </div>
 </div>
+
+<!-- Traffic Summary Card (Google + Bing aggregated) -->
+{% if chartData.hasBingData is defined and chartData.hasBingData %}
+{% set totalClicks = chartData.clicks|reduce((carry, v) => carry + v, 0) %}
+{% set totalImpressions = chartData.impressions|reduce((carry, v) => carry + v, 0) %}
+{% set gClicks = chartData.googleClicks|reduce((carry, v) => carry + v, 0) %}
+{% set gImpressions = chartData.googleImpressions|reduce((carry, v) => carry + v, 0) %}
+{% set bClicks = chartData.bingClicks|reduce((carry, v) => carry + v, 0) %}
+{% set bImpressions = chartData.bingImpressions|reduce((carry, v) => carry + v, 0) %}
+{% set totalCtr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100)|round(2) : 0 %}
+<div class="stat-card info" style="margin-bottom: 1.5rem;">
+    <div class="stat-header">
+        <span class="stat-label">Trafic organique (30 jours)</span>
+        <div class="stat-icon info">
+            <i class="fas fa-chart-bar"></i>
+        </div>
+    </div>
+    <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
+        <div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #111827;">{{ totalClicks|number_format(0, '', ' ') }}</div>
+            <div style="font-size: 0.75rem; color: #6b7280;">Clics total</div>
+            <div style="font-size: 0.7rem; color: #9ca3af; margin-top: 2px;">
+                <i class="fab fa-google" style="color: #4285f4;"></i> {{ gClicks|number_format(0, '', ' ') }}
+                &middot;
+                <i class="fab fa-microsoft" style="color: #0078d4;"></i> {{ bClicks|number_format(0, '', ' ') }}
+            </div>
+        </div>
+        <div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #06b6d4;">{{ totalImpressions|number_format(0, '', ' ') }}</div>
+            <div style="font-size: 0.75rem; color: #6b7280;">Impressions total</div>
+            <div style="font-size: 0.7rem; color: #9ca3af; margin-top: 2px;">
+                <i class="fab fa-google" style="color: #4285f4;"></i> {{ gImpressions|number_format(0, '', ' ') }}
+                &middot;
+                <i class="fab fa-microsoft" style="color: #0078d4;"></i> {{ bImpressions|number_format(0, '', ' ') }}
+            </div>
+        </div>
+        <div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #8b5cf6;">{{ totalCtr }}%</div>
+            <div style="font-size: 0.75rem; color: #6b7280;">CTR global</div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 {% if keywordsRanked.top10|length > 0 or keywordsRanked.toImprove|length > 0 %}
 
@@ -85,7 +117,7 @@
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Score</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Position</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">vs M-1</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Tendance 4S</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Tend. 7j</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Stabilite</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Clics</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #065f46; font-weight: 600;">Impressions</th>
@@ -151,12 +183,24 @@
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
                             {% set stabilityVal = seoStability[keyword.id] ?? null %}
                             {% if stabilityVal is not null and stabilityVal < 99 %}
-                                {% if stabilityVal < 2 %}
+                                {% if stabilityVal < 3 %}
                                     <span style="background: #d1fae5; color: #065f46; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Stable</span>
-                                {% elseif stabilityVal < 5 %}
-                                    <span style="background: #fef3c7; color: #92400e; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Variable</span>
+                                {% elseif stabilityVal < 6 %}
+                                    {% if momentumData and momentumData.status == 'improved' %}
+                                        <span style="background: #d1fae5; color: #065f46; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Légère hausse</span>
+                                    {% elseif momentumData and momentumData.status == 'degraded' %}
+                                        <span style="background: #fee2e2; color: #991b1b; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Légère baisse</span>
+                                    {% else %}
+                                        <span style="background: #fef3c7; color: #92400e; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Variable</span>
+                                    {% endif %}
                                 {% else %}
-                                    <span style="background: #fee2e2; color: #991b1b; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Instable</span>
+                                    {% if momentumData and momentumData.status == 'improved' %}
+                                        <span style="background: #d1fae5; color: #065f46; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">En hausse</span>
+                                    {% elseif momentumData and momentumData.status == 'degraded' %}
+                                        <span style="background: #fee2e2; color: #991b1b; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">En baisse</span>
+                                    {% else %}
+                                        <span style="background: #fee2e2; color: #991b1b; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Instable</span>
+                                    {% endif %}
                                 {% endif %}
                             {% else %}
                                 <span style="color: #9ca3af; font-size: 0.75rem;">Insuff.</span>
@@ -191,7 +235,7 @@
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Score</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Position</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">vs M-1</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Tendance 4S</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Tend. 7j</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Stabilite</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Clics</th>
                     <th style="text-align: center; padding: 0.75rem 0.5rem; color: #92400e; font-weight: 600;">Impr.</th>
@@ -260,12 +304,24 @@
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
                             {% set stabilityVal = seoStability[keyword.id] ?? null %}
                             {% if stabilityVal is not null and stabilityVal < 99 %}
-                                {% if stabilityVal < 2 %}
+                                {% if stabilityVal < 3 %}
                                     <span style="background: #d1fae5; color: #065f46; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Stable</span>
-                                {% elseif stabilityVal < 5 %}
-                                    <span style="background: #fef3c7; color: #92400e; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Variable</span>
+                                {% elseif stabilityVal < 6 %}
+                                    {% if momentumData and momentumData.status == 'improved' %}
+                                        <span style="background: #d1fae5; color: #065f46; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Légère hausse</span>
+                                    {% elseif momentumData and momentumData.status == 'degraded' %}
+                                        <span style="background: #fee2e2; color: #991b1b; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Légère baisse</span>
+                                    {% else %}
+                                        <span style="background: #fef3c7; color: #92400e; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Variable</span>
+                                    {% endif %}
                                 {% else %}
-                                    <span style="background: #fee2e2; color: #991b1b; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Instable</span>
+                                    {% if momentumData and momentumData.status == 'improved' %}
+                                        <span style="background: #d1fae5; color: #065f46; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">En hausse</span>
+                                    {% elseif momentumData and momentumData.status == 'degraded' %}
+                                        <span style="background: #fee2e2; color: #991b1b; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">En baisse</span>
+                                    {% else %}
+                                        <span style="background: #fee2e2; color: #991b1b; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Instable</span>
+                                    {% endif %}
                                 {% endif %}
                             {% else %}
                                 <span style="color: #9ca3af; font-size: 0.75rem;">Insuff.</span>
@@ -306,6 +362,11 @@
     <div class="chart-title">
         <i class="fas fa-chart-line" style="color: var(--info);"></i>
         Evolution SEO - 30 derniers jours
+        {% if chartData.hasBingData is defined and chartData.hasBingData %}
+            <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">
+                (<i class="fab fa-google" style="color: #4285f4;"></i> Google + <i class="fab fa-microsoft" style="color: #0078d4;"></i> Bing)
+            </span>
+        {% endif %}
     </div>
     {% if chartData.hasEnoughData %}
         <canvas id="chartSeoEvolution" class="chart-canvas"></canvas>
@@ -325,6 +386,11 @@
     <div class="chart-title">
         <i class="fas fa-chart-area" style="color: var(--primary);"></i>
         Tendances SEO - Moyenne glissante 7 jours
+        {% if chartData.hasBingData is defined and chartData.hasBingData %}
+            <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">
+                (Google + Bing agrege)
+            </span>
+        {% endif %}
     </div>
     {% if chartData.hasEnoughData %}
         <canvas id="chartSeo7d" class="chart-canvas"></canvas>
@@ -332,6 +398,62 @@
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; color: #6b7280;">
             <i class="fas fa-chart-area" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;"></i>
             <div style="font-size: 0.875rem;">Donnees insuffisantes</div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Keywords Evolution Chart -->
+<div class="chart-container" style="margin-bottom: 1.5rem;">
+    <div class="chart-title" style="justify-content: space-between; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-key" style="color: var(--purple, #8b5cf6);"></i>
+            Evolution des mots-cles
+            <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280;">({{ keywordsChartData.currentTotal }} actifs)</span>
+        </div>
+        <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+            {% if keywordsChartData.relevanceCounts[5] > 0 %}
+            <span style="background: #059669; color: #fff; padding: 0.2rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600;">
+                5&#9733; {{ keywordsChartData.relevanceCounts[5] }}
+            </span>
+            {% endif %}
+            {% if keywordsChartData.relevanceCounts[4] > 0 %}
+            <span style="background: #34d399; color: #065f46; padding: 0.2rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600;">
+                4&#9733; {{ keywordsChartData.relevanceCounts[4] }}
+            </span>
+            {% endif %}
+            {% if keywordsChartData.relevanceCounts[3] > 0 %}
+            <span style="background: #fbbf24; color: #78350f; padding: 0.2rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600;">
+                3&#9733; {{ keywordsChartData.relevanceCounts[3] }}
+            </span>
+            {% endif %}
+            {% if keywordsChartData.relevanceCounts[2] > 0 %}
+            <span style="background: #fb923c; color: #7c2d12; padding: 0.2rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600;">
+                2&#9733; {{ keywordsChartData.relevanceCounts[2] }}
+            </span>
+            {% endif %}
+            {% if keywordsChartData.relevanceCounts[1] > 0 %}
+            <span style="background: #f87171; color: #7f1d1d; padding: 0.2rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600;">
+                1&#9733; {{ keywordsChartData.relevanceCounts[1] }}
+            </span>
+            {% endif %}
+            {% if keywordsChartData.relevanceCounts[0] > 0 %}
+            <span style="background: #e5e7eb; color: #6b7280; padding: 0.2rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600;">
+                ? {{ keywordsChartData.relevanceCounts[0] }}
+            </span>
+            {% endif %}
+            {% if keywordsChartData.inactiveCount > 0 %}
+            <span style="background: #1f2937; color: #f3f4f6; padding: 0.2rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600;">
+                <i class="fas fa-ban" style="font-size: 0.6rem;"></i> {{ keywordsChartData.inactiveCount }}
+            </span>
+            {% endif %}
+        </div>
+    </div>
+    {% if keywordsChartData.currentTotal > 0 %}
+        <canvas id="chartKeywordsEvolution" class="chart-canvas"></canvas>
+    {% else %}
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; color: #6b7280;">
+            <i class="fas fa-key" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;"></i>
+            <div style="font-size: 0.875rem;">Aucun mot-cle actif</div>
         </div>
     {% endif %}
 </div>
@@ -488,23 +610,13 @@
 {% else %}
 <!-- No data state -->
 <div class="stat-card info" style="text-align: center; padding: 3rem; margin-bottom: 1.5rem;">
-    <i class="fas fa-file-upload" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem; display: block;"></i>
+    <i class="fas fa-sync-alt" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem; display: block;"></i>
     <div style="font-size: 1.125rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Aucune donnee SEO</div>
     <div style="color: #6b7280; margin-bottom: 1.5rem;">
-        Importez un export CSV de Google Search Console pour commencer l'analyse SEO de ce site.
+        Les donnees seront importees automatiquement via l'API Google Search Console lors de la prochaine synchronisation.
     </div>
-    <a href="{{ path('admin_client_seo_import', {id: site.id}) }}" class="btn btn-primary">
-        <i class="fas fa-file-upload"></i> Importer un fichier CSV
-    </a>
-    <div style="margin-top: 1.5rem; padding: 1rem; background: #f0f9ff; border-radius: 8px; text-align: left; font-size: 0.875rem; color: #0369a1;">
-        <div style="font-weight: 600; margin-bottom: 0.5rem;"><i class="fas fa-info-circle"></i> Comment exporter depuis Google Search Console :</div>
-        <ol style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">
-            <li>Allez sur <strong>Google Search Console</strong> > Performance</li>
-            <li>Selectionnez la periode souhaitee (3 derniers mois recommandes)</li>
-            <li>Ajoutez la dimension <strong>Date</strong> (important !)</li>
-            <li>Cliquez sur <strong>Exporter</strong> > Telecharger le fichier CSV</li>
-            <li>Repetez pour l'onglet <strong>Pages</strong></li>
-        </ol>
+    <div style="margin-top: 1rem; padding: 1rem; background: #f0f9ff; border-radius: 8px; font-size: 0.875rem; color: #0369a1;">
+        <i class="fas fa-info-circle"></i> Verifiez que la propriete GSC est correctement configuree dans les <a href="{{ path('admin_client_seo_edit_site', {id: site.id}) }}" style="color: #0369a1; text-decoration: underline;">parametres du site</a>.
     </div>
 </div>
 {% endif %}
@@ -524,25 +636,36 @@ const seoChartClicks = {{ chartData.clicks|json_encode|raw }};
 const seoChartImpressions = {{ chartData.impressions|json_encode|raw }};
 const seoChartCtr = {{ chartData.ctr|json_encode|raw }};
 const seoChartPosition = {{ chartData.position|json_encode|raw }};
+const seoChartGoogleClicks = {{ chartData.googleClicks|json_encode|raw }};
+const seoChartGoogleImpressions = {{ chartData.googleImpressions|json_encode|raw }};
+const seoChartBingClicks = {{ chartData.bingClicks|json_encode|raw }};
+const seoChartBingImpressions = {{ chartData.bingImpressions|json_encode|raw }};
 const seoChartClicks7d = {{ chartData.clicks7d|json_encode|raw }};
 const seoChartImpressions7d = {{ chartData.impressions7d|json_encode|raw }};
 const seoChartCtr7d = {{ chartData.ctr7d|json_encode|raw }};
 const seoChartPosition7d = {{ chartData.position7d|json_encode|raw }};
 const seoHasEnoughData = {{ chartData.hasEnoughData ? 'true' : 'false' }};
+const seoHasBingData = {{ chartData.hasBingData is defined and chartData.hasBingData ? 'true' : 'false' }};
 
 // Daily chart
 if (seoHasEnoughData && document.getElementById('chartSeoEvolution')) {
+    var dailyDatasets = [];
+    if (seoHasBingData) {
+        // Stacked: Google clicks + Bing clicks
+        dailyDatasets.push({ label: 'Clics Google', data: seoChartGoogleClicks, borderColor: '#4285f4', backgroundColor: 'rgba(66, 133, 244, 0.15)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, yAxisID: 'yClicks', stack: 'clicks' });
+        dailyDatasets.push({ label: 'Clics Bing', data: seoChartBingClicks, borderColor: '#0078d4', backgroundColor: 'rgba(0, 120, 212, 0.15)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, yAxisID: 'yClicks', stack: 'clicks' });
+        dailyDatasets.push({ label: 'Impressions Google', data: seoChartGoogleImpressions, borderColor: '#34a853', backgroundColor: 'rgba(52, 168, 83, 0.08)', fill: true, tension: 0.4, borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 4, yAxisID: 'yImpressions', borderDash: [3, 2] });
+        dailyDatasets.push({ label: 'Impressions Bing', data: seoChartBingImpressions, borderColor: '#50e6ff', backgroundColor: 'rgba(80, 230, 255, 0.08)', fill: true, tension: 0.4, borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 4, yAxisID: 'yImpressions', borderDash: [3, 2] });
+    } else {
+        dailyDatasets.push({ label: 'Clics', data: seoChartClicks, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, yAxisID: 'yClicks' });
+        dailyDatasets.push({ label: 'Impressions', data: seoChartImpressions, borderColor: '#06b6d4', backgroundColor: 'rgba(6, 182, 212, 0.05)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, yAxisID: 'yImpressions' });
+    }
+    dailyDatasets.push({ label: 'CTR (%)', data: seoChartCtr, borderColor: '#8b5cf6', backgroundColor: 'transparent', fill: false, tension: 0.4, borderWidth: 2, borderDash: [4, 4], pointRadius: 0, pointHoverRadius: 4, yAxisID: 'yCtr' });
+    dailyDatasets.push({ label: 'Position', data: seoChartPosition, borderColor: '#f59e0b', backgroundColor: 'transparent', fill: false, tension: 0.4, borderWidth: 2, borderDash: [2, 2], pointRadius: 0, pointHoverRadius: 4, yAxisID: 'yPosition' });
+
     new Chart(document.getElementById('chartSeoEvolution'), {
         type: 'line',
-        data: {
-            labels: seoChartLabels,
-            datasets: [
-                { label: 'Clics', data: seoChartClicks, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, yAxisID: 'yClicks' },
-                { label: 'Impressions', data: seoChartImpressions, borderColor: '#06b6d4', backgroundColor: 'rgba(6, 182, 212, 0.05)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, yAxisID: 'yImpressions' },
-                { label: 'CTR (%)', data: seoChartCtr, borderColor: '#8b5cf6', backgroundColor: 'transparent', fill: false, tension: 0.4, borderWidth: 2, borderDash: [4, 4], pointRadius: 0, pointHoverRadius: 4, yAxisID: 'yCtr' },
-                { label: 'Position', data: seoChartPosition, borderColor: '#f59e0b', backgroundColor: 'transparent', fill: false, tension: 0.4, borderWidth: 2, borderDash: [2, 2], pointRadius: 0, pointHoverRadius: 4, yAxisID: 'yPosition' }
-            ]
-        },
+        data: { labels: seoChartLabels, datasets: dailyDatasets },
         options: {
             responsive: true, maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
@@ -550,11 +673,11 @@ if (seoHasEnoughData && document.getElementById('chartSeoEvolution')) {
                 legend: { display: true, position: 'top', labels: { usePointStyle: true, padding: 12, font: { size: 11 } } },
                 tooltip: { callbacks: {
                     title: (items) => items.length > 0 ? 'Date: ' + items[0].label : '',
-                    label: (ctx) => { let v = ctx.parsed.y; if (ctx.dataset.label === 'CTR (%)') return ctx.dataset.label + ': ' + v.toFixed(2) + '%'; if (ctx.dataset.label === 'Position') return ctx.dataset.label + ': ' + v.toFixed(1); return ctx.dataset.label + ': ' + v.toLocaleString('fr-FR'); }
+                    label: (ctx) => { let v = ctx.parsed.y; if (v === null) return null; if (ctx.dataset.label === 'CTR (%)') return ctx.dataset.label + ': ' + v.toFixed(2) + '%'; if (ctx.dataset.label === 'Position') return ctx.dataset.label + ': ' + v.toFixed(1); return ctx.dataset.label + ': ' + v.toLocaleString('fr-FR'); }
                 }}
             },
             scales: {
-                yClicks: { type: 'linear', display: true, position: 'left', beginAtZero: true, title: { display: true, text: 'Clics', color: '#3b82f6', font: { size: 10 } }, ticks: { color: '#3b82f6', font: { size: 9 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                yClicks: { type: 'linear', display: true, position: 'left', beginAtZero: true, stacked: seoHasBingData, title: { display: true, text: 'Clics', color: '#3b82f6', font: { size: 10 } }, ticks: { color: '#3b82f6', font: { size: 9 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
                 yImpressions: { type: 'linear', display: true, position: 'right', beginAtZero: true, title: { display: true, text: 'Impressions', color: '#06b6d4', font: { size: 10 } }, ticks: { color: '#06b6d4', font: { size: 9 } }, grid: { drawOnChartArea: false } },
                 yCtr: { type: 'linear', display: false, beginAtZero: true, max: 10, grid: { drawOnChartArea: false } },
                 yPosition: { type: 'linear', display: false, reverse: true, min: 1, max: 100, grid: { drawOnChartArea: false } },
@@ -571,8 +694,8 @@ if (seoHasEnoughData && document.getElementById('chartSeo7d')) {
         data: {
             labels: seoChartLabels,
             datasets: [
-                { label: 'Clics (cumul 7j)', data: seoChartClicks7d, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, yAxisID: 'yClicks7d' },
-                { label: 'Impressions (cumul 7j)', data: seoChartImpressions7d, borderColor: '#06b6d4', backgroundColor: 'rgba(6, 182, 212, 0.05)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, yAxisID: 'yImpressions7d' },
+                { label: seoHasBingData ? 'Clics G+B (cumul 7j)' : 'Clics (cumul 7j)', data: seoChartClicks7d, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, yAxisID: 'yClicks7d' },
+                { label: seoHasBingData ? 'Impressions G+B (cumul 7j)' : 'Impressions (cumul 7j)', data: seoChartImpressions7d, borderColor: '#06b6d4', backgroundColor: 'rgba(6, 182, 212, 0.05)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, yAxisID: 'yImpressions7d' },
                 { label: 'CTR moy. 7j (%)', data: seoChartCtr7d, borderColor: '#8b5cf6', backgroundColor: 'transparent', fill: false, tension: 0.4, borderWidth: 2, borderDash: [4, 4], pointRadius: 0, pointHoverRadius: 4, yAxisID: 'yCtr7d' },
                 { label: 'Position moy. 7j', data: seoChartPosition7d, borderColor: '#f59e0b', backgroundColor: 'transparent', fill: false, tension: 0.4, borderWidth: 2, borderDash: [2, 2], pointRadius: 0, pointHoverRadius: 4, yAxisID: 'yPosition7d' }
             ]
@@ -593,6 +716,66 @@ if (seoHasEnoughData && document.getElementById('chartSeo7d')) {
                 yCtr7d: { type: 'linear', display: false, beginAtZero: true, max: 10, grid: { drawOnChartArea: false } },
                 yPosition7d: { type: 'linear', display: false, reverse: true, min: 1, max: 100, grid: { drawOnChartArea: false } },
                 x: { grid: { display: false }, ticks: { maxTicksLimit: 10, font: { size: 10 } } }
+            }
+        }
+    });
+}
+
+// Keywords Evolution Chart (par score 0-5 etoiles)
+const kwLabels = {{ keywordsChartData.labels|json_encode|raw }};
+const kwTotalKeywords = {{ keywordsChartData.totalKeywords|json_encode|raw }};
+const kwNew5 = {{ keywordsChartData.new5|json_encode|raw }};
+const kwNew4 = {{ keywordsChartData.new4|json_encode|raw }};
+const kwNew3 = {{ keywordsChartData.new3|json_encode|raw }};
+const kwNew2 = {{ keywordsChartData.new2|json_encode|raw }};
+const kwNew1 = {{ keywordsChartData.new1|json_encode|raw }};
+const kwNew0 = {{ keywordsChartData.new0|json_encode|raw }};
+const kwDeactivated = {{ keywordsChartData.deactivated|json_encode|raw }};
+
+if (document.getElementById('chartKeywordsEvolution')) {
+    new Chart(document.getElementById('chartKeywordsEvolution'), {
+        type: 'bar',
+        data: {
+            labels: kwLabels,
+            datasets: [
+                { label: '5\u2605', data: kwNew5, backgroundColor: 'rgba(5, 150, 105, 0.85)', borderColor: '#059669', borderWidth: 1, stack: 'newKeywords', yAxisID: 'yNew', order: 2 },
+                { label: '4\u2605', data: kwNew4, backgroundColor: 'rgba(52, 211, 153, 0.85)', borderColor: '#34d399', borderWidth: 1, stack: 'newKeywords', yAxisID: 'yNew', order: 2 },
+                { label: '3\u2605', data: kwNew3, backgroundColor: 'rgba(251, 191, 36, 0.85)', borderColor: '#fbbf24', borderWidth: 1, stack: 'newKeywords', yAxisID: 'yNew', order: 2 },
+                { label: '2\u2605', data: kwNew2, backgroundColor: 'rgba(251, 146, 60, 0.85)', borderColor: '#fb923c', borderWidth: 1, stack: 'newKeywords', yAxisID: 'yNew', order: 2 },
+                { label: '1\u2605', data: kwNew1, backgroundColor: 'rgba(248, 113, 113, 0.85)', borderColor: '#f87171', borderWidth: 1, stack: 'newKeywords', yAxisID: 'yNew', order: 2 },
+                { label: 'Non score', data: kwNew0, backgroundColor: 'rgba(156, 163, 175, 0.7)', borderColor: '#9ca3af', borderWidth: 1, stack: 'newKeywords', yAxisID: 'yNew', order: 2 },
+                { label: 'Desactives', data: kwDeactivated, backgroundColor: 'rgba(17, 24, 39, 0.85)', borderColor: '#111827', borderWidth: 1, stack: 'newKeywords', yAxisID: 'yNew', order: 2 },
+                {
+                    label: 'Total cumule',
+                    data: kwTotalKeywords,
+                    type: 'line',
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5,
+                    yAxisID: 'yTotal', order: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: true, position: 'top', labels: { usePointStyle: true, padding: 10, font: { size: 10 } } },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => {
+                            if (ctx.parsed.y === 0 && ctx.dataset.type !== 'line') return null;
+                            if (ctx.dataset.label === 'Desactives') return ctx.dataset.label + ': ' + Math.abs(ctx.parsed.y);
+                            return ctx.dataset.label + ': ' + ctx.parsed.y;
+                        }
+                    }
+                }
+            },
+            scales: {
+                yNew: { type: 'linear', display: true, position: 'left', beginAtZero: true, stacked: true, title: { display: true, text: 'Nouveaux / jour', color: '#059669', font: { size: 10 } }, ticks: { color: '#059669', font: { size: 9 }, stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                yTotal: { type: 'linear', display: true, position: 'right', beginAtZero: true, title: { display: true, text: 'Total mots-cles', color: '#8b5cf6', font: { size: 10 } }, ticks: { color: '#8b5cf6', font: { size: 9 } }, grid: { drawOnChartArea: false } },
+                x: { stacked: true, grid: { display: false }, ticks: { maxTicksLimit: 10, font: { size: 10 } } }
             }
         }
     });

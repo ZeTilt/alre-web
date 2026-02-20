@@ -12,6 +12,7 @@ class SeoKeyword
 {
     public const SOURCE_MANUAL = 'manual';
     public const SOURCE_AUTO_GSC = 'auto_gsc';
+    public const SOURCE_AUTO_BING = 'auto_bing';
 
     public const RELEVANCE_HIGH = 'high';
     public const RELEVANCE_MEDIUM = 'medium';
@@ -252,6 +253,7 @@ class SeoKeyword
         return [
             'Manuel' => self::SOURCE_MANUAL,
             'Auto (GSC)' => self::SOURCE_AUTO_GSC,
+            'Auto (Bing)' => self::SOURCE_AUTO_BING,
         ];
     }
 
@@ -279,6 +281,7 @@ class SeoKeyword
         return match ($this->source) {
             self::SOURCE_MANUAL => 'Manuel',
             self::SOURCE_AUTO_GSC => 'Auto (GSC)',
+            self::SOURCE_AUTO_BING => 'Auto (Bing)',
             default => $this->source,
         };
     }

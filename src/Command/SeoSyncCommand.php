@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Service\BingDataImportService;
 use App\Service\ReviewSyncService;
 use App\Service\SeoDataImportService;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -13,12 +14,13 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:seo-sync',
-    description: 'Synchronise les données SEO (GSC + Google Reviews) - Idéal pour cron quotidien',
+    description: 'Synchronise les données SEO (GSC + Bing + Google Reviews) - Idéal pour cron quotidien',
 )]
 class SeoSyncCommand extends Command
 {
     public function __construct(
         private SeoDataImportService $seoImportService,
+        private BingDataImportService $bingImportService,
         private ReviewSyncService $reviewSyncService,
     ) {
         parent::__construct();
@@ -32,6 +34,7 @@ class SeoSyncCommand extends Command
             ->addOption('reviews-only', null, InputOption::VALUE_NONE, 'Synchronise uniquement les avis Google')
             ->addOption('no-import', null, InputOption::VALUE_NONE, 'Ne pas importer les nouveaux mots-clés')
             ->addOption('no-cleanup', null, InputOption::VALUE_NONE, 'Ne pas désactiver les mots-clés absents')
+            ->addOption('no-bing', null, InputOption::VALUE_NONE, 'Ne pas synchroniser les données Bing')
         ;
     }
 
@@ -43,6 +46,7 @@ class SeoSyncCommand extends Command
         $reviewsOnly = $input->getOption('reviews-only');
         $noImport = $input->getOption('no-import');
         $noCleanup = $input->getOption('no-cleanup');
+        $noBing = $input->getOption('no-bing');
 
         $io->title('Synchronisation SEO quotidienne');
         $io->text(sprintf('[%s] Démarrage...', date('Y-m-d H:i:s')));
@@ -93,6 +97,26 @@ class SeoSyncCommand extends Command
             $io->section('Google Search Console - Totaux journaliers');
             $dailyResult = $this->seoImportService->syncDailyTotals($force);
             $io->success($dailyResult['message']);
+
+            // Bing Webmaster Tools
+            if (!$noBing) {
+                $io->section('Bing Webmaster Tools - Mots-clés');
+                $bingKeywordsResult = $this->bingImportService->syncBingKeywords();
+
+                if ($bingKeywordsResult['errors'] > 0) {
+                    $io->warning($bingKeywordsResult['message']);
+                    $hasErrors = true;
+                } else {
+                    $io->success($bingKeywordsResult['message']);
+                }
+
+                $io->section('Bing Webmaster Tools - Totaux journaliers');
+                $bingDailyResult = $this->bingImportService->syncBingDailyTotals();
+                $io->success($bingDailyResult['message']);
+            } else {
+                $io->section('Bing Webmaster Tools');
+                $io->note('Bing skippé (--no-bing)');
+            }
 
             // Cleanup missing keywords
             if (!$noCleanup) {

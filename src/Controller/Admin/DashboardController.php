@@ -818,6 +818,30 @@ class DashboardController extends AbstractDashboardController
         ]);
     }
 
+    #[Route('/saeiblauhjc/client-seo-keyword/{id}/toggle-active', name: 'admin_client_seo_keyword_toggle_active', methods: ['POST'])]
+    public function toggleClientKeywordActive(ClientSeoKeyword $keyword, Request $request): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid('client-seo-toggle-' . $keyword->getId(), $request->request->get('_token'))) {
+            return new JsonResponse(['error' => 'Token CSRF invalide'], 403);
+        }
+
+        $newActive = !$keyword->isActive();
+        $keyword->setIsActive($newActive);
+
+        if ($newActive) {
+            $keyword->setDeactivatedAt(null);
+        } else {
+            $keyword->setDeactivatedAt(new \DateTimeImmutable());
+        }
+
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'isActive' => $newActive,
+        ]);
+    }
+
     #[Route('/saeiblauhjc/client-seo-keyword/{id}/mark-optimized', name: 'admin_client_seo_keyword_mark_optimized', methods: ['POST'])]
     public function markClientKeywordOptimized(ClientSeoKeyword $keyword, Request $request): JsonResponse
     {

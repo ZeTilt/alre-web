@@ -7,6 +7,14 @@
 {% block page_content %}
 {% include 'admin/dashboard/_partials/_styles.html.twig' %}
 
+<style>
+    th.sortable { cursor: pointer; user-select: none; position: relative; }
+    th.sortable:hover { color: #111827 !important; }
+    th.sortable::after { content: ' \2195'; font-size: 0.65rem; opacity: 0.4; }
+    th.sortable.asc::after { content: ' \2191'; opacity: 0.8; }
+    th.sortable.desc::after { content: ' \2193'; opacity: 0.8; }
+</style>
+
 <div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
     <a href="{{ path('admin_client_seo_dashboard', {id: site.id}) }}" class="btn btn-sm btn-outline-secondary">
         <i class="fas fa-arrow-left"></i> Retour au dashboard
@@ -33,23 +41,25 @@
         {% endif %}
     </div>
     <div style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+        <table id="active-keywords-table" style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
             <thead>
                 <tr style="border-bottom: 2px solid #e5e7eb;">
-                    <th style="text-align: left; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Mot-cle</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Score</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Position</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Clics</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Impressions</th>
-                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Derniere optimisation</th>
+                    <th class="sortable" data-sort="string" style="text-align: left; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Mot-cle</th>
+                    <th class="sortable" data-sort="number" style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Score</th>
+                    <th class="sortable" data-sort="number" style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Position</th>
+                    <th class="sortable" data-sort="number" style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Clics</th>
+                    <th class="sortable" data-sort="number" style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Impr.</th>
+                    <th class="sortable" data-sort="number" style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Dern. vue GSC</th>
+                    <th class="sortable" data-sort="number" style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;">Dern. optim.</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #374151; font-weight: 600;"></th>
                 </tr>
             </thead>
             <tbody>
                 {% for keyword in activeKeywords %}
                     {% set latestPosition = keyword.latestPosition %}
-                    <tr style="border-bottom: 1px solid #f3f4f6;">
-                        <td style="padding: 0.75rem 0.5rem; font-weight: 500;">{{ keyword.keyword }}</td>
-                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                    <tr style="border-bottom: 1px solid #f3f4f6;" id="keyword-row-{{ keyword.id }}">
+                        <td data-sort-value="{{ keyword.keyword|lower }}" style="padding: 0.75rem 0.5rem; font-weight: 500;">{{ keyword.keyword }}</td>
+                        <td data-sort-value="{{ keyword.relevanceScore }}" style="text-align: center; padding: 0.75rem 0.5rem;">
                             <span class="seo-star-group" data-score="{{ keyword.relevanceScore }}" data-url="{{ path('admin_client_seo_keyword_set_score', {id: keyword.id}) }}" data-token="{{ csrf_token('client-seo-score-' ~ keyword.id) }}" style="cursor: pointer; white-space: nowrap;">
                                 {% for i in 1..5 %}
                                     <i class="{{ keyword.relevanceScore >= i ? 'fas' : 'far' }} fa-star seo-star" data-value="{{ i }}" style="color: {{ keyword.relevanceScore >= i ? '#f59e0b' : '#d1d5db' }}; font-size: 0.85rem;"></i>
@@ -57,7 +67,7 @@
                                 {% if keyword.relevanceScore == 0 %}<span style="color: #d1d5db; font-size: 0.7rem; margin-left: 2px;">?</span>{% endif %}
                             </span>
                         </td>
-                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                        <td data-sort-value="{{ latestPosition ? latestPosition.position : 999 }}" style="text-align: center; padding: 0.75rem 0.5rem;">
                             {% if latestPosition %}
                                 {% set pos = latestPosition.position %}
                                 {% if pos <= 10 %}
@@ -71,18 +81,36 @@
                                 <span style="color: #9ca3af;">-</span>
                             {% endif %}
                         </td>
-                        <td style="text-align: center; padding: 0.75rem 0.5rem; font-weight: 600;">
+                        <td data-sort-value="{{ latestPosition ? latestPosition.clicks : -1 }}" style="text-align: center; padding: 0.75rem 0.5rem; font-weight: 600;">
                             {% if latestPosition %}{{ latestPosition.clicks }}{% else %}-{% endif %}
                         </td>
-                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                        <td data-sort-value="{{ latestPosition ? latestPosition.impressions : -1 }}" style="text-align: center; padding: 0.75rem 0.5rem;">
                             {% if latestPosition %}{{ latestPosition.impressions|number_format(0, '', ' ') }}{% else %}-{% endif %}
                         </td>
-                        <td style="text-align: center; padding: 0.75rem 0.5rem; font-size: 0.8rem; color: #6b7280;">
+                        <td data-sort-value="{{ keyword.lastSeenInGsc ? keyword.lastSeenInGsc|date('U') : 0 }}" style="text-align: center; padding: 0.75rem 0.5rem; font-size: 0.8rem;">
+                            {% if keyword.lastSeenInGsc %}
+                                {% set daysSince = date().diff(keyword.lastSeenInGsc).days %}
+                                <span style="color: {{ daysSince > 14 ? '#dc2626' : (daysSince > 7 ? '#d97706' : '#6b7280') }};">
+                                    {{ keyword.lastSeenInGsc|date('d/m/Y') }}
+                                </span>
+                                {% if daysSince > 14 %}
+                                    <div style="font-size: 0.65rem; color: #dc2626;">il y a {{ daysSince }}j</div>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #d1d5db;">-</span>
+                            {% endif %}
+                        </td>
+                        <td data-sort-value="{{ keyword.lastOptimizedAt ? keyword.lastOptimizedAt|date('U') : 0 }}" style="text-align: center; padding: 0.75rem 0.5rem; font-size: 0.8rem; color: #6b7280;">
                             {% if keyword.lastOptimizedAt %}
                                 {{ keyword.lastOptimizedAt|date('d/m/Y') }}
                             {% else %}
                                 <span style="color: #d1d5db;">-</span>
                             {% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.25rem;">
+                            <button class="btn-toggle-active" data-id="{{ keyword.id }}" data-url="{{ path('admin_client_seo_keyword_toggle_active', {id: keyword.id}) }}" data-token="{{ csrf_token('client-seo-toggle-' ~ keyword.id) }}" data-active="1" title="Desactiver ce mot-cle" style="background: none; border: none; cursor: pointer; padding: 0.25rem; color: #9ca3af; font-size: 0.8rem;">
+                                <i class="fas fa-toggle-on" style="color: #10b981; font-size: 1.1rem;"></i>
+                            </button>
                         </td>
                     </tr>
                 {% endfor %}
@@ -98,18 +126,55 @@
     </summary>
     <div class="chart-container" style="padding: 1rem 1.5rem; margin-top: 0.5rem;">
         <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem; opacity: 0.7;">
+            <table id="inactive-keywords-table" style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #e5e7eb;">
+                        <th class="sortable" data-sort="string" style="text-align: left; padding: 0.5rem; color: #9ca3af; font-weight: 600;">Mot-cle</th>
+                        <th class="sortable" data-sort="number" style="text-align: center; padding: 0.5rem; color: #9ca3af; font-weight: 600;">Score</th>
+                        <th class="sortable" data-sort="number" style="text-align: center; padding: 0.5rem; color: #9ca3af; font-weight: 600;">Dern. position</th>
+                        <th class="sortable" data-sort="number" style="text-align: center; padding: 0.5rem; color: #9ca3af; font-weight: 600;">Dern. vue GSC</th>
+                        <th class="sortable" data-sort="number" style="text-align: center; padding: 0.5rem; color: #9ca3af; font-weight: 600;">Desactive le</th>
+                        <th style="text-align: center; padding: 0.5rem; color: #9ca3af; font-weight: 600;"></th>
+                    </tr>
+                </thead>
                 <tbody>
                     {% for keyword in inactiveKeywords %}
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 0.5rem; color: #9ca3af;">{{ keyword.keyword }}</td>
-                            <td style="text-align: center; padding: 0.5rem;">
+                        {% set latestPosition = keyword.latestPosition %}
+                        <tr style="border-bottom: 1px solid #f3f4f6; opacity: 0.7;" id="keyword-row-{{ keyword.id }}">
+                            <td data-sort-value="{{ keyword.keyword|lower }}" style="padding: 0.5rem; color: #9ca3af;">{{ keyword.keyword }}</td>
+                            <td data-sort-value="{{ keyword.relevanceScore }}" style="text-align: center; padding: 0.5rem;">
                                 <span class="seo-star-group" data-score="{{ keyword.relevanceScore }}" data-url="{{ path('admin_client_seo_keyword_set_score', {id: keyword.id}) }}" data-token="{{ csrf_token('client-seo-score-' ~ keyword.id) }}" style="cursor: pointer; white-space: nowrap;">
                                     {% for i in 1..5 %}
                                         <i class="{{ keyword.relevanceScore >= i ? 'fas' : 'far' }} fa-star seo-star" data-value="{{ i }}" style="color: {{ keyword.relevanceScore >= i ? '#f59e0b' : '#d1d5db' }}; font-size: 0.85rem;"></i>
                                     {% endfor %}
                                     {% if keyword.relevanceScore == 0 %}<span style="color: #d1d5db; font-size: 0.7rem; margin-left: 2px;">?</span>{% endif %}
                                 </span>
+                            </td>
+                            <td data-sort-value="{{ latestPosition ? latestPosition.position : 999 }}" style="text-align: center; padding: 0.5rem;">
+                                {% if latestPosition %}
+                                    <span style="color: #9ca3af;">{{ latestPosition.position|number_format(1) }}</span>
+                                {% else %}
+                                    <span style="color: #d1d5db;">-</span>
+                                {% endif %}
+                            </td>
+                            <td data-sort-value="{{ keyword.lastSeenInGsc ? keyword.lastSeenInGsc|date('U') : 0 }}" style="text-align: center; padding: 0.5rem; font-size: 0.8rem; color: #9ca3af;">
+                                {% if keyword.lastSeenInGsc %}
+                                    {{ keyword.lastSeenInGsc|date('d/m/Y') }}
+                                {% else %}
+                                    <span style="color: #d1d5db;">-</span>
+                                {% endif %}
+                            </td>
+                            <td data-sort-value="{{ keyword.deactivatedAt ? keyword.deactivatedAt|date('U') : 0 }}" style="text-align: center; padding: 0.5rem; font-size: 0.8rem;">
+                                {% if keyword.deactivatedAt %}
+                                    <span style="color: #dc2626;">{{ keyword.deactivatedAt|date('d/m/Y') }}</span>
+                                {% else %}
+                                    <span style="color: #d1d5db;">manuel</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: center; padding: 0.5rem 0.25rem;">
+                                <button class="btn-toggle-active" data-id="{{ keyword.id }}" data-url="{{ path('admin_client_seo_keyword_toggle_active', {id: keyword.id}) }}" data-token="{{ csrf_token('client-seo-toggle-' ~ keyword.id) }}" data-active="0" title="Reactiver ce mot-cle" style="background: none; border: none; cursor: pointer; padding: 0.25rem; font-size: 0.8rem;">
+                                    <i class="fas fa-toggle-off" style="color: #9ca3af; font-size: 1.1rem;"></i>
+                                </button>
                             </td>
                         </tr>
                     {% endfor %}
@@ -121,4 +186,61 @@
 {% endif %}
 
 {% endif %}
+
+<script>
+// Toggle active/inactive
+document.querySelectorAll('.btn-toggle-active').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const url = this.dataset.url;
+        const token = this.dataset.token;
+
+        try {
+            const formData = new FormData();
+            formData.append('_token', token);
+
+            const response = await fetch(url, { method: 'POST', body: formData });
+            const data = await response.json();
+
+            if (data.success) {
+                window.location.reload();
+            }
+        } catch (e) {
+            console.error('Erreur toggle:', e);
+        }
+    });
+});
+
+// Sortable table columns
+document.querySelectorAll('th.sortable').forEach(th => {
+    th.addEventListener('click', function() {
+        const table = this.closest('table');
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const colIndex = Array.from(this.parentNode.children).indexOf(this);
+        const sortType = this.dataset.sort; // 'string' or 'number'
+
+        // Toggle direction
+        const isAsc = this.classList.contains('asc');
+        table.querySelectorAll('th.sortable').forEach(h => h.classList.remove('asc', 'desc'));
+        this.classList.add(isAsc ? 'desc' : 'asc');
+        const direction = isAsc ? -1 : 1;
+
+        rows.sort((a, b) => {
+            const cellA = a.children[colIndex];
+            const cellB = b.children[colIndex];
+            let valA = cellA.dataset.sortValue ?? cellA.textContent.trim();
+            let valB = cellB.dataset.sortValue ?? cellB.textContent.trim();
+
+            if (sortType === 'number') {
+                valA = parseFloat(valA) || 0;
+                valB = parseFloat(valB) || 0;
+                return (valA - valB) * direction;
+            }
+            return valA.localeCompare(valB, 'fr') * direction;
+        });
+
+        rows.forEach(row => tbody.appendChild(row));
+    });
+});
+</script>
 {% endblock %}

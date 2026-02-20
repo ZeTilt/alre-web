@@ -33,7 +33,7 @@ class ClientSeoAutoSyncCommand extends Command
             ->addOption('gsc-only', null, InputOption::VALUE_NONE, 'Synchroniser uniquement GSC')
             ->addOption('site-id', null, InputOption::VALUE_REQUIRED, 'ID du site a synchroniser')
             ->addOption('force', 'f', InputOption::VALUE_NONE, 'Forcer la synchronisation')
-            ->addOption('full', null, InputOption::VALUE_NONE, 'Import complet (16 mois d\'historique GSC)')
+            ->addOption('full', null, InputOption::VALUE_NONE, 'Import complet (GSC: 16 mois, Bing: tout l\'historique dispo ~6 mois)')
             ->addOption('reset', null, InputOption::VALUE_NONE, 'Purger les donnees existantes avant import (necessite --full)')
         ;
     }
@@ -53,7 +53,7 @@ class ClientSeoAutoSyncCommand extends Command
         }
 
         $io->title('Synchronisation automatique SEO clients');
-        $io->text(sprintf('[%s] Demarrage%s...', date('Y-m-d H:i:s'), $full ? ' (import complet 16 mois)' : ''));
+        $io->text(sprintf('[%s] Demarrage%s...', date('Y-m-d H:i:s'), $full ? ' (import complet: GSC 16 mois, Bing ~6 mois)' : ''));
 
         // Reset si demande
         if ($reset) {
@@ -62,8 +62,14 @@ class ClientSeoAutoSyncCommand extends Command
                 : $this->clientSiteRepository->findBy(['isActive' => true]);
 
             foreach (array_filter($sites) as $site) {
-                $deleted = $this->gscImportService->resetSite($site);
-                $io->text(sprintf(' [!] %s: %d enregistrement(s) purge(s)', $site->getName(), $deleted));
+                if (!$bingOnly) {
+                    $deleted = $this->gscImportService->resetSite($site);
+                    $io->text(sprintf(' [!] %s (GSC): %d enregistrement(s) purge(s)', $site->getName(), $deleted));
+                }
+                if (!$gscOnly && $site->isBingEnabled()) {
+                    $deleted = $this->bingImportService->resetSite($site);
+                    $io->text(sprintf(' [!] %s (Bing): %d enregistrement(s) purge(s)', $site->getName(), $deleted));
+                }
             }
             $io->newLine();
         }
@@ -92,7 +98,7 @@ class ClientSeoAutoSyncCommand extends Command
             }
         }
 
-        // Bing API sync
+        // Bing API sync (l'API Bing renvoie toujours tout l'historique dispo ~6 mois)
         if (!$gscOnly) {
             $io->section('Bing Webmaster Tools - Sites clients');
             $bingResults = $this->bingImportService->importForAllSites();

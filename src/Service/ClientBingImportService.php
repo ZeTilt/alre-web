@@ -27,7 +27,23 @@ class ClientBingImportService
     ) {}
 
     /**
+     * Purge toutes les positions et totaux Bing d'un site client.
+     */
+    public function resetSite(ClientSite $site): int
+    {
+        $conn = $this->entityManager->getConnection();
+        $siteId = $site->getId();
+
+        $deleted = 0;
+        $deleted += (int) $conn->executeStatement('DELETE p FROM client_bing_position p INNER JOIN client_bing_keyword k ON p.client_bing_keyword_id = k.id WHERE k.client_site_id = ?', [$siteId]);
+        $deleted += (int) $conn->executeStatement('DELETE FROM client_bing_daily_total WHERE client_site_id = ?', [$siteId]);
+
+        return $deleted;
+    }
+
+    /**
      * Importe les données Bing pour un site client.
+     * Note: l'API Bing renvoie tout l'historique disponible (~6 mois), pas de filtre par date.
      *
      * @return array{keywords: int, positions: int, dailyTotals: int, message: string}
      */

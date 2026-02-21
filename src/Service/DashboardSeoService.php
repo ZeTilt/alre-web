@@ -240,11 +240,18 @@ class DashboardSeoService
         $page1Pct = $pertinentTotal > 0 ? round(($page1Count / $pertinentTotal) * 100, 1) : 0;
 
         // --- Top 3 wins (biggest position improvements this month) ---
+        // Build keyword name lookup
+        $keywordNames = [];
+        foreach ($activeKeywords as $kw) {
+            $keywordNames[$kw->getId()] = $kw->getKeyword();
+        }
+
         $wins = [];
         foreach ($positionComparisons as $keywordId => $comp) {
             if ($comp['status'] === 'improved' && $comp['variation'] > 0 && $comp['currentPosition'] !== null) {
                 $wins[] = [
                     'keywordId' => $keywordId,
+                    'keyword' => $keywordNames[$keywordId] ?? 'Mot-cle',
                     'currentPosition' => $comp['currentPosition'],
                     'variation' => $comp['variation'],
                 ];

@@ -1,5 +1,6 @@
 {# SEO Recap Card - Screenshottable traffic summary #}
 {% set ts = trafficSummary %}
+{% set isShareMode = shareMode is defined and shareMode %}
 {% set hasData = ts.current.clicks > 0 or ts.current.impressions > 0 %}
 
 {% if hasData %}
@@ -118,7 +119,9 @@
         <div class="seo-recap-wins">
             {% for win in ts.top3Wins %}
             <div class="seo-recap-win-pill">
-                <span class="seo-recap-win-name">Mot-cle {{ loop.index }}</span>
+                <span class="seo-recap-win-name{% if isShareMode %} blurred{% endif %}">
+                    {{ isShareMode ? 'Mot-cle ' ~ loop.index : win.keyword }}
+                </span>
                 <span class="seo-recap-win-stats">
                     #{{ win.currentPosition|number_format(1) }}
                     <span class="seo-recap-win-variation">+{{ win.variation|number_format(1) }} places</span>
@@ -305,6 +308,10 @@
     font-weight: 600;
     font-size: 0.875rem;
     color: #065f46;
+}
+.seo-recap-win-name.blurred {
+    filter: blur(5px);
+    user-select: none;
 }
 .seo-recap-win-stats {
     font-weight: 700;

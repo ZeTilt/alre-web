@@ -169,6 +169,25 @@ class DashboardController extends AbstractDashboardController
         ));
     }
 
+    #[Route('/saeiblauhjc/seo/sync-history', name: 'admin_seo_sync_history')]
+    public function seoSyncHistory(\App\Repository\SeoSyncLogRepository $repository): Response
+    {
+        $logs = $repository->findLatest(50);
+
+        return $this->render('admin/seo_sync_log/index.html.twig', [
+            'logs' => $logs,
+        ]);
+    }
+
+    #[Route('/saeiblauhjc/seo/share-card', name: 'admin_seo_share_card')]
+    public function seoShareCard(): Response
+    {
+        $data = $this->dashboardSeoService->getFullData();
+        $data['shareMode'] = true;
+
+        return $this->render('admin/seo_sync_log/share_card.html.twig', $data);
+    }
+
     #[Route('/saeiblauhjc/seo-keyword/{id}/mark-optimized', name: 'admin_seo_keyword_mark_optimized', methods: ['POST'])]
     public function markKeywordOptimized(SeoKeyword $keyword, Request $request): JsonResponse
     {

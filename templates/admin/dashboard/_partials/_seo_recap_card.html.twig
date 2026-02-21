@@ -1,0 +1,359 @@
+{# SEO Recap Card - Screenshottable traffic summary #}
+{% set ts = trafficSummary %}
+{% set hasData = ts.current.clicks > 0 or ts.current.impressions > 0 %}
+
+{% if hasData %}
+<div class="seo-recap-card" id="seo-recap-card">
+    {# Gradient Header #}
+    <div class="seo-recap-header">
+        <div>
+            <div class="seo-recap-header-title">
+                <i class="fas fa-chart-line"></i> Rapport SEO
+            </div>
+            <div class="seo-recap-header-sub">Performance mensuelle</div>
+        </div>
+        <div class="seo-recap-header-date">
+            {{ "now"|date("F Y")|capitalize }}
+        </div>
+    </div>
+
+    <div class="seo-recap-body">
+        {# Section: Trafic organique #}
+        <div class="seo-recap-section-title">
+            <i class="fas fa-chart-bar"></i> TRAFIC ORGANIQUE &mdash; 30 JOURS
+        </div>
+
+        <div class="seo-recap-metrics">
+            {# Clics #}
+            <div class="seo-recap-metric-tile">
+                <div class="seo-recap-metric-value">{{ ts.current.clicks|number_format(0, '', ' ') }}</div>
+                <div class="seo-recap-metric-label">clics</div>
+                <div class="seo-recap-badge {{ ts.variation.clicks >= 0 ? 'up' : 'down' }}">
+                    {{ ts.variation.clicks >= 0 ? '+' : '' }}{{ ts.variation.clicks }}%
+                    <i class="fas fa-arrow-{{ ts.variation.clicks >= 0 ? 'up' : 'down' }}"></i>
+                </div>
+                <div class="seo-recap-sparkline-container">
+                    <canvas id="sparklineClicks" width="80" height="40"></canvas>
+                </div>
+                {% if ts.hasBingData %}
+                <div class="seo-recap-source-split">
+                    <span><i class="fab fa-google" style="color: #4285f4;"></i> {{ ts.google.current.clicks|number_format(0, '', ' ') }}</span>
+                    <span><i class="fab fa-microsoft" style="color: #0078d4;"></i> {{ ts.bing.current.clicks|number_format(0, '', ' ') }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            {# Impressions #}
+            <div class="seo-recap-metric-tile">
+                <div class="seo-recap-metric-value">{{ ts.current.impressions|number_format(0, '', ' ') }}</div>
+                <div class="seo-recap-metric-label">impressions</div>
+                <div class="seo-recap-badge {{ ts.variation.impressions >= 0 ? 'up' : 'down' }}">
+                    {{ ts.variation.impressions >= 0 ? '+' : '' }}{{ ts.variation.impressions }}%
+                    <i class="fas fa-arrow-{{ ts.variation.impressions >= 0 ? 'up' : 'down' }}"></i>
+                </div>
+                <div class="seo-recap-sparkline-container">
+                    <canvas id="sparklineImpressions" width="80" height="40"></canvas>
+                </div>
+                {% if ts.hasBingData %}
+                <div class="seo-recap-source-split">
+                    <span><i class="fab fa-google" style="color: #4285f4;"></i> {{ ts.google.current.impressions|number_format(0, '', ' ') }}</span>
+                    <span><i class="fab fa-microsoft" style="color: #0078d4;"></i> {{ ts.bing.current.impressions|number_format(0, '', ' ') }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            {# CTR #}
+            <div class="seo-recap-metric-tile">
+                <div class="seo-recap-metric-value">{{ ts.current.ctr }}%</div>
+                <div class="seo-recap-metric-label">CTR</div>
+                <div class="seo-recap-badge {{ ts.variation.ctr >= 0 ? 'up' : 'down' }}">
+                    {{ ts.variation.ctr >= 0 ? '+' : '' }}{{ ts.variation.ctr }}pt
+                    <i class="fas fa-arrow-{{ ts.variation.ctr >= 0 ? 'up' : 'down' }}"></i>
+                </div>
+            </div>
+
+            {# Position moyenne #}
+            <div class="seo-recap-metric-tile">
+                <div class="seo-recap-metric-value">{{ ts.current.position > 0 ? ts.current.position|number_format(1) : 'N/A' }}</div>
+                <div class="seo-recap-metric-label">pos. moy.</div>
+                {# For position, positive variation = improvement (position went down) #}
+                <div class="seo-recap-badge {{ ts.variation.position >= 0 ? 'up' : 'down' }}">
+                    {{ ts.variation.position >= 0 ? '+' : '' }}{{ ts.variation.position }}
+                    <i class="fas fa-arrow-{{ ts.variation.position >= 0 ? 'up' : 'down' }}"></i>
+                </div>
+            </div>
+        </div>
+
+        {# Section: Mots-cles pertinents #}
+        <div class="seo-recap-section-title" style="margin-top: 1.5rem;">
+            <i class="fas fa-star" style="color: #f59e0b;"></i> MOTS-CLES PERTINENTS (4+)
+        </div>
+
+        <div class="seo-recap-keywords-stats">
+            <div class="seo-recap-kw-counts">
+                <span class="seo-recap-kw-total">{{ ts.pertinent.total }} pertinents</span>
+                <span class="seo-recap-kw-detail">5&#9733;: {{ ts.pertinent['5stars'] }} &middot; 4&#9733;: {{ ts.pertinent['4stars'] }}</span>
+                {% if ts.pertinent.newThisMonth > 0 %}
+                    <span class="seo-recap-kw-new">+{{ ts.pertinent.newThisMonth }} ce mois</span>
+                {% endif %}
+            </div>
+
+            {# Progress bar: page 1 percentage #}
+            <div class="seo-recap-progress-container">
+                <div class="seo-recap-progress-bar">
+                    <div class="seo-recap-progress-fill" style="width: {{ ts.page1Pct }}%;"></div>
+                </div>
+                <div class="seo-recap-progress-label">
+                    {{ ts.page1Count }}/{{ ts.pertinent.total }} en page 1 ({{ ts.page1Pct }}%)
+                </div>
+            </div>
+        </div>
+
+        {# Section: Top 3 Wins #}
+        {% if ts.top3Wins|length > 0 %}
+        <div class="seo-recap-section-title" style="margin-top: 1.5rem;">
+            <i class="fas fa-trophy" style="color: #10b981;"></i> TOP {{ ts.top3Wins|length }} WINS
+        </div>
+
+        <div class="seo-recap-wins">
+            {% for win in ts.top3Wins %}
+            <div class="seo-recap-win-pill">
+                <span class="seo-recap-win-name">Mot-cle {{ loop.index }}</span>
+                <span class="seo-recap-win-stats">
+                    #{{ win.currentPosition|number_format(1) }}
+                    <span class="seo-recap-win-variation">+{{ win.variation|number_format(1) }} places</span>
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {# Section: Potentiel inexploite #}
+        {% if ts.potentialClicks > 0 %}
+        <div class="seo-recap-potential">
+            <div class="seo-recap-potential-icon"><i class="fas fa-bolt"></i></div>
+            <div class="seo-recap-potential-content">
+                <div class="seo-recap-potential-title">POTENTIEL INEXPLOITE</div>
+                <div class="seo-recap-potential-value">+{{ ts.potentialClicks|number_format(0, '', ' ') }} clics/mois</div>
+                <div class="seo-recap-potential-desc">si vos keywords page 2 passent top 10</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.seo-recap-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+    margin-bottom: 1.5rem;
+    max-width: 900px;
+}
+.seo-recap-header {
+    background: linear-gradient(135deg, #3A4556, #27A3B4);
+    color: #fff;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.seo-recap-header-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+.seo-recap-header-sub {
+    font-size: 0.8rem;
+    opacity: 0.85;
+    margin-top: 0.15rem;
+}
+.seo-recap-header-date {
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0.9;
+    text-align: right;
+}
+.seo-recap-body {
+    padding: 1.5rem;
+}
+.seo-recap-section-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #374151;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+}
+.seo-recap-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+.seo-recap-metric-tile {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid #e5e7eb;
+}
+.seo-recap-metric-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #111827;
+    line-height: 1.2;
+}
+.seo-recap-metric-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.15rem;
+    margin-bottom: 0.5rem;
+}
+.seo-recap-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.seo-recap-badge.up {
+    background: #d1fae5;
+    color: #065f46;
+}
+.seo-recap-badge.down {
+    background: #fee2e2;
+    color: #991b1b;
+}
+.seo-recap-sparkline-container {
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: center;
+}
+.seo-recap-source-split {
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+    color: #9ca3af;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+}
+.seo-recap-keywords-stats {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    border: 1px solid #e5e7eb;
+}
+.seo-recap-kw-counts {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+.seo-recap-kw-total {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #111827;
+}
+.seo-recap-kw-detail {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+.seo-recap-kw-new {
+    background: #dbeafe;
+    color: #1d4ed8;
+    padding: 0.15rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.seo-recap-progress-container {
+    margin-top: 0.25rem;
+}
+.seo-recap-progress-bar {
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 9999px;
+    overflow: hidden;
+}
+.seo-recap-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    border-radius: 9999px;
+    transition: width 0.3s ease;
+}
+.seo-recap-progress-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.35rem;
+}
+.seo-recap-wins {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.seo-recap-win-pill {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    border-radius: 10px;
+    padding: 0.65rem 1rem;
+    border: 1px solid #6ee7b7;
+}
+.seo-recap-win-name {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #065f46;
+}
+.seo-recap-win-stats {
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: #065f46;
+}
+.seo-recap-win-variation {
+    background: #065f46;
+    color: #fff;
+    padding: 0.15rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    margin-left: 0.5rem;
+}
+.seo-recap-potential {
+    margin-top: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    border-radius: 0 12px 12px 0;
+    padding: 1rem 1.25rem;
+}
+.seo-recap-potential-icon {
+    font-size: 1.5rem;
+    color: #f59e0b;
+    flex-shrink: 0;
+}
+.seo-recap-potential-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #92400e;
+    letter-spacing: 0.05em;
+}
+.seo-recap-potential-value {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #92400e;
+}
+.seo-recap-potential-desc {
+    font-size: 0.8rem;
+    color: #b45309;
+}
+
+@media (max-width: 640px) {
+    .seo-recap-metrics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+{% endif %}

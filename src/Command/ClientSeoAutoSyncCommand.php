@@ -2,9 +2,11 @@
 
 namespace App\Command;
 
+use App\Entity\SeoSyncLog;
 use App\Repository\ClientSiteRepository;
 use App\Service\ClientBingImportService;
 use App\Service\ClientGscImportService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -22,6 +24,7 @@ class ClientSeoAutoSyncCommand extends Command
         private ClientGscImportService $gscImportService,
         private ClientBingImportService $bingImportService,
         private ClientSiteRepository $clientSiteRepository,
+        private EntityManagerInterface $entityManager,
     ) {
         parent::__construct();
     }
@@ -55,6 +58,10 @@ class ClientSeoAutoSyncCommand extends Command
         $io->title('Synchronisation automatique SEO clients');
         $io->text(sprintf('[%s] Demarrage%s...', date('Y-m-d H:i:s'), $full ? ' (import complet: GSC 16 mois, Bing ~6 mois)' : ''));
 
+        $log = new SeoSyncLog('client-seo-auto-sync');
+        $this->entityManager->persist($log);
+        $this->entityManager->flush();
+
         // Reset si demande
         if ($reset) {
             $sites = $siteId
@@ -75,48 +82,86 @@ class ClientSeoAutoSyncCommand extends Command
         }
 
         $hasErrors = false;
+        $details = [
+            'sites_processed' => 0,
+            'sites_errors' => 0,
+            'gsc' => ['keywords' => 0, 'positions' => 0, 'dailyTotals' => 0],
+            'bing' => ['keywords' => 0, 'positions' => 0, 'dailyTotals' => 0],
+        ];
+        $errorMessages = [];
 
-        // GSC API sync
-        if (!$bingOnly) {
-            $io->section('Google Search Console - Sites clients');
-            $gscResults = $siteId
-                ? [['site' => ($s = $this->clientSiteRepository->find($siteId)) ? $s->getName() : '?', 'result' => $s ? $this->gscImportService->importForSite($s, $full) : ['message' => 'Site introuvable']]]
-                : $this->gscImportService->importForAllSites($full);
+        try {
+            // GSC API sync
+            if (!$bingOnly) {
+                $io->section('Google Search Console - Sites clients');
+                $gscResults = $siteId
+                    ? [['site' => ($s = $this->clientSiteRepository->find($siteId)) ? $s->getName() : '?', 'result' => $s ? $this->gscImportService->importForSite($s, $full) : ['message' => 'Site introuvable']]]
+                    : $this->gscImportService->importForAllSites($full);
 
-            if (empty($gscResults)) {
-                $io->note('Aucun site client actif.');
-            } else {
-                foreach ($gscResults as $entry) {
-                    $result = $entry['result'];
-                    $icon = str_contains($result['message'], 'Erreur') ? '!' : 'v';
-                    $io->text(sprintf(' [%s] %s: %s', $icon, $entry['site'], $result['message']));
+                if (empty($gscResults)) {
+                    $io->note('Aucun site client actif.');
+                } else {
+                    foreach ($gscResults as $entry) {
+                        $result = $entry['result'];
+                        $icon = str_contains($result['message'], 'Erreur') ? '!' : 'v';
+                        $io->text(sprintf(' [%s] %s: %s', $icon, $entry['site'], $result['message']));
 
-                    if (str_contains($result['message'], 'Erreur')) {
-                        $hasErrors = true;
+                        $details['sites_processed']++;
+                        $details['gsc']['keywords'] += $result['keywords'] ?? 0;
+                        $details['gsc']['positions'] += $result['positions'] ?? 0;
+                        $details['gsc']['dailyTotals'] += $result['dailyTotals'] ?? 0;
+
+                        if (str_contains($result['message'], 'Erreur')) {
+                            $hasErrors = true;
+                            $details['sites_errors']++;
+                            $errorMessages[] = $entry['site'] . ' (GSC): ' . $result['message'];
+                        }
                     }
                 }
             }
-        }
 
-        // Bing API sync (l'API Bing renvoie toujours tout l'historique dispo ~6 mois)
-        if (!$gscOnly) {
-            $io->section('Bing Webmaster Tools - Sites clients');
-            $bingResults = $this->bingImportService->importForAllSites();
+            // Bing API sync (l'API Bing renvoie toujours tout l'historique dispo ~6 mois)
+            if (!$gscOnly) {
+                $io->section('Bing Webmaster Tools - Sites clients');
+                $bingResults = $this->bingImportService->importForAllSites();
 
-            if (empty($bingResults)) {
-                $io->note('Aucun site client avec Bing active.');
-            } else {
-                foreach ($bingResults as $entry) {
-                    $result = $entry['result'];
-                    $icon = str_contains($result['message'], 'Erreur') ? '!' : 'v';
-                    $io->text(sprintf(' [%s] %s: %s', $icon, $entry['site'], $result['message']));
+                if (empty($bingResults)) {
+                    $io->note('Aucun site client avec Bing active.');
+                } else {
+                    foreach ($bingResults as $entry) {
+                        $result = $entry['result'];
+                        $icon = str_contains($result['message'], 'Erreur') ? '!' : 'v';
+                        $io->text(sprintf(' [%s] %s: %s', $icon, $entry['site'], $result['message']));
 
-                    if (str_contains($result['message'], 'Erreur')) {
-                        $hasErrors = true;
+                        if (!$bingOnly) {
+                            // Already counted via GSC loop
+                        } else {
+                            $details['sites_processed']++;
+                        }
+                        $details['bing']['keywords'] += $result['keywords'] ?? 0;
+                        $details['bing']['positions'] += $result['positions'] ?? 0;
+                        $details['bing']['dailyTotals'] += $result['dailyTotals'] ?? 0;
+
+                        if (str_contains($result['message'], 'Erreur')) {
+                            $hasErrors = true;
+                            if (!str_contains(implode('', $errorMessages), $entry['site'])) {
+                                $details['sites_errors']++;
+                            }
+                            $errorMessages[] = $entry['site'] . ' (Bing): ' . $result['message'];
+                        }
                     }
                 }
             }
+
+            $status = $hasErrors ? SeoSyncLog::STATUS_PARTIAL : SeoSyncLog::STATUS_SUCCESS;
+            $log->finish($details, $status, $hasErrors ? implode(' | ', $errorMessages) : null);
+        } catch (\Throwable $e) {
+            $log->finish($details, SeoSyncLog::STATUS_ERROR, $e->getMessage());
+            $this->entityManager->flush();
+            throw $e;
         }
+
+        $this->entityManager->flush();
 
         $io->newLine();
         $io->text(sprintf('[%s] Termine.', date('Y-m-d H:i:s')));

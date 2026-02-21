@@ -8,6 +8,7 @@ use App\Repository\GoogleReviewRepository;
 use App\Repository\SeoDailyTotalRepository;
 use App\Repository\SeoKeywordRepository;
 use App\Repository\SeoPositionRepository;
+use App\Repository\SeoSyncLogRepository;
 use App\Service\CityKeywordMatcher;
 use App\Service\GoogleOAuthService;
 use App\Service\GooglePlacesService;
@@ -26,6 +27,7 @@ class DashboardSeoService
         private ReviewSyncService $reviewSyncService,
         private SeoDataImportService $seoDataImportService,
         private CityKeywordMatcher $cityKeywordMatcher,
+        private SeoSyncLogRepository $seoSyncLogRepository,
     ) {
     }
 
@@ -65,6 +67,7 @@ class DashboardSeoService
 
             // SEO Sync
             'lastSeoSyncAt' => $this->seoDataImportService->getLastSyncDate(),
+            'lastSyncLog' => $this->seoSyncLogRepository->findLatestByCommand('seo-sync', 1)[0] ?? null,
 
             // SEO Position comparisons (monthly + momentum + stability)
             'seoPositionComparisons' => $seoPositionComparisons,
@@ -82,6 +85,9 @@ class DashboardSeoService
 
             // SEO Chart data (last 30 days)
             'seoChartData' => $this->prepareSeoChartData($dailyTotals, $bingDailyTotals),
+
+            // Traffic summary card (30j vs 30j previous, keywords stats, top wins, potential)
+            'trafficSummary' => $this->prepareTrafficSummary($activeKeywords, $seoPositionComparisons, $seoKeywordsRanked, $latestPositionData),
 
             // SEO Performance categories
             'seoPerformanceData' => $this->categorizeSeoKeywords($activeKeywords, $latestPositionData),
@@ -142,6 +148,152 @@ class DashboardSeoService
             'googlePlacesConfigured' => $this->googlePlacesService->isConfigured(),
             'reviewStats' => $this->googleReviewRepository->getStats(),
             'pendingReviews' => $this->googleReviewRepository->findPending(),
+        ];
+    }
+
+    /**
+     * Prepares the traffic summary card data: 30j vs 30j previous, keyword stats, top 3 wins, untapped potential.
+     *
+     * @param SeoKeyword[] $activeKeywords
+     * @param array<int, array{currentPosition: ?float, previousPosition: ?float, variation: ?float, status: string}> $positionComparisons
+     * @param array{top10: array, toImprove: array} $keywordsRanked
+     * @param array<int, array{position: float, clicks: int, impressions: int}> $latestPositionData
+     */
+    private function prepareTrafficSummary(array $activeKeywords, array $positionComparisons, array $keywordsRanked, array $latestPositionData): array
+    {
+        $now = new \DateTimeImmutable();
+        $currentStart = $now->modify('-30 days')->setTime(0, 0, 0);
+        $currentEnd = $now->setTime(23, 59, 59);
+        $previousStart = $now->modify('-60 days')->setTime(0, 0, 0);
+        $previousEnd = $now->modify('-31 days')->setTime(23, 59, 59);
+
+        // --- Traffic data (Google + Bing, current vs previous) ---
+        $googleCurrent = $this->seoDailyTotalRepository->getAggregatedTotals($currentStart, $currentEnd);
+        $googlePrevious = $this->seoDailyTotalRepository->getAggregatedTotals($previousStart, $previousEnd);
+        $bingCurrent = $this->seoDailyTotalRepository->getAggregatedTotals($currentStart, $currentEnd, SeoDailyTotal::SOURCE_BING);
+        $bingPrevious = $this->seoDailyTotalRepository->getAggregatedTotals($previousStart, $previousEnd, SeoDailyTotal::SOURCE_BING);
+
+        $hasBingData = $bingCurrent['clicks'] > 0 || $bingCurrent['impressions'] > 0;
+
+        $current = [
+            'clicks' => $googleCurrent['clicks'] + $bingCurrent['clicks'],
+            'impressions' => $googleCurrent['impressions'] + $bingCurrent['impressions'],
+            'position' => $googleCurrent['avgPosition'],
+        ];
+        $current['ctr'] = $current['impressions'] > 0 ? round(($current['clicks'] / $current['impressions']) * 100, 2) : 0;
+
+        $previous = [
+            'clicks' => $googlePrevious['clicks'] + $bingPrevious['clicks'],
+            'impressions' => $googlePrevious['impressions'] + $bingPrevious['impressions'],
+            'position' => $googlePrevious['avgPosition'],
+        ];
+        $previous['ctr'] = $previous['impressions'] > 0 ? round(($previous['clicks'] / $previous['impressions']) * 100, 2) : 0;
+
+        $variation = [
+            'clicks' => $previous['clicks'] > 0 ? round((($current['clicks'] - $previous['clicks']) / $previous['clicks']) * 100, 1) : ($current['clicks'] > 0 ? 100.0 : 0.0),
+            'impressions' => $previous['impressions'] > 0 ? round((($current['impressions'] - $previous['impressions']) / $previous['impressions']) * 100, 1) : ($current['impressions'] > 0 ? 100.0 : 0.0),
+            'ctr' => round($current['ctr'] - $previous['ctr'], 2),
+            'position' => $previous['position'] > 0 ? round($previous['position'] - $current['position'], 1) : 0.0,
+        ];
+
+        // --- Keyword relevance stats (4*+) ---
+        $relevanceCounts = $this->seoKeywordRepository->getRelevanceCounts();
+        $totalActive = 0;
+        $stars5 = 0;
+        $stars4 = 0;
+        $unscored = 0;
+        foreach ($relevanceCounts as $row) {
+            $score = (int) $row['relevanceScore'];
+            $cnt = (int) $row['cnt'];
+            $totalActive += $cnt;
+            if ($score === 5) {
+                $stars5 = $cnt;
+            } elseif ($score === 4) {
+                $stars4 = $cnt;
+            } elseif ($score === 0) {
+                $unscored = $cnt;
+            }
+        }
+        $pertinentTotal = $stars5 + $stars4;
+
+        // New keywords this month (first appeared in last 30 days, 4*+)
+        $firstAppearances = $this->seoKeywordRepository->getKeywordFirstAppearancesAll();
+        $thirtyDaysAgo = $currentStart->format('Y-m-d');
+        $newThisMonth = 0;
+        foreach ($firstAppearances as $row) {
+            if ($row['firstSeen'] >= $thirtyDaysAgo && (int) $row['relevanceScore'] >= 4) {
+                $newThisMonth++;
+            }
+        }
+
+        // Page 1 count among pertinent keywords (4*+)
+        $page1Count = 0;
+        foreach ($activeKeywords as $keyword) {
+            if ($keyword->getRelevanceScore() < 4) {
+                continue;
+            }
+            $latestData = $latestPositionData[$keyword->getId()] ?? null;
+            if ($latestData && $latestData['position'] <= 10) {
+                $page1Count++;
+            }
+        }
+        $page1Pct = $pertinentTotal > 0 ? round(($page1Count / $pertinentTotal) * 100, 1) : 0;
+
+        // --- Top 3 wins (biggest position improvements this month) ---
+        $wins = [];
+        foreach ($positionComparisons as $keywordId => $comp) {
+            if ($comp['status'] === 'improved' && $comp['variation'] > 0 && $comp['currentPosition'] !== null) {
+                $wins[] = [
+                    'keywordId' => $keywordId,
+                    'currentPosition' => $comp['currentPosition'],
+                    'variation' => $comp['variation'],
+                ];
+            }
+        }
+        usort($wins, fn($a, $b) => $b['variation'] <=> $a['variation']);
+        $top3Wins = array_slice($wins, 0, 3);
+
+        // --- Untapped potential (keywords pos 11-20 with significant impressions) ---
+        $potentialClicks = 0;
+        foreach ($keywordsRanked['toImprove'] as $item) {
+            $keyword = $item['keyword'];
+            $latestData = $latestPositionData[$keyword->getId()] ?? null;
+            if (!$latestData) {
+                continue;
+            }
+            $pos = $latestData['position'];
+            $impressions = $latestData['impressions'];
+            if ($pos > 10 && $pos <= 20 && $impressions > 50) {
+                // Estimate: if moved to top 10, gain ~5% CTR
+                $potentialClicks += (int) round($impressions * 0.05);
+            }
+        }
+
+        return [
+            'current' => $current,
+            'previous' => $previous,
+            'variation' => $variation,
+            'google' => [
+                'current' => $googleCurrent,
+                'previous' => $googlePrevious,
+            ],
+            'bing' => [
+                'current' => $bingCurrent,
+                'previous' => $bingPrevious,
+            ],
+            'hasBingData' => $hasBingData,
+            'pertinent' => [
+                'total' => $pertinentTotal,
+                '5stars' => $stars5,
+                '4stars' => $stars4,
+                'newThisMonth' => $newThisMonth,
+            ],
+            'page1Count' => $page1Count,
+            'page1Pct' => $page1Pct,
+            'totalActive' => $totalActive,
+            'unscored' => $unscored,
+            'top3Wins' => $top3Wins,
+            'potentialClicks' => $potentialClicks,
         ];
     }
 

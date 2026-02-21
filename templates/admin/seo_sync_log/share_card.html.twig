@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapport SEO - {{ "now"|date("F Y")|capitalize }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+        .share-card-wrapper {
+            width: 100%;
+            max-width: 900px;
+        }
+    </style>
+</head>
+<body>
+    <div class="share-card-wrapper">
+        {% include 'admin/dashboard/_partials/_seo_recap_card.html.twig' %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+    // Sparkline data from chart data
+    const seoChartClicks = {{ seoChartData.clicks|json_encode|raw }};
+    const seoChartImpressions = {{ seoChartData.impressions|json_encode|raw }};
+
+    function drawSparkline(canvasId, data, color) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas || !data || data.length === 0) return;
+        new Chart(canvas, {
+            type: 'line',
+            data: {
+                labels: data.map((_, i) => i),
+                datasets: [{
+                    data: data,
+                    borderColor: color,
+                    backgroundColor: color + '20',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 1.5,
+                    pointRadius: 0,
+                }]
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: { x: { display: false }, y: { display: false } },
+                elements: { line: { borderWidth: 1.5 } }
+            }
+        });
+    }
+
+    drawSparkline('sparklineClicks', seoChartClicks, '#3b82f6');
+    drawSparkline('sparklineImpressions', seoChartImpressions, '#06b6d4');
+    </script>
+</body>
+</html>

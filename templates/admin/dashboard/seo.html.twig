@@ -47,8 +47,20 @@
                     </div>
                 {% endif %}
                 {% if lastSeoSyncAt %}
-                    <div style="font-size: 0.75rem; margin-top: 0.25rem; color: #6b7280;">
+                    <div style="font-size: 0.75rem; margin-top: 0.25rem; color: #6b7280; display: flex; align-items: center; gap: 0.5rem;">
                         <i class="fas fa-sync-alt"></i> Derniere sync SEO: {{ lastSeoSyncAt|date('d/m/Y à H:i') }}
+                        {% if lastSyncLog %}
+                            {% if lastSyncLog.status == 'success' %}
+                                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981;" title="Succes"></span>
+                            {% elseif lastSyncLog.status == 'partial' %}
+                                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;" title="Partiel"></span>
+                            {% elseif lastSyncLog.status == 'error' %}
+                                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ef4444;" title="Erreur"></span>
+                            {% endif %}
+                        {% endif %}
+                        <a href="{{ path('admin_seo_sync_history') }}" style="color: #3b82f6; text-decoration: none; font-size: 0.7rem;">
+                            Historique
+                        </a>
                     </div>
                 {% endif %}
             </div>
@@ -618,6 +630,9 @@
         <i class="fas fa-cog"></i> Gerer les mots-cles
     </a>
     <div style="display: flex; gap: 0.5rem;">
+        <a href="{{ path('admin_seo_sync_history') }}" class="btn btn-sm btn-outline-secondary" title="Historique des synchronisations">
+            <i class="fas fa-history"></i> Syncs
+        </a>
         <a href="{{ path('admin_seo_report_list') }}" class="btn btn-sm btn-outline-info" title="Historique des comptes rendus">
             <i class="fas fa-list-alt"></i> CR
         </a>
@@ -640,47 +655,16 @@
 </div>
 {% endif %}
 
-<!-- Traffic Summary Card (Google + Bing aggregated) -->
-{% if seoChartData.hasBingData is defined and seoChartData.hasBingData %}
-{% set totalClicks = seoChartData.clicks|reduce((carry, v) => carry + v, 0) %}
-{% set totalImpressions = seoChartData.impressions|reduce((carry, v) => carry + v, 0) %}
-{% set gClicks = seoChartData.googleClicks|reduce((carry, v) => carry + v, 0) %}
-{% set gImpressions = seoChartData.googleImpressions|reduce((carry, v) => carry + v, 0) %}
-{% set bClicks = seoChartData.bingClicks|reduce((carry, v) => carry + v, 0) %}
-{% set bImpressions = seoChartData.bingImpressions|reduce((carry, v) => carry + v, 0) %}
-{% set totalCtr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100)|round(2) : 0 %}
-<div class="stat-card info" style="margin-bottom: 1.5rem;">
-    <div class="stat-header">
-        <span class="stat-label">Trafic organique (30 jours)</span>
-        <div class="stat-icon info">
-            <i class="fas fa-chart-bar"></i>
-        </div>
+<!-- SEO Recap Card (screenshottable) -->
+{% if trafficSummary is defined %}
+    {% include 'admin/dashboard/_partials/_seo_recap_card.html.twig' %}
+    {% if trafficSummary.current.clicks > 0 or trafficSummary.current.impressions > 0 %}
+    <div style="text-align: right; margin-top: -1rem; margin-bottom: 1.5rem;">
+        <a href="{{ path('admin_seo_share_card') }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Ouvrir la card en plein ecran pour screenshot">
+            <i class="fas fa-external-link-alt"></i> Share card
+        </a>
     </div>
-    <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
-        <div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #111827;">{{ totalClicks|number_format(0, '', ' ') }}</div>
-            <div style="font-size: 0.75rem; color: #6b7280;">Clics total</div>
-            <div style="font-size: 0.7rem; color: #9ca3af; margin-top: 2px;">
-                <i class="fab fa-google" style="color: #4285f4;"></i> {{ gClicks|number_format(0, '', ' ') }}
-                &middot;
-                <i class="fab fa-microsoft" style="color: #0078d4;"></i> {{ bClicks|number_format(0, '', ' ') }}
-            </div>
-        </div>
-        <div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #06b6d4;">{{ totalImpressions|number_format(0, '', ' ') }}</div>
-            <div style="font-size: 0.75rem; color: #6b7280;">Impressions total</div>
-            <div style="font-size: 0.7rem; color: #9ca3af; margin-top: 2px;">
-                <i class="fab fa-google" style="color: #4285f4;"></i> {{ gImpressions|number_format(0, '', ' ') }}
-                &middot;
-                <i class="fab fa-microsoft" style="color: #0078d4;"></i> {{ bImpressions|number_format(0, '', ' ') }}
-            </div>
-        </div>
-        <div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #8b5cf6;">{{ totalCtr }}%</div>
-            <div style="font-size: 0.75rem; color: #6b7280;">CTR global</div>
-        </div>
-    </div>
-</div>
+    {% endif %}
 {% endif %}
 
 <!-- SEO Evolution Chart (Clics/Impressions) -->
@@ -1087,6 +1071,35 @@ document.querySelectorAll('.seo-mark-done').forEach(function(btn) {
         });
     });
 });
+
+// Sparklines for recap card
+function drawSparkline(canvasId, data, color) {
+    var canvas = document.getElementById(canvasId);
+    if (!canvas || !data || data.length === 0) return;
+    new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: data.map(function(_, i) { return i; }),
+            datasets: [{
+                data: data,
+                borderColor: color,
+                backgroundColor: color + '20',
+                fill: true,
+                tension: 0.4,
+                borderWidth: 1.5,
+                pointRadius: 0,
+            }]
+        },
+        options: {
+            responsive: false,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            scales: { x: { display: false }, y: { display: false } },
+        }
+    });
+}
+drawSparkline('sparklineClicks', seoChartClicks, '#3b82f6');
+drawSparkline('sparklineImpressions', seoChartImpressions, '#06b6d4');
 </script>
 {% endif %}
 {% endblock %}

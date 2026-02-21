@@ -33,8 +33,11 @@ use App\Repository\ProspectFollowUpRepository;
 use App\Repository\ClientSeoImportRepository;
 use App\Repository\ClientSeoKeywordRepository;
 use App\Repository\ClientSiteRepository;
+use App\Repository\SeoDailyTotalRepository;
 use App\Repository\SeoKeywordRepository;
 use App\Repository\SeoPositionRepository;
+use App\Repository\ClientSeoDailyTotalRepository;
+use App\Repository\ClientSeoPositionRepository;
 use App\Repository\ClientSeoReportRepository;
 use App\Service\ClientSeoDashboardService;
 use App\Service\ClientSeoReportService;
@@ -51,9 +54,11 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Annotation\Route;
 
 class DashboardController extends AbstractDashboardController
@@ -743,79 +748,257 @@ class DashboardController extends AbstractDashboardController
     #[Route('/saeiblauhjc/seo/export-csv', name: 'admin_seo_export_csv')]
     public function exportSeoCsv(
         SeoKeywordRepository $seoKeywordRepository,
-        SeoPositionRepository $seoPositionRepository
+        SeoPositionRepository $seoPositionRepository,
+        SeoDailyTotalRepository $dailyTotalRepository
     ): Response {
-        $since = new \DateTimeImmutable('-30 days');
         $now = new \DateTimeImmutable();
-        $positions = $seoPositionRepository->findAllSince($since);
+        $since = new \DateTimeImmutable('-90 days');
+        $thirtyDaysAgo = new \DateTimeImmutable('-30 days');
+        $sixtyDaysAgo = new \DateTimeImmutable('-60 days');
 
-        // Récupérer les totaux journaliers (pour le graphique)
-        $dailyTotals = $seoPositionRepository->getDailyTotals($since, $now);
+        // Collect all data
+        $googleDailyTotals = $dailyTotalRepository->findByDateRange($since, $now, 'google');
+        $bingDailyTotals = $dailyTotalRepository->findByDateRange($since, $now, 'bing');
+        $activeKeywords = $seoKeywordRepository->findActiveKeywords();
+        $avgPosCurrent = $seoPositionRepository->getAveragePositionsForAllKeywords($thirtyDaysAgo, $now);
+        $avgPosPrevious = $seoPositionRepository->getAveragePositionsForAllKeywords($sixtyDaysAgo, $thirtyDaysAgo);
+        $rawPositions = $seoPositionRepository->getRawPositionsForActiveKeywords($since, $now);
+        $relevanceCounts = $seoKeywordRepository->getRelevanceCounts();
+        $firstAppearances = $seoKeywordRepository->getKeywordFirstAppearancesAll();
 
-        // Générer le contenu CSV
-        $output = fopen('php://temp', 'r+');
+        // Index first appearances by keyword ID
+        $firstSeenMap = [];
+        foreach ($firstAppearances as $fa) {
+            $firstSeenMap[$fa['id']] = $fa['firstSeen'];
+        }
 
-        // BOM UTF-8 pour Excel
-        fwrite($output, "\xEF\xBB\xBF");
+        // Index daily totals by date
+        $googleByDate = [];
+        foreach ($googleDailyTotals as $t) {
+            $googleByDate[$t->getDate()->format('Y-m-d')] = $t;
+        }
+        $bingByDate = [];
+        foreach ($bingDailyTotals as $t) {
+            $bingByDate[$t->getDate()->format('Y-m-d')] = $t;
+        }
 
-        // === SECTION 1: Totaux journaliers (ce qui alimente le graphique) ===
-        fputcsv($output, ['TOTAUX JOURNALIERS', '', ''], ';');
-        fputcsv($output, ['Date', 'Clics', 'Impressions'], ';');
-
-        // Générer toutes les dates des 30 derniers jours
+        // === 1. Totaux journaliers ===
+        $dailyRows = [];
         $currentDate = $since;
         while ($currentDate <= $now) {
             $dateKey = $currentDate->format('Y-m-d');
-            $dayData = $dailyTotals[$dateKey] ?? null;
-
-            fputcsv($output, [
+            $g = $googleByDate[$dateKey] ?? null;
+            $b = $bingByDate[$dateKey] ?? null;
+            $gClicks = $g ? $g->getClicks() : 0;
+            $gImpressions = $g ? $g->getImpressions() : 0;
+            $gPosition = $g ? round($g->getPosition(), 1) : '';
+            $bClicks = $b ? $b->getClicks() : 0;
+            $bImpressions = $b ? $b->getImpressions() : 0;
+            $bPosition = $b ? round($b->getPosition(), 1) : '';
+            $dailyRows[] = [
                 $dateKey,
-                $dayData ? $dayData['clicks'] : 0,
-                $dayData ? $dayData['impressions'] : 0,
-            ], ';');
-
+                $gClicks, $gImpressions, $gPosition,
+                $bClicks, $bImpressions, $bPosition,
+                $gClicks + $bClicks,
+                $gImpressions + $bImpressions,
+            ];
             $currentDate = $currentDate->modify('+1 day');
         }
 
-        fputcsv($output, ['', '', ''], ';'); // Ligne vide de séparation
-
-        // === SECTION 2: Détail par mot-clé ===
-        fputcsv($output, ['DETAIL PAR MOT-CLE', '', '', '', '', '', '', '', ''], ';');
-        fputcsv($output, [
-            'Date',
-            'Mot-clé',
-            'Position',
-            'Clics',
-            'Impressions',
-            'CTR',
-            'URL cible',
-            'Source',
-            'Pertinence',
-        ], ';');
-
-        foreach ($positions as $position) {
-            $keyword = $position->getKeyword();
-
-            fputcsv($output, [
-                $position->getDate()?->format('Y-m-d') ?? '',
-                $keyword?->getKeyword() ?? '',
-                round($position->getPosition(), 1),
-                $position->getClicks(),
-                $position->getImpressions(),
-                round($position->getCtr(), 2),
-                $keyword?->getTargetUrl() ?? '',
-                $keyword?->getSource() ?? '',
-                $keyword?->getRelevanceLevel() ?? '',
-            ], ';');
+        // === 2. Totaux hebdomadaires ===
+        $weeklyData = [];
+        foreach ($dailyRows as $row) {
+            $date = new \DateTimeImmutable($row[0]);
+            $weekKey = $date->format('o-W');
+            if (!isset($weeklyData[$weekKey])) {
+                $weeklyData[$weekKey] = ['clicks' => 0, 'impressions' => 0, 'positions' => [], 'dates' => []];
+            }
+            $weeklyData[$weekKey]['clicks'] += $row[7];
+            $weeklyData[$weekKey]['impressions'] += $row[8];
+            if ($row[3] !== '') {
+                $weeklyData[$weekKey]['positions'][] = (float) $row[3];
+            }
+            if ($row[6] !== '') {
+                $weeklyData[$weekKey]['positions'][] = (float) $row[6];
+            }
+            $weeklyData[$weekKey]['dates'][] = $row[0];
+        }
+        $weeklyRows = [];
+        foreach ($weeklyData as $weekKey => $w) {
+            $avgPos = !empty($w['positions']) ? round(array_sum($w['positions']) / count($w['positions']), 1) : '';
+            $ctr = $w['impressions'] > 0 ? round(($w['clicks'] / $w['impressions']) * 100, 2) : 0;
+            $weeklyRows[] = [
+                $weekKey,
+                min($w['dates']),
+                max($w['dates']),
+                $w['clicks'],
+                $w['impressions'],
+                $avgPos,
+                $ctr,
+            ];
         }
 
-        rewind($output);
-        $content = stream_get_contents($output);
-        fclose($output);
+        // === 3. Keywords résumé ===
+        $keywordMap = [];
+        foreach ($activeKeywords as $kw) {
+            $keywordMap[$kw->getId()] = $kw;
+        }
+        $keywordRows = [];
+        foreach ($activeKeywords as $kw) {
+            $id = $kw->getId();
+            $curr = $avgPosCurrent[$id] ?? null;
+            $prev = $avgPosPrevious[$id] ?? null;
+            $posCurr = $curr ? $curr['avgPosition'] : '';
+            $posPrev = $prev ? $prev['avgPosition'] : '';
+            $varPos = ($posCurr !== '' && $posPrev !== '') ? round($posPrev - $posCurr, 1) : '';
+            $clicksCurr = $curr ? $curr['totalClicks'] : 0;
+            $clicksPrev = $prev ? $prev['totalClicks'] : 0;
+            $impressionsCurr = $curr ? $curr['totalImpressions'] : 0;
+            $impressionsPrev = $prev ? $prev['totalImpressions'] : 0;
+            $varClicks = $clicksPrev > 0 ? round((($clicksCurr - $clicksPrev) / $clicksPrev) * 100, 1) : '';
+            $keywordRows[] = [
+                $kw->getKeyword(),
+                $kw->getTargetUrl() ?? '',
+                $kw->getSourceLabel(),
+                $kw->getRelevanceScore(),
+                $kw->getRelevanceLevel(),
+                $posCurr,
+                $posPrev,
+                $varPos,
+                $clicksCurr,
+                $impressionsCurr,
+                $clicksPrev,
+                $impressionsPrev,
+                $varClicks,
+                $firstSeenMap[$id] ?? '',
+                $kw->isActive() ? 'actif' : 'inactif',
+            ];
+        }
 
-        $response = new Response($content);
-        $response->headers->set('Content-Type', 'text/csv; charset=UTF-8');
-        $response->headers->set('Content-Disposition', 'attachment; filename="seo_export_' . date('Y-m-d') . '.csv"');
+        // === 4. Keywords historique journalier ===
+        $histRows = [];
+        foreach ($rawPositions as $keywordId => $dates) {
+            $kw = $keywordMap[$keywordId] ?? null;
+            $kwName = $kw ? $kw->getKeyword() : "keyword_$keywordId";
+            foreach ($dates as $dateKey => $d) {
+                $ctr = $d['impressions'] > 0 ? round(($d['clicks'] / $d['impressions']) * 100, 2) : 0;
+                $histRows[] = [
+                    $dateKey,
+                    $kwName,
+                    round($d['position'], 1),
+                    $d['clicks'],
+                    $d['impressions'],
+                    $ctr,
+                ];
+            }
+        }
+        // Sort by date then keyword
+        usort($histRows, fn($a, $b) => $a[0] <=> $b[0] ?: $a[1] <=> $b[1]);
+
+        // === 5. Top movers ===
+        $movers = [];
+        foreach ($keywordRows as $row) {
+            if ($row[5] !== '' && $row[6] !== '') {
+                $movers[] = [
+                    'keyword' => $row[0],
+                    'posCurr' => $row[5],
+                    'posPrev' => $row[6],
+                    'varPos' => $row[7],
+                    'clicksCurr' => $row[8],
+                    'clicksPrev' => $row[10],
+                ];
+            }
+        }
+        // Sort by position variation (biggest improvement = highest positive value first)
+        usort($movers, fn($a, $b) => $b['varPos'] <=> $a['varPos']);
+        $topImproved = array_slice($movers, 0, 25);
+        $topDeclined = array_slice(array_reverse($movers), 0, 25);
+        $topMoversRows = [];
+        foreach ($topImproved as $m) {
+            $topMoversRows[] = [$m['keyword'], $m['posCurr'], $m['posPrev'], $m['varPos'], $m['clicksCurr'], $m['clicksPrev'], 'improved'];
+        }
+        foreach ($topDeclined as $m) {
+            if ($m['varPos'] >= 0) {
+                continue; // skip if already in improved
+            }
+            $topMoversRows[] = [$m['keyword'], $m['posCurr'], $m['posPrev'], $m['varPos'], $m['clicksCurr'], $m['clicksPrev'], 'declined'];
+        }
+
+        // === 6. Meta ===
+        $relevanceMap = [];
+        foreach ($relevanceCounts as $rc) {
+            $relevanceMap[(int) $rc['relevanceScore']] = (int) $rc['cnt'];
+        }
+        $totalClicks30j = 0;
+        $totalImpressions30j = 0;
+        foreach ($avgPosCurrent as $d) {
+            $totalClicks30j += $d['totalClicks'];
+            $totalImpressions30j += $d['totalImpressions'];
+        }
+        $kwPage1 = 0;
+        foreach ($avgPosCurrent as $d) {
+            if ($d['avgPosition'] <= 10) {
+                $kwPage1++;
+            }
+        }
+        $totalActive = count($activeKeywords);
+        $pctPage1 = $totalActive > 0 ? round(($kwPage1 / $totalActive) * 100, 1) : 0;
+        $kw4plus = 0;
+        $kw5 = 0;
+        foreach ($relevanceMap as $score => $cnt) {
+            if ($score >= 4) {
+                $kw4plus += $cnt;
+            }
+            if ($score === 5) {
+                $kw5 += $cnt;
+            }
+        }
+        $metaRows = [
+            ['Date export', $now->format('Y-m-d H:i')],
+            ['Periode couverte', $since->format('Y-m-d') . ' a ' . $now->format('Y-m-d')],
+            ['Nombre keywords actifs', $totalActive],
+            ['Nombre keywords 4*+', $kw4plus],
+            ['Nombre keywords 5*', $kw5],
+            ['Total clics 30j', $totalClicks30j],
+            ['Total impressions 30j', $totalImpressions30j],
+            ['% keywords page 1', $pctPage1 . '%'],
+        ];
+
+        // Build ZIP
+        $tmpFile = tempnam(sys_get_temp_dir(), 'seo_');
+        $zip = new \ZipArchive();
+        $zip->open($tmpFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+
+        $zip->addFromString('1_totaux_journaliers.csv', $this->generateCsvString(
+            ['Date', 'Clics Google', 'Impressions Google', 'Position moy Google', 'Clics Bing', 'Impressions Bing', 'Position moy Bing', 'Total Clics', 'Total Impressions'],
+            $dailyRows
+        ));
+        $zip->addFromString('2_totaux_hebdomadaires.csv', $this->generateCsvString(
+            ['Semaine', 'Date debut', 'Date fin', 'Clics', 'Impressions', 'Position moy', 'CTR estime'],
+            $weeklyRows
+        ));
+        $zip->addFromString('3_keywords_resume.csv', $this->generateCsvString(
+            ['Mot-cle', 'URL cible', 'Source', 'Pertinence (0-5)', 'Niveau', 'Position moy (30j)', 'Position moy (30j prec.)', 'Variation position', 'Clics (30j)', 'Impressions (30j)', 'Clics (30j prec.)', 'Impressions (30j prec.)', 'Variation clics %', 'Premiere apparition', 'Statut'],
+            $keywordRows
+        ));
+        $zip->addFromString('4_keywords_historique_journalier.csv', $this->generateCsvString(
+            ['Date', 'Mot-cle', 'Position', 'Clics', 'Impressions', 'CTR'],
+            $histRows
+        ));
+        $zip->addFromString('5_top_movers.csv', $this->generateCsvString(
+            ['Mot-cle', 'Position actuelle', 'Position precedente', 'Variation', 'Clics actuels', 'Clics precedents', 'Direction'],
+            $topMoversRows
+        ));
+        $zip->addFromString('6_meta.csv', $this->generateCsvString(
+            ['Parametre', 'Valeur'],
+            $metaRows
+        ));
+
+        $zip->close();
+
+        $response = new BinaryFileResponse($tmpFile);
+        $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, 'seo_export_' . date('Y-m-d') . '.zip');
+        $response->deleteFileAfterSend(true);
 
         return $response;
     }
@@ -1001,53 +1184,258 @@ class DashboardController extends AbstractDashboardController
     }
 
     #[Route('/saeiblauhjc/client-seo/{id}/export-csv', name: 'admin_client_seo_export_csv')]
-    public function clientSeoExportCsv(ClientSite $site, ClientSeoDashboardService $clientSeoDashboardService): Response
-    {
-        $data = $clientSeoDashboardService->getFullData($site);
+    public function clientSeoExportCsv(
+        ClientSite $site,
+        ClientSeoKeywordRepository $clientKeywordRepository,
+        ClientSeoPositionRepository $clientPositionRepository,
+        ClientSeoDailyTotalRepository $clientDailyTotalRepository
+    ): Response {
+        $now = new \DateTimeImmutable();
+        $since = new \DateTimeImmutable('-90 days');
+        $thirtyDaysAgo = new \DateTimeImmutable('-30 days');
+        $sixtyDaysAgo = new \DateTimeImmutable('-60 days');
 
-        $output = fopen('php://temp', 'r+');
-        fwrite($output, "\xEF\xBB\xBF");
+        // Collect all data
+        $googleDailyTotals = $clientDailyTotalRepository->findByDateRangeAndSource($site, $since, $now, 'google');
+        $bingDailyTotals = $clientDailyTotalRepository->findByDateRangeAndSource($site, $since, $now, 'bing');
+        $activeKeywords = $clientKeywordRepository->findByClientSite($site);
+        $avgPosCurrent = $clientPositionRepository->getAveragePositionsForAllKeywords($site, $thirtyDaysAgo, $now);
+        $avgPosPrevious = $clientPositionRepository->getAveragePositionsForAllKeywords($site, $sixtyDaysAgo, $thirtyDaysAgo);
+        $rawPositions = $clientPositionRepository->getRawPositionsForActiveKeywords($site, $since, $now);
+        $relevanceCounts = $clientKeywordRepository->getRelevanceCounts($site);
+        $firstAppearances = $clientKeywordRepository->getKeywordFirstAppearancesAll($site);
 
-        fputcsv($output, ['TOTAUX JOURNALIERS - ' . $site->getName()], ';');
-        fputcsv($output, ['Date', 'Clics', 'Impressions', 'Position', 'CTR'], ';');
+        // Index first appearances by keyword ID
+        $firstSeenMap = [];
+        foreach ($firstAppearances as $fa) {
+            $firstSeenMap[$fa['id']] = $fa['firstSeen'];
+        }
 
-        if (!empty($data['chartData']['labels'])) {
-            for ($i = 0; $i < count($data['chartData']['labels']); $i++) {
-                fputcsv($output, [
-                    $data['chartData']['labels'][$i],
-                    $data['chartData']['clicks'][$i] ?? 0,
-                    $data['chartData']['impressions'][$i] ?? 0,
-                    $data['chartData']['position'][$i] ?? '',
-                    $data['chartData']['ctr'][$i] ?? '',
-                ], ';');
+        // Index daily totals by date
+        $googleByDate = [];
+        foreach ($googleDailyTotals as $t) {
+            $googleByDate[$t->getDate()->format('Y-m-d')] = $t;
+        }
+        $bingByDate = [];
+        foreach ($bingDailyTotals as $t) {
+            $bingByDate[$t->getDate()->format('Y-m-d')] = $t;
+        }
+
+        // === 1. Totaux journaliers ===
+        $dailyRows = [];
+        $currentDate = $since;
+        while ($currentDate <= $now) {
+            $dateKey = $currentDate->format('Y-m-d');
+            $g = $googleByDate[$dateKey] ?? null;
+            $b = $bingByDate[$dateKey] ?? null;
+            $gClicks = $g ? $g->getClicks() : 0;
+            $gImpressions = $g ? $g->getImpressions() : 0;
+            $gPosition = $g ? round($g->getPosition(), 1) : '';
+            $bClicks = $b ? $b->getClicks() : 0;
+            $bImpressions = $b ? $b->getImpressions() : 0;
+            $bPosition = $b ? round($b->getPosition(), 1) : '';
+            $dailyRows[] = [
+                $dateKey,
+                $gClicks, $gImpressions, $gPosition,
+                $bClicks, $bImpressions, $bPosition,
+                $gClicks + $bClicks,
+                $gImpressions + $bImpressions,
+            ];
+            $currentDate = $currentDate->modify('+1 day');
+        }
+
+        // === 2. Totaux hebdomadaires ===
+        $weeklyData = [];
+        foreach ($dailyRows as $row) {
+            $date = new \DateTimeImmutable($row[0]);
+            $weekKey = $date->format('o-W');
+            if (!isset($weeklyData[$weekKey])) {
+                $weeklyData[$weekKey] = ['clicks' => 0, 'impressions' => 0, 'positions' => [], 'dates' => []];
+            }
+            $weeklyData[$weekKey]['clicks'] += $row[7];
+            $weeklyData[$weekKey]['impressions'] += $row[8];
+            if ($row[3] !== '') {
+                $weeklyData[$weekKey]['positions'][] = (float) $row[3];
+            }
+            if ($row[6] !== '') {
+                $weeklyData[$weekKey]['positions'][] = (float) $row[6];
+            }
+            $weeklyData[$weekKey]['dates'][] = $row[0];
+        }
+        $weeklyRows = [];
+        foreach ($weeklyData as $weekKey => $w) {
+            $avgPos = !empty($w['positions']) ? round(array_sum($w['positions']) / count($w['positions']), 1) : '';
+            $ctr = $w['impressions'] > 0 ? round(($w['clicks'] / $w['impressions']) * 100, 2) : 0;
+            $weeklyRows[] = [
+                $weekKey,
+                min($w['dates']),
+                max($w['dates']),
+                $w['clicks'],
+                $w['impressions'],
+                $avgPos,
+                $ctr,
+            ];
+        }
+
+        // === 3. Keywords résumé ===
+        $keywordMap = [];
+        foreach ($activeKeywords as $kw) {
+            $keywordMap[$kw->getId()] = $kw;
+        }
+        $keywordRows = [];
+        foreach ($activeKeywords as $kw) {
+            $id = $kw->getId();
+            $curr = $avgPosCurrent[$id] ?? null;
+            $prev = $avgPosPrevious[$id] ?? null;
+            $posCurr = $curr ? $curr['avgPosition'] : '';
+            $posPrev = $prev ? $prev['avgPosition'] : '';
+            $varPos = ($posCurr !== '' && $posPrev !== '') ? round($posPrev - $posCurr, 1) : '';
+            $clicksCurr = $curr ? $curr['totalClicks'] : 0;
+            $clicksPrev = $prev ? $prev['totalClicks'] : 0;
+            $impressionsCurr = $curr ? $curr['totalImpressions'] : 0;
+            $impressionsPrev = $prev ? $prev['totalImpressions'] : 0;
+            $varClicks = $clicksPrev > 0 ? round((($clicksCurr - $clicksPrev) / $clicksPrev) * 100, 1) : '';
+            $keywordRows[] = [
+                $kw->getKeyword(),
+                $kw->getRelevanceScore(),
+                $kw->getRelevanceLevel(),
+                $posCurr,
+                $posPrev,
+                $varPos,
+                $clicksCurr,
+                $impressionsCurr,
+                $clicksPrev,
+                $impressionsPrev,
+                $varClicks,
+                $firstSeenMap[$id] ?? '',
+                $kw->isActive() ? 'actif' : 'inactif',
+            ];
+        }
+
+        // === 4. Keywords historique journalier ===
+        $histRows = [];
+        foreach ($rawPositions as $keywordId => $dates) {
+            $kw = $keywordMap[$keywordId] ?? null;
+            $kwName = $kw ? $kw->getKeyword() : "keyword_$keywordId";
+            foreach ($dates as $dateKey => $d) {
+                $ctr = $d['impressions'] > 0 ? round(($d['clicks'] / $d['impressions']) * 100, 2) : 0;
+                $histRows[] = [
+                    $dateKey,
+                    $kwName,
+                    round($d['position'], 1),
+                    $d['clicks'],
+                    $d['impressions'],
+                    $ctr,
+                ];
             }
         }
+        usort($histRows, fn($a, $b) => $a[0] <=> $b[0] ?: $a[1] <=> $b[1]);
 
-        fputcsv($output, [], ';');
-
-        fputcsv($output, ['TOP PAGES'], ';');
-        fputcsv($output, ['URL', 'Clics', 'Impressions', 'Position moy.', 'CTR moy.'], ';');
-        foreach ($data['topPages'] as $page) {
-            fputcsv($output, [
-                $page['url'],
-                $page['totalClicks'],
-                $page['totalImpressions'],
-                round($page['avgPosition'], 1),
-                round($page['avgCtr'], 2) . '%',
-            ], ';');
+        // === 5. Top movers ===
+        $movers = [];
+        foreach ($keywordRows as $row) {
+            if ($row[3] !== '' && $row[4] !== '') {
+                $movers[] = [
+                    'keyword' => $row[0],
+                    'posCurr' => $row[3],
+                    'posPrev' => $row[4],
+                    'varPos' => $row[5],
+                    'clicksCurr' => $row[6],
+                    'clicksPrev' => $row[8],
+                ];
+            }
+        }
+        usort($movers, fn($a, $b) => $b['varPos'] <=> $a['varPos']);
+        $topImproved = array_slice($movers, 0, 25);
+        $topDeclined = array_slice(array_reverse($movers), 0, 25);
+        $topMoversRows = [];
+        foreach ($topImproved as $m) {
+            $topMoversRows[] = [$m['keyword'], $m['posCurr'], $m['posPrev'], $m['varPos'], $m['clicksCurr'], $m['clicksPrev'], 'improved'];
+        }
+        foreach ($topDeclined as $m) {
+            if ($m['varPos'] >= 0) {
+                continue;
+            }
+            $topMoversRows[] = [$m['keyword'], $m['posCurr'], $m['posPrev'], $m['varPos'], $m['clicksCurr'], $m['clicksPrev'], 'declined'];
         }
 
-        rewind($output);
-        $content = stream_get_contents($output);
-        fclose($output);
+        // === 6. Meta ===
+        $relevanceMap = [];
+        foreach ($relevanceCounts as $rc) {
+            $relevanceMap[(int) $rc['relevanceScore']] = (int) $rc['cnt'];
+        }
+        $totalClicks30j = 0;
+        $totalImpressions30j = 0;
+        foreach ($avgPosCurrent as $d) {
+            $totalClicks30j += $d['totalClicks'];
+            $totalImpressions30j += $d['totalImpressions'];
+        }
+        $kwPage1 = 0;
+        foreach ($avgPosCurrent as $d) {
+            if ($d['avgPosition'] <= 10) {
+                $kwPage1++;
+            }
+        }
+        $totalActive = count($activeKeywords);
+        $pctPage1 = $totalActive > 0 ? round(($kwPage1 / $totalActive) * 100, 1) : 0;
+        $kw4plus = 0;
+        $kw5 = 0;
+        foreach ($relevanceMap as $score => $cnt) {
+            if ($score >= 4) {
+                $kw4plus += $cnt;
+            }
+            if ($score === 5) {
+                $kw5 += $cnt;
+            }
+        }
+        $metaRows = [
+            ['Site', $site->getName()],
+            ['Date export', $now->format('Y-m-d H:i')],
+            ['Periode couverte', $since->format('Y-m-d') . ' a ' . $now->format('Y-m-d')],
+            ['Nombre keywords actifs', $totalActive],
+            ['Nombre keywords 4*+', $kw4plus],
+            ['Nombre keywords 5*', $kw5],
+            ['Total clics 30j', $totalClicks30j],
+            ['Total impressions 30j', $totalImpressions30j],
+            ['% keywords page 1', $pctPage1 . '%'],
+        ];
 
-        $response = new Response($content);
-        $response->headers->set('Content-Type', 'text/csv; charset=UTF-8');
-        $response->headers->set('Content-Disposition', sprintf(
-            'attachment; filename="seo_client_%s_%s.csv"',
-            preg_replace('/[^a-z0-9]/', '_', strtolower($site->getName())),
-            date('Y-m-d')
+        // Build ZIP
+        $tmpFile = tempnam(sys_get_temp_dir(), 'seo_client_');
+        $zip = new \ZipArchive();
+        $zip->open($tmpFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+
+        $zip->addFromString('1_totaux_journaliers.csv', $this->generateCsvString(
+            ['Date', 'Clics Google', 'Impressions Google', 'Position moy Google', 'Clics Bing', 'Impressions Bing', 'Position moy Bing', 'Total Clics', 'Total Impressions'],
+            $dailyRows
         ));
+        $zip->addFromString('2_totaux_hebdomadaires.csv', $this->generateCsvString(
+            ['Semaine', 'Date debut', 'Date fin', 'Clics', 'Impressions', 'Position moy', 'CTR estime'],
+            $weeklyRows
+        ));
+        $zip->addFromString('3_keywords_resume.csv', $this->generateCsvString(
+            ['Mot-cle', 'Pertinence (0-5)', 'Niveau', 'Position moy (30j)', 'Position moy (30j prec.)', 'Variation position', 'Clics (30j)', 'Impressions (30j)', 'Clics (30j prec.)', 'Impressions (30j prec.)', 'Variation clics %', 'Premiere apparition', 'Statut'],
+            $keywordRows
+        ));
+        $zip->addFromString('4_keywords_historique_journalier.csv', $this->generateCsvString(
+            ['Date', 'Mot-cle', 'Position', 'Clics', 'Impressions', 'CTR'],
+            $histRows
+        ));
+        $zip->addFromString('5_top_movers.csv', $this->generateCsvString(
+            ['Mot-cle', 'Position actuelle', 'Position precedente', 'Variation', 'Clics actuels', 'Clics precedents', 'Direction'],
+            $topMoversRows
+        ));
+        $zip->addFromString('6_meta.csv', $this->generateCsvString(
+            ['Parametre', 'Valeur'],
+            $metaRows
+        ));
+
+        $zip->close();
+
+        $siteName = preg_replace('/[^a-z0-9]/', '_', strtolower($site->getName()));
+        $response = new BinaryFileResponse($tmpFile);
+        $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, "seo_client_{$siteName}_" . date('Y-m-d') . '.zip');
+        $response->deleteFileAfterSend(true);
 
         return $response;
     }
@@ -1292,4 +1680,18 @@ class DashboardController extends AbstractDashboardController
         }
     }
 
+    private function generateCsvString(array $headers, array $rows): string
+    {
+        $output = fopen('php://temp', 'r+');
+        fwrite($output, "\xEF\xBB\xBF"); // BOM UTF-8 for Excel
+        fputcsv($output, $headers, ';');
+        foreach ($rows as $row) {
+            fputcsv($output, $row, ';');
+        }
+        rewind($output);
+        $content = stream_get_contents($output);
+        fclose($output);
+
+        return $content;
+    }
 }

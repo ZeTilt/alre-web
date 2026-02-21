@@ -75,18 +75,23 @@ class ClientSeoDailyTotalRepository extends ServiceEntityRepository
     /**
      * @return array{clicks: int, impressions: int, avgPosition: float, days: int}
      */
-    public function getAggregatedTotals(ClientSite $clientSite, \DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
+    public function getAggregatedTotals(ClientSite $clientSite, \DateTimeImmutable $startDate, \DateTimeImmutable $endDate, ?string $source = null): array
     {
-        $result = $this->createQueryBuilder('t')
+        $qb = $this->createQueryBuilder('t')
             ->select('SUM(t.clicks) as clicks, SUM(t.impressions) as impressions, AVG(t.position) as avgPosition, COUNT(t.id) as days')
             ->where('t.clientSite = :site')
             ->andWhere('t.date >= :start')
             ->andWhere('t.date <= :end')
             ->setParameter('site', $clientSite)
             ->setParameter('start', $startDate, Types::DATE_IMMUTABLE)
-            ->setParameter('end', $endDate, Types::DATE_IMMUTABLE)
-            ->getQuery()
-            ->getSingleResult();
+            ->setParameter('end', $endDate, Types::DATE_IMMUTABLE);
+
+        if ($source !== null) {
+            $qb->andWhere('t.source = :source')
+               ->setParameter('source', $source);
+        }
+
+        $result = $qb->getQuery()->getSingleResult();
 
         return [
             'clicks' => (int) ($result['clicks'] ?? 0),

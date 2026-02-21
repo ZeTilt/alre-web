@@ -959,6 +959,16 @@ class DashboardController extends AbstractDashboardController
         ));
     }
 
+    #[Route('/saeiblauhjc/client-seo/{id}/share-card', name: 'admin_client_seo_share_card')]
+    public function clientSeoShareCard(ClientSite $site, ClientSeoDashboardService $clientSeoDashboardService): Response
+    {
+        $data = $clientSeoDashboardService->getFullData($site);
+        $data['shareMode'] = true;
+        $data['site'] = $site;
+
+        return $this->render('admin/client_seo/share_card.html.twig', $data);
+    }
+
     #[Route('/saeiblauhjc/client-seo/{id}/imports', name: 'admin_client_seo_import_history')]
     public function clientSeoImportHistory(ClientSite $site, ClientSeoImportRepository $importRepository): Response
     {

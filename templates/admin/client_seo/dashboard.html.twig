@@ -55,47 +55,16 @@
     </div>
 </div>
 
-<!-- Traffic Summary Card (Google + Bing aggregated) -->
-{% if chartData.hasBingData is defined and chartData.hasBingData %}
-{% set totalClicks = chartData.clicks|reduce((carry, v) => carry + v, 0) %}
-{% set totalImpressions = chartData.impressions|reduce((carry, v) => carry + v, 0) %}
-{% set gClicks = chartData.googleClicks|reduce((carry, v) => carry + v, 0) %}
-{% set gImpressions = chartData.googleImpressions|reduce((carry, v) => carry + v, 0) %}
-{% set bClicks = chartData.bingClicks|reduce((carry, v) => carry + v, 0) %}
-{% set bImpressions = chartData.bingImpressions|reduce((carry, v) => carry + v, 0) %}
-{% set totalCtr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100)|round(2) : 0 %}
-<div class="stat-card info" style="margin-bottom: 1.5rem;">
-    <div class="stat-header">
-        <span class="stat-label">Trafic organique (30 jours)</span>
-        <div class="stat-icon info">
-            <i class="fas fa-chart-bar"></i>
-        </div>
+<!-- SEO Recap Card (screenshottable) -->
+{% if trafficSummary is defined %}
+    {% include 'admin/dashboard/_partials/_seo_recap_card.html.twig' %}
+    {% if trafficSummary.current.clicks > 0 or trafficSummary.current.impressions > 0 %}
+    <div style="text-align: right; margin-top: -1rem; margin-bottom: 1.5rem;">
+        <a href="{{ path('admin_client_seo_share_card', {id: site.id}) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Ouvrir la card en plein ecran pour screenshot">
+            <i class="fas fa-external-link-alt"></i> Share card
+        </a>
     </div>
-    <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
-        <div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #111827;">{{ totalClicks|number_format(0, '', ' ') }}</div>
-            <div style="font-size: 0.75rem; color: #6b7280;">Clics total</div>
-            <div style="font-size: 0.7rem; color: #9ca3af; margin-top: 2px;">
-                <i class="fab fa-google" style="color: #4285f4;"></i> {{ gClicks|number_format(0, '', ' ') }}
-                &middot;
-                <i class="fab fa-microsoft" style="color: #0078d4;"></i> {{ bClicks|number_format(0, '', ' ') }}
-            </div>
-        </div>
-        <div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #06b6d4;">{{ totalImpressions|number_format(0, '', ' ') }}</div>
-            <div style="font-size: 0.75rem; color: #6b7280;">Impressions total</div>
-            <div style="font-size: 0.7rem; color: #9ca3af; margin-top: 2px;">
-                <i class="fab fa-google" style="color: #4285f4;"></i> {{ gImpressions|number_format(0, '', ' ') }}
-                &middot;
-                <i class="fab fa-microsoft" style="color: #0078d4;"></i> {{ bImpressions|number_format(0, '', ' ') }}
-            </div>
-        </div>
-        <div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #8b5cf6;">{{ totalCtr }}%</div>
-            <div style="font-size: 0.75rem; color: #6b7280;">CTR global</div>
-        </div>
-    </div>
-</div>
+    {% endif %}
 {% endif %}
 
 {% if keywordsRanked.top10|length > 0 or keywordsRanked.toImprove|length > 0 %}
@@ -815,6 +784,35 @@ document.querySelectorAll('.client-seo-mark-done').forEach(function(btn) {
         });
     });
 });
+
+// Sparklines for recap card
+function drawSparkline(canvasId, data, color) {
+    var canvas = document.getElementById(canvasId);
+    if (!canvas || !data || data.length === 0) return;
+    new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: data.map(function(_, i) { return i; }),
+            datasets: [{
+                data: data,
+                borderColor: color,
+                backgroundColor: color + '20',
+                fill: true,
+                tension: 0.4,
+                borderWidth: 1.5,
+                pointRadius: 0,
+            }]
+        },
+        options: {
+            responsive: false,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            scales: { x: { display: false }, y: { display: false } },
+        }
+    });
+}
+drawSparkline('sparklineClicks', seoChartClicks, '#3b82f6');
+drawSparkline('sparklineImpressions', seoChartImpressions, '#06b6d4');
 </script>
 {% endif %}
 {% endblock %}

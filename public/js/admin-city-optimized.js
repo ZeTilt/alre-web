@@ -108,12 +108,18 @@
         initDeptButtons();
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initAll);
-    } else {
-        initAll();
+    function startObserver() {
+        var observer = new MutationObserver(function () { initAll(); });
+        observer.observe(document.body, { childList: true, subtree: true });
     }
 
-    var observer = new MutationObserver(function () { initAll(); });
-    observer.observe(document.body, { childList: true, subtree: true });
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+            initAll();
+            startObserver();
+        });
+    } else {
+        initAll();
+        startObserver();
+    }
 })();

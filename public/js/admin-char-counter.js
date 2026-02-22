@@ -45,16 +45,21 @@
         });
     }
 
-    // Run on page load
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initCounters);
-    } else {
-        initCounters();
+    function startObserver() {
+        var observer = new MutationObserver(function () {
+            initCounters();
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
     }
 
-    // Re-run when EasyAdmin loads new content (AJAX navigation)
-    var observer = new MutationObserver(function () {
+    // Run on page load + re-run when EasyAdmin loads new content (AJAX navigation)
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+            initCounters();
+            startObserver();
+        });
+    } else {
         initCounters();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+        startObserver();
+    }
 })();

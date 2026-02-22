@@ -87,12 +87,18 @@
         }
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
+    function startObserver() {
+        var observer = new MutationObserver(function () { init(); });
+        observer.observe(document.body, { childList: true, subtree: true });
     }
 
-    var observer = new MutationObserver(function () { init(); });
-    observer.observe(document.body, { childList: true, subtree: true });
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+            init();
+            startObserver();
+        });
+    } else {
+        init();
+        startObserver();
+    }
 })();

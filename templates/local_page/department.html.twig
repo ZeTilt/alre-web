@@ -66,7 +66,7 @@
                 <h2 class="text-primary mb-3">{{ service.title }} {{ preposition }} {{ department.name }} ({{ department.number }})</h2>
 
                 {% if customDescLong %}
-                    {{ customDescLong|raw }}
+                    {{ customDescLong|nl2br }}
                 {% else %}
                     <p class="lead">
                         Vous êtes artisan, commerçant ou profession libérale {{ preposition }} {{ department.name }} ?

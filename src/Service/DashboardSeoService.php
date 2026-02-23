@@ -40,7 +40,7 @@ class DashboardSeoService
         $activeKeywords = $this->seoKeywordRepository->findActiveKeywords();
         $latestDates7 = $this->seoPositionRepository->findLatestDatesWithData(7);
         $dataStartDate = (new \DateTimeImmutable())->modify('-35 days')->setTime(0, 0, 0);
-        $dailyTotals = $this->seoDailyTotalRepository->findByDateRange($dataStartDate, new \DateTimeImmutable());
+        $dailyTotals = $this->seoDailyTotalRepository->findByDateRange($dataStartDate, new \DateTimeImmutable(), SeoDailyTotal::SOURCE_GOOGLE);
         $bingDailyTotals = $this->seoDailyTotalRepository->findByDateRange($dataStartDate, new \DateTimeImmutable(), SeoDailyTotal::SOURCE_BING);
 
         // Single query for all position data (replaces 7 individual queries)

@@ -377,15 +377,12 @@
                             </span>
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
-                            <button type="button"
-                                class="btn btn-sm btn-outline-warning seo-city-mark-done"
-                                data-city-id="{{ cityPage.city.id }}"
-                                data-url="{{ path('admin_city_mark_optimized', {id: cityPage.city.id}) }}"
-                                data-token="{{ csrf_token('city-optimize-' ~ cityPage.city.id) }}"
-                                title="Marquer {{ cityPage.city.name }} comme optimise"
+                            <a href="{{ ea_url().setController('App\\Controller\\Admin\\CityCrudController').setAction('edit').setEntityId(cityPage.city.id) }}"
+                                class="btn btn-sm btn-outline-warning"
+                                title="Editer {{ cityPage.city.name }}"
                                 style="font-size: 0.75rem; padding: 0.15rem 0.5rem;">
-                                <i class="fas fa-check"></i> Optimiser
-                            </button>
+                                <i class="fas fa-edit"></i> Optimiser
+                            </a>
                         </td>
                     </tr>
                 {% endfor %}
@@ -447,15 +444,12 @@
                             </span>
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
-                            <button type="button"
-                                class="btn btn-sm btn-outline-secondary seo-dept-mark-done"
-                                data-dept-id="{{ deptPage.department.id }}"
-                                data-url="{{ path('admin_department_mark_optimized', {id: deptPage.department.id}) }}"
-                                data-token="{{ csrf_token('dept-optimize-' ~ deptPage.department.id) }}"
-                                title="Marquer {{ deptPage.department.name }} comme optimise"
+                            <a href="{{ ea_url().setController('App\\Controller\\Admin\\DepartmentPageCrudController').setAction('edit').setEntityId(deptPage.department.id) }}"
+                                class="btn btn-sm btn-outline-secondary"
+                                title="Editer {{ deptPage.department.name }}"
                                 style="font-size: 0.75rem; padding: 0.15rem 0.5rem;">
-                                <i class="fas fa-check"></i> Optimiser
-                            </button>
+                                <i class="fas fa-edit"></i> Optimiser
+                            </a>
                         </td>
                     </tr>
                 {% endfor %}

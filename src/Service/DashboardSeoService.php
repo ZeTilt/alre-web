@@ -708,11 +708,11 @@ class DashboardSeoService
             ];
         }
 
-        // Find date range across both sources
-        $allDates = array_unique(array_merge(array_keys($googleData), array_keys($bingData)));
-        sort($allDates);
+        // Date range based on Google data (primary source)
+        $googleDates = array_keys($googleData);
+        sort($googleDates);
 
-        if (empty($allDates)) {
+        if (empty($googleDates)) {
             return [
                 'labels' => [],
                 'clicks' => [], 'impressions' => [], 'ctr' => [], 'position' => [],
@@ -725,8 +725,8 @@ class DashboardSeoService
             ];
         }
 
-        $firstDataDate = new \DateTimeImmutable(reset($allDates));
-        $lastDataDate = new \DateTimeImmutable(end($allDates));
+        $firstDataDate = new \DateTimeImmutable(reset($googleDates));
+        $lastDataDate = new \DateTimeImmutable(end($googleDates));
 
         $daysWithData = \count($googleTotals) + \count($bingTotals);
         $hasEnoughData = \count($googleTotals) >= 7 || \count($bingTotals) >= 7;

@@ -46,6 +46,7 @@
     }
 
     function startObserver() {
+        if (!document.body) return;
         var observer = new MutationObserver(function () {
             initCounters();
         });

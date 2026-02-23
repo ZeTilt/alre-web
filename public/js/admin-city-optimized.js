@@ -109,6 +109,7 @@
     }
 
     function startObserver() {
+        if (!document.body) return;
         var observer = new MutationObserver(function () { initAll(); });
         observer.observe(document.body, { childList: true, subtree: true });
     }

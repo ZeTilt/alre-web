@@ -457,7 +457,8 @@
                                     </thead>
                                     <tbody>
                                         {% set toImproveNames = mainPage.toImproveKeywords|map(kw => kw.keyword) %}
-                                        {% for kw in mainPage.allKeywords if kw.keyword not in toImproveNames %}
+                                        {% for kw in mainPage.allKeywords %}
+                                        {% if kw.keyword not in toImproveNames %}
                                         <tr style="border-bottom: 1px solid #ecfdf5;">
                                             <td style="padding: 0.25rem 0.5rem; color: #134e4a;">{{ kw.keyword }}</td>
                                             <td style="text-align: center; padding: 0.25rem 0.5rem;">
@@ -476,6 +477,7 @@
                                             <td style="text-align: center; padding: 0.25rem 0.5rem; font-weight: 600; color: #065f46;">{{ kw.clicks }}</td>
                                             <td style="text-align: center; padding: 0.25rem 0.5rem;">{{ kw.impressions }}</td>
                                         </tr>
+                                        {% endif %}
                                         {% endfor %}
                                     </tbody>
                                 </table>

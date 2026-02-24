@@ -115,48 +115,64 @@ class MainPageKeywordMatcher
 
             $pagePath = $page->getUrl();
 
-            // Count "to improve" keywords matching this page by targetUrl
-            $toImproveCount = 0;
+            // Collect "to improve" keywords matching this page
+            $toImproveKeywords = [];
             foreach ($ranked['toImprove'] as $item) {
                 $kwTargetUrl = $item['keyword']->getTargetUrl();
                 if ($kwTargetUrl !== null && $this->urlMatchesPage($kwTargetUrl, $pagePath)) {
-                    $toImproveCount++;
+                    $kw = $item['keyword'];
+                    $ld = $latestPositionData[$kw->getId()] ?? null;
+                    $toImproveKeywords[] = [
+                        'keyword' => $kw->getKeyword(),
+                        'position' => $ld ? $ld['position'] : null,
+                        'clicks' => $ld ? $ld['clicks'] : 0,
+                        'impressions' => $ld ? $ld['impressions'] : 0,
+                        'reason' => $item['reason'],
+                    ];
                 }
             }
 
-            if ($toImproveCount === 0) {
+            if (empty($toImproveKeywords)) {
                 continue;
             }
 
-            // Count total active keywords + average position
-            $totalCount = 0;
+            // Collect all active keywords for this page + average position
+            $allKeywords = [];
             $positionSum = 0;
             foreach ($activeKeywords as $keyword) {
                 $kwTargetUrl = $keyword->getTargetUrl();
                 if ($kwTargetUrl !== null && $this->urlMatchesPage($kwTargetUrl, $pagePath)) {
-                    $totalCount++;
-                    $latestData = $latestPositionData[$keyword->getId()] ?? null;
-                    if ($latestData) {
-                        $positionSum += $latestData['position'];
+                    $ld = $latestPositionData[$keyword->getId()] ?? null;
+                    $allKeywords[] = [
+                        'keyword' => $keyword->getKeyword(),
+                        'position' => $ld ? $ld['position'] : null,
+                        'clicks' => $ld ? $ld['clicks'] : 0,
+                        'impressions' => $ld ? $ld['impressions'] : 0,
+                    ];
+                    if ($ld) {
+                        $positionSum += $ld['position'];
                     }
                 }
             }
 
+            $totalCount = count($allKeywords);
             $avgPosition = $totalCount > 0 ? round($positionSum / $totalCount, 1) : 0;
 
             // Priority score: same formula as cities/departments
             $priorityScore = 0;
             if ($avgPosition > 0 && $totalCount > 0) {
                 $priorityScore = round(
-                    $toImproveCount * (1 + log($totalCount, 2)) * (1 / $avgPosition),
+                    count($toImproveKeywords) * (1 + log($totalCount, 2)) * (1 / $avgPosition),
                     2
                 );
             }
 
             $result[] = [
                 'page' => $page,
-                'toImproveCount' => $toImproveCount,
+                'toImproveCount' => count($toImproveKeywords),
+                'toImproveKeywords' => $toImproveKeywords,
                 'totalCount' => $totalCount,
+                'allKeywords' => $allKeywords,
                 'avgPosition' => $avgPosition,
                 'priorityScore' => $priorityScore,
             ];

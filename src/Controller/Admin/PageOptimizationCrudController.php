@@ -13,11 +13,13 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 class PageOptimizationCrudController extends AbstractCrudController
 {
     public function __construct(
         private MainPageKeywordMatcher $mainPageKeywordMatcher,
+        private CsrfTokenManagerInterface $csrfTokenManager,
     ) {
     }
 
@@ -81,6 +83,37 @@ class PageOptimizationCrudController extends AbstractCrudController
         yield DateTimeField::new('lastOptimizedAt', 'Dernière optimisation')
             ->setFormat('dd/MM/yyyy')
             ->hideOnIndex();
+
+        // Bouton "Optimisé" + lien vers la page (sur index seulement)
+        if ($pageName === Crud::PAGE_INDEX) {
+            $csrfManager = $this->csrfTokenManager;
+            yield TextField::new('optimizeAction', 'Actions')
+                ->formatValue(function ($value, PageOptimization $page) use ($csrfManager) {
+                    if (!$page->isActive()) {
+                        return '-';
+                    }
+                    $id = $page->getId();
+                    $token = $csrfManager->getToken('page-optimize-' . $id)->getValue();
+                    $base = 'https://alre-web.bzh';
+
+                    return sprintf(
+                        '<a href="%s%s" target="_blank" style="font-size:0.75rem; margin-right:0.5rem;">%s%s</a><br>'
+                        . '<button type="button" class="btn btn-sm btn-outline-info mt-1 page-mark-optimized" '
+                        . 'data-page-id="%d" data-token="%s" style="font-size:0.75rem">'
+                        . '<i class="fas fa-check"></i> Optimisé</button>'
+                        . '<span class="page-optimized-result ms-2" data-page-id="%d" style="font-size:0.75rem"></span>',
+                        $base,
+                        $page->getUrl(),
+                        $base,
+                        $page->getUrl(),
+                        $id,
+                        $token,
+                        $id
+                    );
+                })
+                ->setVirtual(true)
+                ->renderAsHtml();
+        }
 
         yield DateTimeField::new('createdAt', 'Créé le')
             ->setFormat('dd/MM/yyyy')

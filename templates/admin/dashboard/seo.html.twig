@@ -349,12 +349,14 @@
             </thead>
             <tbody>
                 {% for mainPage in seoMainPages %}
-                    <tr style="border-bottom: 1px solid #cffafe;" id="seo-mainpage-row-{{ mainPage.page.id }}">
+                    <tr style="border-bottom: 1px solid #cffafe; cursor: pointer;" id="seo-mainpage-row-{{ mainPage.page.id }}" class="seo-mainpage-toggle" data-page-id="{{ mainPage.page.id }}">
                         <td style="padding: 0.75rem 0.5rem; font-weight: 500;">
+                            <i class="fas fa-chevron-right seo-mainpage-chevron" data-page-id="{{ mainPage.page.id }}" style="color: #0891b2; font-size: 0.6rem; margin-right: 0.35rem; transition: transform 0.2s;"></i>
                             <i class="fas fa-file-alt" style="color: #0891b2; font-size: 0.75rem; margin-right: 0.25rem;"></i>
-                            <a href="https://alre-web.bzh{{ mainPage.page.url }}" target="_blank" style="color: #155e75; text-decoration: none;">
+                            <a href="https://alre-web.bzh{{ mainPage.page.url }}" target="_blank" style="color: #155e75; text-decoration: none;" onclick="event.stopPropagation();">
                                 {{ mainPage.page.label }}
                             </a>
+                            <span style="color: #9ca3af; font-size: 0.7rem; margin-left: 0.25rem;">{{ mainPage.page.url }}</span>
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
                             <span style="background: #cffafe; color: #155e75; padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 700;">
@@ -378,7 +380,7 @@
                                 {{ mainPage.priorityScore }}
                             </span>
                         </td>
-                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;" onclick="event.stopPropagation();">
                             <button type="button"
                                 class="btn btn-sm btn-outline-info seo-mainpage-mark-done"
                                 data-url="{{ path('admin_page_optimization_mark_optimized', {id: mainPage.page.id}) }}"
@@ -387,6 +389,98 @@
                                 style="font-size: 0.75rem; padding: 0.15rem 0.5rem;">
                                 <i class="fas fa-check"></i> Fait
                             </button>
+                        </td>
+                    </tr>
+                    {# Expandable detail: keywords to improve #}
+                    <tr class="seo-mainpage-detail" data-page-id="{{ mainPage.page.id }}" style="display: none;">
+                        <td colspan="6" style="padding: 0; background: #f0fdfa;">
+                            <div style="padding: 0.5rem 1rem 0.75rem 2rem;">
+                                {% if mainPage.toImproveKeywords|length > 0 %}
+                                <div style="margin-bottom: 0.5rem;">
+                                    <span style="font-weight: 600; color: #155e75; font-size: 0.8rem;">
+                                        <i class="fas fa-exclamation-circle" style="color: #0891b2;"></i> A travailler ({{ mainPage.toImproveKeywords|length }})
+                                    </span>
+                                </div>
+                                <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem;">
+                                    <thead>
+                                        <tr style="border-bottom: 1px solid #99f6e4;">
+                                            <th style="text-align: left; padding: 0.25rem 0.5rem; color: #0e7490; font-weight: 600;">Mot-cle</th>
+                                            <th style="text-align: center; padding: 0.25rem 0.5rem; color: #0e7490; font-weight: 600;">Position</th>
+                                            <th style="text-align: center; padding: 0.25rem 0.5rem; color: #0e7490; font-weight: 600;">Clics</th>
+                                            <th style="text-align: center; padding: 0.25rem 0.5rem; color: #0e7490; font-weight: 600;">Impressions</th>
+                                            <th style="text-align: left; padding: 0.25rem 0.5rem; color: #0e7490; font-weight: 600;">Raison</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for kw in mainPage.toImproveKeywords %}
+                                        <tr style="border-bottom: 1px solid #ecfdf5;">
+                                            <td style="padding: 0.25rem 0.5rem; color: #134e4a;">{{ kw.keyword }}</td>
+                                            <td style="text-align: center; padding: 0.25rem 0.5rem;">
+                                                {% if kw.position %}
+                                                    {% if kw.position <= 10 %}
+                                                        <span style="color: #065f46; font-weight: 600;">{{ kw.position }}</span>
+                                                    {% elseif kw.position <= 20 %}
+                                                        <span style="color: #92400e; font-weight: 600;">{{ kw.position }}</span>
+                                                    {% else %}
+                                                        <span style="color: #991b1b; font-weight: 600;">{{ kw.position }}</span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span style="color: #9ca3af;">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td style="text-align: center; padding: 0.25rem 0.5rem; font-weight: 600; color: #065f46;">{{ kw.clicks }}</td>
+                                            <td style="text-align: center; padding: 0.25rem 0.5rem;">{{ kw.impressions }}</td>
+                                            <td style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: #6b7280;">{{ kw.reason }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% endif %}
+
+                                {% if mainPage.allKeywords|length > mainPage.toImproveKeywords|length %}
+                                <div style="margin-top: 0.75rem; margin-bottom: 0.25rem;">
+                                    <span style="font-weight: 600; color: #155e75; font-size: 0.8rem;">
+                                        <i class="fas fa-check-circle" style="color: #10b981;"></i> Autres keywords ({{ mainPage.allKeywords|length - mainPage.toImproveKeywords|length }})
+                                    </span>
+                                    <button type="button" class="seo-mainpage-show-all" data-page-id="{{ mainPage.page.id }}" style="background: none; border: none; color: #0891b2; font-size: 0.75rem; cursor: pointer; margin-left: 0.5rem;">
+                                        <i class="fas fa-eye"></i> Afficher
+                                    </button>
+                                </div>
+                                <table class="seo-mainpage-all-kw" data-page-id="{{ mainPage.page.id }}" style="width: 100%; border-collapse: collapse; font-size: 0.8rem; display: none;">
+                                    <thead>
+                                        <tr style="border-bottom: 1px solid #d1fae5;">
+                                            <th style="text-align: left; padding: 0.25rem 0.5rem; color: #047857; font-weight: 600;">Mot-cle</th>
+                                            <th style="text-align: center; padding: 0.25rem 0.5rem; color: #047857; font-weight: 600;">Position</th>
+                                            <th style="text-align: center; padding: 0.25rem 0.5rem; color: #047857; font-weight: 600;">Clics</th>
+                                            <th style="text-align: center; padding: 0.25rem 0.5rem; color: #047857; font-weight: 600;">Impressions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% set toImproveNames = mainPage.toImproveKeywords|map(kw => kw.keyword) %}
+                                        {% for kw in mainPage.allKeywords if kw.keyword not in toImproveNames %}
+                                        <tr style="border-bottom: 1px solid #ecfdf5;">
+                                            <td style="padding: 0.25rem 0.5rem; color: #134e4a;">{{ kw.keyword }}</td>
+                                            <td style="text-align: center; padding: 0.25rem 0.5rem;">
+                                                {% if kw.position %}
+                                                    {% if kw.position <= 10 %}
+                                                        <span style="color: #065f46; font-weight: 600;">{{ kw.position }}</span>
+                                                    {% elseif kw.position <= 20 %}
+                                                        <span style="color: #92400e; font-weight: 600;">{{ kw.position }}</span>
+                                                    {% else %}
+                                                        <span style="color: #991b1b; font-weight: 600;">{{ kw.position }}</span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span style="color: #9ca3af;">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td style="text-align: center; padding: 0.25rem 0.5rem; font-weight: 600; color: #065f46;">{{ kw.clicks }}</td>
+                                            <td style="text-align: center; padding: 0.25rem 0.5rem;">{{ kw.impressions }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                 {% endfor %}
@@ -1109,6 +1203,7 @@ document.querySelectorAll('.seo-mainpage-mark-done').forEach(function(btn) {
         var token = this.dataset.token;
         var pageId = this.dataset.pageId;
         var row = document.getElementById('seo-mainpage-row-' + pageId);
+        var detailRow = document.querySelector('.seo-mainpage-detail[data-page-id="' + pageId + '"]');
         var button = this;
 
         button.disabled = true;
@@ -1124,7 +1219,8 @@ document.querySelectorAll('.seo-mainpage-mark-done').forEach(function(btn) {
             if (data.success) {
                 row.style.transition = 'opacity 0.3s';
                 row.style.opacity = '0';
-                setTimeout(function() { row.remove(); }, 300);
+                if (detailRow) { detailRow.style.transition = 'opacity 0.3s'; detailRow.style.opacity = '0'; }
+                setTimeout(function() { row.remove(); if (detailRow) detailRow.remove(); }, 300);
             } else {
                 button.disabled = false;
                 button.innerHTML = '<i class="fas fa-check"></i> Fait';
@@ -1134,6 +1230,34 @@ document.querySelectorAll('.seo-mainpage-mark-done').forEach(function(btn) {
             button.disabled = false;
             button.innerHTML = '<i class="fas fa-check"></i> Fait';
         });
+    });
+});
+
+// Toggle expandable keyword details for main pages
+document.querySelectorAll('.seo-mainpage-toggle').forEach(function(row) {
+    row.addEventListener('click', function() {
+        var pageId = this.dataset.pageId;
+        var detailRow = document.querySelector('.seo-mainpage-detail[data-page-id="' + pageId + '"]');
+        var chevron = document.querySelector('.seo-mainpage-chevron[data-page-id="' + pageId + '"]');
+        if (detailRow) {
+            var isHidden = detailRow.style.display === 'none';
+            detailRow.style.display = isHidden ? 'table-row' : 'none';
+            if (chevron) chevron.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
+        }
+    });
+});
+
+// Toggle "Autres keywords" sub-table within expanded detail
+document.querySelectorAll('.seo-mainpage-show-all').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var pageId = this.dataset.pageId;
+        var table = document.querySelector('.seo-mainpage-all-kw[data-page-id="' + pageId + '"]');
+        if (table) {
+            var isHidden = table.style.display === 'none';
+            table.style.display = isHidden ? 'table' : 'none';
+            this.innerHTML = isHidden ? '<i class="fas fa-eye-slash"></i> Masquer' : '<i class="fas fa-eye"></i> Afficher';
+        }
     });
 });
 

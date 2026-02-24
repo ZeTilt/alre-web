@@ -103,9 +103,60 @@
         });
     }
 
+    // Page Optimization buttons
+    function initPageButtons() {
+        document.querySelectorAll('.page-mark-optimized:not([data-init])').forEach(function (btn) {
+            btn.dataset.init = '1';
+            btn.addEventListener('click', function () {
+                var pageId = btn.dataset.pageId;
+                var token = btn.dataset.token;
+                var resultSpan = document.querySelector('.page-optimized-result[data-page-id="' + pageId + '"]');
+
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ...';
+
+                fetch('/saeiblauhjc/page-optimization/' + pageId + '/mark-optimized', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: '_token=' + encodeURIComponent(token)
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.success) {
+                        btn.innerHTML = '<i class="fas fa-check"></i> Fait';
+                        btn.classList.remove('btn-outline-info');
+                        btn.classList.add('btn-info');
+                        resultSpan.style.color = '#10b981';
+                        resultSpan.textContent = data.count + ' mot(s)-clé(s) marqué(s) le ' + data.date;
+
+                        var row = btn.closest('tr');
+                        if (row) {
+                            var cells = row.querySelectorAll('td');
+                            cells.forEach(function (td) {
+                                if (td.textContent.trim() === 'jamais') {
+                                    td.innerHTML = data.date;
+                                }
+                            });
+                        }
+                    } else {
+                        btn.innerHTML = '<i class="fas fa-times"></i> Erreur';
+                        btn.classList.remove('btn-outline-info');
+                        btn.classList.add('btn-outline-danger');
+                    }
+                })
+                .catch(function () {
+                    btn.innerHTML = '<i class="fas fa-times"></i> Erreur';
+                    btn.classList.remove('btn-outline-info');
+                    btn.classList.add('btn-outline-danger');
+                });
+            });
+        });
+    }
+
     function initAll() {
         initButtons();
         initDeptButtons();
+        initPageButtons();
     }
 
     function startObserver() {

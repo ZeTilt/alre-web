@@ -14,16 +14,24 @@ class MainPageKeywordMatcher
         private SeoKeywordRepository $seoKeywordRepository,
         private PageOptimizationRepository $pageOptimizationRepository,
         private EntityManagerInterface $entityManager,
+        private SeoDataImportService $seoDataImportService,
     ) {
     }
 
     /**
      * Auto-detect main pages from non-local keyword targetUrls.
      * Creates missing PageOptimization entries, deactivates orphans.
+     * On first run (no targetUrls in DB), bootstraps from GSC.
      */
     public function syncPages(): void
     {
         $targetUrls = $this->seoKeywordRepository->getDistinctNonLocalTargetUrls();
+
+        // Bootstrap: if no targetUrls exist at all, sync them from GSC first
+        if (empty($targetUrls)) {
+            $this->seoDataImportService->syncTargetUrls();
+            $targetUrls = $this->seoKeywordRepository->getDistinctNonLocalTargetUrls();
+        }
 
         // Convert full URLs to relative paths
         $activePaths = [];

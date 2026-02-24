@@ -158,6 +158,15 @@ class SeoSyncCommand extends Command
                     $io->note('Bing skippé (--no-bing)');
                 }
 
+                // Sync targetUrls from GSC page dimension
+                $io->section('Synchronisation des URLs cibles');
+                $targetUrlResult = $this->seoImportService->syncTargetUrls();
+                $io->success($targetUrlResult['message']);
+
+                $details['target_urls'] = [
+                    'updated' => $targetUrlResult['updated'],
+                ];
+
                 // Cleanup missing keywords
                 if (!$noCleanup) {
                     $io->section('Nettoyage des mots-clés absents');

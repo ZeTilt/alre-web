@@ -482,6 +482,59 @@ class SeoDataImportService
     }
 
     /**
+     * Synchronise les targetUrl des mots-clés actifs depuis les données GSC (dimension page).
+     * Peuple le champ targetUrl pour les mots-clés qui n'en ont pas encore.
+     *
+     * @return array{updated: int, message: string}
+     */
+    public function syncTargetUrls(): array
+    {
+        if (!$this->gscService->isAvailable()) {
+            return [
+                'updated' => 0,
+                'message' => 'Google Search Console non connecté',
+            ];
+        }
+
+        // Fetch keyword -> page mappings from GSC (last 7 days)
+        $keywordPages = $this->gscService->fetchKeywordPages();
+
+        if (empty($keywordPages)) {
+            return [
+                'updated' => 0,
+                'message' => 'Aucune donnée page retournée par GSC',
+            ];
+        }
+
+        $keywords = $this->keywordRepository->findActiveKeywords();
+        $updated = 0;
+
+        foreach ($keywords as $keyword) {
+            // Skip keywords that already have a targetUrl
+            if ($keyword->getTargetUrl() !== null && $keyword->getTargetUrl() !== '') {
+                continue;
+            }
+
+            $keywordLower = strtolower($keyword->getKeyword());
+            $page = $keywordPages[$keywordLower] ?? null;
+
+            if ($page !== null) {
+                $keyword->setTargetUrl($page);
+                $updated++;
+            }
+        }
+
+        if ($updated > 0) {
+            $this->entityManager->flush();
+        }
+
+        return [
+            'updated' => $updated,
+            'message' => sprintf('%d mot(s)-clé(s) avec targetUrl mis à jour', $updated),
+        ];
+    }
+
+    /**
      * Désactive les mots-clés absents de GSC depuis 30 jours.
      * Enregistre deactivatedAt = lastSeenInGsc + 30 jours.
      *

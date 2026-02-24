@@ -248,6 +248,61 @@ class GoogleSearchConsoleService
     }
 
     /**
+     * Récupère les données avec dimension query + page pour obtenir l'URL cible par mot-clé.
+     * Retourne la page avec le plus d'impressions par mot-clé.
+     *
+     * @return array<string, string> keyword => page URL
+     */
+    public function fetchKeywordPages(?\DateTimeImmutable $startDate = null, ?\DateTimeImmutable $endDate = null, ?string $siteUrl = null): array
+    {
+        $token = $this->googleOAuthService->getValidTokenWithRefresh();
+        if (!$token) {
+            $this->logger->error('No valid OAuth token available for GSC API call');
+            return [];
+        }
+
+        $endDate = $endDate ?? new \DateTimeImmutable('-1 day');
+        $startDate = $startDate ?? new \DateTimeImmutable('-7 days');
+
+        $encodedSiteUrl = urlencode($siteUrl ?? $this->getMainSiteUrl());
+        $url = self::API_URL . "/{$encodedSiteUrl}/searchAnalytics/query";
+
+        $body = [
+            'startDate' => $startDate->format('Y-m-d'),
+            'endDate' => $endDate->format('Y-m-d'),
+            'dimensions' => ['query', 'page'],
+            'rowLimit' => 5000,
+        ];
+
+        $result = $this->executeWithRetry($url, $body, $token->getAccessToken());
+
+        if ($result === null || !isset($result['rows'])) {
+            return [];
+        }
+
+        // Group by keyword, keep the page with most impressions
+        $keywordPages = [];
+        foreach ($result['rows'] as $row) {
+            $keyword = strtolower($row['keys'][0] ?? '');
+            $page = $row['keys'][1] ?? '';
+            $impressions = (int) ($row['impressions'] ?? 0);
+
+            if ($keyword === '' || $page === '') {
+                continue;
+            }
+
+            if (!isset($keywordPages[$keyword]) || $impressions > $keywordPages[$keyword]['impressions']) {
+                $keywordPages[$keyword] = [
+                    'page' => $page,
+                    'impressions' => $impressions,
+                ];
+            }
+        }
+
+        return array_map(fn($data) => $data['page'], $keywordPages);
+    }
+
+    /**
      * Exécute une requête avec retry et backoff exponentiel.
      */
     private function executeWithRetry(string $url, array $body, string $accessToken): ?array

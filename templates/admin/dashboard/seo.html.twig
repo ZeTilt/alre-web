@@ -325,6 +325,77 @@
 </div>
 {% endif %}
 
+<!-- SEO Main Pages - Pages principales a optimiser -->
+{% if seoMainPages is defined and seoMainPages|length > 0 %}
+<div class="chart-container" style="padding: 1rem 1.5rem; margin-bottom: 1.5rem;">
+    <div class="chart-title" style="margin-bottom: 1rem;">
+        <i class="fas fa-file-alt" style="color: #0891b2;"></i>
+        Pages principales a optimiser
+        <span style="font-size: 0.75rem; font-weight: 400; color: #6b7280; margin-left: 0.5rem;">
+            (agrege par page)
+        </span>
+    </div>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid #0891b2;">
+                    <th style="text-align: left; padding: 0.75rem 0.5rem; color: #155e75; font-weight: 600;">Page</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #155e75; font-weight: 600;">A travailler</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #155e75; font-weight: 600;">Total keywords</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #155e75; font-weight: 600;">Position moy.</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #155e75; font-weight: 600;">Score priorite</th>
+                    <th style="text-align: center; padding: 0.75rem 0.5rem; color: #155e75; font-weight: 600;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mainPage in seoMainPages %}
+                    <tr style="border-bottom: 1px solid #cffafe;" id="seo-mainpage-row-{{ mainPage.page.id }}">
+                        <td style="padding: 0.75rem 0.5rem; font-weight: 500;">
+                            <i class="fas fa-file-alt" style="color: #0891b2; font-size: 0.75rem; margin-right: 0.25rem;"></i>
+                            <a href="https://alre-web.bzh{{ mainPage.page.url }}" target="_blank" style="color: #155e75; text-decoration: none;">
+                                {{ mainPage.page.label }}
+                            </a>
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            <span style="background: #cffafe; color: #155e75; padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 700;">
+                                {{ mainPage.toImproveCount }}
+                            </span>
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {{ mainPage.totalCount }}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            {% if mainPage.avgPosition <= 10 %}
+                                <span style="color: #065f46; font-weight: 600;">{{ mainPage.avgPosition }}</span>
+                            {% elseif mainPage.avgPosition <= 20 %}
+                                <span style="color: #92400e; font-weight: 600;">{{ mainPage.avgPosition }}</span>
+                            {% else %}
+                                <span style="color: #991b1b; font-weight: 600;">{{ mainPage.avgPosition }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            <span style="background: #ecfeff; color: #155e75; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">
+                                {{ mainPage.priorityScore }}
+                            </span>
+                        </td>
+                        <td style="text-align: center; padding: 0.75rem 0.5rem;">
+                            <button type="button"
+                                class="btn btn-sm btn-outline-info seo-mainpage-mark-done"
+                                data-url="{{ path('admin_page_optimization_mark_optimized', {id: mainPage.page.id}) }}"
+                                data-token="{{ csrf_token('page-optimize-' ~ mainPage.page.id) }}"
+                                data-page-id="{{ mainPage.page.id }}"
+                                style="font-size: 0.75rem; padding: 0.15rem 0.5rem;">
+                                <i class="fas fa-check"></i> Fait
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
 <!-- SEO City Pages - Pages a optimiser -->
 {% if googleOAuthConnected and seoCityPages|length > 0 %}
 <div class="chart-container" style="padding: 1rem 1.5rem; margin-bottom: 1.5rem;">
@@ -1027,6 +1098,41 @@ document.querySelectorAll('.seo-dept-mark-done').forEach(function(btn) {
         .catch(function() {
             button.disabled = false;
             button.innerHTML = '<i class="fas fa-check"></i> Optimiser';
+        });
+    });
+});
+
+// Bouton "Fait" - marquer une page principale comme optimisee
+document.querySelectorAll('.seo-mainpage-mark-done').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var url = this.dataset.url;
+        var token = this.dataset.token;
+        var pageId = this.dataset.pageId;
+        var row = document.getElementById('seo-mainpage-row-' + pageId);
+        var button = this;
+
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: '_token=' + encodeURIComponent(token)
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                row.style.transition = 'opacity 0.3s';
+                row.style.opacity = '0';
+                setTimeout(function() { row.remove(); }, 300);
+            } else {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-check"></i> Fait';
+            }
+        })
+        .catch(function() {
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-check"></i> Fait';
         });
     });
 });

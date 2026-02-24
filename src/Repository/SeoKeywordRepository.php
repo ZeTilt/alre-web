@@ -249,4 +249,47 @@ class SeoKeywordRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Retourne les targetUrls distincts des mots-clés actifs non locaux.
+     *
+     * @return string[]
+     */
+    public function getDistinctNonLocalTargetUrls(): array
+    {
+        return $this->createQueryBuilder('k')
+            ->select('DISTINCT k.targetUrl')
+            ->where('k.isActive = :active')
+            ->andWhere('k.targetUrl IS NOT NULL')
+            ->andWhere('k.targetUrl NOT LIKE :p1')
+            ->andWhere('k.targetUrl NOT LIKE :p2')
+            ->andWhere('k.targetUrl NOT LIKE :p3')
+            ->andWhere('k.targetUrl NOT LIKE :p4')
+            ->setParameter('active', true)
+            ->setParameter('p1', '%/creation-site-internet-%')
+            ->setParameter('p2', '%/developpeur-web-%')
+            ->setParameter('p3', '%/agence-web-%')
+            ->setParameter('p4', '%/referencement-local-%')
+            ->getQuery()
+            ->getSingleColumnResult();
+    }
+
+    /**
+     * Marque comme optimisés tous les mots-clés actifs avec un targetUrl exact.
+     *
+     * @return int nombre de mots-clés mis à jour
+     */
+    public function markOptimizedByTargetUrl(string $fullUrl): int
+    {
+        return $this->createQueryBuilder('k')
+            ->update()
+            ->set('k.lastOptimizedAt', ':now')
+            ->where('k.isActive = :active')
+            ->andWhere('k.targetUrl = :url')
+            ->setParameter('now', new \DateTimeImmutable())
+            ->setParameter('active', true)
+            ->setParameter('url', $fullUrl)
+            ->getQuery()
+            ->execute();
+    }
 }

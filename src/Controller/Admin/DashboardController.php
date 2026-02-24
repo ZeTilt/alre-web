@@ -17,6 +17,7 @@ use App\Entity\SecurityLog;
 use App\Entity\ClientSeoKeyword;
 use App\Entity\ClientSeoReport;
 use App\Entity\DepartmentPage;
+use App\Entity\PageOptimization;
 use App\Entity\SeoKeyword;
 use App\Entity\User;
 use App\Entity\Project;
@@ -33,6 +34,7 @@ use App\Repository\ProspectFollowUpRepository;
 use App\Repository\ClientSeoImportRepository;
 use App\Repository\ClientSeoKeywordRepository;
 use App\Repository\ClientSiteRepository;
+use App\Repository\PageOptimizationRepository;
 use App\Repository\SeoDailyTotalRepository;
 use App\Repository\SeoKeywordRepository;
 use App\Repository\SeoPositionRepository;
@@ -242,6 +244,28 @@ class DashboardController extends AbstractDashboardController
 
         $now = new \DateTimeImmutable();
         $department->setLastOptimizedAt($now);
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'count' => $count,
+            'date' => $now->format('d/m/Y'),
+        ]);
+    }
+
+    #[Route('/saeiblauhjc/page-optimization/{id}/mark-optimized', name: 'admin_page_optimization_mark_optimized', methods: ['POST'])]
+    public function markPageOptimized(PageOptimization $page, Request $request, SeoKeywordRepository $seoKeywordRepository): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid('page-optimize-' . $page->getId(), $request->request->get('_token'))) {
+            return new JsonResponse(['error' => 'Token CSRF invalide'], 403);
+        }
+
+        // Build the full URL from the page path
+        $fullUrl = 'https://alre-web.bzh' . $page->getUrl();
+        $count = $seoKeywordRepository->markOptimizedByTargetUrl($fullUrl);
+
+        $now = new \DateTimeImmutable();
+        $page->setLastOptimizedAt($now);
         $this->entityManager->flush();
 
         return new JsonResponse([
@@ -1646,6 +1670,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Mots-clés SEO', 'fas fa-search', SeoKeyword::class);
         yield MenuItem::linkToCrud('Villes (SEO Local)', 'fas fa-map-marker-alt', City::class);
         yield MenuItem::linkToCrud('Départements (SEO)', 'fas fa-map', DepartmentPage::class);
+        yield MenuItem::linkToCrud('Pages principales', 'fas fa-file-alt', PageOptimization::class);
 
         yield MenuItem::section('SEO Clients');
         $dueCount = $this->clientSiteRepository->countWithDueActions();

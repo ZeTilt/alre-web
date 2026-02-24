@@ -10,6 +10,7 @@ use App\Repository\SeoKeywordRepository;
 use App\Repository\SeoPositionRepository;
 use App\Repository\SeoSyncLogRepository;
 use App\Service\CityKeywordMatcher;
+use App\Service\MainPageKeywordMatcher;
 use App\Service\GoogleOAuthService;
 use App\Service\GooglePlacesService;
 use App\Service\ReviewSyncService;
@@ -27,6 +28,7 @@ class DashboardSeoService
         private ReviewSyncService $reviewSyncService,
         private SeoDataImportService $seoDataImportService,
         private CityKeywordMatcher $cityKeywordMatcher,
+        private MainPageKeywordMatcher $mainPageKeywordMatcher,
         private SeoSyncLogRepository $seoSyncLogRepository,
     ) {
     }
@@ -82,6 +84,9 @@ class DashboardSeoService
 
             // SEO Department pages summary
             'seoDepartmentPages' => $this->cityKeywordMatcher->buildDepartmentPagesSummary($seoKeywordsRanked, $activeKeywords, $latestPositionData),
+
+            // SEO Main pages summary (non-local pages to optimize)
+            'seoMainPages' => $this->mainPageKeywordMatcher->buildMainPagesSummary($seoKeywordsRanked, $activeKeywords, $latestPositionData),
 
             // SEO Chart data (last 30 days)
             'seoChartData' => $this->prepareSeoChartData($dailyTotals, $bingDailyTotals),

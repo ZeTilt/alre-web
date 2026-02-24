@@ -3,6 +3,9 @@
 namespace App\Controller\Admin;
 
 use App\Entity\PageOptimization;
+use App\Service\MainPageKeywordMatcher;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
@@ -13,6 +16,11 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
 
 class PageOptimizationCrudController extends AbstractCrudController
 {
+    public function __construct(
+        private MainPageKeywordMatcher $mainPageKeywordMatcher,
+    ) {
+    }
+
     public static function getEntityFqcn(): string
     {
         return PageOptimization::class;
@@ -29,6 +37,15 @@ class PageOptimizationCrudController extends AbstractCrudController
             ->setDefaultSort(['url' => 'ASC'])
             ->setSearchFields(['url', 'label'])
             ->showEntityActionsInlined();
+    }
+
+    public function configureActions(Actions $actions): Actions
+    {
+        // Sync pages from keywords on every index page load
+        $this->mainPageKeywordMatcher->syncPages();
+
+        return $actions
+            ->add(Crud::PAGE_INDEX, Action::DETAIL);
     }
 
     public function configureFilters(Filters $filters): Filters

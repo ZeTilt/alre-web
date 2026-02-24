@@ -34,6 +34,10 @@ class MainPageKeywordMatcher
             }
         }
 
+        // First sync: if table is empty, backdate createdAt so pages appear immediately
+        $isFirstSync = empty($this->pageOptimizationRepository->findAllActive());
+        $backdatedCreatedAt = $isFirstSync ? new \DateTimeImmutable('-60 days') : null;
+
         // Create missing PageOptimization entries
         foreach ($activePaths as $path => $fullUrl) {
             $existing = $this->pageOptimizationRepository->findByUrl($path);
@@ -41,6 +45,9 @@ class MainPageKeywordMatcher
                 $page = new PageOptimization();
                 $page->setUrl($path);
                 $page->setLabel($this->guessLabel($path));
+                if ($backdatedCreatedAt !== null) {
+                    $page->setCreatedAt($backdatedCreatedAt);
+                }
                 $this->entityManager->persist($page);
             } elseif (!$existing->isActive()) {
                 // Re-activate if it was deactivated but keywords are back

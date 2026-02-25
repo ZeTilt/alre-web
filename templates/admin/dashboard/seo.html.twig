@@ -376,9 +376,19 @@
                             {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
-                            <span style="background: #ecfeff; color: #155e75; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">
-                                {{ mainPage.priorityScore }}
-                            </span>
+                            {% if mainPage.priorityScore >= 70 %}
+                                <span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">
+                                    {{ mainPage.priorityScore }}/100
+                                </span>
+                            {% elseif mainPage.priorityScore >= 40 %}
+                                <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">
+                                    {{ mainPage.priorityScore }}/100
+                                </span>
+                            {% else %}
+                                <span style="background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">
+                                    {{ mainPage.priorityScore }}/100
+                                </span>
+                            {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;" onclick="event.stopPropagation();">
                             <button type="button"
@@ -539,9 +549,19 @@
                             {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
-                            <span style="background: #fffbeb; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">
-                                {{ cityPage.priorityScore }}
-                            </span>
+                            {% if cityPage.priorityScore >= 70 %}
+                                <span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">
+                                    {{ cityPage.priorityScore }}/100
+                                </span>
+                            {% elseif cityPage.priorityScore >= 40 %}
+                                <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">
+                                    {{ cityPage.priorityScore }}/100
+                                </span>
+                            {% else %}
+                                <span style="background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">
+                                    {{ cityPage.priorityScore }}/100
+                                </span>
+                            {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
                             <a href="{{ ea_url().setController('App\\Controller\\Admin\\CityCrudController').setAction('edit').setEntityId(cityPage.city.id) }}"
@@ -606,9 +626,19 @@
                             {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
-                            <span style="background: #f5f3ff; color: #5b21b6; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">
-                                {{ deptPage.priorityScore }}
-                            </span>
+                            {% if deptPage.priorityScore >= 70 %}
+                                <span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">
+                                    {{ deptPage.priorityScore }}/100
+                                </span>
+                            {% elseif deptPage.priorityScore >= 40 %}
+                                <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">
+                                    {{ deptPage.priorityScore }}/100
+                                </span>
+                            {% else %}
+                                <span style="background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">
+                                    {{ deptPage.priorityScore }}/100
+                                </span>
+                            {% endif %}
                         </td>
                         <td style="text-align: center; padding: 0.75rem 0.5rem;">
                             <a href="{{ ea_url().setController('App\\Controller\\Admin\\DepartmentPageCrudController').setAction('edit').setEntityId(deptPage.department.id) }}"

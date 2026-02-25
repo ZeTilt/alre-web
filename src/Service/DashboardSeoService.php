@@ -80,13 +80,13 @@ class DashboardSeoService
             'seoKeywordsRanked' => $seoKeywordsRanked,
 
             // SEO City pages summary (aggregated "to improve" by city)
-            'seoCityPages' => $this->cityKeywordMatcher->buildCityPagesSummary($seoKeywordsRanked, $activeKeywords, $latestPositionData),
+            'seoCityPages' => $this->cityKeywordMatcher->buildCityPagesSummary($seoKeywordsRanked, $activeKeywords, $latestPositionData, $seoPositionComparisons),
 
             // SEO Department pages summary
-            'seoDepartmentPages' => $this->cityKeywordMatcher->buildDepartmentPagesSummary($seoKeywordsRanked, $activeKeywords, $latestPositionData),
+            'seoDepartmentPages' => $this->cityKeywordMatcher->buildDepartmentPagesSummary($seoKeywordsRanked, $activeKeywords, $latestPositionData, $seoPositionComparisons),
 
             // SEO Main pages summary (non-local pages to optimize)
-            'seoMainPages' => $this->mainPageKeywordMatcher->buildMainPagesSummary($seoKeywordsRanked, $activeKeywords, $latestPositionData),
+            'seoMainPages' => $this->mainPageKeywordMatcher->buildMainPagesSummary($seoKeywordsRanked, $activeKeywords, $latestPositionData, $seoPositionComparisons),
 
             // SEO Chart data (last 30 days)
             'seoChartData' => $this->prepareSeoChartData($dailyTotals, $bingDailyTotals),

@@ -24,6 +24,7 @@ class CityKeywordMatcher
     public function __construct(
         private CityRepository $cityRepository,
         private DepartmentPageRepository $departmentPageRepository,
+        private PagePriorityScoringService $scoringService,
     ) {
     }
 
@@ -195,9 +196,10 @@ class CityKeywordMatcher
      * @param array{top10: array, toImprove: array} $ranked Output of rankSeoKeywords()
      * @param SeoKeyword[] $activeKeywords Active keywords
      * @param array<int, array{position: float, clicks: int, impressions: int}> $latestPositionData Latest position per keyword
+     * @param array<int, array{currentPosition: ?float, previousPosition: ?float, variation: ?float, status: string}> $positionComparisons
      * @return array<array{city: City, toImproveCount: int, totalCount: int, avgPosition: float, priorityScore: float}>
      */
-    public function buildCityPagesSummary(array $ranked, array $activeKeywords, array $latestPositionData = []): array
+    public function buildCityPagesSummary(array $ranked, array $activeKeywords, array $latestPositionData = [], array $positionComparisons = []): array
     {
         $cities = $this->getActiveCitiesByNameLength();
 
@@ -208,6 +210,7 @@ class CityKeywordMatcher
         $recentThreshold = (new \DateTimeImmutable())->modify('-30 days');
 
         $cityPages = [];
+        $rawScores = [];
         foreach ($cities as $city) {
             // Skip cities optimized in the last 30 days
             $lastOpt = $city->getLastOptimizedAt();
@@ -233,37 +236,44 @@ class CityKeywordMatcher
                 continue;
             }
 
-            // Count total active keywords matching this city + average position
+            // Count total active keywords matching this city + scoring data
             $totalCount = 0;
             $positionSum = 0;
+            $scoringKeywords = [];
             foreach ($activeKeywords as $keyword) {
                 if ($this->keywordMatchesCity($keyword->getKeyword(), $city)) {
                     $totalCount++;
                     $latestData = $latestPositionData[$keyword->getId()] ?? null;
                     if ($latestData) {
                         $positionSum += $latestData['position'];
+                        $scoringKeywords[] = [
+                            'position' => $latestData['position'],
+                            'impressions' => $latestData['impressions'],
+                            'relevanceScore' => $keyword->getRelevanceScore(),
+                            'monthlyVariation' => $positionComparisons[$keyword->getId()]['variation'] ?? null,
+                        ];
                     }
                 }
             }
 
             $avgPosition = $totalCount > 0 ? round($positionSum / $totalCount, 1) : 0;
 
-            // Priority score: toImproveCount * (1 + log2(totalCount)) * (1 / avgPosition)
-            $priorityScore = 0;
-            if ($avgPosition > 0 && $totalCount > 0) {
-                $priorityScore = round(
-                    $toImproveCount * (1 + log($totalCount, 2)) * (1 / $avgPosition),
-                    2
-                );
-            }
+            $resultIdx = count($cityPages);
+            $rawScores[$resultIdx] = $this->scoringService->computeRawScore($scoringKeywords, $totalCount);
 
             $cityPages[] = [
                 'city' => $city,
                 'toImproveCount' => $toImproveCount,
                 'totalCount' => $totalCount,
                 'avgPosition' => $avgPosition,
-                'priorityScore' => $priorityScore,
+                'priorityScore' => 0, // placeholder, filled after normalization
             ];
+        }
+
+        // Pass 2: normalize scores to 0-100
+        $normalized = $this->scoringService->normalizeScores($rawScores);
+        foreach ($normalized as $idx => $score) {
+            $cityPages[$idx]['priorityScore'] = $score;
         }
 
         // Sort by priority score descending
@@ -323,9 +333,10 @@ class CityKeywordMatcher
      * @param array{top10: array, toImprove: array} $ranked
      * @param SeoKeyword[] $activeKeywords
      * @param array<int, array{position: float, clicks: int, impressions: int}> $latestPositionData
+     * @param array<int, array{currentPosition: ?float, previousPosition: ?float, variation: ?float, status: string}> $positionComparisons
      * @return array<array{department: DepartmentPage, toImproveCount: int, totalCount: int, avgPosition: float, priorityScore: float}>
      */
-    public function buildDepartmentPagesSummary(array $ranked, array $activeKeywords, array $latestPositionData = []): array
+    public function buildDepartmentPagesSummary(array $ranked, array $activeKeywords, array $latestPositionData = [], array $positionComparisons = []): array
     {
         $departments = $this->departmentPageRepository->findAllActive();
 
@@ -336,6 +347,7 @@ class CityKeywordMatcher
         $recentThreshold = (new \DateTimeImmutable())->modify('-30 days');
 
         $deptPages = [];
+        $rawScores = [];
         foreach ($departments as $dept) {
             $lastOpt = $dept->getLastOptimizedAt();
             if ($lastOpt !== null && $lastOpt > $recentThreshold) {
@@ -355,33 +367,41 @@ class CityKeywordMatcher
 
             $totalCount = 0;
             $positionSum = 0;
+            $scoringKeywords = [];
             foreach ($activeKeywords as $keyword) {
                 if ($this->keywordMatchesDepartment($keyword->getKeyword(), $dept)) {
                     $totalCount++;
                     $latestData = $latestPositionData[$keyword->getId()] ?? null;
                     if ($latestData) {
                         $positionSum += $latestData['position'];
+                        $scoringKeywords[] = [
+                            'position' => $latestData['position'],
+                            'impressions' => $latestData['impressions'],
+                            'relevanceScore' => $keyword->getRelevanceScore(),
+                            'monthlyVariation' => $positionComparisons[$keyword->getId()]['variation'] ?? null,
+                        ];
                     }
                 }
             }
 
             $avgPosition = $totalCount > 0 ? round($positionSum / $totalCount, 1) : 0;
 
-            $priorityScore = 0;
-            if ($avgPosition > 0 && $totalCount > 0) {
-                $priorityScore = round(
-                    $toImproveCount * (1 + log($totalCount, 2)) * (1 / $avgPosition),
-                    2
-                );
-            }
+            $resultIdx = count($deptPages);
+            $rawScores[$resultIdx] = $this->scoringService->computeRawScore($scoringKeywords, $totalCount);
 
             $deptPages[] = [
                 'department' => $dept,
                 'toImproveCount' => $toImproveCount,
                 'totalCount' => $totalCount,
                 'avgPosition' => $avgPosition,
-                'priorityScore' => $priorityScore,
+                'priorityScore' => 0, // placeholder, filled after normalization
             ];
+        }
+
+        // Pass 2: normalize scores to 0-100
+        $normalized = $this->scoringService->normalizeScores($rawScores);
+        foreach ($normalized as $idx => $score) {
+            $deptPages[$idx]['priorityScore'] = $score;
         }
 
         usort($deptPages, fn($a, $b) => $b['priorityScore'] <=> $a['priorityScore']);

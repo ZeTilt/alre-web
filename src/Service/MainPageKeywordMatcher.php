@@ -15,6 +15,7 @@ class MainPageKeywordMatcher
         private PageOptimizationRepository $pageOptimizationRepository,
         private EntityManagerInterface $entityManager,
         private SeoDataImportService $seoDataImportService,
+        private PagePriorityScoringService $scoringService,
     ) {
     }
 
@@ -79,9 +80,10 @@ class MainPageKeywordMatcher
      * @param array{top10: array, toImprove: array} $ranked
      * @param SeoKeyword[] $activeKeywords
      * @param array<int, array{position: float, clicks: int, impressions: int}> $latestPositionData
+     * @param array<int, array{currentPosition: ?float, previousPosition: ?float, variation: ?float, status: string}> $positionComparisons
      * @return array<array{page: PageOptimization, toImproveCount: int, totalCount: int, avgPosition: float, priorityScore: float}>
      */
-    public function buildMainPagesSummary(array $ranked, array $activeKeywords, array $latestPositionData): array
+    public function buildMainPagesSummary(array $ranked, array $activeKeywords, array $latestPositionData, array $positionComparisons = []): array
     {
         $this->syncPages();
 
@@ -95,12 +97,12 @@ class MainPageKeywordMatcher
         // Build a map of full URL -> path for matching
         $pagesByFullUrl = [];
         foreach ($pages as $page) {
-            // Build full URLs that might match targetUrl
             $pagesByFullUrl[$page->getUrl()] = $page;
         }
 
         $result = [];
-        foreach ($pages as $page) {
+        $rawScores = [];
+        foreach ($pages as $idx => $page) {
             // Skip pages optimized in the last 30 days
             $lastOpt = $page->getLastOptimizedAt();
             if ($lastOpt !== null && $lastOpt > $recentThreshold) {
@@ -131,8 +133,9 @@ class MainPageKeywordMatcher
                 }
             }
 
-            // Collect all active keywords for this page + average position
+            // Collect all active keywords for this page + scoring data
             $allKeywords = [];
+            $scoringKeywords = [];
             $positionSum = 0;
             foreach ($activeKeywords as $keyword) {
                 $kwTargetUrl = $keyword->getTargetUrl();
@@ -146,6 +149,12 @@ class MainPageKeywordMatcher
                     ];
                     if ($ld) {
                         $positionSum += $ld['position'];
+                        $scoringKeywords[] = [
+                            'position' => $ld['position'],
+                            'impressions' => $ld['impressions'],
+                            'relevanceScore' => $keyword->getRelevanceScore(),
+                            'monthlyVariation' => $positionComparisons[$keyword->getId()]['variation'] ?? null,
+                        ];
                     }
                 }
             }
@@ -153,14 +162,8 @@ class MainPageKeywordMatcher
             $totalCount = count($allKeywords);
             $avgPosition = $totalCount > 0 ? round($positionSum / $totalCount, 1) : 0;
 
-            // Priority score: same formula as cities/departments
-            $priorityScore = 0;
-            if ($avgPosition > 0 && $totalCount > 0) {
-                $priorityScore = round(
-                    count($toImproveKeywords) * (1 + log($totalCount, 2)) * (1 / $avgPosition),
-                    2
-                );
-            }
+            $resultIdx = count($result);
+            $rawScores[$resultIdx] = $this->scoringService->computeRawScore($scoringKeywords, $totalCount);
 
             $result[] = [
                 'page' => $page,
@@ -169,8 +172,14 @@ class MainPageKeywordMatcher
                 'totalCount' => $totalCount,
                 'allKeywords' => $allKeywords,
                 'avgPosition' => $avgPosition,
-                'priorityScore' => $priorityScore,
+                'priorityScore' => 0, // placeholder, filled after normalization
             ];
+        }
+
+        // Pass 2: normalize scores to 0-100
+        $normalized = $this->scoringService->normalizeScores($rawScores);
+        foreach ($normalized as $idx => $score) {
+            $result[$idx]['priorityScore'] = $score;
         }
 
         usort($result, fn($a, $b) => $b['priorityScore'] <=> $a['priorityScore']);

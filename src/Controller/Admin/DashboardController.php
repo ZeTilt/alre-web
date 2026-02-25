@@ -1633,7 +1633,9 @@ class DashboardController extends AbstractDashboardController
 
     public function configureAssets(): Assets
     {
-        $v = '20260225';
+        $jsDir = $this->params->get('kernel.project_dir') . '/public/js';
+        $mtimes = array_map('filemtime', glob("$jsDir/admin-*.js"));
+        $v = $mtimes ? max($mtimes) : 0;
         $assets = Assets::new()
             ->addCssFile('css/admin.css')
             ->addJsFile("js/admin-trix-headings.js?v=$v")

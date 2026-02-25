@@ -2,7 +2,7 @@
 
 {% block title %}Création Site Internet Bretagne | Sites Web pour TPE | Alré Web{% endblock %}
 
-{% block meta_description %}Création de sites internet en Bretagne pour artisans et TPE. Sites vitrines, e-commerce, applications sur mesure. Basé à Auray, j'interviens sur tout le Morbihan et au-delà.{% endblock %}
+{% block meta_description %}Création de sites internet sur mesure en Bretagne pour indépendants et petites entreprises. Sites vitrines dès 493 €, e-commerce, refonte. Devis gratuit sous 48h.{% endblock %}
 
 {% block structured_data %}
 {{ parent() }}
@@ -11,7 +11,7 @@
     "@context": "https://schema.org",
     "@type": "Service",
     "name": "Création de Site Internet en Bretagne",
-    "description": "Création de sites internet sur mesure pour artisans et TPE en Bretagne : sites vitrines, e-commerce et applications métier",
+    "description": "Création de sites internet sur mesure en Bretagne pour indépendants et petites entreprises : sites vitrines, boutiques en ligne, refonte et applications métier",
     "provider": {
         "@type": "ProfessionalService",
         "name": "Alré Web",
@@ -39,8 +39,8 @@
     <div class="hero-content">
         <h1 class="fade-in">Création de site internet en Bretagne</h1>
         <p class="lead fade-in-delay-1">
-            Sites vitrines, e-commerce et applications web sur mesure<br>
-            pour artisans et TPE en Morbihan, Finistère, Côtes-d'Armor et Ille-et-Vilaine.
+            Conception et réalisation de sites vitrines, boutiques en ligne et applications web<br>
+            sur mesure pour indépendants et petites entreprises en Bretagne.
         </p>
         <div class="fade-in-delay-2" style="margin-top: 2rem;">
             <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
@@ -50,29 +50,28 @@
     </div>
 </section>
 
-{# Main Content #}
+{# Site vitrine #}
 <section class="section">
     <div class="container">
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
             <div>
-                <h2 class="text-primary mb-3">Un site qui correspond à votre activité</h2>
+                <h2 class="text-primary mb-3">Un site vitrine sur mesure, adapté à votre activité</h2>
                 <p class="lead">
-                    Vous êtes artisan, commerçant ou profession libérale en Bretagne ?
+                    Vous êtes indépendant, commerçant ou gérant d'une petite entreprise en Bretagne ?
                     Votre site internet est votre vitrine permanente, celle qui travaille pour vous 24h/24.
                 </p>
                 <p>
-                    Je crée des sites internet sur mesure, pensés pour votre activité et vos clients.
-                    Pas de template générique : chaque site est conçu pour mettre en valeur
+                    Je réalise des sites vitrines pensés pour votre activité et vos clients.
+                    Pas de template générique : chaque conception est unique, pour mettre en valeur
                     ce que vous faites et convertir les visiteurs en clients.
+                    Artisans, professions libérales, professionnels du bien-être, restaurateurs,
+                    consultants, commerçants : quel que soit votre métier, votre site reflète votre savoir-faire.
                 </p>
-
-                <h3 class="mt-4 mb-3">Ce que je peux créer pour vous :</h3>
-                <ul class="service-list">
-                    <li><strong>Site vitrine</strong> : présentez votre activité, vos réalisations et vos coordonnées. Idéal pour artisans, professions libérales, restaurants.</li>
-                    <li><strong>Site e-commerce</strong> : vendez vos produits en ligne avec paiement sécurisé, gestion de stock et suivi des commandes.</li>
-                    <li><strong>Application métier</strong> : outils sur mesure pour automatiser votre gestion (devis, factures, réservations, planning).</li>
-                    <li><strong>Refonte de site</strong> : votre site actuel est daté ou pas responsive ? Je le modernise de A à Z.</li>
-                </ul>
+                <p>
+                    Sites vitrines <a href="{{ path('app_pricing') }}">à partir de 493 €</a>,
+                    avec un accompagnement complet de la conception à la mise en ligne.
+                    <a href="{{ path('app_portfolio') }}">Voir des exemples de réalisations</a>.
+                </p>
 
                 <div class="service-highlight mt-4">
                     <strong>Chaque site intègre dès le départ :</strong> un design responsive (mobile, tablette, PC),
@@ -89,10 +88,69 @@
     </div>
 </section>
 
+{# E-commerce #}
+<section class="section section-light">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
+            <div>
+                <h2 class="text-primary mb-3">Boutique en ligne et site e-commerce en Bretagne</h2>
+                <p class="lead">
+                    Vendez vos produits ou services en ligne avec un site marchand conçu pour convertir.
+                </p>
+                <p>
+                    Je développe des boutiques en ligne sur mesure avec paiement sécurisé,
+                    gestion de stock et suivi des commandes.
+                    Que vous vendiez des produits, des prestations ou des créations,
+                    votre site e-commerce est pensé pour la vente en ligne et le référencement.
+                </p>
+                <p>
+                    Solutions e-commerce <a href="{{ path('app_pricing') }}">à partir de 2 497 €</a>,
+                    incluant la conception, le développement et la formation à la gestion au quotidien.
+                </p>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 5rem; color: var(--accent-color);">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Refonte #}
+<section class="section">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
+            <div>
+                <h2 class="text-primary mb-3">Refonte de site web : modernisez votre présence en ligne</h2>
+                <p class="lead">
+                    Votre site actuel est daté, lent ou pas adapté aux mobiles ?
+                    Une refonte redonne un coup d'accélérateur à votre visibilité sur Google.
+                </p>
+                <p>
+                    Je prends en charge la refonte complète de votre site : nouveau design,
+                    optimisation des performances, adaptation mobile et amélioration du référencement.
+                    Vos contenus sont migrés, vos URLs préservées, et votre positionnement Google protégé
+                    pendant toute la transition.
+                </p>
+                <p>
+                    <a href="{{ path('app_contact') }}">Discuter de la refonte de votre site</a> :
+                    premier rendez-vous gratuit et sans engagement.
+                </p>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 5rem; color: var(--accent-color);">
+                    <i class="fas fa-sync-alt"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 {# Process #}
 <section class="section section-light">
     <div class="container">
-        <h2 class="text-center mb-5">De l'idée à la mise en ligne</h2>
+        <h2 class="text-center mb-5">De la conception à la mise en ligne de votre site</h2>
 
         <div class="grid grid-3">
             <div class="card">
@@ -152,12 +210,30 @@
     </div>
 </section>
 
+{# Tarifs #}
+<section class="section">
+    <div class="container">
+        <h2 class="text-center mb-4">Des tarifs transparents, adaptés aux indépendants et petites entreprises</h2>
+        <div class="text-center">
+            <p class="lead">
+                Page unique dès 493 €, site vitrine dès 1 193 €, e-commerce dès 2 497 €.
+                Chaque projet inclut le design, le développement, l'hébergement et la formation.
+            </p>
+            <p>
+                Tous les prix sont affichés clairement, sans surprise.
+                <a href="{{ path('app_pricing') }}">Consulter la grille tarifaire complète</a>.
+            </p>
+        </div>
+    </div>
+</section>
+
 {# CTA #}
 <section class="section section-light">
     <div class="container text-center">
-        <h2 class="mb-3">Vous avez un projet de site internet ?</h2>
+        <h2 class="mb-3">Création, refonte ou e-commerce : parlons de votre projet</h2>
         <p class="lead mb-4">
-            Parlons-en. Premier rendez-vous gratuit et sans engagement.
+            Basé à Auray, j'accompagne les indépendants et petites entreprises de toute la Bretagne.
+            Premier rendez-vous gratuit et sans engagement.
         </p>
         <div style="display: inline-flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
             <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">

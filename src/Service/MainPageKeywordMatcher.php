@@ -116,8 +116,9 @@ class MainPageKeywordMatcher
 
             $pagePath = $page->getUrl();
 
-            // Collect "to improve" keywords matching this page
+            // Collect "to improve" keywords matching this page (used for scoring)
             $toImproveKeywords = [];
+            $scoringKeywords = [];
             foreach ($ranked['toImprove'] as $item) {
                 $kwTargetUrl = $item['keyword']->getTargetUrl();
                 if ($kwTargetUrl !== null && $this->urlMatchesPage($kwTargetUrl, $pagePath)) {
@@ -130,12 +131,19 @@ class MainPageKeywordMatcher
                         'impressions' => $ld ? $ld['impressions'] : 0,
                         'reason' => $item['reason'],
                     ];
+                    if ($ld) {
+                        $scoringKeywords[] = [
+                            'position' => $ld['position'],
+                            'impressions' => $ld['impressions'],
+                            'relevanceScore' => $kw->getRelevanceScore(),
+                            'monthlyVariation' => $positionComparisons[$kw->getId()]['variation'] ?? null,
+                        ];
+                    }
                 }
             }
 
-            // Collect all active keywords for this page + scoring data
+            // Collect all active keywords for this page (display only)
             $allKeywords = [];
-            $scoringKeywords = [];
             $positionSum = 0;
             foreach ($activeKeywords as $keyword) {
                 $kwTargetUrl = $keyword->getTargetUrl();
@@ -149,12 +157,6 @@ class MainPageKeywordMatcher
                     ];
                     if ($ld) {
                         $positionSum += $ld['position'];
-                        $scoringKeywords[] = [
-                            'position' => $ld['position'],
-                            'impressions' => $ld['impressions'],
-                            'relevanceScore' => $keyword->getRelevanceScore(),
-                            'monthlyVariation' => $positionComparisons[$keyword->getId()]['variation'] ?? null,
-                        ];
                     }
                 }
             }
@@ -162,6 +164,7 @@ class MainPageKeywordMatcher
             $totalCount = count($allKeywords);
             $avgPosition = $totalCount > 0 ? round($positionSum / $totalCount, 1) : 0;
 
+            // Score based on "to improve" keywords only (potential gain), authority from total count
             $resultIdx = count($result);
             $rawScores[$resultIdx] = $this->scoringService->computeRawScore($scoringKeywords, $totalCount);
 

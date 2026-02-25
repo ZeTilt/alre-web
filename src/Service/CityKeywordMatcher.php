@@ -218,17 +218,30 @@ class CityKeywordMatcher
                 continue;
             }
 
-            // Count "to improve" keywords matching this city
+            // Collect "to improve" keywords matching this city (used for scoring)
             // Must have at least 1 keyword matching the city NAME (not just region)
             $toImproveCount = 0;
             $hasCityNameMatch = false;
+            $scoringKeywords = [];
             foreach ($ranked['toImprove'] as $item) {
-                $kwText = $item['keyword']->getKeyword();
+                $kw = $item['keyword'];
+                $kwText = $kw->getKeyword();
                 if ($this->keywordMatchesCityName($kwText, $city)) {
                     $toImproveCount++;
                     $hasCityNameMatch = true;
                 } elseif ($this->keywordMatchesCityRegion($kwText, $city)) {
                     $toImproveCount++;
+                } else {
+                    continue;
+                }
+                $latestData = $latestPositionData[$kw->getId()] ?? null;
+                if ($latestData) {
+                    $scoringKeywords[] = [
+                        'position' => $latestData['position'],
+                        'impressions' => $latestData['impressions'],
+                        'relevanceScore' => $kw->getRelevanceScore(),
+                        'monthlyVariation' => $positionComparisons[$kw->getId()]['variation'] ?? null,
+                    ];
                 }
             }
 
@@ -236,28 +249,22 @@ class CityKeywordMatcher
                 continue;
             }
 
-            // Count total active keywords matching this city + scoring data
+            // Count total active keywords matching this city (display + authority bonus)
             $totalCount = 0;
             $positionSum = 0;
-            $scoringKeywords = [];
             foreach ($activeKeywords as $keyword) {
                 if ($this->keywordMatchesCity($keyword->getKeyword(), $city)) {
                     $totalCount++;
                     $latestData = $latestPositionData[$keyword->getId()] ?? null;
                     if ($latestData) {
                         $positionSum += $latestData['position'];
-                        $scoringKeywords[] = [
-                            'position' => $latestData['position'],
-                            'impressions' => $latestData['impressions'],
-                            'relevanceScore' => $keyword->getRelevanceScore(),
-                            'monthlyVariation' => $positionComparisons[$keyword->getId()]['variation'] ?? null,
-                        ];
                     }
                 }
             }
 
             $avgPosition = $totalCount > 0 ? round($positionSum / $totalCount, 1) : 0;
 
+            // Score based on "to improve" keywords only, authority from total count
             $resultIdx = count($cityPages);
             $rawScores[$resultIdx] = $this->scoringService->computeRawScore($scoringKeywords, $totalCount);
 
@@ -354,10 +361,22 @@ class CityKeywordMatcher
                 continue;
             }
 
+            // Collect "to improve" keywords matching this department (used for scoring)
             $toImproveCount = 0;
+            $scoringKeywords = [];
             foreach ($ranked['toImprove'] as $item) {
-                if ($this->keywordMatchesDepartment($item['keyword']->getKeyword(), $dept)) {
+                $kw = $item['keyword'];
+                if ($this->keywordMatchesDepartment($kw->getKeyword(), $dept)) {
                     $toImproveCount++;
+                    $latestData = $latestPositionData[$kw->getId()] ?? null;
+                    if ($latestData) {
+                        $scoringKeywords[] = [
+                            'position' => $latestData['position'],
+                            'impressions' => $latestData['impressions'],
+                            'relevanceScore' => $kw->getRelevanceScore(),
+                            'monthlyVariation' => $positionComparisons[$kw->getId()]['variation'] ?? null,
+                        ];
+                    }
                 }
             }
 
@@ -365,27 +384,22 @@ class CityKeywordMatcher
                 continue;
             }
 
+            // Count total active keywords matching this department (display + authority bonus)
             $totalCount = 0;
             $positionSum = 0;
-            $scoringKeywords = [];
             foreach ($activeKeywords as $keyword) {
                 if ($this->keywordMatchesDepartment($keyword->getKeyword(), $dept)) {
                     $totalCount++;
                     $latestData = $latestPositionData[$keyword->getId()] ?? null;
                     if ($latestData) {
                         $positionSum += $latestData['position'];
-                        $scoringKeywords[] = [
-                            'position' => $latestData['position'],
-                            'impressions' => $latestData['impressions'],
-                            'relevanceScore' => $keyword->getRelevanceScore(),
-                            'monthlyVariation' => $positionComparisons[$keyword->getId()]['variation'] ?? null,
-                        ];
                     }
                 }
             }
 
             $avgPosition = $totalCount > 0 ? round($positionSum / $totalCount, 1) : 0;
 
+            // Score based on "to improve" keywords only, authority from total count
             $resultIdx = count($deptPages);
             $rawScores[$resultIdx] = $this->scoringService->computeRawScore($scoringKeywords, $totalCount);
 

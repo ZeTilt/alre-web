@@ -131,10 +131,6 @@ class MainPageKeywordMatcher
                 }
             }
 
-            if (empty($toImproveKeywords)) {
-                continue;
-            }
-
             // Collect all active keywords for this page + average position
             $allKeywords = [];
             $positionSum = 0;

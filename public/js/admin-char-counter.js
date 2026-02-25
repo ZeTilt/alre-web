@@ -46,11 +46,10 @@
     }
 
     function startObserver() {
-        if (!document.body) return;
-        var observer = new MutationObserver(function () {
-            initCounters();
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
+        var target = document.body || document.documentElement;
+        if (!target) return;
+        var observer = new MutationObserver(function () { initCounters(); });
+        observer.observe(target, { childList: true, subtree: true });
     }
 
     // Run on page load + re-run when EasyAdmin loads new content (AJAX navigation)

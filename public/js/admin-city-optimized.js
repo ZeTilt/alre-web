@@ -160,9 +160,10 @@
     }
 
     function startObserver() {
-        if (!document.body) return;
+        var target = document.body || document.documentElement;
+        if (!target) return;
         var observer = new MutationObserver(function () { initAll(); });
-        observer.observe(document.body, { childList: true, subtree: true });
+        observer.observe(target, { childList: true, subtree: true });
     }
 
     if (document.readyState === 'loading') {

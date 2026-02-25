@@ -25,13 +25,12 @@ class MainPageKeywordMatcher
      */
     public function syncPages(): void
     {
-        $targetUrls = $this->seoKeywordRepository->getDistinctNonLocalTargetUrls();
-
-        // Bootstrap: if no targetUrls exist at all, sync them from GSC first
-        if (empty($targetUrls)) {
+        // Sync targetUrls from GSC if any active keyword is missing one
+        if ($this->seoKeywordRepository->countActiveWithoutTargetUrl() > 0) {
             $this->seoDataImportService->syncTargetUrls();
-            $targetUrls = $this->seoKeywordRepository->getDistinctNonLocalTargetUrls();
         }
+
+        $targetUrls = $this->seoKeywordRepository->getDistinctNonLocalTargetUrls();
 
         // Convert full URLs to relative paths
         $activePaths = [];

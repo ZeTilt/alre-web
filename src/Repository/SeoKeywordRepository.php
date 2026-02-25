@@ -180,6 +180,21 @@ class SeoKeywordRepository extends ServiceEntityRepository
     }
 
     /**
+     * Retourne le nombre de mots-clés actifs sans targetUrl.
+     */
+    public function countActiveWithoutTargetUrl(): int
+    {
+        return (int) $this->createQueryBuilder('k')
+            ->select('COUNT(k.id)')
+            ->where('k.isActive = :active')
+            ->andWhere('k.targetUrl IS NULL OR k.targetUrl = :empty')
+            ->setParameter('active', true)
+            ->setParameter('empty', '')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
      * Retourne le nombre de mots-clés inactifs.
      */
     public function countInactive(): int

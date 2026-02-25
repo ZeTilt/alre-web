@@ -104,6 +104,11 @@ class PageOptimization
         return null;
     }
 
+    public function getKeywordsList(): ?string
+    {
+        return null;
+    }
+
     public function __toString(): string
     {
         return $this->label ?? $this->url ?? '';

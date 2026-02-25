@@ -219,6 +219,24 @@ class SeoKeywordRepository extends ServiceEntityRepository
     }
 
     /**
+     * Retourne les mots-clés actifs associés à une targetUrl donnée.
+     *
+     * @return SeoKeyword[]
+     */
+    public function findByTargetUrl(string $targetUrl): array
+    {
+        return $this->createQueryBuilder('k')
+            ->where('k.isActive = :active')
+            ->andWhere('k.targetUrl = :url')
+            ->setParameter('active', true)
+            ->setParameter('url', $targetUrl)
+            ->orderBy('k.relevanceScore', 'DESC')
+            ->addOrderBy('k.keyword', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Retourne le décompte des mots-clés actifs par score de pertinence (0-5).
      *
      * @return array<array{relevanceScore: int, cnt: int}>

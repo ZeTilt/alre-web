@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\PageOptimization;
+use App\Repository\SeoKeywordRepository;
 use App\Service\MainPageKeywordMatcher;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -20,6 +21,7 @@ class PageOptimizationCrudController extends AbstractCrudController
     public function __construct(
         private MainPageKeywordMatcher $mainPageKeywordMatcher,
         private CsrfTokenManagerInterface $csrfTokenManager,
+        private SeoKeywordRepository $seoKeywordRepository,
     ) {
     }
 
@@ -118,5 +120,53 @@ class PageOptimizationCrudController extends AbstractCrudController
         yield DateTimeField::new('createdAt', 'Créé le')
             ->setFormat('dd/MM/yyyy')
             ->setHelp('Antidater pour que la page apparaisse immédiatement dans le dashboard (filtre 30j)');
+
+        if ($pageName === Crud::PAGE_DETAIL) {
+            $repo = $this->seoKeywordRepository;
+            yield TextField::new('keywordsList', 'Keywords associés')
+                ->formatValue(function ($value, PageOptimization $page) use ($repo) {
+                    $fullUrl = 'https://alre-web.bzh' . $page->getUrl();
+                    $keywords = $repo->findByTargetUrl($fullUrl);
+
+                    if (empty($keywords)) {
+                        return '<em style="color:#9ca3af">Aucun keyword associé</em>';
+                    }
+
+                    $html = '<table style="width:100%; border-collapse:collapse; font-size:0.85rem">';
+                    $html .= '<thead><tr style="border-bottom:2px solid #dee2e6; text-align:left">'
+                        . '<th style="padding:6px 8px">Keyword</th>'
+                        . '<th style="padding:6px 8px">Score</th>'
+                        . '<th style="padding:6px 8px; text-align:right">Position</th>'
+                        . '<th style="padding:6px 8px; text-align:right">Clics</th>'
+                        . '<th style="padding:6px 8px; text-align:right">Impressions</th>'
+                        . '</tr></thead><tbody>';
+
+                    foreach ($keywords as $kw) {
+                        $score = $kw->getRelevanceScore();
+                        $stars = str_repeat('★', $score) . str_repeat('☆', 5 - $score);
+
+                        $latest = $kw->getLatestPosition();
+                        $pos = $latest ? number_format($latest->getPosition(), 1) : '-';
+                        $clicks = $latest ? $latest->getClicks() : '-';
+                        $impressions = $latest ? $latest->getImpressions() : '-';
+
+                        $html .= '<tr style="border-bottom:1px solid #eee">'
+                            . '<td style="padding:4px 8px">' . htmlspecialchars($kw->getKeyword()) . '</td>'
+                            . '<td style="padding:4px 8px; color:#d4a017">' . $stars . '</td>'
+                            . '<td style="padding:4px 8px; text-align:right">' . $pos . '</td>'
+                            . '<td style="padding:4px 8px; text-align:right">' . $clicks . '</td>'
+                            . '<td style="padding:4px 8px; text-align:right">' . $impressions . '</td>'
+                            . '</tr>';
+                    }
+
+                    $html .= '</tbody></table>';
+                    $html .= '<div style="margin-top:6px; color:#6c757d; font-size:0.8rem">'
+                        . count($keywords) . ' keyword(s) actif(s)</div>';
+
+                    return $html;
+                })
+                ->setVirtual(true)
+                ->renderAsHtml();
+        }
     }
 }

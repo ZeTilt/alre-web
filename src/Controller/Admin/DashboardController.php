@@ -1633,15 +1633,16 @@ class DashboardController extends AbstractDashboardController
 
     public function configureAssets(): Assets
     {
+        $v = '20260225';
         $assets = Assets::new()
             ->addCssFile('css/admin.css')
-            ->addJsFile('js/admin-trix-headings.js')
-            ->addJsFile('js/admin-project-partners.js')
-            ->addJsFile('js/admin-toggles.js')
-            ->addJsFile('js/admin-char-counter.js')
-            ->addJsFile('js/admin-city-optimized.js')
-            ->addJsFile('js/admin-star-rating.js')
-            ->addJsFile('js/admin-table-filter.js');
+            ->addJsFile("js/admin-trix-headings.js?v=$v")
+            ->addJsFile("js/admin-project-partners.js?v=$v")
+            ->addJsFile("js/admin-toggles.js?v=$v")
+            ->addJsFile("js/admin-char-counter.js?v=$v")
+            ->addJsFile("js/admin-city-optimized.js?v=$v")
+            ->addJsFile("js/admin-star-rating.js?v=$v")
+            ->addJsFile("js/admin-table-filter.js?v=$v");
 
         // Charger le CSS de floutage si le mode démo est activé
         if ($this->params->get('app.demo_mode')) {

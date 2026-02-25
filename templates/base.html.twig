@@ -64,6 +64,23 @@
         {# Page-specific styles #}
         {% endblock %}
 
+        {# WebSite schema - Signal Google for sitelinks + site identity #}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "Alré Web",
+            "alternateName": "Alré Web - Création Web",
+            "url": "https://alre-web.bzh",
+            "description": "Développeur web freelance en Bretagne. Création de sites internet, e-commerce et référencement pour indépendants et petites entreprises.",
+            "publisher": {
+                "@type": "ProfessionalService",
+                "name": "Alré Web",
+                "url": "https://alre-web.bzh"
+            }
+        }
+        </script>
+
         {# Site Navigation - Signal Google sitelinks #}
         <script type="application/ld+json">
         {

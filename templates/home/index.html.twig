@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Création de sites web pour artisans et PME | Alré Web - Bretagne{% endblock %}
+{% block title %}Création de Site Internet en Bretagne pour TPE | Alré Web{% endblock %}
 
-{% block meta_description %}Artisans, commerçants, PME : je crée le site web qui vous rend visible sur Google et vous ramène des clients. Basé en Bretagne (Auray, Vannes, Lorient), j'accompagne les professionnels qui veulent développer leur activité en ligne sans se soucier de la technique.{% endblock %}
+{% block meta_description %}Développeur web freelance en Bretagne. Création de sites vitrines, e-commerce et référencement pour indépendants et TPE. Basé à Auray. Devis gratuit sous 48h.{% endblock %}
 
 {% block body %}
 
@@ -32,14 +32,14 @@
         {% endif %}
         <div class="hero-text">
             <h1 class="fade-in">
-                Votre site web qui attire des clients
+                Création de site internet en Bretagne
                 <br>
-                <span class="text-accent">pendant que vous vous concentrez sur votre métier</span>
+                <span class="text-accent">le site qui attire des clients pendant que vous travaillez</span>
             </h1>
             <p class="lead fade-in-delay-1">
-                Artisans, commerçants, PME : je crée le site qui vous rend visible sur Google,
+                Artisans, commerçants, indépendants, TPE : je crée le site web qui vous rend visible sur Google,
                 vend vos produits 24h/24 et vous libère des tracas techniques.
-                Vous gérez votre activité, je m'occupe du reste.
+                Sites vitrines <a href="{{ path('app_pricing') }}" style="color: inherit; text-decoration: underline;">dès 493 €</a>.
             </p>
             <div class="hero-cta fade-in-delay-2">
                 <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
@@ -130,10 +130,10 @@
                 <h3 class="card-title">Être trouvé sur Google</h3>
                 <p class="card-text">
                     Un site vitrine optimisé pour que vos clients vous trouvent
-                    quand ils cherchent vos services. Fini l'annuaire papier.
+                    quand ils cherchent vos services. Fini l'invisibilité.
                 </p>
-                <a href="{{ path('app_services') }}#developpement" class="card-link">
-                    En savoir plus <i class="fas fa-arrow-right"></i>
+                <a href="{{ path('app_service_creation') }}" class="card-link">
+                    Création de site internet <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
 
@@ -147,8 +147,8 @@
                     Une boutique qui prend les commandes même quand vous dormez.
                     Élargissez votre clientèle au-delà de votre zone géographique.
                 </p>
-                <a href="{{ path('app_services') }}#ecommerce" class="card-link">
-                    En savoir plus <i class="fas fa-arrow-right"></i>
+                <a href="{{ path('app_service_creation') }}" class="card-link">
+                    Sites e-commerce <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
 
@@ -162,8 +162,8 @@
                     Devis, factures, prises de RDV, relances... Libérez-vous des tâches
                     chronophages avec des outils sur mesure.
                 </p>
-                <a href="{{ path('app_services') }}#developpement" class="card-link">
-                    En savoir plus <i class="fas fa-arrow-right"></i>
+                <a href="{{ path('app_service_developpeur') }}" class="card-link">
+                    Développement sur mesure <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
 
@@ -177,8 +177,8 @@
                     Hébergement, sécurité, mises à jour, sauvegardes : je gère tout.
                     Vous avez un site pro sans rien y connaître.
                 </p>
-                <a href="{{ path('app_services') }}#hebergement" class="card-link">
-                    En savoir plus <i class="fas fa-arrow-right"></i>
+                <a href="{{ path('app_service_agence') }}" class="card-link">
+                    Accompagnement complet <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
 
@@ -192,23 +192,23 @@
                     Référencement optimisé pour apparaître en haut des résultats Google.
                     Plus de visibilité = plus de demandes de devis.
                 </p>
-                <a href="{{ path('app_services') }}#seo" class="card-link">
-                    En savoir plus <i class="fas fa-arrow-right"></i>
+                <a href="{{ path('app_service_referencement') }}" class="card-link">
+                    Référencement local <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
 
-            {# Service 6 - Image pro #}
+            {# Service 6 - Tarifs #}
             <div class="card">
                 <div class="card-icon">
-                    <i class="fas fa-star"></i>
+                    <i class="fas fa-euro-sign"></i>
                 </div>
-                <h3 class="card-title">Avoir une image professionnelle</h3>
+                <h3 class="card-title">Des tarifs transparents</h3>
                 <p class="card-text">
-                    Un design moderne qui inspire confiance. Vos clients savent
-                    qu'ils ont affaire à un professionnel sérieux.
+                    Sites vitrines dès 493 €, e-commerce dès 2 497 €.
+                    Prix clairs, devis détaillé, sans surprise.
                 </p>
-                <a href="{{ path('app_services') }}#conception" class="card-link">
-                    En savoir plus <i class="fas fa-arrow-right"></i>
+                <a href="{{ path('app_pricing') }}" class="card-link">
+                    Voir les tarifs <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
         </div>
@@ -457,7 +457,7 @@
     <div class="container text-center">
         <h2 class="mb-3">Prêt à avoir un site qui vous ramène des clients ?</h2>
         <p class="lead mb-4">
-            Expliquez-moi votre activité et vos objectifs, je vous propose une solution adaptée.
+            Basé à Auray, j'accompagne les artisans, indépendants et TPE de toute la Bretagne.
             <br>
             Premier échange gratuit et sans engagement.
         </p>
@@ -465,8 +465,8 @@
             <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
                 <i class="fas fa-paper-plane"></i> Demander un devis gratuit
             </a>
-            <a href="{{ path('app_portfolio') }}" class="btn btn-outline btn-lg">
-                <i class="fas fa-folder-open"></i> Découvrir mes réalisations
+            <a href="{{ path('app_pricing') }}" class="btn btn-outline btn-lg">
+                <i class="fas fa-euro-sign"></i> Voir les tarifs
             </a>
         </div>
         <p class="mt-4" style="font-size: 0.95rem; color: var(--text-muted);">

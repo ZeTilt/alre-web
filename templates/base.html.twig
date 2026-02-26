@@ -64,6 +64,11 @@
         {# Page-specific styles #}
         {% endblock %}
 
+        {# Ahrefs Web Analytics - Cookie-free, no GDPR consent needed #}
+        {% if app.environment == 'prod' %}
+        <script src="https://analytics.ahrefs.com/analytics.js" data-key="fpdBSP2twHxfDzZn0e3J/g" async></script>
+        {% endif %}
+
         {# WebSite schema - Signal Google for sitelinks + site identity #}
         <script type="application/ld+json">
         {

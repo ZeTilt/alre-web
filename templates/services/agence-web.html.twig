@@ -2,7 +2,7 @@
 
 {% block title %}Agence Web Bretagne | Accompagnement Digital pour TPE | Alré Web{% endblock %}
 
-{% block meta_description %}Agence web en Bretagne pour artisans et TPE. Création de site, hébergement, maintenance et SEO : un interlocuteur unique pour tous vos projets. Basé à Auray, Morbihan.{% endblock %}
+{% block meta_description %}Agence web en Bretagne pour artisans et TPE. Création de site, hébergement, maintenance et référencement : un interlocuteur unique. Devis gratuit sous 48h.{% endblock %}
 
 {% block structured_data %}
 {{ parent() }}
@@ -11,7 +11,7 @@
     "@context": "https://schema.org",
     "@type": "Service",
     "name": "Agence Web en Bretagne",
-    "description": "Accompagnement web complet pour artisans et TPE en Bretagne : création de site, hébergement, maintenance et référencement",
+    "description": "Agence web en Bretagne : accompagnement complet pour artisans et TPE. Création de site, hébergement, maintenance et référencement. Un interlocuteur unique.",
     "provider": {
         "@type": "ProfessionalService",
         "name": "Alré Web",
@@ -39,8 +39,8 @@
     <div class="hero-content">
         <h1 class="fade-in">Votre agence web de proximité en Bretagne</h1>
         <p class="lead fade-in-delay-1">
-            Création de site, hébergement, référencement : un seul interlocuteur<br>
-            pour tous vos projets web en Morbihan, Finistère, Côtes-d'Armor et Ille-et-Vilaine.
+            Création de site, hébergement, maintenance et référencement : un partenaire web unique<br>
+            pour accompagner les artisans, commerçants et TPE en Bretagne.
         </p>
         <div class="fade-in-delay-2" style="margin-top: 2rem;">
             <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
@@ -57,13 +57,20 @@
             <div>
                 <h2 class="text-primary mb-3">L'accompagnement d'une agence, la réactivité d'un freelance</h2>
                 <p class="lead">
-                    Vous cherchez un partenaire web fiable, disponible et qui comprend vos contraintes de TPE ?
-                    C'est exactement ce que je propose.
+                    Vous cherchez un prestataire web fiable, disponible et qui comprend vos contraintes de TPE ?
+                    C'est exactement ce que je propose : un accompagnement complet, de la création du site à son évolution.
                 </p>
                 <p>
-                    Je gère l'ensemble de votre présence en ligne : de la création du site
-                    à son hébergement, en passant par le référencement sur Google et la maintenance.
-                    Vous avez un seul contact, un seul prestataire, un seul numéro à appeler.
+                    Je gère l'ensemble de votre présence en ligne : conception du site,
+                    hébergement sécurisé, référencement sur Google et maintenance.
+                    Vous avez un seul interlocuteur, un seul prestataire, un seul numéro à appeler.
+                    Site vitrine, boutique en ligne ou application web métier : chaque projet
+                    est développé sur mesure pour votre activité.
+                </p>
+                <p>
+                    Artisans, commerçants, professions libérales, TPE : quel que soit votre métier,
+                    votre site est pensé pour attirer des clients en Bretagne.
+                    <a href="{{ path('app_portfolio') }}">Voir des exemples de réalisations</a>.
                 </p>
 
                 <h3 class="mt-4 mb-3">Tout est inclus dans l'accompagnement :</h3>
@@ -78,7 +85,8 @@
                 <div class="service-highlight mt-4">
                     <strong>La différence avec une grosse agence :</strong> pas de commercial, pas de chef de projet,
                     pas de sous-traitance. Vous parlez à la personne qui fait le travail.
-                    Et mes tarifs reflètent cette simplicité.
+                    Et mes tarifs reflètent cette simplicité :
+                    <a href="{{ path('app_pricing') }}">accompagnement hébergement + maintenance dès 53 €/mois</a>.
                 </div>
             </div>
             <div style="text-align: center;">
@@ -90,10 +98,42 @@
     </div>
 </section>
 
-{# Why local #}
+{# Maintenance #}
 <section class="section section-light">
     <div class="container">
-        <h2 class="text-center mb-5">Pourquoi une agence web locale ?</h2>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
+            <div>
+                <h2 class="text-primary mb-3">Maintenance et suivi de votre site internet</h2>
+                <p class="lead">
+                    Un site web, ça s'entretient. Mises à jour de sécurité, sauvegardes,
+                    corrections, évolutions : je m'occupe de tout pour que votre site reste performant.
+                </p>
+                <p>
+                    Beaucoup de sites créés par des agences finissent abandonnés après la mise en ligne :
+                    pas de mises à jour, pas de suivi, des failles de sécurité qui s'accumulent.
+                    Avec mon accompagnement, votre site internet est suivi dans la durée.
+                    Je gère les mises à jour techniques, la surveillance des performances
+                    et les petites modifications au fil de vos besoins.
+                </p>
+                <p>
+                    Packs maintenance <a href="{{ path('app_pricing') }}">à partir de 47 €/mois</a>,
+                    ou hébergement + maintenance dès 53 €/mois.
+                    <a href="{{ path('app_contact') }}">Discuter de la maintenance de votre site</a>.
+                </p>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 5rem; color: var(--accent-color);">
+                    <i class="fas fa-tools"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Why local #}
+<section class="section">
+    <div class="container">
+        <h2 class="text-center mb-5">Pourquoi choisir une agence web en Bretagne ?</h2>
 
         <div class="grid grid-3">
             <div class="card">
@@ -156,9 +196,10 @@
 {# CTA #}
 <section class="section section-light">
     <div class="container text-center">
-        <h2 class="mb-3">Prêt à être accompagné ?</h2>
+        <h2 class="mb-3">Votre agence web en Bretagne : parlons de votre projet</h2>
         <p class="lead mb-4">
-            Parlons de votre projet web. Premier rendez-vous gratuit et sans engagement.
+            Basé à Auray, j'accompagne les artisans, indépendants et TPE de toute la Bretagne.
+            Premier rendez-vous gratuit et sans engagement.
         </p>
         <div style="display: inline-flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
             <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">

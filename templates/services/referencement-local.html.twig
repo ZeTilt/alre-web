@@ -2,7 +2,7 @@
 
 {% block title %}Référencement Local Bretagne | SEO pour TPE et Artisans | Alré Web{% endblock %}
 
-{% block meta_description %}Référencement local en Bretagne pour artisans et TPE. Soyez visible sur Google quand vos clients vous cherchent. Basé à Auray, j'interviens sur tout le Morbihan et au-delà.{% endblock %}
+{% block meta_description %}Référencement local en Bretagne pour indépendants et TPE. Audit SEO, optimisation Google Business, suivi de positions. Packs SEO dès 247 € HT. Devis gratuit.{% endblock %}
 
 {% block structured_data %}
 {{ parent() }}
@@ -11,7 +11,7 @@
     "@context": "https://schema.org",
     "@type": "Service",
     "name": "Référencement Local en Bretagne",
-    "description": "Optimisation du référencement local sur Google pour les artisans et TPE en Bretagne",
+    "description": "Référencement local en Bretagne : audit SEO, optimisation Google Business et suivi de positions pour indépendants et TPE. Packs SEO adaptés.",
     "provider": {
         "@type": "ProfessionalService",
         "name": "Alré Web",
@@ -39,12 +39,12 @@
     <div class="hero-content">
         <h1 class="fade-in">Référencement local en Bretagne</h1>
         <p class="lead fade-in-delay-1">
-            Soyez visible sur Google quand vos clients vous cherchent.<br>
-            Optimisation SEO locale pour artisans et TPE en Morbihan, Finistère, Côtes-d'Armor et Ille-et-Vilaine.
+            Référencement de votre site web sur Google : audit, optimisation et suivi de positions<br>
+            pour les indépendants et TPE en Bretagne.
         </p>
         <div class="fade-in-delay-2" style="margin-top: 2rem;">
             <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
-                <i class="fas fa-paper-plane"></i> Demander un audit SEO gratuit
+                <i class="fas fa-paper-plane"></i> Demander un devis gratuit
             </a>
         </div>
     </div>
@@ -58,20 +58,26 @@
                 <h2 class="text-primary mb-3">Vos clients vous cherchent sur Google. Vous trouvent-ils ?</h2>
                 <p class="lead">
                     Quand un habitant de votre ville tape "plombier", "boulangerie" ou "coiffeur" sur Google,
-                    votre entreprise doit apparaitre dans les premiers résultats.
+                    votre entreprise doit apparaître dans les premiers résultats.
                 </p>
                 <p>
-                    Le référencement local, c'est l'art d'être visible sur Google Maps et dans les résultats
-                    de recherche pour les requêtes liées à votre zone géographique. C'est le levier le plus
-                    rentable pour les artisans et TPE : vos clients sont à côté, ils ont besoin de vous
-                    maintenant, et ils vous trouvent en un clic.
+                    Le référencement local, c'est l'ensemble des techniques qui rendent votre site web
+                    visible sur Google et Google Maps pour les recherches liées à votre zone géographique.
+                    Référencement de votre site internet, optimisation de votre fiche Google Business,
+                    création de contenu local : chaque action renforce votre présence en ligne
+                    et attire des clients qui sont à côté de chez vous.
+                </p>
+                <p>
+                    Pour les indépendants et TPE en Bretagne (artisans, commerçants, professions libérales, thérapeutes, consultants...),
+                    c'est le levier le plus rentable : vos clients ont besoin de vous maintenant,
+                    et ils vous trouvent en un clic.
                 </p>
 
                 <h3 class="mt-4 mb-3">Ce que le référencement local vous apporte :</h3>
                 <ul class="service-list">
                     <li><strong>Visibilité locale</strong> : apparaissez quand vos clients cherchent vos services dans votre ville</li>
                     <li><strong>Fiche Google Business</strong> : optimisation complète de votre profil Google (horaires, photos, avis)</li>
-                    <li><strong>Pages locales optimisées</strong> : du contenu ciblé pour chaque zone d'intervention</li>
+                    <li><strong>Référencement de votre site web</strong> : optimisation technique et contenu ciblé sur vos mots-clés locaux</li>
                     <li><strong>Avis clients</strong> : stratégie pour obtenir et valoriser les avis Google</li>
                     <li><strong>Suivi mensuel</strong> : rapport de positions et recommandations d'amélioration</li>
                 </ul>
@@ -91,45 +97,74 @@
     </div>
 </section>
 
-{# Packs SEO #}
+{# Audit SEO #}
 <section class="section section-light">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
+            <div>
+                <h2 class="text-primary mb-3">Audit de référencement : savoir où vous en êtes</h2>
+                <p class="lead">
+                    Avant d'optimiser, il faut comprendre. L'audit SEO analyse votre visibilité actuelle
+                    sur Google et identifie les actions prioritaires pour progresser.
+                </p>
+                <p>
+                    Je passe en revue votre site web, votre fiche Google Business, vos positions
+                    sur les mots-clés locaux et ceux de vos concurrents. Vous repartez avec un diagnostic
+                    clair et un plan d'action concret, sans jargon.
+                </p>
+                <p>
+                    L'audit est inclus dans chaque pack SEO, ou disponible seul
+                    dans le <a href="{{ path('app_pricing') }}">Pack Essentiel à 247 € HT</a>.
+                </p>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 5rem; color: var(--accent-color);">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Packs SEO #}
+<section class="section">
     <div class="container">
         <h2 class="text-center mb-5">Des packs SEO adaptés à votre budget</h2>
 
         <div class="grid grid-3">
             <div class="card">
                 <div class="card-icon"><i class="fas fa-seedling"></i></div>
-                <h3 class="card-title">Pack Essentiel</h3>
+                <h3 class="card-title">Pack Essentiel : 247 € HT</h3>
                 <p class="card-text">
                     Audit SEO complet, optimisation technique et configuration Google Business Profile.
                     Idéal pour démarrer votre visibilité locale.
                 </p>
                 <div style="margin-top: 1rem;">
-                    <a href="{{ path('app_pricing') }}" class="btn btn-outline">Voir les tarifs</a>
+                    <a href="{{ path('app_pricing') }}" class="btn btn-outline">Voir le détail</a>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-icon"><i class="fas fa-chart-line"></i></div>
-                <h3 class="card-title">Pack Visibilité</h3>
+                <h3 class="card-title">Pack Visibilité : 143 € HT/mois</h3>
                 <p class="card-text">
                     Suivi mensuel des positions, optimisation continue et création de contenu local.
                     Pour monter progressivement dans les résultats.
                 </p>
                 <div style="margin-top: 1rem;">
-                    <a href="{{ path('app_pricing') }}" class="btn btn-outline">Voir les tarifs</a>
+                    <a href="{{ path('app_pricing') }}" class="btn btn-outline">Voir le détail</a>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-icon"><i class="fas fa-trophy"></i></div>
-                <h3 class="card-title">Pack Performance</h3>
+                <h3 class="card-title">Pack Performance : 227 € HT/mois</h3>
                 <p class="card-text">
                     Stratégie SEO complète avec backlinks, contenu approfondi et rapport détaillé.
                     Pour dominer les résultats dans votre zone.
                 </p>
                 <div style="margin-top: 1rem;">
-                    <a href="{{ path('app_pricing') }}" class="btn btn-outline">Voir les tarifs</a>
+                    <a href="{{ path('app_pricing') }}" class="btn btn-outline">Voir le détail</a>
                 </div>
             </div>
         </div>
@@ -139,9 +174,10 @@
 {# CTA #}
 <section class="section section-light">
     <div class="container text-center">
-        <h2 class="mb-3">Prêt à être visible sur Google ?</h2>
+        <h2 class="mb-3">Référencement local en Bretagne : parlons de votre visibilité</h2>
         <p class="lead mb-4">
-            Vous voulez savoir où vous en êtes ? Parlons de votre visibilité locale.
+            Freelance SEO basé à Auray, j'accompagne les indépendants et TPE de toute la Bretagne.
+            Premier rendez-vous gratuit et sans engagement.
         </p>
         <div style="display: inline-flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
             <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">

@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Développeur Web Freelance Bretagne | Symfony Sur Mesure | Alré Web{% endblock %}
+{% block title %}Développeur Web Freelance Bretagne | Sites Sur Mesure | Alré Web{% endblock %}
 
-{% block meta_description %}Développeur web freelance en Bretagne, spécialisé Symfony. Sites et applications sur mesure pour artisans et TPE. Basé à Auray, j'interviens dans tout le Morbihan et au-delà.{% endblock %}
+{% block meta_description %}Développeur web freelance en Bretagne. Création de sites internet, applications web et e-commerce sur mesure pour indépendants et TPE. Sites dès 493 € HT. Devis gratuit.{% endblock %}
 
 {% block structured_data %}
 {{ parent() }}
@@ -11,7 +11,7 @@
     "@context": "https://schema.org",
     "@type": "Service",
     "name": "Développeur Web Freelance en Bretagne",
-    "description": "Développement web sur mesure en Symfony pour artisans et TPE en Bretagne",
+    "description": "Développeur web freelance en Bretagne : création de sites internet, développement d'applications web et e-commerce sur mesure pour indépendants et TPE",
     "provider": {
         "@type": "ProfessionalService",
         "name": "Alré Web",
@@ -39,8 +39,8 @@
     <div class="hero-content">
         <h1 class="fade-in">Développeur web freelance en Bretagne</h1>
         <p class="lead fade-in-delay-1">
-            Développement sur mesure en Symfony pour artisans, commerçants et TPE.<br>
-            Basé à Auray, j'interviens sur toute la Bretagne.
+            Création de sites internet et développement d'applications web sur mesure<br>
+            pour indépendants et TPE en Bretagne.
         </p>
         <div class="fade-in-delay-2" style="margin-top: 2rem;">
             <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
@@ -55,16 +55,21 @@
     <div class="container">
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
             <div>
-                <h2 class="text-primary mb-3">Un développeur, pas une agence</h2>
+                <h2 class="text-primary mb-3">Votre développeur web freelance, interlocuteur unique</h2>
                 <p class="lead">
                     Quand vous travaillez avec moi, vous savez à qui vous avez affaire.
                     Pas de commercial, pas de sous-traitance : c'est moi qui code votre site, de A à Z.
                 </p>
                 <p>
-                    Je suis développeur web freelance, spécialisé dans le framework Symfony.
-                    Je crée des sites internet et des applications sur mesure pour les artisans,
-                    commerçants et TPE de Bretagne. Chaque projet est développé avec du code propre,
-                    performant et maintenable.
+                    Je suis développeur web freelance en Bretagne. Je crée des sites internet,
+                    des boutiques en ligne et des applications web sur mesure
+                    pour les indépendants et TPE (artisans, commerçants, professions libérales, thérapeutes, consultants...).
+                    Chaque projet est développé avec du code propre, performant et maintenable.
+                </p>
+                <p>
+                    Sites vitrines <a href="{{ path('app_pricing') }}">à partir de 493 € HT</a>,
+                    e-commerce dès 2 497 € HT.
+                    <a href="{{ path('app_portfolio') }}">Voir des exemples de réalisations</a>.
                 </p>
 
                 <h3 class="mt-4 mb-3">Pourquoi choisir un freelance ?</h3>
@@ -92,7 +97,7 @@
 {# Technical Expertise #}
 <section class="section section-light">
     <div class="container">
-        <h2 class="text-center mb-5">Expertise technique</h2>
+        <h2 class="text-center mb-5">Développement web sur mesure : ce que je maîtrise</h2>
 
         <div class="grid grid-3">
             <div class="card">
@@ -153,11 +158,12 @@
 </section>
 
 {# CTA #}
-<section class="section section-light">
+<section class="section">
     <div class="container text-center">
         <h2 class="mb-3">Besoin d'un développeur web en Bretagne ?</h2>
         <p class="lead mb-4">
-            Expliquez-moi votre projet. Premier rendez-vous gratuit, devis sous 48h.
+            Basé à Auray, j'accompagne les indépendants et TPE de toute la Bretagne.
+            Premier rendez-vous gratuit et sans engagement.
         </p>
         <div style="display: inline-flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
             <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">

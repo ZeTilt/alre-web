@@ -56,8 +56,10 @@ class BingWebmasterService
             }
 
             $dateStr = $date->format('Y-m-d');
-            // Bing renvoie AvgClickPosition qui est x10 (32.0 = position 3.2)
-            $position = round(($row['AvgClickPosition'] ?? 0) / 10, 1);
+            // AvgImpressionPosition = position moyenne d'affichage (équivalent GSC)
+            // AvgClickPosition = position moyenne au clic (vaut -1 si aucun clic)
+            $rawPosition = $row['AvgImpressionPosition'] ?? $row['AvgClickPosition'] ?? 0;
+            $position = max(0, round($rawPosition, 1));
 
             if (!isset($data[$dateStr])) {
                 $data[$dateStr] = [];

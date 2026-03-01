@@ -859,7 +859,7 @@
 {% endif %}
 
 <!-- SEO Evolution Chart (Clics/Impressions) -->
-{% if googleOAuthConnected and (seoKeywordsRanked.top10|length > 0 or seoKeywordsRanked.toImprove|length > 0) %}
+{% if googleOAuthConnected %}
 <div class="chart-container" style="margin-bottom: 1.5rem;">
     <div class="chart-title">
         <i class="fas fa-chart-line" style="color: var(--info);"></i>
@@ -996,7 +996,7 @@
 {% endif %}
 
 <!-- Chart.js Scripts -->
-{% if googleOAuthConnected and (seoKeywordsRanked.top10|length > 0 or seoKeywordsRanked.toImprove|length > 0) %}
+{% if googleOAuthConnected %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 // Configuration commune

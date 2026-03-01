@@ -91,6 +91,7 @@ class BingDataImportService
                         $keyword->setSource(SeoKeyword::SOURCE_AUTO_BING);
                         $keyword->setRelevanceLevel(SeoKeyword::RELEVANCE_LOW);
                         $this->entityManager->persist($keyword);
+                        $this->entityManager->flush();
                         $keywordMap[$normalizedQuery] = $keyword;
                         $created++;
                     }

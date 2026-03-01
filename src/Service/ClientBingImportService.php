@@ -78,7 +78,16 @@ class ClientBingImportService
 
             foreach ($keywords as $query => $data) {
                 // Find or create unified keyword (shared with GSC)
-                $keyword = $this->keywordRepository->findByKeywordAndSite($query, $site);
+                // Use raw SQL to match with the same collation as the unique constraint
+                $existingId = $this->entityManager->getConnection()->fetchOne(
+                    'SELECT id FROM client_seo_keyword WHERE client_site_id = ? AND keyword = ?',
+                    [$site->getId(), $query]
+                );
+                if ($existingId) {
+                    $keyword = $this->keywordRepository->find($existingId);
+                } else {
+                    $keyword = $this->keywordRepository->findByKeywordAndSite($query, $site);
+                }
                 if ($keyword === null) {
                     $keyword = new ClientSeoKeyword();
                     $keyword->setClientSite($site);

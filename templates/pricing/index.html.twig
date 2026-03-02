@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Tarifs | Développeur Web Freelance - Prix Transparents{% endblock %}
+{% block title %}Tarifs Création Site Internet Bretagne | Prix Transparents | Alré Web{% endblock %}
 
-{% block meta_description %}Tarifs transparents pour la création de sites internet et référencement SEO à Auray, Vannes et Lorient (Morbihan). Sites à partir de 493 € HT, packs SEO dès 143 € HT/mois, hébergement dès 13 € HT/mois. Devis gratuit en Bretagne et partout en France.{% endblock %}
+{% block meta_description %}Tarifs transparents pour la création de sites web en Bretagne. Sites vitrines dès 493 €, e-commerce, packs SEO dès 143 €/mois. Devis gratuit sous 48h.{% endblock %}
 
 {% block structured_data %}
 {{ parent() }}
@@ -157,11 +157,13 @@
 <section class="section">
     <div class="container text-center" style="max-width: 800px; margin: 0 auto;">
         <p class="lead">
-            Chaque projet est unique, c'est pourquoi je propose des <strong>tarifs indicatifs "à partir de"</strong>.
+            Chaque projet est unique, c'est pourquoi je propose des <strong>tarifs indicatifs "à partir de"</strong>
+            pour la <a href="{{ path('app_service_creation') }}" style="color: var(--accent-dark);">création de sites internet</a> en Bretagne.
             Après avoir discuté de vos besoins, je vous fournis un <strong>devis détaillé et personnalisé</strong>.
         </p>
         <p style="color: var(--text-muted);">
-            En tant que freelance, mes tarifs sont <strong>plus attractifs qu'une agence</strong> tout en maintenant
+            En tant que <a href="{{ path('app_service_developpeur') }}" style="color: var(--accent-dark);">développeur web freelance</a>,
+            mes prix sont <strong>plus compétitifs qu'une agence</strong> tout en maintenant
             un niveau de qualité professionnel. Pas de frais de structure, juste un service de qualité.
         </p>
     </div>
@@ -172,7 +174,7 @@
    ============================================ #}
 <section class="section section-light">
     <div class="container">
-        <h2 class="text-center mb-5">Création de Sites</h2>
+        <h2 class="text-center mb-5">Création de sites web en Bretagne</h2>
 
         <div class="grid grid-2">
             {# Offre 1 : Page Unique #}
@@ -343,7 +345,7 @@
    ============================================ #}
 <section class="section">
     <div class="container">
-        <h2 class="text-center mb-5">Hébergement & Maintenance</h2>
+        <h2 class="text-center mb-5">Hébergement & maintenance de sites web</h2>
 
         <div style="max-width: 900px; margin: 0 auto;">
             <div class="card" style="margin-bottom: 2rem;">
@@ -449,7 +451,7 @@
    ============================================ #}
 <section class="section section-light">
     <div class="container">
-        <h2 class="text-center mb-3"><i class="fas fa-search"></i> Packs SEO</h2>
+        <h2 class="text-center mb-3"><i class="fas fa-search"></i> Packs référencement SEO en Bretagne</h2>
         <p class="text-center mb-5" style="max-width: 700px; margin: 0 auto 3rem; color: var(--text-muted);">
             Améliorez votre visibilité sur Google et attirez plus de clients grâce à un référencement naturel optimisé.
         </p>
@@ -576,7 +578,7 @@
    ============================================ #}
 <section class="section">
     <div class="container">
-        <h2 class="text-center mb-5">Prestations Ponctuelles</h2>
+        <h2 class="text-center mb-5">Prestations web ponctuelles</h2>
 
         <div style="max-width: 750px; margin: 0 auto;">
             <div class="option-row">
@@ -627,7 +629,7 @@
     <div class="container">
         <div class="card" style="max-width: 800px; margin: 0 auto; padding: 3rem; background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); color: white;">
             <h2 style="color: white; text-align: center; margin-bottom: 2rem;">
-                <i class="fas fa-question-circle"></i> Pourquoi ces prix ?
+                <i class="fas fa-question-circle"></i> Pourquoi des tarifs freelance plus compétitifs ?
             </h2>
             <div style="text-align: left;">
                 <p style="font-size: 1.1rem; line-height: 1.8; color: white;">
@@ -642,6 +644,7 @@
                 <p style="font-size: 1.1rem; line-height: 1.8; color: white; margin-top: 1rem;">
                     <strong>Investir dans un site web de qualité, c'est investir dans votre activité.</strong>
                     Un bon site attire de nouveaux clients et se rentabilise rapidement.
+                    Consultez mes <a href="{{ path('app_portfolio') }}" style="color: #D5B18A;">réalisations</a> pour voir des exemples concrets.
                 </p>
             </div>
         </div>
@@ -678,7 +681,7 @@
     <div class="container text-center">
         <h2 class="mb-3">Besoin d'un devis personnalisé ?</h2>
         <p class="lead mb-4">
-            Décrivez-moi votre projet et je vous enverrai un devis détaillé<br>
+            Décrivez-moi votre projet web en Bretagne et je vous enverrai un devis détaillé<br>
             <strong>gratuit et sans engagement</strong>
         </p>
         <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">

@@ -19,6 +19,7 @@ use App\Entity\ClientSeoReport;
 use App\Entity\DepartmentPage;
 use App\Entity\PageOptimization;
 use App\Entity\SeoKeyword;
+use App\Entity\Offer;
 use App\Entity\User;
 use App\Entity\Project;
 use App\Entity\Partner;
@@ -1666,6 +1667,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Portfolio', 'fas fa-folder-open', Project::class);
         yield MenuItem::linkToCrud('Partenaires', 'fas fa-handshake', Partner::class);
         yield MenuItem::linkToCrud('Témoignages', 'fas fa-star', Testimonial::class);
+        yield MenuItem::linkToCrud('Offres & Tarifs', 'fas fa-tags', Offer::class);
         yield MenuItem::linkToCrud('Avis Google', 'fab fa-google', GoogleReview::class);
         yield MenuItem::linkToCrud('Messages de contact', 'fas fa-envelope', ContactMessage::class);
 

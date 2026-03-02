@@ -16,7 +16,7 @@
             "name": "Combien coûte un site internet ?",
             "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Cela dépend de vos besoins. Une page unique démarre à 493 € HT, un site vitrine à 1 193 € HT, un e-commerce à 2 497 € HT. Je vous fournis un devis détaillé après avoir discuté de votre projet."
+                "text": "Cela dépend de vos besoins. Une page unique démarre à {{ offers.page_unique.formattedCurrentPrice }} € HT, un site vitrine à {{ offers.site_vitrine.formattedCurrentPrice }} € HT, un e-commerce à {{ offers.ecommerce.formattedCurrentPrice }} € HT. Je vous fournis un devis détaillé après avoir discuté de votre projet."
             }
         },
         {
@@ -239,7 +239,7 @@
                     <i class="fas fa-question-circle"></i> Combien coûte un site internet ?
                 </h3>
                 <p style="margin: 0; color: var(--text-light);">
-                    Cela dépend de vos besoins. Une page unique démarre à 493 € HT, un site vitrine à 1 193 € HT, un e-commerce à 2 497 € HT.
+                    Cela dépend de vos besoins. Une page unique démarre à {{ offers.page_unique.formattedCurrentPrice }} € HT, un site vitrine à {{ offers.site_vitrine.formattedCurrentPrice }} € HT, un e-commerce à {{ offers.ecommerce.formattedCurrentPrice }} € HT.
                     Je vous fournis un devis détaillé après avoir discuté de votre projet.
                 </p>
             </div>

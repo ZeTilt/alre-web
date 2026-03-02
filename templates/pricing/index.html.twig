@@ -2,7 +2,7 @@
 
 {% block title %}Tarifs Création Site Internet Bretagne | Prix Transparents | Alré Web{% endblock %}
 
-{% block meta_description %}Tarifs transparents pour la création de sites web en Bretagne. Sites vitrines dès 493 €, e-commerce, packs SEO dès 143 €/mois. Devis gratuit sous 48h.{% endblock %}
+{% block meta_description %}Tarifs transparents pour la création de sites web en Bretagne. Sites vitrines dès {{ offers.page_unique.formattedCurrentPrice }} €, e-commerce, packs SEO dès {{ offers.seo_visibilite.formattedCurrentPrice }} €/mois. Devis gratuit sous 48h.{% endblock %}
 
 {% block structured_data %}
 {{ parent() }}
@@ -16,7 +16,7 @@
             "name": "Combien coûte une page unique ?",
             "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Une page unique démarre à 493 € HT. Elle comprend un design moderne et responsive, un formulaire de contact, l'optimisation SEO de base, l'intégration de vos contenus et 1 mois de support offert."
+                "text": "Une page unique démarre à {{ offers.page_unique.formattedCurrentPrice }} € HT. Elle comprend un design moderne et responsive, un formulaire de contact, l'optimisation SEO de base, l'intégration de vos contenus et 1 mois de support offert."
             }
         },
         {
@@ -24,7 +24,7 @@
             "name": "Combien coûte un site vitrine ?",
             "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Un site vitrine de 4-5 pages démarre à 1 193 € HT. Il comprend un design moderne, un formulaire de contact, l'optimisation SEO, la formation à la gestion et 2 mois de support offert."
+                "text": "Un site vitrine de 4-5 pages démarre à {{ offers.site_vitrine.formattedCurrentPrice }} € HT. Il comprend un design moderne, un formulaire de contact, l'optimisation SEO, la formation à la gestion et 2 mois de support offert."
             }
         },
         {
@@ -32,7 +32,7 @@
             "name": "Combien coûte un site e-commerce ?",
             "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Un site e-commerce avec jusqu'à 50 produits démarre à 2 497 € HT. Il comprend le catalogue produits, le panier et paiement sécurisé, la gestion des stocks et commandes, l'espace client et 3 mois de support."
+                "text": "Un site e-commerce avec jusqu'à 50 produits démarre à {{ offers.ecommerce.formattedCurrentPrice }} € HT. Il comprend le catalogue produits, le panier et paiement sécurisé, la gestion des stocks et commandes, l'espace client et 3 mois de support."
             }
         },
         {
@@ -48,7 +48,7 @@
             "name": "Combien coûtent les packs SEO ?",
             "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Le Pack Essentiel (audit SEO complet) coûte 247 € HT. Le Pack Visibilité (SEO local mensuel) est à 143 € HT/mois pendant la durée de l'engagement (puis 197 € HT/mois). Le Pack Performance (accompagnement SEO complet) est à 227 € HT/mois pendant la durée de l'engagement (puis 397 € HT/mois). Engagement minimum de 6 mois pour les packs mensuels."
+                "text": "Le Pack Essentiel (audit SEO complet) coûte {{ offers.seo_essentiel.formattedCurrentPrice }} € HT. Le Pack Visibilité (SEO local mensuel) est à {{ offers.seo_visibilite.formattedCurrentPrice }} € HT/mois pendant la durée de l'engagement (puis {{ offers.seo_visibilite.price|number_format(0, ',', ' ') }} € HT/mois). Le Pack Performance (accompagnement SEO complet) est à {{ offers.seo_performance.formattedCurrentPrice }} € HT/mois pendant la durée de l'engagement (puis {{ offers.seo_performance.price|number_format(0, ',', ' ') }} € HT/mois). Engagement minimum de 6 mois pour les packs mensuels."
             }
         }
     ]
@@ -61,64 +61,64 @@
     "name": "Création de sites web et référencement SEO",
     "description": "Tarifs pour la création de sites internet et référencement SEO en Bretagne",
     "url": "https://alre-web.bzh/tarifs",
-    "lowPrice": "143",
-    "highPrice": "2497",
+    "lowPrice": "{{ offers.seo_visibilite.schemaPrice }}",
+    "highPrice": "{{ offers.ecommerce.schemaPrice }}",
     "priceCurrency": "EUR",
     "offerCount": "9",
     "offers": [
         {
             "@type": "Offer",
             "name": "Page Unique",
-            "price": "493",
+            "price": "{{ offers.page_unique.schemaPrice }}",
             "priceCurrency": "EUR",
             "description": "Une page complète et optimisée avec design moderne et responsive"
         },
         {
             "@type": "Offer",
             "name": "Site Vitrine",
-            "price": "1193",
+            "price": "{{ offers.site_vitrine.schemaPrice }}",
             "priceCurrency": "EUR",
             "description": "Site de 4-5 pages personnalisées avec formation à la gestion"
         },
         {
             "@type": "Offer",
             "name": "Site E-commerce",
-            "price": "2497",
+            "price": "{{ offers.ecommerce.schemaPrice }}",
             "priceCurrency": "EUR",
             "description": "Boutique en ligne jusqu'à 50 produits avec paiement sécurisé"
         },
         {
             "@type": "Offer",
             "name": "Hébergement + Maintenance",
-            "price": "53",
+            "price": "{{ offers.hebergement_maintenance.schemaPrice }}",
             "priceCurrency": "EUR",
             "description": "Hébergement performant en France avec maintenance technique et support"
         },
         {
             "@type": "Offer",
             "name": "Hébergement Seul",
-            "price": "13",
+            "price": "{{ offers.hebergement.schemaPrice }}",
             "priceCurrency": "EUR",
             "description": "Hébergement performant en France avec SSL et sauvegardes"
         },
         {
             "@type": "Offer",
             "name": "Pack SEO Essentiel",
-            "price": "247",
+            "price": "{{ offers.seo_essentiel.schemaPrice }}",
             "priceCurrency": "EUR",
             "description": "Audit SEO complet avec plan d'action priorisé et session de conseil"
         },
         {
             "@type": "Offer",
             "name": "Pack SEO Visibilité",
-            "price": "143",
+            "price": "{{ offers.seo_visibilite.schemaPrice }}",
             "priceCurrency": "EUR",
             "description": "SEO local mensuel avec Google Business Profile et suivi des positions"
         },
         {
             "@type": "Offer",
             "name": "Pack SEO Performance",
-            "price": "227",
+            "price": "{{ offers.seo_performance.schemaPrice }}",
             "priceCurrency": "EUR",
             "description": "Accompagnement SEO complet avec stratégie de mots-clés et optimisations continues"
         }
@@ -132,7 +132,7 @@
 {# Hero Section #}
 <section class="hero" style="padding: 4rem 0;">
     <div class="hero-content">
-        <h1 class="fade-in">Tarifs transparents : sites web dès 493 €</h1>
+        <h1 class="fade-in">Tarifs transparents : sites web dès {{ offers.page_unique.formattedCurrentPrice }} €</h1>
         <p class="lead fade-in-delay-1">
             Des prix transparents et adaptés à votre projet<br>
             Devis personnalisé gratuit
@@ -143,15 +143,17 @@
     </div>
 </section>
 
+{% if hasActivePromo %}
 {# Bannière offre de lancement #}
 <div class="launch-banner fade-in-delay-2">
     <div class="launch-banner-inner">
         <span class="launch-badge">Offre de lancement</span>
         <span class="launch-text">
-            Tarifs préférentiels pour toute <strong>signature de devis avant le 31 mars 2026</strong>
+            Tarifs préférentiels pour toute <strong>signature de devis avant le {{ latestPromoEndDate|date('j') }}{% if latestPromoEndDate|date('n') == 1 %} janvier{% elseif latestPromoEndDate|date('n') == 2 %} février{% elseif latestPromoEndDate|date('n') == 3 %} mars{% elseif latestPromoEndDate|date('n') == 4 %} avril{% elseif latestPromoEndDate|date('n') == 5 %} mai{% elseif latestPromoEndDate|date('n') == 6 %} juin{% elseif latestPromoEndDate|date('n') == 7 %} juillet{% elseif latestPromoEndDate|date('n') == 8 %} août{% elseif latestPromoEndDate|date('n') == 9 %} septembre{% elseif latestPromoEndDate|date('n') == 10 %} octobre{% elseif latestPromoEndDate|date('n') == 11 %} novembre{% else %} décembre{% endif %} {{ latestPromoEndDate|date('Y') }}</strong>
         </span>
     </div>
 </div>
+{% endif %}
 
 {# Introduction #}
 <section class="section">
@@ -178,16 +180,17 @@
 
         <div class="grid grid-2">
             {# Offre 1 : Page Unique #}
+            {% set pu = offers.page_unique %}
             <div class="pricing-card card">
-                <span class="pricing-badge">Offre Lancement</span>
+                {% if pu.hasActivePromo %}<span class="pricing-badge">{{ pu.promoLabel }}</span>{% endif %}
                 <div class="card-icon">
                     <i class="fas fa-file-alt"></i>
                 </div>
-                <h3 class="card-title">Page Unique</h3>
-                <div class="pricing-ref">697 €</div>
+                <h3 class="card-title">{{ pu.name }}</h3>
+                {% if pu.formattedStrikethroughPrice %}<div class="pricing-ref">{{ pu.formattedStrikethroughPrice }} €</div>{% endif %}
                 <div class="pricing-price">
                     <span>à partir de</span>
-                    493 €
+                    {{ pu.formattedCurrentPrice }} €
                 </div>
                 <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
                     Une page, l'essentiel
@@ -216,16 +219,17 @@
             </div>
 
             {# Offre 2 : Site Vitrine - FEATURED #}
-            <div class="pricing-card card featured">
+            {% set sv = offers.site_vitrine %}
+            <div class="pricing-card card{{ sv.isFeatured ? ' featured' : '' }}">
                 <span class="pricing-badge">Le + demandé</span>
                 <div class="card-icon">
                     <i class="fas fa-desktop"></i>
                 </div>
-                <h3 class="card-title">Site Vitrine</h3>
-                <div class="pricing-ref">1 597 €</div>
+                <h3 class="card-title">{{ sv.name }}</h3>
+                {% if sv.formattedStrikethroughPrice %}<div class="pricing-ref">{{ sv.formattedStrikethroughPrice }} €</div>{% endif %}
                 <div class="pricing-price">
                     <span>à partir de</span>
-                    1 193 €
+                    {{ sv.formattedCurrentPrice }} €
                 </div>
                 <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
                     Pour un site de 4-5 pages
@@ -255,16 +259,17 @@
             </div>
 
             {# Offre 3 : Site E-commerce #}
+            {% set ec = offers.ecommerce %}
             <div class="pricing-card card">
                 <span class="pricing-badge">Complet</span>
                 <div class="card-icon">
                     <i class="fas fa-shopping-cart"></i>
                 </div>
-                <h3 class="card-title">Site E-commerce</h3>
-                <div class="pricing-ref">3 297 €</div>
+                <h3 class="card-title">{{ ec.name }}</h3>
+                {% if ec.formattedStrikethroughPrice %}<div class="pricing-ref">{{ ec.formattedStrikethroughPrice }} €</div>{% endif %}
                 <div class="pricing-price">
                     <span>à partir de</span>
-                    2 497 €
+                    {{ ec.formattedCurrentPrice }} €
                 </div>
                 <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
                     Boutique jusqu'à 50 produits
@@ -364,14 +369,15 @@
                             <li>Support technique</li>
                         </ul>
                     </div>
+                    {% set hm = offers.hebergement_maintenance %}
                     <div style="text-align: center;">
-                        <div class="pricing-ref">77 €/mois</div>
+                        {% if hm.formattedStrikethroughPrice %}<div class="pricing-ref">{{ hm.formattedStrikethroughPrice }} €/mois</div>{% endif %}
                         <div class="pricing-price" style="margin: 0;">
-                            53 €
+                            {{ hm.formattedCurrentPrice }} €
                             <span>/mois</span>
                         </div>
                         <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
-                            pendant la durée de l'engagement, puis 77 €/mois
+                            pendant la durée de l'engagement, puis {{ hm.price|number_format(0, ',', ' ') }} €/mois
                         </div>
                         <div class="pricing-saving">Recommandé</div>
                         <a href="{{ path('app_contact') }}" class="btn btn-primary" style="margin-top: 1rem;">
@@ -396,14 +402,15 @@
                             <li>Sans maintenance technique</li>
                         </ul>
                     </div>
+                    {% set hb = offers.hebergement %}
                     <div style="text-align: center;">
-                        <div class="pricing-ref">23 €/mois</div>
+                        {% if hb.formattedStrikethroughPrice %}<div class="pricing-ref">{{ hb.formattedStrikethroughPrice }} €/mois</div>{% endif %}
                         <div class="pricing-price" style="margin: 0;">
-                            13 €
+                            {{ hb.formattedCurrentPrice }} €
                             <span>/mois</span>
                         </div>
                         <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
-                            pendant la durée de l'engagement, puis 23 €/mois
+                            pendant la durée de l'engagement, puis {{ hb.price|number_format(0, ',', ' ') }} €/mois
                         </div>
                         <a href="{{ path('app_contact') }}" class="btn btn-outline" style="margin-top: 1rem;">
                             Souscrire
@@ -427,14 +434,15 @@
                             <li>Petites modifications</li>
                         </ul>
                     </div>
+                    {% set mt = offers.maintenance %}
                     <div style="text-align: center;">
-                        <div class="pricing-ref">63 €/mois</div>
+                        {% if mt.formattedStrikethroughPrice %}<div class="pricing-ref">{{ mt.formattedStrikethroughPrice }} €/mois</div>{% endif %}
                         <div class="pricing-price" style="margin: 0;">
-                            47 €
+                            {{ mt.formattedCurrentPrice }} €
                             <span>/mois</span>
                         </div>
                         <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
-                            pendant la durée de l'engagement, puis 63 €/mois
+                            pendant la durée de l'engagement, puis {{ mt.price|number_format(0, ',', ' ') }} €/mois
                         </div>
                         <a href="{{ path('app_contact') }}" class="btn btn-outline" style="margin-top: 1rem;">
                             Souscrire
@@ -458,14 +466,15 @@
 
         <div class="grid grid-3">
             {# Pack Essentiel #}
+            {% set se = offers.seo_essentiel %}
             <div class="pricing-card card">
                 <div class="card-icon">
                     <i class="fas fa-clipboard-check"></i>
                 </div>
                 <h3 class="card-title">Pack Essentiel</h3>
-                <div class="pricing-ref">397 €</div>
+                {% if se.formattedStrikethroughPrice %}<div class="pricing-ref">{{ se.formattedStrikethroughPrice }} €</div>{% endif %}
                 <div class="pricing-price">
-                    247 €
+                    {{ se.formattedCurrentPrice }} €
                 </div>
                 <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
                     Audit complet, ponctuel
@@ -487,22 +496,23 @@
             </div>
 
             {# Pack Visibilité #}
+            {% set svis = offers.seo_visibilite %}
             <div class="pricing-card card">
                 <div class="card-icon">
                     <i class="fas fa-map-marker-alt"></i>
                 </div>
                 <h3 class="card-title">Pack Visibilité</h3>
-                <div class="pricing-ref">197 €/mois</div>
+                {% if svis.formattedStrikethroughPrice %}<div class="pricing-ref">{{ svis.formattedStrikethroughPrice }} €/mois</div>{% endif %}
                 <div class="pricing-price">
-                    143 €
+                    {{ svis.formattedCurrentPrice }} €
                     <span>/mois</span>
                 </div>
                 <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
                     SEO local, engagement 6 mois min.<br>
-                    <span style="font-size: 0.85rem;">puis 197 €/mois si reconduction</span>
+                    <span style="font-size: 0.85rem;">puis {{ svis.price|number_format(0, ',', ' ') }} €/mois si reconduction</span>
                 </p>
                 <ul class="pricing-features">
-                    <li>Audit SEO initial offert (valeur 397 €)</li>
+                    <li>Audit SEO initial offert (valeur {{ se.price|number_format(0, ',', ' ') }} €)</li>
                     <li>Création/optimisation Google Business Profile</li>
                     <li>Gestion et réponse aux avis clients</li>
                     <li>Optimisation SEO local de votre site</li>
@@ -521,20 +531,21 @@
             </div>
 
             {# Pack Performance - FEATURED #}
-            <div class="pricing-card card featured">
+            {% set sp = offers.seo_performance %}
+            <div class="pricing-card card{{ sp.isFeatured ? ' featured' : '' }}">
                 <span class="pricing-badge">Meilleur rapport qualité/prix</span>
                 <div class="card-icon">
                     <i class="fas fa-chart-line"></i>
                 </div>
                 <h3 class="card-title">Pack Performance</h3>
-                <div class="pricing-ref">397 €/mois</div>
+                {% if sp.formattedStrikethroughPrice %}<div class="pricing-ref">{{ sp.formattedStrikethroughPrice }} €/mois</div>{% endif %}
                 <div class="pricing-price">
-                    227 €
+                    {{ sp.formattedCurrentPrice }} €
                     <span>/mois</span>
                 </div>
                 <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
                     SEO complet, engagement 6 mois min.<br>
-                    <span style="font-size: 0.85rem;">puis 397 €/mois si reconduction</span>
+                    <span style="font-size: 0.85rem;">puis {{ sp.price|number_format(0, ',', ' ') }} €/mois si reconduction</span>
                 </p>
                 <ul class="pricing-features">
                     <li>Tout le Pack Visibilité inclus</li>
@@ -586,7 +597,7 @@
                     <strong>Optimisation SEO</strong>
                     <span>Corrections techniques et optimisations on-page de votre site existant</span>
                 </div>
-                <div class="option-price">à partir de 347 €</div>
+                <div class="option-price">à partir de {{ offers.optimisation_seo.formattedCurrentPrice }} €</div>
             </div>
 
             <div class="option-row">
@@ -594,7 +605,7 @@
                     <strong>Optimisation de contenu</strong>
                     <span>Réécriture SEO de vos textes existants : pages, fiches produits, articles</span>
                 </div>
-                <div class="option-price">33 €/page</div>
+                <div class="option-price">{{ offers.optimisation_contenu.formattedCurrentPrice }} €{{ offers.optimisation_contenu.priceSuffix }}</div>
             </div>
 
             <div class="option-row">
@@ -602,7 +613,7 @@
                     <strong>Site multilingue</strong>
                     <span>Ajout d'une ou plusieurs langues à votre site existant</span>
                 </div>
-                <div class="option-price">93 €/langue/page</div>
+                <div class="option-price">{{ offers.site_multilingue.formattedCurrentPrice }} €{{ offers.site_multilingue.priceSuffix }}</div>
             </div>
 
             <div class="option-row">
@@ -610,7 +621,7 @@
                     <strong>Refonte de site</strong>
                     <span>Nouveau design, migration, modernisation de votre site existant</span>
                 </div>
-                <div class="option-price">à partir de 593 €</div>
+                <div class="option-price">à partir de {{ offers.refonte.formattedCurrentPrice }} €</div>
             </div>
 
             <div class="option-row">

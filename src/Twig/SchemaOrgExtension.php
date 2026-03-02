@@ -5,6 +5,7 @@ namespace App\Twig;
 use App\Entity\Company;
 use App\Repository\CompanyRepository;
 use App\Repository\GoogleReviewRepository;
+use App\Repository\OfferRepository;
 use App\Service\CompanyService;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
@@ -16,6 +17,7 @@ class SchemaOrgExtension extends AbstractExtension implements GlobalsInterface
         private GoogleReviewRepository $googleReviewRepository,
         private CompanyRepository $companyRepository,
         private CompanyService $companyService,
+        private OfferRepository $offerRepository,
     ) {}
 
     public function getGlobals(): array
@@ -28,6 +30,9 @@ class SchemaOrgExtension extends AbstractExtension implements GlobalsInterface
                 'ratingValue' => number_format($stats['averageRating'], 1, '.', ''),
                 'reviewCount' => $stats['approved'],
             ] : null,
+            'offers' => $this->offerRepository->findAllIndexedBySlug(),
+            'hasActivePromo' => $this->offerRepository->hasAnyActivePromo(),
+            'latestPromoEndDate' => $this->offerRepository->getLatestPromoEndDate(),
         ];
     }
 

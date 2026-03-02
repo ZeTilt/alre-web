@@ -209,14 +209,6 @@ class CityCrudController extends AbstractCrudController
         yield DateTimeField::new('lastOptimizedAt', 'Dernière optimisation')
             ->setFormat('dd/MM/yyyy')
             ->setSortable(true)
-            ->formatValue(function ($value) {
-                if ($value === null) {
-                    return '<span style="color:#9ca3af">jamais</span>';
-                }
-
-                return $value;
-            })
-            ->renderAsHtml()
             ->onlyOnIndex();
 
         yield BooleanField::new('isActive', 'Active')

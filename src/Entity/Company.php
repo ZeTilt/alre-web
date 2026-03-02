@@ -194,6 +194,19 @@ class Company
         return $this->phone;
     }
 
+    /**
+     * Returns phone in international tel: format (+33695292126).
+     */
+    public function getPhoneTel(): string
+    {
+        $clean = str_replace(' ', '', $this->phone ?? '');
+        if (str_starts_with($clean, '0')) {
+            return '+33' . substr($clean, 1);
+        }
+
+        return $clean;
+    }
+
     public function setPhone(string $phone): static
     {
         $this->phone = $phone;

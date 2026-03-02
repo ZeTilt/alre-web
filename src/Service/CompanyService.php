@@ -32,7 +32,7 @@ class CompanyService
             $company->setAddress('1, impasse de la Forge');
             $company->setPostalCode('56400');
             $company->setCity('Sainte-Anne d\'Auray');
-            $company->setPhone('06 95 78 69 84');
+            $company->setPhone('06 95 29 21 26');
             $company->setEmail('contact@zetilt.fr');
             $company->setSiret('90308676700014');
             $company->setLegalStatus('Auto-entrepreneur');

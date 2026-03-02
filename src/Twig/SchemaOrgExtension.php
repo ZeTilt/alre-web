@@ -5,6 +5,7 @@ namespace App\Twig;
 use App\Entity\Company;
 use App\Repository\CompanyRepository;
 use App\Repository\GoogleReviewRepository;
+use App\Service\CompanyService;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 use Twig\TwigFunction;
@@ -14,6 +15,7 @@ class SchemaOrgExtension extends AbstractExtension implements GlobalsInterface
     public function __construct(
         private GoogleReviewRepository $googleReviewRepository,
         private CompanyRepository $companyRepository,
+        private CompanyService $companyService,
     ) {}
 
     public function getGlobals(): array
@@ -21,6 +23,7 @@ class SchemaOrgExtension extends AbstractExtension implements GlobalsInterface
         $stats = $this->googleReviewRepository->getStats();
 
         return [
+            'company' => $this->companyService->getCompanyOrDefault(),
             'schema_aggregate_rating' => $stats['approved'] > 0 ? [
                 'ratingValue' => number_format($stats['averageRating'], 1, '.', ''),
                 'reviewCount' => $stats['approved'],

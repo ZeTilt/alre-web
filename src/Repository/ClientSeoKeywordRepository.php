@@ -161,7 +161,7 @@ class ClientSeoKeywordRepository extends ServiceEntityRepository
     }
 
     /**
-     * Retourne les mots-cles actifs non vus dans GSC depuis $threshold.
+     * Retourne les mots-cles actifs non vus dans aucune source (GSC ni Bing) depuis $threshold.
      *
      * @return ClientSeoKeyword[]
      */
@@ -170,8 +170,12 @@ class ClientSeoKeywordRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('k')
             ->where('k.clientSite = :site')
             ->andWhere('k.isActive = :active')
-            ->andWhere('k.lastSeenInGsc IS NOT NULL')
-            ->andWhere('k.lastSeenInGsc < :threshold')
+            // At least seen in one source (don't deactivate manually created keywords never seen)
+            ->andWhere('k.lastSeenInGsc IS NOT NULL OR k.lastSeenInBing IS NOT NULL')
+            // Not recently seen in GSC (NULL = never seen in GSC, counts as "not recent")
+            ->andWhere('k.lastSeenInGsc IS NULL OR k.lastSeenInGsc < :threshold')
+            // Not recently seen in Bing either
+            ->andWhere('k.lastSeenInBing IS NULL OR k.lastSeenInBing < :threshold')
             ->setParameter('site', $clientSite)
             ->setParameter('active', true)
             ->setParameter('threshold', $threshold)

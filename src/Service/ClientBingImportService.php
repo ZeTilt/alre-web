@@ -72,29 +72,51 @@ class ClientBingImportService
         $dailyTotalsCreated = 0;
 
         // Import query stats (keywords + positions)
+        $conn = $this->entityManager->getConnection();
+        $siteId = $site->getId();
         $queryStats = $this->bingService->fetchQueryStats($siteUrl);
         foreach ($queryStats as $dateStr => $keywords) {
             $date = new \DateTimeImmutable($dateStr);
 
             foreach ($keywords as $query => $data) {
                 // Find or create unified keyword (shared with GSC)
-                // Use raw SQL to match with the same collation as the unique constraint
-                $existingId = $this->entityManager->getConnection()->fetchOne(
+                // Use INSERT IGNORE + re-SELECT to avoid UniqueConstraintViolation
+                // on collation edge cases (e.g. Unicode NFC vs NFD for accented chars)
+
+                $existingId = $conn->fetchOne(
                     'SELECT id FROM client_seo_keyword WHERE client_site_id = ? AND keyword = ?',
-                    [$site->getId(), $query]
+                    [$siteId, $query]
                 );
-                if ($existingId) {
-                    $keyword = $this->keywordRepository->find($existingId);
-                } else {
-                    $keyword = $this->keywordRepository->findByKeywordAndSite($query, $site);
-                }
-                if ($keyword === null) {
-                    $keyword = new ClientSeoKeyword();
-                    $keyword->setClientSite($site);
-                    $keyword->setKeyword($query);
-                    $this->entityManager->persist($keyword);
-                    $this->entityManager->flush();
+
+                if (!$existingId) {
+                    // INSERT IGNORE: silently skips if duplicate per unique constraint collation
+                    $conn->executeStatement(
+                        'INSERT IGNORE INTO client_seo_keyword (client_site_id, keyword, is_active, relevance_level, relevance_score, created_at) VALUES (?, ?, 1, \'medium\', 0, NOW())',
+                        [$siteId, $query]
+                    );
+                    $existingId = $conn->fetchOne(
+                        'SELECT id FROM client_seo_keyword WHERE client_site_id = ? AND keyword = ?',
+                        [$siteId, $query]
+                    );
+                    if (!$existingId) {
+                        // Last resort: the collation matched an existing row we can't SELECT
+                        // Use LIKE with the first 50 chars to find the closest match
+                        $prefix = mb_substr($query, 0, 50);
+                        $existingId = $conn->fetchOne(
+                            'SELECT id FROM client_seo_keyword WHERE client_site_id = ? AND keyword LIKE ?',
+                            [$siteId, $prefix . '%']
+                        );
+                    }
                     $keywordsCreated++;
+                }
+
+                $keyword = $existingId ? $this->keywordRepository->find($existingId) : null;
+                if ($keyword === null) {
+                    $this->logger->warning('Could not find or create client keyword', [
+                        'site' => $site->getName(),
+                        'query' => $query,
+                    ]);
+                    continue;
                 }
 
                 // Track last seen in Bing

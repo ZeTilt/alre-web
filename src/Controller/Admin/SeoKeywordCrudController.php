@@ -67,6 +67,7 @@ class SeoKeywordCrudController extends AbstractCrudController
             'latestPosition.position' => 'sort_position',
             'latestPosition.clicks' => 'sort_clicks',
             'latestPosition.impressions' => 'sort_impressions',
+            'lastOptimizedAt' => 'entity.lastOptimizedAt',
         ];
 
         $sort = $searchDto->getSort();
@@ -203,10 +204,18 @@ class SeoKeywordCrudController extends AbstractCrudController
             ->setFormat('dd/MM/yyyy')
             ->hideOnForm();
 
-        yield DateTimeField::new('lastOptimizedAt', 'Dernière optimisation')
-            ->setFormat('dd/MM/yyyy')
+        yield TextField::new('lastOptimizedAt', 'Dernière optimisation')
+            ->setVirtual(true)
             ->setSortable(true)
-            ->hideOnForm();
+            ->formatValue(function ($value, $entity) {
+                $date = $entity->getLastOptimizedAt();
+                if ($date === null) {
+                    return '<span style="color:#9ca3af">jamais</span>';
+                }
+                return $date->format('d/m/Y');
+            })
+            ->renderAsHtml()
+            ->onlyOnIndex();
 
         yield DateTimeField::new('createdAt', 'Créé le')
             ->setFormat('dd/MM/yyyy')

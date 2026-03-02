@@ -203,6 +203,11 @@ class SeoKeywordCrudController extends AbstractCrudController
             ->setFormat('dd/MM/yyyy')
             ->hideOnForm();
 
+        yield DateTimeField::new('lastOptimizedAt', 'Dernière optimisation')
+            ->setFormat('dd/MM/yyyy')
+            ->setSortable(true)
+            ->hideOnForm();
+
         yield DateTimeField::new('createdAt', 'Créé le')
             ->setFormat('dd/MM/yyyy')
             ->hideOnForm()

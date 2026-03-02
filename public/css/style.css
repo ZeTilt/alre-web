@@ -1123,7 +1123,7 @@ textarea.form-control {
         display: flex;
     }
 
-    /* Dropdown mobile : toujours visible, inline */
+    /* Dropdown mobile : inline, caché par défaut */
     .navbar-dropdown-menu {
         display: none;
         position: static;
@@ -1131,6 +1131,12 @@ textarea.form-control {
         min-width: 0;
         padding: 0;
         padding-left: 1rem;
+        list-style: none;
+    }
+
+    /* Désactiver le hover dropdown sur mobile */
+    .navbar-dropdown:hover .navbar-dropdown-menu {
+        display: none;
     }
 
     .navbar-dropdown.open .navbar-dropdown-menu {

@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const navbarToggle = document.querySelector('.navbar-toggle');
     const navbarMenu = document.querySelector('.navbar-menu');
     const navbarLinks = document.querySelectorAll('.navbar-menu a');
+    let dropdownJustToggled = false;
 
     // Effet de scroll sur la navbar
     window.addEventListener('scroll', function() {
@@ -37,18 +38,29 @@ document.addEventListener('DOMContentLoaded', function() {
         dropdownLink?.addEventListener('click', function(e) {
             if (window.innerWidth <= 768) {
                 e.preventDefault();
+                e.stopPropagation();
+                dropdownJustToggled = true;
                 navDropdown.classList.toggle('open');
             }
         });
     }
 
-    // Fermer le menu mobile au clic sur un lien
+    // Fermer le menu mobile au clic sur un lien (sauf le trigger dropdown)
     navbarLinks.forEach(link => {
-        link.addEventListener('click', function() {
+        link.addEventListener('click', function(e) {
             if (window.innerWidth <= 768) {
+                if (dropdownJustToggled) {
+                    dropdownJustToggled = false;
+                    return;
+                }
                 navbarMenu?.classList.remove('active');
                 if (navbarToggle) {
                     navbarToggle.innerHTML = '<i class="fas fa-bars"></i>';
+                }
+                // Refermer le dropdown
+                const openDropdown = document.querySelector('.navbar-dropdown.open');
+                if (openDropdown) {
+                    openDropdown.classList.remove('open');
                 }
             }
         });

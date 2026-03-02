@@ -95,7 +95,7 @@ class SeoKeywordRepository extends ServiceEntityRepository
     }
 
     /**
-     * Retourne les mots-clés actifs non vus dans GSC depuis $threshold.
+     * Retourne les mots-clés actifs non vus dans aucune source (GSC ni Bing) depuis $threshold.
      *
      * @return SeoKeyword[]
      */
@@ -103,8 +103,9 @@ class SeoKeywordRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('k')
             ->where('k.isActive = :active')
-            ->andWhere('k.lastSeenInGsc IS NOT NULL')
-            ->andWhere('k.lastSeenInGsc < :threshold')
+            ->andWhere('k.lastSeenInGsc IS NOT NULL OR k.lastSeenInBing IS NOT NULL')
+            ->andWhere('k.lastSeenInGsc IS NULL OR k.lastSeenInGsc < :threshold')
+            ->andWhere('k.lastSeenInBing IS NULL OR k.lastSeenInBing < :threshold')
             ->setParameter('active', true)
             ->setParameter('threshold', $threshold)
             ->getQuery()

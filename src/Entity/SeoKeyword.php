@@ -45,6 +45,9 @@ class SeoKeyword
     private ?\DateTimeImmutable $lastSeenInGsc = null;
 
     #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastSeenInBing = null;
+
+    #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $lastSyncAt = null;
 
     #[ORM\Column(nullable: true)]
@@ -245,6 +248,17 @@ class SeoKeyword
     public function setLastSeenInGsc(?\DateTimeImmutable $lastSeenInGsc): static
     {
         $this->lastSeenInGsc = $lastSeenInGsc;
+        return $this;
+    }
+
+    public function getLastSeenInBing(): ?\DateTimeImmutable
+    {
+        return $this->lastSeenInBing;
+    }
+
+    public function setLastSeenInBing(?\DateTimeImmutable $lastSeenInBing): static
+    {
+        $this->lastSeenInBing = $lastSeenInBing;
         return $this;
     }
 

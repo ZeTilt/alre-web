@@ -96,6 +96,11 @@ class BingDataImportService
                         $created++;
                     }
 
+                    // Track last seen in Bing
+                    if ($keyword->getLastSeenInBing() === null || $date > $keyword->getLastSeenInBing()) {
+                        $keyword->setLastSeenInBing($date);
+                    }
+
                     // Check for existing position
                     $existingPosition = $this->positionRepository->findByKeywordAndDate($keyword, $date);
                     if ($existingPosition) {

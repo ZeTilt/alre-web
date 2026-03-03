@@ -20,7 +20,8 @@ final class Version20260303033952 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE offer ADD is_promo_active TINYINT NOT NULL');
+        $this->addSql('ALTER TABLE offer ADD is_promo_active TINYINT NOT NULL DEFAULT 1');
+        $this->addSql('UPDATE offer SET is_promo_active = 1 WHERE promo_price IS NOT NULL');
     }
 
     public function down(Schema $schema): void

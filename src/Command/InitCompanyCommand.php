@@ -35,14 +35,14 @@ class InitCompanyCommand extends Command
 
         // Create default company
         $company = new Company();
-        $company->setName('ZeTilt');
+        $company->setName('Alré Web');
         $company->setOwnerName('DHUICQUE Fabrice');
         $company->setTitle('Développeur Web Full-Stack');
         $company->setAddress('1, impasse de la Forge');
         $company->setPostalCode('56400');
         $company->setCity('Sainte-Anne d\'Auray');
         $company->setPhone('06 95 29 21 26');
-        $company->setEmail('contact@zetilt.fr');
+        $company->setEmail('contact@alre-web.bzh');
         $company->setSiret('90308676700014');
         $company->setLegalStatus('Auto-entrepreneur');
         $company->setLegalMentions('Dispensé d\'immatriculation au registre du commerce et des sociétés (RCS) et au répertoire des métiers (RM)');

@@ -23,11 +23,6 @@
                      height="350"
                      fetchpriority="high">
             </div>
-            {% if company.homePortraitPhotoCredit %}
-            <div class="photo-credit">
-                Crédit photo : {% if company.homePortraitPhotoCreditUrl %}<a href="{{ company.homePortraitPhotoCreditUrl }}" target="_blank" rel="noopener noreferrer">{{ company.homePortraitPhotoCredit }}</a>{% else %}{{ company.homePortraitPhotoCredit }}{% endif %}
-            </div>
-            {% endif %}
         </div>
         {% endif %}
         <div class="hero-text">

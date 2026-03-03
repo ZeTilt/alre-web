@@ -111,7 +111,10 @@
                 <strong>Conception et développement :</strong> Fabrice Dhuicque - Alré Web<br>
                 <strong>Technologies utilisées :</strong> Symfony, PHP, MySQL, HTML5, CSS3, JavaScript<br>
                 <strong>Icônes :</strong> Font Awesome<br>
-                <strong>Hébergement :</strong> o2switch
+                <strong>Hébergement :</strong> o2switch<br>
+                {% if company.homePortraitPhotoCredit %}
+                <strong>Photographies :</strong> {% if company.homePortraitPhotoCreditUrl %}<a href="{{ company.homePortraitPhotoCreditUrl }}" target="_blank" rel="noopener noreferrer">{{ company.homePortraitPhotoCredit }}</a>{% else %}{{ company.homePortraitPhotoCredit }}{% endif %}
+                {% endif %}
             </p>
 
             <div class="legal-meta">

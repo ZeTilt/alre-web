@@ -78,6 +78,9 @@ class OfferCrudController extends AbstractCrudController
             ->setHelp('Ex: "Offre Lancement"')
             ->hideOnIndex();
 
+        yield BooleanField::new('isPromoActive', 'Promo active')
+            ->setColumns(3);
+
         yield BooleanField::new('isRecurring', 'Mensuel')
             ->setColumns(3);
 

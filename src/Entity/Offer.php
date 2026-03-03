@@ -36,6 +36,9 @@ class Offer
     private ?string $promoLabel = null;
 
     #[ORM\Column]
+    private bool $isPromoActive = true;
+
+    #[ORM\Column]
     private bool $isRecurring = false;
 
     #[ORM\Column(length: 30, nullable: true)]
@@ -135,6 +138,17 @@ class Offer
         return $this;
     }
 
+    public function isPromoActive(): bool
+    {
+        return $this->isPromoActive;
+    }
+
+    public function setIsPromoActive(bool $isPromoActive): static
+    {
+        $this->isPromoActive = $isPromoActive;
+        return $this;
+    }
+
     public function isRecurring(): bool
     {
         return $this->isRecurring;
@@ -205,7 +219,7 @@ class Offer
 
     public function hasActivePromo(): bool
     {
-        if ($this->promoPrice === null) {
+        if (!$this->isPromoActive || $this->promoPrice === null) {
             return false;
         }
 

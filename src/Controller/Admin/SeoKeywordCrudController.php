@@ -200,8 +200,9 @@ class SeoKeywordCrudController extends AbstractCrudController
                 ->onlyOnIndex();
         }
 
-        yield DateTimeField::new('lastSeenInGsc', 'Dernière impression')
+        yield DateTimeField::new('lastSeen', 'Dernière impression')
             ->setFormat('dd/MM/yyyy')
+            ->setSortable(true)
             ->hideOnForm();
 
         yield DateTimeField::new('lastOptimizedAt', 'Dernière optimisation')

@@ -262,6 +262,17 @@ class SeoKeyword
         return $this;
     }
 
+    public function getLastSeen(): ?\DateTimeImmutable
+    {
+        if ($this->lastSeenInGsc === null) {
+            return $this->lastSeenInBing;
+        }
+        if ($this->lastSeenInBing === null) {
+            return $this->lastSeenInGsc;
+        }
+        return $this->lastSeenInGsc > $this->lastSeenInBing ? $this->lastSeenInGsc : $this->lastSeenInBing;
+    }
+
     public static function getSourceChoices(): array
     {
         return [

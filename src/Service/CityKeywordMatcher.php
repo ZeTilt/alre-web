@@ -39,6 +39,64 @@ class CityKeywordMatcher
     }
 
     /**
+     * Generates all name variants for a given name.
+     * Handles: accents, hyphens/spaces, apostrophes, saint/st abbreviations.
+     *
+     * @return string[] Raw (non-normalized) variant patterns
+     */
+    private function generateNameVariants(string $name): array
+    {
+        $stripped = transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $name);
+
+        $baseVariants = array_unique([$name, $stripped]);
+        $patterns = [];
+        foreach ($baseVariants as $v) {
+            $patterns[] = $v;
+            if (str_contains($v, '-')) {
+                $patterns[] = str_replace('-', ' ', $v);
+            }
+            if (str_contains($v, ' ')) {
+                $patterns[] = str_replace(' ', '-', $v);
+            }
+            if (str_contains($v, '\'')) {
+                $patterns[] = str_replace('\'', '', $v);
+                $patterns[] = str_replace('\'', '-', $v);
+            }
+        }
+
+        // Expand saint/st variants (saint-malo = st-malo = st malo = saint malo)
+        $expanded = [];
+        foreach ($patterns as $p) {
+            $expanded[] = $p;
+            $lower = mb_strtolower($p);
+
+            if (str_contains($lower, 'saint')) {
+                $variant = preg_replace('/\bsaint\b/iu', 'St', $p);
+                $expanded[] = $variant;
+                if (str_contains($variant, '-')) {
+                    $expanded[] = str_replace('-', ' ', $variant);
+                }
+                if (str_contains($variant, ' ')) {
+                    $expanded[] = str_replace(' ', '-', $variant);
+                }
+            }
+
+            if (preg_match('/\bst\b/i', $lower)) {
+                $variant = preg_replace('/\bst\b/iu', 'Saint', $p);
+                $expanded[] = $variant;
+                if (str_contains($variant, '-')) {
+                    $expanded[] = str_replace('-', ' ', $variant);
+                }
+                if (str_contains($variant, ' ')) {
+                    $expanded[] = str_replace(' ', '-', $variant);
+                }
+            }
+        }
+
+        return array_values(array_unique($expanded));
+    }
+
+    /**
      * Get pre-normalized name patterns for a city (no region). Memoized.
      *
      * @return string[] Normalized patterns
@@ -47,24 +105,9 @@ class CityKeywordMatcher
     {
         $cityId = $city->getId();
         if (!isset($this->cityNamePatternsCache[$cityId])) {
-            $name = $city->getName();
-            $stripped = transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $name);
-
-            $nameVariants = array_unique([$name, $stripped]);
-            $patterns = [];
-            foreach ($nameVariants as $v) {
-                $patterns[] = $v;
-                if (str_contains($v, '-')) {
-                    $patterns[] = str_replace('-', ' ', $v);
-                }
-                if (str_contains($v, ' ')) {
-                    $patterns[] = str_replace(' ', '-', $v);
-                }
-            }
-
             $this->cityNamePatternsCache[$cityId] = array_map(
                 fn($p) => $this->normalize($p),
-                array_unique($patterns)
+                $this->generateNameVariants($city->getName())
             );
         }
 
@@ -94,38 +137,14 @@ class CityKeywordMatcher
     }
 
     /**
-     * Generates name variants for a city (accents, hyphens/spaces) + region.
+     * Generates name variants for a city (accents, hyphens/spaces, saint/st).
+     * Does NOT include region to avoid marking department-level keywords as optimized.
      *
-     * @return string[] Lowercased patterns to match against
+     * @return string[] Patterns to match against
      */
     public function buildCityPatterns(City $city): array
     {
-        $name = $city->getName();
-        $stripped = transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $name);
-
-        $variants = array_unique([$name, $stripped]);
-        $patterns = [];
-        foreach ($variants as $v) {
-            $patterns[] = $v;
-            if (str_contains($v, '-')) {
-                $patterns[] = str_replace('-', ' ', $v);
-            }
-            if (str_contains($v, ' ')) {
-                $patterns[] = str_replace(' ', '-', $v);
-            }
-        }
-
-        // Add region as pattern (e.g. "morbihan", "bretagne")
-        $region = $city->getRegion();
-        if ($region) {
-            $regionStripped = transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $region);
-            $patterns[] = $region;
-            if ($regionStripped !== $region) {
-                $patterns[] = $regionStripped;
-            }
-        }
-
-        return array_values(array_unique($patterns));
+        return $this->generateNameVariants($city->getName());
     }
 
     /**
@@ -290,32 +309,14 @@ class CityKeywordMatcher
     }
 
     /**
-     * Generates name variants for a department.
+     * Generates name variants for a department (accents, hyphens/spaces, apostrophes).
+     * Does NOT include "Bretagne" nor city names to avoid cross-marking.
      *
-     * @return string[] Lowercased patterns to match against
+     * @return string[] Patterns to match against
      */
     public function buildDepartmentPatterns(DepartmentPage $dept): array
     {
-        $name = $dept->getName();
-        $stripped = transliterator_transliterate('NFD; [:Nonspacing Mark:] Remove; NFC', $name);
-
-        $variants = array_unique([$name, $stripped]);
-        $patterns = [];
-        foreach ($variants as $v) {
-            $patterns[] = $v;
-            if (str_contains($v, '-')) {
-                $patterns[] = str_replace('-', ' ', $v);
-            }
-            if (str_contains($v, ' ')) {
-                $patterns[] = str_replace(' ', '-', $v);
-            }
-            if (str_contains($v, '\'')) {
-                $patterns[] = str_replace('\'', '', $v);
-                $patterns[] = str_replace('\'', '-', $v);
-            }
-        }
-
-        return array_values(array_unique($patterns));
+        return $this->generateNameVariants($dept->getName());
     }
 
     /**

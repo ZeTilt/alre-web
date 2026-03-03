@@ -1,18 +1,18 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Zones d'intervention | Développeur Web Bretagne - Morbihan{% endblock %}
+{% block title %}Développeur Web Local en Bretagne | Proximité | Alré Web{% endblock %}
 
-{% block meta_description %}Développeur web freelance intervenant sur tout le Morbihan : Auray, Vannes, Lorient, Carnac, Quiberon, Pontivy, Ploërmel. Création de sites internet pour artisans et TPE en Bretagne.{% endblock %}
+{% block meta_description %}Basé à Auray, j'interviens dans tout le Morbihan et la Bretagne. Sites internet, e-commerce et SEO. Un prestataire web local, réactif et à votre écoute.{% endblock %}
 
 {% block body %}
 
 {# Hero Section #}
 <section class="hero" style="padding: 4rem 0;">
     <div class="hero-content">
-        <h1 class="fade-in">Création web et référencement en Bretagne</h1>
+        <h1 class="fade-in">Votre prestataire web de proximité en Bretagne</h1>
         <p class="lead fade-in-delay-1">
-            Basé à Auray, j'interviens sur tout le Morbihan et au-delà.<br>
-            Un interlocuteur local pour vos projets web.
+            Basé à Auray, j'accompagne les indépendants, TPE et professions libérales de toute la Bretagne.<br>
+            Un interlocuteur local et réactif pour la création de votre site internet, votre e-commerce ou votre référencement.
         </p>
     </div>
 </section>
@@ -20,7 +20,7 @@
 {# Villes par département #}
 <section class="section">
     <div class="container">
-        <h2 class="text-center mb-5">Mes zones d'intervention</h2>
+        <h2 class="text-center mb-5">Un développeur web partout en Bretagne</h2>
 
         {% for regionName, regionCities in citiesByRegion %}
         <div style="margin-bottom: 3rem;">
@@ -68,14 +68,14 @@
 {# Pourquoi local #}
 <section class="section section-light">
     <div class="container">
-        <h2 class="text-center mb-5">Pourquoi choisir un développeur web local ?</h2>
+        <h2 class="text-center mb-5">Pourquoi choisir un prestataire web local ?</h2>
 
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem;">
             <div>
                 <h3 class="text-primary"><i class="fas fa-handshake"></i> Relation de confiance</h3>
                 <p>
                     On se rencontre, on se serre la main. Vous savez à qui vous avez affaire.
-                    Pas de sous-traitance à l'autre bout du monde, c'est moi qui fais le travail.
+                    Pas de sous-traitance à l'autre bout du monde : c'est moi qui conçois et développe votre site.
                 </p>
             </div>
 
@@ -90,8 +90,8 @@
             <div>
                 <h3 class="text-primary"><i class="fas fa-map-pin"></i> Connaissance du terrain</h3>
                 <p>
-                    Je connais le tissu économique breton, les attentes des clients locaux,
-                    les habitudes de recherche sur Google.
+                    Je connais le tissu économique breton (artisans, commerçants, thérapeutes, consultants)
+                    et les habitudes de recherche de leurs clients sur Google.
                 </p>
             </div>
 
@@ -114,9 +114,14 @@
             J'interviens sur toute la Bretagne. Contactez-moi pour discuter de votre projet,
             quelle que soit votre localisation.
         </p>
-        <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
-            <i class="fas fa-paper-plane"></i> Demander un devis gratuit
-        </a>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ path('app_contact') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-paper-plane"></i> Demander un devis gratuit
+            </a>
+            <a href="{{ path('app_pricing') }}" class="btn btn-outline btn-lg">
+                <i class="fas fa-tag"></i> Voir les tarifs
+            </a>
+        </div>
     </div>
 </section>
 

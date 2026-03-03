@@ -183,6 +183,12 @@ class ProjectCrudController extends AbstractCrudController
                 ->setHelp('Ajoutez les partenaires qui ont collaboré sur ce projet')
                 ->hideOnIndex()
                 ->onlyOnForms(),
+            TextField::new('metaTitle', 'Title SEO')
+                ->setHelp('Max 70 car. Si vide, utilise le titre du projet. Ex: "Création site kinésiologue Vannes"')
+                ->hideOnIndex(),
+            TextField::new('metaDescription', 'Meta description')
+                ->setHelp('Max 160 car. Si vide, utilise la description courte.')
+                ->hideOnIndex(),
             TextEditorField::new('context', 'Contexte & Besoin')->hideOnIndex(),
             TextEditorField::new('solutions', 'Solutions apportées')->hideOnIndex(),
             TextEditorField::new('results', 'Résultats obtenus')->hideOnIndex(),

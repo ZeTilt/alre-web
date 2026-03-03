@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ project.title }} | Réalisations - Développeur Web Freelance{% endblock %}
+{% block title %}{{ project.metaTitle ?? project.title ~ ' | Réalisations - Développeur Web Freelance' }}{% endblock %}
 
-{% block meta_description %}{{ project.shortDescription }}{% endblock %}
+{% block meta_description %}{{ project.metaDescription ?? project.shortDescription }}{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}

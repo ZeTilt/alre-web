@@ -60,6 +60,12 @@ class Project
     #[ORM\Column]
     private ?bool $isPublished = true;
 
+    #[ORM\Column(length: 70, nullable: true)]
+    private ?string $metaTitle = null;
+
+    #[ORM\Column(length: 160, nullable: true)]
+    private ?string $metaDescription = null;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
 
@@ -389,6 +395,28 @@ class Project
             }
         }
 
+        return $this;
+    }
+
+    public function getMetaTitle(): ?string
+    {
+        return $this->metaTitle;
+    }
+
+    public function setMetaTitle(?string $metaTitle): static
+    {
+        $this->metaTitle = $metaTitle;
+        return $this;
+    }
+
+    public function getMetaDescription(): ?string
+    {
+        return $this->metaDescription;
+    }
+
+    public function setMetaDescription(?string $metaDescription): static
+    {
+        $this->metaDescription = $metaDescription;
         return $this;
     }
 

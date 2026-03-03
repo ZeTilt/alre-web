@@ -64,13 +64,26 @@ class CityKeywordMatcher
             }
         }
 
-        // Expand saint/st variants (saint-malo = st-malo = st malo = saint malo)
+        // Expand saint/st/sainte/ste variants
+        // saint-malo = st-malo = st malo, sainte-anne = ste-anne = ste anne
         $expanded = [];
         foreach ($patterns as $p) {
             $expanded[] = $p;
             $lower = mb_strtolower($p);
 
-            if (str_contains($lower, 'saint')) {
+            // sainte → ste (must be checked BEFORE saint to avoid partial match)
+            if (str_contains($lower, 'sainte')) {
+                $variant = preg_replace('/\bsainte\b/iu', 'Ste', $p);
+                $expanded[] = $variant;
+                if (str_contains($variant, '-')) {
+                    $expanded[] = str_replace('-', ' ', $variant);
+                }
+                if (str_contains($variant, ' ')) {
+                    $expanded[] = str_replace(' ', '-', $variant);
+                }
+            }
+            // saint → st (only if not "sainte")
+            elseif (str_contains($lower, 'saint')) {
                 $variant = preg_replace('/\bsaint\b/iu', 'St', $p);
                 $expanded[] = $variant;
                 if (str_contains($variant, '-')) {
@@ -81,7 +94,19 @@ class CityKeywordMatcher
                 }
             }
 
-            if (preg_match('/\bst\b/i', $lower)) {
+            // ste → sainte (must be checked BEFORE st)
+            if (preg_match('/\bste\b/i', $lower)) {
+                $variant = preg_replace('/\bste\b/iu', 'Sainte', $p);
+                $expanded[] = $variant;
+                if (str_contains($variant, '-')) {
+                    $expanded[] = str_replace('-', ' ', $variant);
+                }
+                if (str_contains($variant, ' ')) {
+                    $expanded[] = str_replace(' ', '-', $variant);
+                }
+            }
+            // st → saint (only if not "ste")
+            elseif (preg_match('/\bst\b/i', $lower)) {
                 $variant = preg_replace('/\bst\b/iu', 'Saint', $p);
                 $expanded[] = $variant;
                 if (str_contains($variant, '-')) {

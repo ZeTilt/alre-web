@@ -132,22 +132,23 @@ class SitemapController extends AbstractController
         }
 
         // Pages locales SEO (générées automatiquement depuis les villes et départements en BDD)
+        // Priorités basses pour ne pas éclipser les pages principales dans les sitelinks Google
         $localPages = $this->localPageService->getAllPages();
         foreach ($localPages as $page) {
             if ($page['type'] === 'department') {
                 $dept = $page['departmentEntity'];
                 $urls[] = [
                     'loc' => $this->generateUrl('app_local_page', ['slug' => $page['url']], UrlGeneratorInterface::ABSOLUTE_URL),
-                    'changefreq' => 'monthly',
-                    'priority' => '0.6',
+                    'changefreq' => 'yearly',
+                    'priority' => '0.3',
                     'lastmod' => $dept->getUpdatedAt()?->format('Y-m-d') ?? $dept->getCreatedAt()->format('Y-m-d'),
                 ];
             } else {
                 $city = $page['cityEntity'];
                 $urls[] = [
                     'loc' => $this->generateUrl('app_local_page', ['slug' => $page['url']], UrlGeneratorInterface::ABSOLUTE_URL),
-                    'changefreq' => 'monthly',
-                    'priority' => '0.4',
+                    'changefreq' => 'yearly',
+                    'priority' => '0.2',
                     'lastmod' => $city->getUpdatedAt()?->format('Y-m-d') ?? $city->getCreatedAt()->format('Y-m-d'),
                 ];
             }
@@ -157,8 +158,8 @@ class SitemapController extends AbstractController
         if (count($localPages) > 0) {
             $urls[] = [
                 'loc' => $this->generateUrl('app_local_pages_index', [], UrlGeneratorInterface::ABSOLUTE_URL),
-                'changefreq' => 'monthly',
-                'priority' => '0.5',
+                'changefreq' => 'yearly',
+                'priority' => '0.3',
             ];
         }
 

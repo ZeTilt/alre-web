@@ -8,12 +8,44 @@
 <script type="application/ld+json">
 {
     "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Accueil",
+            "item": "https://alre-web.bzh/"
+        },
+        {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Services",
+            "item": "{{ url('app_services') }}"
+        },
+        {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Zones desservies",
+            "item": "{{ url('app_local_pages_index') }}"
+        },
+        {
+            "@type": "ListItem",
+            "position": 4,
+            "name": "{{ service.title }} {{ city.name }}"
+        }
+    ]
+}
+</script>
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
     "@type": "Service",
     "name": "{{ service.title }} {{ city.name }}",
     "description": "{{ service.description }} pour les professionnels de {{ city.name }} et ses environs",
     "provider": {
         "@type": "ProfessionalService",
         "name": "Alré Web",
+        "url": "https://alre-web.bzh",
         "address": {
             "@type": "PostalAddress",
             "addressLocality": "Auray",
@@ -36,6 +68,21 @@
 {% endblock %}
 
 {% block body %}
+
+{# Breadcrumb - Maillage interne vers pages principales #}
+<nav aria-label="Fil d'Ariane" style="padding: 1rem 0 0; background: var(--light-bg);">
+    <div class="container">
+        <ol style="list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; font-size: 0.85rem; color: var(--text-muted);">
+            <li><a href="{{ path('app_home') }}">Accueil</a></li>
+            <li>&rsaquo;</li>
+            <li><a href="{{ path('app_services') }}">Services</a></li>
+            <li>&rsaquo;</li>
+            <li><a href="{{ path('app_local_pages_index') }}">Zones desservies</a></li>
+            <li>&rsaquo;</li>
+            <li>{{ service.title }} {{ city.name }}</li>
+        </ol>
+    </div>
+</nav>
 
 {# Hero Section #}
 <section class="hero" style="padding: 4rem 0;">
@@ -75,9 +122,9 @@
 
                 <h3 class="mt-4 mb-3">Ce que je peux créer pour vous :</h3>
                 <ul class="service-list">
-                    <li><strong>Site vitrine</strong> : présentez votre activité et soyez visible sur Google quand vos clients cherchent "{{ city.keywords[0]|default(service.title ~ ' ' ~ city.name) }}"</li>
+                    <li><a href="{{ path('app_service_creation') }}"><strong>Site vitrine</strong></a> : présentez votre activité et soyez visible sur Google quand vos clients cherchent "{{ city.keywords[0]|default(service.title ~ ' ' ~ city.name) }}"</li>
                     <li><strong>Site e-commerce</strong> : vendez vos produits en ligne 24h/24, même quand votre boutique est fermée</li>
-                    <li><strong>Application métier</strong> : automatisez vos devis, factures, plannings ou gestion de stock</li>
+                    <li><a href="{{ path('app_service_developpeur') }}"><strong>Application métier</strong></a> : automatisez vos devis, factures, plannings ou gestion de stock</li>
                     <li><strong>Refonte de site</strong> : modernisez votre site existant pour qu'il soit rapide, responsive et bien référencé</li>
                 </ul>
 

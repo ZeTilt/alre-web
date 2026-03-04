@@ -74,22 +74,13 @@
         {
             "@context": "https://schema.org",
             "@type": "WebSite",
+            "@id": "https://alre-web.bzh/#website",
             "name": "Alré Web",
             "alternateName": "Alré Web - Création Web",
             "url": "https://alre-web.bzh",
             "description": "Développeur web freelance en Bretagne. Création de sites internet, e-commerce et référencement pour indépendants et petites entreprises.",
             "publisher": {
-                "@type": "ProfessionalService",
-                "name": "Alré Web",
-                "url": "https://alre-web.bzh",
-                "address": {
-                    "@type": "PostalAddress",
-                    "streetAddress": "39 rue Gilles Gahinet",
-                    "postalCode": "56400",
-                    "addressLocality": "Pluneret",
-                    "addressRegion": "Bretagne",
-                    "addressCountry": "FR"
-                }
+                "@id": "https://alre-web.bzh/#organization"
             }
         }
         </script>
@@ -117,12 +108,13 @@
         {
             "@context": "https://schema.org",
             "@type": "ProfessionalService",
+            "@id": "https://alre-web.bzh/#organization",
             "name": "Alré Web - Développeur Web Freelance",
             "description": "Développeur web freelance spécialisé Symfony pour la création de sites internet et e-commerce sur mesure",
             "url": "{{ app.request.schemeAndHttpHost }}",
             "logo": "{{ absolute_url(asset('images/logo-og.png')) }}",
             "image": "{{ absolute_url(asset('images/logo-og.png')) }}",
-            "telephone": "{{ company.phone }}",
+            "telephone": "+33 {{ company.phone|slice(1) }}",
             "email": "contact@alre-web.bzh",
             "address": {
                 "@type": "PostalAddress",

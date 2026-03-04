@@ -60,7 +60,7 @@ class SchemaOrgExtension extends AbstractExtension implements GlobalsInterface
             'name' => $company->getName(),
             'description' => 'Création de sites web professionnels pour artisans, commerçants et PME en Bretagne',
             'url' => $company->getWebsite(),
-            'telephone' => $company->getPhone(),
+            'telephone' => '+33 ' . substr(str_replace(' ', '', $company->getPhone()), 1),
             'email' => $company->getEmail(),
             'address' => [
                 '@type' => 'PostalAddress',

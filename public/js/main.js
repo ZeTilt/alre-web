@@ -370,7 +370,99 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // ============================================
-    // 10. LAZY LOADING IMAGES (amélioration performance)
+    // 10. CAROUSEL AVIS GOOGLE
+    // ============================================
+    const carousel = document.querySelector('.reviews-carousel');
+    if (carousel) {
+        const track = carousel.querySelector('.reviews-carousel-track');
+        const slides = track.querySelectorAll('.reviews-carousel-slide');
+        const prevBtn = carousel.querySelector('.reviews-carousel-btn--prev');
+        const nextBtn = carousel.querySelector('.reviews-carousel-btn--next');
+        const dotsContainer = carousel.querySelector('.reviews-carousel-dots');
+        let currentSlide = 0;
+        let autoPlayTimer = null;
+
+        function getVisibleCount() {
+            if (window.innerWidth >= 1024) return 3;
+            if (window.innerWidth >= 768) return 2;
+            return 1;
+        }
+
+        function getMaxIndex() {
+            return Math.max(0, slides.length - getVisibleCount());
+        }
+
+        function updateCarousel() {
+            const visible = getVisibleCount();
+            const offset = currentSlide * (100 / visible);
+            track.style.transform = 'translateX(-' + offset + '%)';
+            const dots = dotsContainer.querySelectorAll('.reviews-carousel-dot');
+            dots.forEach(function(dot, i) {
+                dot.classList.toggle('active', i === currentSlide);
+            });
+        }
+
+        function buildDots() {
+            dotsContainer.innerHTML = '';
+            const maxIdx = getMaxIndex();
+            for (let i = 0; i <= maxIdx; i++) {
+                const dot = document.createElement('button');
+                dot.className = 'reviews-carousel-dot' + (i === currentSlide ? ' active' : '');
+                dot.setAttribute('aria-label', 'Aller à l\'avis ' + (i + 1));
+                dot.dataset.index = i;
+                dot.addEventListener('click', function() {
+                    currentSlide = parseInt(this.dataset.index);
+                    updateCarousel();
+                    resetAutoPlay();
+                });
+                dotsContainer.appendChild(dot);
+            }
+        }
+
+        function goNext() {
+            currentSlide = currentSlide >= getMaxIndex() ? 0 : currentSlide + 1;
+            updateCarousel();
+        }
+
+        function goPrev() {
+            currentSlide = currentSlide <= 0 ? getMaxIndex() : currentSlide - 1;
+            updateCarousel();
+        }
+
+        function resetAutoPlay() {
+            if (autoPlayTimer) clearInterval(autoPlayTimer);
+            autoPlayTimer = setInterval(goNext, 6000);
+        }
+
+        prevBtn.addEventListener('click', function() { goPrev(); resetAutoPlay(); });
+        nextBtn.addEventListener('click', function() { goNext(); resetAutoPlay(); });
+
+        // Swipe support
+        let touchStartX = 0;
+        track.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        track.addEventListener('touchend', function(e) {
+            const diff = touchStartX - e.changedTouches[0].screenX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) goNext(); else goPrev();
+                resetAutoPlay();
+            }
+        }, { passive: true });
+
+        window.addEventListener('resize', function() {
+            if (currentSlide > getMaxIndex()) currentSlide = getMaxIndex();
+            buildDots();
+            updateCarousel();
+        });
+
+        buildDots();
+        updateCarousel();
+        resetAutoPlay();
+    }
+
+    // ============================================
+    // 11. LAZY LOADING IMAGES (amélioration performance)
     // ============================================
     if ('IntersectionObserver' in window) {
         const imageObserver = new IntersectionObserver((entries) => {

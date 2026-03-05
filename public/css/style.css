@@ -456,11 +456,12 @@ a.card:hover {
     color: var(--primary-dark);
 }
 
-.card-link i {
+.card-link::after {
+    content: '→';
     transition: transform var(--transition-fast);
 }
 
-.card-link:hover i {
+.card-link:hover::after {
     transform: translateX(5px);
 }
 
@@ -1028,6 +1029,104 @@ textarea.form-control {
 .rating {
     color: var(--accent-color);
     margin-bottom: var(--spacing-xs);
+}
+
+.rating-stars {
+    color: #f59e0b;
+    font-size: 1rem;
+    letter-spacing: 0.1rem;
+}
+
+.rating-stars-lg {
+    font-size: 1.3rem;
+}
+
+/* ============================================
+   CAROUSEL AVIS GOOGLE
+   ============================================ */
+.reviews-carousel {
+    position: relative;
+    overflow: hidden;
+}
+
+.reviews-carousel-track {
+    display: flex;
+    transition: transform 0.5s ease;
+}
+
+.reviews-carousel-slide {
+    flex: 0 0 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 0 0.5rem;
+}
+
+.reviews-carousel-slide .testimonial-card {
+    height: 100%;
+}
+
+.reviews-carousel-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.reviews-carousel-btn {
+    background: var(--bg-light);
+    border: 1px solid var(--border-color);
+    color: var(--primary-color);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 1.6rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.reviews-carousel-btn:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: var(--bg-white);
+}
+
+.reviews-carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.reviews-carousel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border-color);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: background var(--transition-fast);
+}
+
+.reviews-carousel-dot.active {
+    background: var(--accent-color);
+}
+
+@media (min-width: 768px) {
+    .reviews-carousel-slide {
+        flex: 0 0 50%;
+    }
+}
+
+@media (min-width: 1024px) {
+    .reviews-carousel-slide {
+        flex: 0 0 33.3333%;
+    }
 }
 
 /* ============================================

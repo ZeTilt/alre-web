@@ -128,7 +128,7 @@
                     quand ils cherchent vos services. Fini l'invisibilité.
                 </p>
                 <a href="{{ path('app_service_creation') }}" class="card-link">
-                    Création de site internet <i class="fas fa-arrow-right"></i>
+                    Création de site internet
                 </a>
             </div>
 
@@ -143,7 +143,7 @@
                     Élargissez votre clientèle au-delà de votre zone géographique.
                 </p>
                 <a href="{{ path('app_service_creation') }}" class="card-link">
-                    Sites e-commerce <i class="fas fa-arrow-right"></i>
+                    Sites e-commerce
                 </a>
             </div>
 
@@ -158,7 +158,7 @@
                     chronophages avec des outils sur mesure.
                 </p>
                 <a href="{{ path('app_service_developpeur') }}" class="card-link">
-                    Développement sur mesure <i class="fas fa-arrow-right"></i>
+                    Développement sur mesure
                 </a>
             </div>
 
@@ -173,7 +173,7 @@
                     Vous avez un site pro sans rien y connaître.
                 </p>
                 <a href="{{ path('app_service_agence') }}" class="card-link">
-                    Accompagnement complet <i class="fas fa-arrow-right"></i>
+                    Accompagnement complet
                 </a>
             </div>
 
@@ -188,7 +188,7 @@
                     Plus de visibilité = plus de demandes de devis.
                 </p>
                 <a href="{{ path('app_service_referencement') }}" class="card-link">
-                    Référencement local <i class="fas fa-arrow-right"></i>
+                    Référencement local
                 </a>
             </div>
 
@@ -203,7 +203,7 @@
                     Prix clairs, devis détaillé, sans surprise.
                 </p>
                 <a href="{{ path('app_pricing') }}" class="card-link">
-                    Voir les tarifs <i class="fas fa-arrow-right"></i>
+                    Voir les tarifs
                 </a>
             </div>
         </div>
@@ -212,34 +212,6 @@
             <a href="{{ path('app_services') }}" class="btn btn-outline btn-lg">
                 <i class="fas fa-list"></i> Voir tous les services en détail
             </a>
-        </div>
-    </div>
-</section>
-
-{# ============================================
-   CHIFFRES CLÉS (optionnel, peut être ajouté plus tard)
-   ============================================ #}
-<section class="section section-dark" style="display: none;">
-    <div class="container">
-        <h2 class="text-center mb-5">En quelques chiffres</h2>
-
-        <div class="grid grid-4" style="text-align: center;">
-            <div>
-                <div style="font-size: 3rem; font-weight: 700; color: var(--accent-color);" class="counter" data-target="5">0</div>
-                <p style="font-size: 1.1rem; margin-top: 0.5rem;">Années d'expérience</p>
-            </div>
-            <div>
-                <div style="font-size: 3rem; font-weight: 700; color: var(--accent-color);" class="counter" data-target="20">0</div>
-                <p style="font-size: 1.1rem; margin-top: 0.5rem;">Projets réalisés</p>
-            </div>
-            <div>
-                <div style="font-size: 3rem; font-weight: 700; color: var(--accent-color);" class="counter" data-target="15">0</div>
-                <p style="font-size: 1.1rem; margin-top: 0.5rem;">Clients satisfaits</p>
-            </div>
-            <div>
-                <div style="font-size: 3rem; font-weight: 700; color: var(--accent-color);" class="counter" data-target="24">0</div>
-                <p style="font-size: 1.1rem; margin-top: 0.5rem;">Heures de support</p>
-            </div>
         </div>
     </div>
 </section>
@@ -276,7 +248,7 @@
                 </div>
                 <div class="card-footer">
                     <a href="{{ path('app_portfolio_show', {'slug': project.slug}) }}" class="card-link">
-                        Voir le projet <i class="fas fa-arrow-right"></i>
+                        Voir le projet
                     </a>
                 </div>
             </div>
@@ -307,9 +279,7 @@
             {% for testimonial in testimonials %}
             <div class="testimonial-card">
                 <div class="rating">
-                    {% for i in 1..testimonial.rating %}
-                        <i class="fas fa-star"></i>
-                    {% endfor %}
+                    <span class="rating-stars" aria-label="{{ testimonial.rating }} sur 5">{% for i in 1..5 %}{% if i <= testimonial.rating %}★{% else %}☆{% endif %}{% endfor %}</span>
                 </div>
                 <p class="testimonial-text">{{ testimonial.content }}</p>
                 <div class="testimonial-author">
@@ -344,18 +314,8 @@
         <div class="text-center mb-5">
             <div style="display: inline-flex; align-items: center; gap: 1rem; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 1rem 2rem; border-radius: 50px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
                 {# Étoiles visuelles #}
-                <div style="display: flex; gap: 0.15rem; font-size: 1.3rem;">
-                    {% set avgRating = googleReviewStats.averageRating|default(0) %}
-                    {% for i in 1..5 %}
-                        {% if i <= avgRating|round(0, 'floor') %}
-                            <i class="fas fa-star" style="color: #f59e0b;"></i>
-                        {% elseif i - 0.5 <= avgRating %}
-                            <i class="fas fa-star-half-alt" style="color: #f59e0b;"></i>
-                        {% else %}
-                            <i class="far fa-star" style="color: #d1d5db;"></i>
-                        {% endif %}
-                    {% endfor %}
-                </div>
+                {% set avgRating = googleReviewStats.averageRating|default(0) %}
+                <span class="rating-stars rating-stars-lg" aria-label="{{ avgRating|number_format(1, ',', ' ') }} sur 5">{% for i in 1..5 %}{% if i <= avgRating|round(0, 'floor') %}★{% elseif i - 0.5 <= avgRating %}★{% else %}☆{% endif %}{% endfor %}</span>
                 {# Note et nombre d'avis #}
                 <div style="font-size: 1.1rem;">
                     <strong style="color: #111827;">{{ avgRating|number_format(1, ',', ' ') }}/5</strong>
@@ -373,34 +333,37 @@
         </div>
         {% endif %}
 
-        <div class="grid grid-{{ googleReviews|length == 1 ? '1' : (googleReviews|length == 2 ? '2' : '3') }}">
-            {% for review in googleReviews %}
-            <div class="testimonial-card">
-                <div class="rating">
-                    {% for i in 1..5 %}
-                        {% if i <= review.rating %}
-                            <i class="fas fa-star"></i>
+        <div class="reviews-carousel" aria-label="Avis Google">
+            <div class="reviews-carousel-track">
+                {% for review in googleReviews %}
+                <div class="reviews-carousel-slide">
+                    <div class="testimonial-card">
+                        <div class="rating">
+                            <span class="rating-stars" aria-label="{{ review.rating }} sur 5">{% for i in 1..5 %}{% if i <= review.rating %}★{% else %}☆{% endif %}{% endfor %}</span>
+                        </div>
+                        {% if review.comment %}
+                        <p class="testimonial-text">{{ review.commentExcerpt(200) }}</p>
                         {% else %}
-                            <i class="far fa-star" style="opacity: 0.3;"></i>
+                        <p class="testimonial-text" style="font-style: italic; opacity: 0.7;">(Avis sans commentaire)</p>
                         {% endif %}
-                    {% endfor %}
-                </div>
-                {% if review.comment %}
-                <p class="testimonial-text">{{ review.commentExcerpt(200) }}</p>
-                {% else %}
-                <p class="testimonial-text" style="font-style: italic; opacity: 0.7;">(Avis sans commentaire)</p>
-                {% endif %}
-                <div class="testimonial-author">
-                    <div>
-                        <div class="testimonial-author-name">{{ review.authorName }}</div>
-                        <div class="testimonial-author-company">
-                            <i class="fab fa-google" style="color: #4285F4; font-size: 0.85rem;"></i>
-                            {{ review.reviewDate|format_datetime(pattern='MMMM yyyy', locale='fr') }}
+                        <div class="testimonial-author">
+                            <div>
+                                <div class="testimonial-author-name">{{ review.authorName }}</div>
+                                <div class="testimonial-author-company">
+                                    <i class="fab fa-google" style="color: #4285F4; font-size: 0.85rem;"></i>
+                                    {{ review.reviewDate|format_datetime(pattern='MMMM yyyy', locale='fr') }}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
+            <div class="reviews-carousel-nav">
+                <button class="reviews-carousel-btn reviews-carousel-btn--prev" aria-label="Avis précédents">&#8249;</button>
+                <div class="reviews-carousel-dots"></div>
+                <button class="reviews-carousel-btn reviews-carousel-btn--next" aria-label="Avis suivants">&#8250;</button>
+            </div>
         </div>
 
         {# Lien vers tous les avis Google #}

@@ -40,8 +40,6 @@ class MatomoTrackingService
                     'token_auth' => $this->matomoTokenAuth,
                     'url' => $request->getUri(),
                     'ua' => $request->headers->get('User-Agent', ''),
-                    'source' => 'symfony',
-                    'recMode' => 1,
                     'send_image' => 0,
                 ],
             ]);

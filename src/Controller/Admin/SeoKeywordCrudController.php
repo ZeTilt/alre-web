@@ -68,6 +68,7 @@ class SeoKeywordCrudController extends AbstractCrudController
             'latestPosition.clicks' => 'sort_clicks',
             'latestPosition.impressions' => 'sort_impressions',
             'lastOptimizedAt' => 'entity.lastOptimizedAt',
+            'lastSeen' => 'sort_lastSeen',
         ];
 
         $sort = $searchDto->getSort();
@@ -96,6 +97,7 @@ class SeoKeywordCrudController extends AbstractCrudController
         $qb->addSelect('(SELECT lp1.position FROM App\Entity\SeoPosition lp1 WHERE lp1.keyword = entity.id AND lp1.date = (SELECT MAX(lp1b.date) FROM App\Entity\SeoPosition lp1b WHERE lp1b.keyword = entity.id)) AS HIDDEN sort_position');
         $qb->addSelect('(SELECT lp2.clicks FROM App\Entity\SeoPosition lp2 WHERE lp2.keyword = entity.id AND lp2.date = (SELECT MAX(lp2b.date) FROM App\Entity\SeoPosition lp2b WHERE lp2b.keyword = entity.id)) AS HIDDEN sort_clicks');
         $qb->addSelect('(SELECT lp3.impressions FROM App\Entity\SeoPosition lp3 WHERE lp3.keyword = entity.id AND lp3.date = (SELECT MAX(lp3b.date) FROM App\Entity\SeoPosition lp3b WHERE lp3b.keyword = entity.id)) AS HIDDEN sort_impressions');
+        $qb->addSelect('CASE WHEN entity.lastSeenInGsc IS NULL THEN entity.lastSeenInBing WHEN entity.lastSeenInBing IS NULL THEN entity.lastSeenInGsc WHEN entity.lastSeenInGsc > entity.lastSeenInBing THEN entity.lastSeenInGsc ELSE entity.lastSeenInBing END AS HIDDEN sort_lastSeen');
 
         if ($customSort) {
             $qb->resetDQLPart('orderBy');

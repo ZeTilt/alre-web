@@ -98,6 +98,16 @@ services:
             $googlePlacesApiKey: '%env(GOOGLE_PLACES_API_KEY)%'
             $googlePlaceId: '%env(GOOGLE_PLACE_ID)%'
 
+    App\Service\MatomoTrackingService:
+        arguments:
+            $matomoUrl: '%env(MATOMO_URL)%'
+            $matomoSiteId: '%env(MATOMO_SITE_ID)%'
+            $matomoTokenAuth: '%env(MATOMO_TOKEN_AUTH)%'
+
+    App\EventSubscriber\MatomoTrackingSubscriber:
+        arguments:
+            $environment: '%kernel.environment%'
+
     App\Service\LocalPageService:
         arguments:
             $projectDir: '%kernel.project_dir%'

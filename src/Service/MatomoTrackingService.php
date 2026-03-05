@@ -33,7 +33,7 @@ class MatomoTrackingService
         }
 
         try {
-            $this->httpClient->request('POST', $this->matomoUrl . '/matomo.php', [
+            $response = $this->httpClient->request('POST', $this->matomoUrl . '/matomo.php', [
                 'body' => [
                     'rec' => 1,
                     'idsite' => $this->matomoSiteId,
@@ -47,6 +47,7 @@ class MatomoTrackingService
                     'send_image' => 0,
                 ],
             ]);
+            $response->getStatusCode();
         } catch (\Throwable $e) {
             $this->logger->error('Matomo bot tracking failed: {message}', [
                 'message' => $e->getMessage(),
